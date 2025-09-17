@@ -111,11 +111,14 @@ function renderMarkers(origin, radiusMiles){
 async function main(){
   document.getElementById('status').textContent = 'Loading bars…';
   try{
-    let rows = await loadCSV();
-    rows = rows.map(r=>normKeys(r));
-    bars = rows;
+    bars = await loadCSV();
     document.getElementById('status').textContent = `Loaded ${bars.length} bars`;
-    console.log('Sample row:', bars[0]);
+
+    // NEW: plot all bars right away, centered on Berkeley
+    const origin = { lat: 37.8715, lon: -122.2730 };
+    const radius = 500; // wide enough to include all
+    renderMarkers(origin, radius);
+    renderList(origin, radius);
   }catch(e){
     console.error(e);
     document.getElementById('status').textContent = 'Failed to load data';
