@@ -25,26 +25,13 @@ const baseLayers = {
     attribution: 'Tiles © Esri'
   })
 };
-// Cal Gold tint overlay (very subtle)
-const calGoldTint = L.rectangle([[-90,-180],[90,180]], {
-  color: '#FDB515',
-  weight: 0,
-  fillColor: '#FDB515',
-  fillOpacity: 0.06,     // tweak 0.04–0.10 to taste
-  interactive: false
-});
-
-// Overlays object for the layer control
-const overlays = {
-  "Cal Gold Tint": calGoldTint
-};
 
 
-// Init map with Positron + no tint by default
+// Init map with Positron
 const map = L.map('map', {
   center: [37.8715, -122.2730],
   zoom: 11,
-  layers: [baseLayers["Positron (Light)"], calGoldTint]  // start on Positron
+  layers: [baseLayers["Positron (Light)"]]  // start on Positron
 });
 
 // Layer switcher (bases + overlays)
