@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cal Bars Map (Unofficial)</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4wT9f7J1t6zr1G6Pp0iY1S9Z8+JQ8H6Z9g2j1r7w=" crossorigin=""/>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Cal Bars Map (Unofficial)</h1>
+    <p>Find nearby watch bars. Data is community-sourced and not affiliated with UC Berkeley.</p>
+  </header>
+
+  <section id="controls">
+    <input type="text" id="address" placeholder="Enter your address or city (e.g., Oakland, CA)" />
+    <button id="searchBtn">Search</button>
+    <label title="Limit results by distance"><input type="number" id="radius" value="50" min="1" max="1000"> miles</label>
+    <span id="status"></span>
+  </section>
+
+  <main>
+    <div id="map"></div>
+    <aside id="list">
+      <h2>Nearest Bars</h2>
+      <ol id="results"></ol>
+    </aside>
+  </main>
+
+  <footer>
+    <small>
+      Not an official UC Berkeley site. Map © OpenStreetMap contributors. 
+      <a href="#" id="dataSourceLink">Data source</a> · <a id="submitLink" href="#" target="_blank" rel="noopener">Submit a bar</a>
+    </small>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-Vu3Yf4bO0NAH2cQelQ6p5Ff3aM3QJ6vOOB1p3p1V7Nw=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

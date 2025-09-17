@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 140" width="64" height="64">
+  <g fill="#002676">
+    <!-- main pad -->
+    <path d="M35,110
+             C20,95 25,70 50,60
+             C60,57 70,57 80,60
+             C105,70 110,95 95,110
+             C80,125 50,125 35,110 Z"></path>
+    <!-- toes -->
+    <ellipse cx="25" cy="65" rx="11" ry="15"></ellipse>
+    <ellipse cx="45" cy="50" rx="12" ry="16"></ellipse>
+    <ellipse cx="65" cy="47" rx="12" ry="16"></ellipse>
+    <ellipse cx="85" cy="50" rx="12" ry="16"></ellipse>
+    <ellipse cx="105" cy="65" rx="11" ry="15"></ellipse>
+    <!-- claws -->
+    <path d="M18 48 C22 28, 32 28, 36 48 Z"></path>
+    <path d="M40 35 C44 15, 56 15, 60 35 Z"></path>
+    <path d="M60 32 C64 12, 76 12, 80 32 Z"></path>
+    <path d="M80 35 C84 15, 96 15, 100 35 Z"></path>
+    <path d="M102 48 C106 28, 116 28, 120 48 Z"></path>
+  </g>
+</svg>
