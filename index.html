@@ -4,47 +4,51 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cal Bars Map (Unofficial)</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+4wT9f7J1t6zr1G6Pp0iY1S9Z8+JQ8H6Z9g2j1r7w=" crossorigin=""/>
+
+  <!-- Leaflet CSS (no integrity/crossorigin to avoid blocking) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- Site CSS -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header>
-    <h1>Cal Bars Map (Unofficial)</h1>
-    <p>Find nearby watch bars. Data is community-sourced and not affiliated with UC Berkeley.</p>
+  <header class="header">
+    <img src="assets/bear_paw.svg" alt="Bear paw" width="28" height="28" />
+    <div>
+      <div class="title">Calgorithm — Cal Watch Bars Map</div>
+      <div class="tagline">Fan-run, not affiliated with UC Berkeley</div>
+    </div>
   </header>
 
-  <section id="controls">
+  <section id="controls" class="search-panel" role="search">
     <input type="text" id="address" placeholder="Enter your address or city (e.g., Oakland, CA)" />
     <button id="searchBtn">Search</button>
-    <label title="Limit results by distance"><input type="number" id="radius" value="50" min="1" max="1000"> miles</label>
-    <span id="status"></span>
+    <label title="Limit results by distance">
+      <input type="number" id="radius" inputmode="numeric" pattern="[0-9]*" value="50" min="1" max="1000">
+      miles
+    </label>
+    <span id="status" aria-live="polite"></span>
   </section>
 
   <main>
-    <div id="map"></div>
-    <aside id="list">
+    <div id="map" role="region" aria-label="Map of nearby bars"></div>
+    <aside id="list" aria-label="Nearest bars">
       <h2>Nearest Bars</h2>
       <ol id="results"></ol>
     </aside>
   </main>
 
-<footer>
-  <small>
-    Not an official UC Berkeley site. Data may be inaccurate. Map © OpenStreetMap contributors.
-    <a id="submitLink" href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit a bar</a>
-  </small>
-</footer>
+  <footer>
+    <small>
+      Not an official UC Berkeley site. Data may be inaccurate. Map © OpenStreetMap contributors.
+      <a href="#" id="dataSourceLink" rel="noopener">Data source</a> ·
+      <a id="submitLink" href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit a bar</a>
+    </small>
+  </footer>
 
-
-   <!-- Scripts -->
-  <!-- Leaflet (map library) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-
-  <!-- PapaParse (reads your Google Sheet CSV) -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-
-  <!-- Your app code -->
   <script src="js/app.js" defer></script>
 </body>
 </html>
