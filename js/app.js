@@ -16,25 +16,36 @@ document.getElementById('dataSourceLink').href = CSV_URL;
 let bars = [];
 let markers = L.layerGroup().addTo(map);
 
-// ---------- Helpers ----------
-function normKeys(row){
-  const out = {};
-  Object.keys(row).forEach(k => out[k.trim().toLowerCase()] = row[k]);
-  return out;
-}
-function pick(row, names){
-  for (const n of names) {
-    const v = row[n];
-    if (v !== undefined && v !== null && String(v).trim() !== '') return v;
-  }
-  return '';
-}
-function toNumLoose(row, keys){
-  const v = pick(row, keys);
-  const n = parseFloat(String(v).replace(/[^\d.+-]/g,''));
-  return Number.isFinite(n) ? n : null;
-}
+// ---------- Custom Cal Icons ----------
 
+// Berkeley Blue marker with Cal Gold dot
+const CalIcon = L.icon({
+  iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
+      <defs>
+        <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#002676"/>
+          <stop offset="100%" stop-color="#001b58"/>
+        </linearGradient>
+      </defs>
+      <path d="M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z" fill="url(#g)"/>
+      <circle cx="14" cy="14" r="6" fill="#FDB515"/>
+    </svg>
+  `),
+  iconSize: [28, 42],
+  iconAnchor: [14, 40],
+  popupAnchor: [0, -34],
+});
+
+// Gold circle for "You" (search location)
+const YouIcon = L.divIcon({
+  className: '',
+  html: '<div style="background:#FDB515;border:2px solid #002676;width:16px;height:16px;border-radius:50%;"></div>',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+// ---------- Utils ----------
 function haversine(lat1, lon1, lat2, lon2){
   const toRad = d=> d*Math.PI/180;
   const R = 3958.8; // miles
@@ -68,9 +79,8 @@ function loadCSV(){
 
 function renderList(origin, radiusMiles){
   const withDist = bars.map(b=>{
-    const lat = toNumLoose(b, ['lat','latitude']);
-    const lon = toNumLoose(b, ['lon','lng','longitude']);
-    const d = (lat!=null && lon!=null) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
+    const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
+    const d = (isFinite(lat) && isFinite(lon)) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
     return { ...b, distance: d };
   }).filter(b => b.distance <= radiusMiles).sort((a,b)=> a.distance - b.distance).slice(0, MAX_RESULTS);
 
@@ -90,20 +100,24 @@ function renderList(origin, radiusMiles){
     ol.appendChild(li);
   });
 }
-bars = await loadCSV();
-console.log("First few rows:", bars.slice(0,3));
-function renderMarkers(origin, radiusMiles){
+
+function renderMarkers(origin, radiusMiles, showOrigin = true){
   markers.clearLayers();
-  const originMarker = L.circleMarker([origin.lat, origin.lon], { radius: 8 }).bindPopup('You');
-  originMarker.addTo(markers);
+
+  // Only show the search/origin marker when requested
+  if (showOrigin) {
+    L.marker([origin.lat, origin.lon], { icon: YouIcon })
+      .addTo(markers)
+      .bindPopup('You');
+  }
+
   bars.forEach(b=>{
-    const lat = toNumLoose(b, ['lat','latitude']);
-    const lon = toNumLoose(b, ['lon','lng','longitude']);
-    if(lat==null || lon==null) return;
+    const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
+    if(!isFinite(lat) || !isFinite(lon)) return;
     const d = haversine(origin.lat, origin.lon, lat, lon);
     if(d <= radiusMiles){
       const popup = `<strong>${b.name || 'Unnamed Bar'}</strong><br>${[b.address, b.city, b.state, b.zip].filter(Boolean).join(', ')}${b.url ? `<br><a href="${b.url}" target="_blank" rel="noopener">Website</a>`:''}${b.notes?`<br><em>${b.notes}</em>`:''}`;
-      L.marker([lat, lon]).addTo(markers).bindPopup(popup);
+      L.marker([lat, lon], { icon: CalIcon }).addTo(markers).bindPopup(popup);
     }
   });
 }
@@ -114,10 +128,10 @@ async function main(){
     bars = await loadCSV();
     document.getElementById('status').textContent = `Loaded ${bars.length} bars`;
 
-    // NEW: plot all bars right away, centered on Berkeley
+    // Plot all bars on load
     const origin = { lat: 37.8715, lon: -122.2730 };
     const radius = 500; // wide enough to include all
-    renderMarkers(origin, radius);
+    renderMarkers(origin, radius, false); // hide "You" on first render
     renderList(origin, radius);
   }catch(e){
     console.error(e);
