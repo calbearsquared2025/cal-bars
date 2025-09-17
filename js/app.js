@@ -124,20 +124,22 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
 
 async function main(){
   document.getElementById('status').textContent = 'Loading bars…';
-  try{
+  try {
     bars = await loadCSV();
     document.getElementById('status').textContent = `Loaded ${bars.length} bars`;
 
-    // Plot all bars on load
+    // Plot all bars on load (but no "You")
     const origin = { lat: 37.8715, lon: -122.2730 };
-    const radius = 500; // wide enough to include all
-    renderMarkers(origin, radius, false); // hide "You" on first render
+    const radius = 500;
+    renderMarkers(origin, radius, false);
     renderList(origin, radius);
-  }catch(e){
+
+  } catch(e) {
     console.error(e);
     document.getElementById('status').textContent = 'Failed to load data';
   }
 }
+
 
 document.getElementById('searchBtn').addEventListener('click', async ()=>{
   const q = document.getElementById('address').value.trim();
