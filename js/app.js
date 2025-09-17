@@ -90,7 +90,8 @@ function renderList(origin, radiusMiles){
     ol.appendChild(li);
   });
 }
-
+bars = await loadCSV();
+console.log("First few rows:", bars.slice(0,3));
 function renderMarkers(origin, radiusMiles){
   markers.clearLayers();
   const originMarker = L.circleMarker([origin.lat, origin.lon], { radius: 8 }).bindPopup('You');
