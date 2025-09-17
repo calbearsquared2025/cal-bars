@@ -1,7 +1,7 @@
 // Simple static app: loads a CSV of bars, geocodes user input, shows nearest.
 // Swap CSV_URL to your published Google Sheets CSV when ready.
-const CSV_URL = 'data/bars.csv'; // e.g., 'https://docs.google.com/spreadsheets/d/FILE/export?format=csv'
-const SUBMIT_FORM_URL = '#'; // set to your Google Form for bar submissions
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv'; // e.g., 'https://docs.google.com/spreadsheets/d/FILE/export?format=csv'
+const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8'; // set to your Google Form for bar submissions
 const MAX_RESULTS = 25;
 
 const map = L.map('map').setView([37.8715, -122.2730], 11); // Berkeley default
