@@ -4,11 +4,56 @@ const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vb
 const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8';
 const MAX_RESULTS = 25;
 
-const map = L.map('map').setView([37.8715, -122.2730], 11); // Berkeley default
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
+// Define base layers (Cal-friendly options)
+const baseLayers = {
+  "Default (OSM)": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }),
+  "Positron (Light)": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd',
+    maxZoom: 19,
+    attribution: '&copy; OSM &copy; CARTO'
+  }),
+  "Dark (Carto)": L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd',
+    maxZoom: 19,
+    attribution: '&copy; OSM &copy; CARTO'
+  }),
+  "Satellite (Esri)": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    attribution: 'Tiles © Esri'
+  })
+};
+// Cal Gold tint overlay (very subtle)
+const calGoldTint = L.rectangle([[-90,-180],[90,180]], {
+  color: '#FDB515',
+  weight: 0,
+  fillColor: '#FDB515',
+  fillOpacity: 0.06,     // tweak 0.04–0.10 to taste
+  interactive: false
+});
+
+// Overlays object for the layer control
+const overlays = {
+  "Cal Gold Tint": calGoldTint
+};
+
+
+// Init map with Positron + no tint by default
+const map = L.map('map', {
+  center: [37.8715, -122.2730],
+  zoom: 11,
+  layers: [baseLayers["Positron (Light)"], calGoldTint]  // start on Positron
+});
+
+// Layer switcher (bases + overlays)
+L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
+
+
+// Add control for switching
+L.control.layers(baseLayers).addTo(map);
+
 
 document.getElementById('submitLink').href = SUBMIT_FORM_URL;
 document.getElementById('dataSourceLink').href = CSV_URL;
