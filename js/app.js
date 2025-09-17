@@ -1,7 +1,7 @@
 // Simple static app: loads a CSV of bars, geocodes user input, shows nearest.
 // Swap CSV_URL to your published Google Sheets CSV when ready.
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv'; // e.g., 'https://docs.google.com/spreadsheets/d/FILE/export?format=csv'
-const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8'; // set to your Google Form for bar submissions
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv';
+const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8';
 const MAX_RESULTS = 25;
 
 const map = L.map('map').setView([37.8715, -122.2730], 11); // Berkeley default
@@ -15,6 +15,25 @@ document.getElementById('dataSourceLink').href = CSV_URL;
 
 let bars = [];
 let markers = L.layerGroup().addTo(map);
+
+// ---------- Helpers ----------
+function normKeys(row){
+  const out = {};
+  Object.keys(row).forEach(k => out[k.trim().toLowerCase()] = row[k]);
+  return out;
+}
+function pick(row, names){
+  for (const n of names) {
+    const v = row[n];
+    if (v !== undefined && v !== null && String(v).trim() !== '') return v;
+  }
+  return '';
+}
+function toNumLoose(row, keys){
+  const v = pick(row, keys);
+  const n = parseFloat(String(v).replace(/[^\d.+-]/g,''));
+  return Number.isFinite(n) ? n : null;
+}
 
 function haversine(lat1, lon1, lat2, lon2){
   const toRad = d=> d*Math.PI/180;
@@ -48,10 +67,10 @@ function loadCSV(){
 }
 
 function renderList(origin, radiusMiles){
-  // Sort by distance
   const withDist = bars.map(b=>{
-    const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-    const d = (isFinite(lat) && isFinite(lon)) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
+    const lat = toNumLoose(b, ['lat','latitude']);
+    const lon = toNumLoose(b, ['lon','lng','longitude']);
+    const d = (lat!=null && lon!=null) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
     return { ...b, distance: d };
   }).filter(b => b.distance <= radiusMiles).sort((a,b)=> a.distance - b.distance).slice(0, MAX_RESULTS);
 
@@ -77,8 +96,9 @@ function renderMarkers(origin, radiusMiles){
   const originMarker = L.circleMarker([origin.lat, origin.lon], { radius: 8 }).bindPopup('You');
   originMarker.addTo(markers);
   bars.forEach(b=>{
-    const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-    if(!isFinite(lat) || !isFinite(lon)) return;
+    const lat = toNumLoose(b, ['lat','latitude']);
+    const lon = toNumLoose(b, ['lon','lng','longitude']);
+    if(lat==null || lon==null) return;
     const d = haversine(origin.lat, origin.lon, lat, lon);
     if(d <= radiusMiles){
       const popup = `<strong>${b.name || 'Unnamed Bar'}</strong><br>${[b.address, b.city, b.state, b.zip].filter(Boolean).join(', ')}${b.url ? `<br><a href="${b.url}" target="_blank" rel="noopener">Website</a>`:''}${b.notes?`<br><em>${b.notes}</em>`:''}`;
@@ -90,8 +110,11 @@ function renderMarkers(origin, radiusMiles){
 async function main(){
   document.getElementById('status').textContent = 'Loading bars…';
   try{
-    bars = await loadCSV();
+    let rows = await loadCSV();
+    rows = rows.map(r=>normKeys(r));
+    bars = rows;
     document.getElementById('status').textContent = `Loaded ${bars.length} bars`;
+    console.log('Sample row:', bars[0]);
   }catch(e){
     console.error(e);
     document.getElementById('status').textContent = 'Failed to load data';
