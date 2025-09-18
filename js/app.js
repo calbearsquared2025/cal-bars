@@ -149,9 +149,9 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
       <strong>${b.name || 'Unnamed Bar'}</strong><br>
       ${addr}
       ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Website</a>` : ''}
-      ${b.promo   ? `<br><em>${b.promo}</em>` : ''}
-      ${b.details ? `<br><em>${b.details}</em>` : ''}
-      ${b.tvs     ? `<br><em>${b.tvs}</em>` : ''}
+      ${b.promo   ? `<br><br><em>${b.promo}</em>` : ''}
+      ${b.details ? `<br>${b.details}` : ''}
+      ${b.tvs     ? `<br>${b.tvs}` : ''}
       ${b.affiliation ? `<br><small>${b.affiliation}</small>` : ''}
     `;
     L.marker([lat, lon], { icon: CalIcon }).addTo(markers).bindPopup(popup);
