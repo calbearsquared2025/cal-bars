@@ -1,34 +1,24 @@
-// Simple static app: loads a CSV of bars, geocodes user input, shows nearest.
+// ===== Cal Bars Map — frontend (uses promo, details, tvs) =====
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv';
 const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8';
 const MAX_RESULTS = 25;
 
-/* ---------- Base layers ---------- */
-const baseLayers = {
-  "Detailed (OSM)": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
-  }),
-  "Light (Positron)": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OSM &copy; CARTO'
-  }),
-  "Dark (Carto)": L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OSM &copy; CARTO'
-  }),
-  "Satellite (Esri)": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19, attribution: 'Tiles © Esri'
-  })
-};
+// Base layer (single provider)
+const baseLayer = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+  {
+    subdomains: 'abcd',
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+  }
+);
 
-// OPTIONAL overlay tint (safe to leave off)
-const overlays = {}; // keep empty unless you add overlays later
-
-/* ---------- Map init ---------- */
+// Map init
 const map = L.map('map', {
   center: [37.8715, -122.2730],
   zoom: 11,
-  layers: [baseLayers["Light (Positron)"]]
+  layers: [baseLayer]
 });
-L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
 
 document.getElementById('submitLink').href = SUBMIT_FORM_URL;
 document.getElementById('dataSourceLink').href = CSV_URL;
@@ -36,7 +26,7 @@ document.getElementById('dataSourceLink').href = CSV_URL;
 let bars = [];
 let markers = L.layerGroup().addTo(map);
 
-/* ---------- Custom Cal Icons ---------- */
+/* ---------- Cal-themed icons ---------- */
 const CalIcon = L.icon({
   iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
@@ -94,26 +84,47 @@ function loadCSV(){
   });
 }
 
+function fitToMarkers(){
+  const bounds = L.latLngBounds([]);
+  markers.eachLayer(l => {
+    if (l.getLatLng) bounds.extend(l.getLatLng());
+  });
+  if (bounds.isValid()) map.fitBounds(bounds.pad(0.15));
+}
+
+/* ---------- Rendering ---------- */
 function renderList(origin, radiusMiles){
   const withDist = bars.map(b=>{
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
     const d = (isFinite(lat) && isFinite(lon)) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
     return { ...b, distance: d };
-  }).filter(b => b.distance <= radiusMiles).sort((a,b)=> a.distance - b.distance).slice(0, MAX_RESULTS);
+  }).filter(b => b.distance <= radiusMiles)
+    .sort((a,b)=> a.distance - b.distance)
+    .slice(0, MAX_RESULTS);
 
   const ol = document.getElementById('results');
   ol.innerHTML = '';
   withDist.forEach(b=>{
-    const li = document.createElement('li');
     const miles = Number.isFinite(b.distance) ? b.distance.toFixed(1) + ' mi' : 'n/a';
-    const url = b.url && b.url.startsWith('http') ? b.url : null;
+    const addr  = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
+    const url   = (b.url && b.url.startsWith('http')) ? b.url : null;
+
+    const li = document.createElement('li');
     li.innerHTML = `
       <strong>${b.name || 'Unnamed Bar'}</strong> — ${miles}<br>
-      <span>${[b.address, b.city, b.state, b.zip].filter(Boolean).join(', ')}</span><br>
+      <span>${addr}</span><br>
       ${url ? `<a href="${url}" target="_blank" rel="noopener">Website</a>` : ''}
-      ${b.notes ? `<div><em>${b.notes}</em></div>` : ''}
+      ${b.promo   ? `<div><em>${b.promo}</em></div>` : ''}
+      ${b.details ? `<div><em>${b.details}</em></div>` : ''}
+      ${b.tvs     ? `<div><em>${b.tvs}</em></div>` : ''}
       ${b.affiliation ? `<div><small>${b.affiliation}</small></div>` : ''}
+      ${b.submitted_as ? `<div><small>Submitted as: ${b.submitted_as}</small></div>` : ''}
     `;
+    li.style.cursor = 'pointer';
+    li.addEventListener('click', ()=>{
+      const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
+      if (isFinite(lat) && isFinite(lon)) map.setView([lat, lon], 14);
+    });
     ol.appendChild(li);
   });
 }
@@ -121,31 +132,42 @@ function renderList(origin, radiusMiles){
 function renderMarkers(origin, radiusMiles, showOrigin = true){
   markers.clearLayers();
 
-  // Only show the search/origin marker when requested
   if (showOrigin) {
-    L.marker([origin.lat, origin.lon], { icon: YouIcon })
-      .addTo(markers)
-      .bindPopup('You');
+    L.marker([origin.lat, origin.lon], { icon: YouIcon }).addTo(markers).bindPopup('You');
   }
 
   bars.forEach(b=>{
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
     if(!isFinite(lat) || !isFinite(lon)) return;
     const d = haversine(origin.lat, origin.lon, lat, lon);
-    if(d <= radiusMiles){
-      const popup = `<strong>${b.name || 'Unnamed Bar'}</strong><br>${[b.address, b.city, b.state, b.zip].filter(Boolean).join(', ')}${b.url ? `<br><a href="${b.url}" target="_blank" rel="noopener">Website</a>`:''}${b.notes?`<br><em>${b.notes}</em>`:''}`;
-      L.marker([lat, lon], { icon: CalIcon }).addTo(markers).bindPopup(popup);
-    }
+    if(d > radiusMiles) return;
+
+    const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
+    const url  = (b.url && b.url.startsWith('http')) ? b.url : null;
+
+    const popup = `
+      <strong>${b.name || 'Unnamed Bar'}</strong><br>
+      ${addr}
+      ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Website</a>` : ''}
+      ${b.promo   ? `<br><em>${b.promo}</em>` : ''}
+      ${b.details ? `<br><em>${b.details}</em>` : ''}
+      ${b.tvs     ? `<br><em>${b.tvs}</em>` : ''}
+      ${b.affiliation ? `<br><small>${b.affiliation}</small>` : ''}
+    `;
+    L.marker([lat, lon], { icon: CalIcon }).addTo(markers).bindPopup(popup);
   });
+
+  fitToMarkers();
 }
 
+/* ---------- Main ---------- */
 async function main(){
   document.getElementById('status').textContent = 'Loading bars…';
   try {
     bars = await loadCSV();
     document.getElementById('status').textContent = `Loaded ${bars.length} bars`;
 
-    // Plot all bars on load (but no "You")
+    // Plot all bars on load (no origin marker)
     const origin = { lat: 37.8715, lon: -122.2730 };
     const radius = 500;
     renderMarkers(origin, radius, false);
@@ -156,7 +178,6 @@ async function main(){
     document.getElementById('status').textContent = 'Failed to load data';
   }
 }
-
 
 document.getElementById('searchBtn').addEventListener('click', async ()=>{
   const q = document.getElementById('address').value.trim();
@@ -175,3 +196,17 @@ document.getElementById('searchBtn').addEventListener('click', async ()=>{
 });
 
 main();
+// About modal wiring
+const aboutBtn = document.getElementById('aboutBtn');
+const aboutModal = document.getElementById('aboutModal');
+const aboutClose = document.getElementById('aboutClose');
+
+if (aboutBtn && aboutModal && aboutClose) {
+  const open = () => aboutModal.setAttribute('aria-hidden','false');
+  const close = () => aboutModal.setAttribute('aria-hidden','true');
+  aboutBtn.addEventListener('click', open);
+  aboutClose.addEventListener('click', close);
+  aboutModal.addEventListener('click', (e)=> { if (e.target === aboutModal) close(); });
+  document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
+}
+

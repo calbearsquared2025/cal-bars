@@ -26,9 +26,10 @@
   <header class="header">
     <img src="assets/bear_paw.svg" alt="Bear paw" width="28" height="28" />
     <div>
-      <div class="title">Calgorithm — Cal Watch Bars Map</div>
-      <div class="tagline">Fan-run, not affiliated with UC Berkeley</div>
+      <div class="title">California Golden Bars — The Unoffical List of Cal Bars Populated by You!</div>
+      <div class="tagline"> <a href='https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform' style="color:inherit">Submit a bar here!</a>&nbsp;&nbspQuestions/Corrections?: <a href='mailto:calbearsquared2025@gmail.com' style="color:inherit">Contact us!</a><br><i>Note: Unofficial, fan-run project. Not affiliated with UC Berkeley, Cal Athletics, or the Cal Alumni Association. Data is crowd-sourced and unverified.</div></i>
     </div>
+<button id="aboutBtn" class="linklike">About</button>
   </header>
 
   <section id="controls" class="search-panel" role="search">
@@ -52,7 +53,7 @@
   <footer>
     <small>
       Not an official UC Berkeley site. Data may be inaccurate. Map © OpenStreetMap contributors.
-      <a href="#" id="dataSourceLink" rel="noopener">Data source</a> ·
+<a href="#" id="dataSourceLink" target="_blank" rel="noopener">Data source</a> · 
       <a id="submitLink" href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit a bar</a>
     </small>
   </footer>
@@ -61,5 +62,19 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
   <script src="js/app.js" defer></script>
+<div id="aboutModal" class="modal" aria-hidden="true">
+  <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <button class="modal__close" id="aboutClose" aria-label="Close">×</button>
+    <h2 id="aboutTitle">About</h2>
+    <p>
+      I first had the idea for this project when wandering around Pismo Beach trying to find a bar to
+      watch the Cal–SMU game! This is meant to be a crowdsourced list of Cal Bars far and wide so you
+      can always cheer on the Golden Bears with friends wherever you are. Please contact me with any
+      questions, and Go Bears!
+    </p>
+    <p><small>Unofficial fan project. Not affiliated with UC Berkeley, Cal Athletics, or the Cal Alumni Association.</small></p>
+  </div>
+</div>
+
 </body>
 </html>

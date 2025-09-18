@@ -43,6 +43,14 @@ header.header .tagline {
   opacity: .9;
   color: #fff;          /* white for secondary tagline text */
 }
+/*About addition*/
+.linklike { background:none;border:none;color:#FDB515;cursor:pointer;padding:0;margin-left:12px;font-weight:600 }
+.linklike:hover { text-decoration:underline }
+
+.modal { position:fixed; inset:0; display:none; background:rgba(0,0,0,.4); z-index:1000 }
+.modal[aria-hidden="false"]{ display:block }
+.modal__dialog { background:#fff; color:#111; max-width:600px; margin:10vh auto; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.2) }
+.modal__close { position:absolute; right:16px; top:10px; background:none; border:none; font-size:24px; cursor:pointer; color:#111 }
 
 
 /* Controls */
