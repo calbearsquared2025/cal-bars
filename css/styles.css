@@ -1,108 +1,113 @@
-/* Reset + base */
-* { box-sizing: border-box; }
-html, body {
-  margin: 0;
-  height: 100%;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-  background: #fafafa;
-  color: #111;
+/* === Cal Bars – theme === */
+:root{
+  --cal-blue:#002676;
+  --cal-blue-dk:#001b58;
+  --cal-gold:#FDB515;
+  --ink:#0b1220;
+  --ink-2:#334155;
+  --bg:#f7f8fb;
+  --card:#ffffff;
+  --line:#e5e7eb;
+  --line-2:#cbd5e1;
 }
 
-/* Header */
-header {
-  padding: 12px 16px;
-  background: #003262; /* Berkeley Blue */
-  color: #fff;
+/* Reset-ish */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);
+  background:var(--bg);
 }
-header h1 {
-  margin: 0;
-  font-size: 1.4rem;
+
+/* Header: Blue bar with gold text */
+header.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #002676;   /* Berkeley Blue */
+  color: #FDB515;        /* Cal Gold text */
+  border-bottom: 2px solid #FDB515;
 }
-header p {
-  margin: 4px 0 0 0;
+header.header img { display: block; }
+header.header .title {
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  color: #FDB515;       /* make sure title is gold */
+}
+header.header .tagline {
+  font-size: .9rem;
   opacity: .9;
+  color: #fff;          /* white for secondary tagline text */
 }
+
 
 /* Controls */
-#controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 8px 16px;
-  background: #e6eef6;
-  border-bottom: 1px solid #cbd5e1;
-  flex-wrap: wrap;
+#controls{
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  padding:10px 16px;
+  background:#eef3fb;               /* soft blue-gray */
+  border-bottom:1px solid var(--line-2);
 }
-#controls input[type=text] {
-  flex: 1;
-  min-width: 240px;
-  padding: 8px;
+#controls input[type="text"]{
+  flex:1; min-width:260px; padding:10px 12px;
+  border:1px solid var(--line-2); border-radius:8px; background:#fff;
 }
-#controls button {
-  padding: 8px 12px;
-  cursor: pointer;
+#controls input[type="number"]{
+  width:70px; padding:8px 8px; border:1px solid var(--line-2); border-radius:8px;
 }
-#status {
-  margin-left: auto;
-  font-size: .9rem;
-  color: #334155;
+#controls button{
+  padding:10px 14px; border:none; border-radius:10px; cursor:pointer;
+  background:var(--cal-blue); color:#fff; font-weight:600;
 }
+#controls button:hover{ background:var(--cal-blue-dk) }
+#status{ margin-left:auto; font-size:.9rem; color:var(--ink-2) }
 
 /* Layout */
-main {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 0;
-  min-height: calc(100vh - 160px); /* leave room for header/controls/footer */
+main{
+  display:grid; grid-template-columns:2fr 1fr; gap:0;
+  height:calc(100vh - 160px);
 }
-#map {
-  height: 100%;
-  min-height: 420px; /* ensures map always visible */
-  width: 100%;
+#map{ height:100%; width:100%; }
+#list{
+  background:var(--card); border-left:1px solid var(--line);
+  overflow:auto; padding:12px 14px;
 }
-#list {
-  border-left: 1px solid #ddd;
-  background: #fff;
-  overflow: auto;
-  padding: 8px 12px;
+#list h2{ margin:8px 0 10px; color:var(--cal-blue); }
+
+/* Results list */
+#results{ list-style:decimal; padding-left:20px; margin:0; }
+#results li{
+  margin:10px 0; padding:10px 12px; background:#fff;
+  border:1px solid var(--line); border-radius:10px;
 }
-#list h2 {
-  margin: 8px 0 8px;
-}
-#results {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-#results li {
-  margin: 8px 0;
-  padding: 8px;
-  border: 1px solid #eee;
-  border-radius: 6px;
-}
-#results a {
-  color: #0b5cab;
-  text-decoration: none;
-}
-#results a:hover {
-  text-decoration: underline;
-}
+#results li:hover{ box-shadow:0 1px 0 rgba(0,0,0,.03) }
+#results a{ color:var(--cal-blue); text-decoration:none; font-weight:600 }
+#results a:hover{ color:var(--cal-gold); text-decoration:underline }
+#results em{ color:var(--ink-2) }
+#results small{ color:var(--ink-2) }
 
 /* Footer */
-footer {
-  padding: 10px 16px;
-  border-top: 1px solid #eee;
-  background: #f8fafc;
+footer{
+  padding:12px 16px; background:#f8fafc; border-top:1px solid var(--line);
+  font-size:.9rem;
+}
+footer a{ color:var(--cal-blue); }
+footer a:hover{ color:var(--cal-gold); }
+
+/* Leaflet default control tweaks to match theme */
+.leaflet-control-layers{
+  border:1px solid var(--line); border-radius:10px; background:#fff;
+}
+.leaflet-control-attribution{
+  background:#fff; border-top:1px solid var(--line); color:#555;
 }
 
 /* Responsive */
-@media (max-width: 900px) {
-  main {
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
-  }
-  #list {
-    border-left: none;
-    border-top: 1px solid #ddd;
-  }
+@media (max-width:900px){
+  main{ grid-template-columns:1fr; grid-template-rows:1fr 1fr }
+  #list{ border-left:none; border-top:1px solid var(--line) }
 }

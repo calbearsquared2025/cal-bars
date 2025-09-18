@@ -1,46 +1,34 @@
 // Simple static app: loads a CSV of bars, geocodes user input, shows nearest.
-// Swap CSV_URL to your published Google Sheets CSV when ready.
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv';
 const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8';
 const MAX_RESULTS = 25;
 
-// Define base layers (Cal-friendly options)
+/* ---------- Base layers ---------- */
 const baseLayers = {
-  "Default (OSM)": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors'
+  "Detailed (OSM)": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'
   }),
-  "Positron (Light)": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 19,
-    attribution: '&copy; OSM &copy; CARTO'
+  "Light (Positron)": L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OSM &copy; CARTO'
   }),
   "Dark (Carto)": L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 19,
-    attribution: '&copy; OSM &copy; CARTO'
+    subdomains: 'abcd', maxZoom: 19, attribution: '&copy; OSM &copy; CARTO'
   }),
   "Satellite (Esri)": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    maxZoom: 19,
-    attribution: 'Tiles © Esri'
+    maxZoom: 19, attribution: 'Tiles © Esri'
   })
 };
 
+// OPTIONAL overlay tint (safe to leave off)
+const overlays = {}; // keep empty unless you add overlays later
 
-// Init map with Positron
+/* ---------- Map init ---------- */
 const map = L.map('map', {
   center: [37.8715, -122.2730],
   zoom: 11,
-  layers: [baseLayers["Positron (Light)"]]  // start on Positron
+  layers: [baseLayers["Light (Positron)"]]
 });
-
-// Layer switcher (bases + overlays)
 L.control.layers(baseLayers, overlays, { collapsed: false }).addTo(map);
-
-
-// Add control for switching
-L.control.layers(baseLayers).addTo(map);
-
 
 document.getElementById('submitLink').href = SUBMIT_FORM_URL;
 document.getElementById('dataSourceLink').href = CSV_URL;
@@ -48,9 +36,7 @@ document.getElementById('dataSourceLink').href = CSV_URL;
 let bars = [];
 let markers = L.layerGroup().addTo(map);
 
-// ---------- Custom Cal Icons ----------
-
-// Berkeley Blue marker with Cal Gold dot
+/* ---------- Custom Cal Icons ---------- */
 const CalIcon = L.icon({
   iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
@@ -69,7 +55,6 @@ const CalIcon = L.icon({
   popupAnchor: [0, -34],
 });
 
-// Gold circle for "You" (search location)
 const YouIcon = L.divIcon({
   className: '',
   html: '<div style="background:#FDB515;border:2px solid #002676;width:16px;height:16px;border-radius:50%;"></div>',
@@ -77,10 +62,10 @@ const YouIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
-// ---------- Utils ----------
+/* ---------- Utils ---------- */
 function haversine(lat1, lon1, lat2, lon2){
   const toRad = d=> d*Math.PI/180;
-  const R = 3958.8; // miles
+  const R = 3958.8;
   const dLat = toRad(lat2-lat1);
   const dLon = toRad(lon2-lon1);
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
