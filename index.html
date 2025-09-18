@@ -18,18 +18,39 @@
 
   <!-- Leaflet CSS (no integrity/crossorigin to avoid blocking) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<!-- in <head>, before styles.css -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
 
   <!-- Site CSS -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header class="header">
-    <img src="assets/bear_paw.svg" alt="Bear paw" width="28" height="28" />
-    <div>
-      <div class="title">California Golden Bars — The Unoffical List of Cal Bars Populated by You!</div>
-      <div class="tagline"> <a href='https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform' style="color:inherit">Submit a bar here!</a>&nbsp;&nbspQuestions/Corrections?: <a href='mailto:calbearsquared2025@gmail.com' style="color:inherit">Contact us!</a><br><i>Note: Unofficial, fan-run project. Not affiliated with UC Berkeley, Cal Athletics, or the Cal Alumni Association. Data is crowd-sourced and unverified.</div></i>
+<header class="header">
+  <img src="assets/bear_paw.svg" alt="Bear paw" width="36" height="36" />
+  <div class="header-stack">
+    <div class="title">California Golden Bars — The Unofficial List of Cal Bars Populated by You!</div>
+
+    <div class="tagline">
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform"
+         class="tagline-link">Submit a bar here!</a>
     </div>
-  </header>
+
+    <div class="meta">
+      Questions/Corrections/Bug Reports/Removals?:
+      <a href="mailto:calbearsquared2025@gmail.com">Email</a> |
+      <a href="https://x.com/calbearsquared">Twitter</a>
+    </div>
+
+    <div class="disclaimer">
+      <em>Unofficial, fan-run project. Not affiliated with UC Berkeley, Cal Athletics, or any listed bars.
+      Data is crowd-sourced and unverified.</em>
+    </div>
+  </div>
+</header>
+
 
   <section id="controls" class="search-panel" role="search">
     <input type="text" id="address" placeholder="Enter your address or city (e.g., Oakland, CA)" />
@@ -51,9 +72,9 @@
 
   <footer>
     <small>
-      Not an official UC Berkeley site. Data may be inaccurate. Map © OpenStreetMap contributors.
+      Website by<a href="https://x.com/calbearsquared">CalBearSquared</a> Share with friends!  <a id="submitLink" href="bit.ly/calbars" target="_blank" rel="noopener">bit.ly/calbars</a> 
 <a href="#" id="dataSourceLink" target="_blank" rel="noopener">Data source</a> · 
-      <a id="submitLink" href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit a bar</a>
+      <a id="submitLink" href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit a bar</a> ·
 <a href="javascript:void(0)" id="aboutBtn">About this project</a>
     </small>
   </footer>

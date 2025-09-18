@@ -113,10 +113,10 @@ function renderList(origin, radiusMiles){
     li.innerHTML = `
       <strong>${b.name || 'Unnamed Bar'}</strong> — ${miles}<br>
       <span>${addr}</span><br>
-      ${url ? `<a href="${url}" target="_blank" rel="noopener">Website</a>` : ''}
+      ${url ? `<a href="${url}" target="_blank" rel="noopener">Google Maps</a>` : ''}
       ${b.promo   ? `<div><em>${b.promo}</em></div>` : ''}
-      ${b.details ? `<div><em>${b.details}</em></div>` : ''}
-      ${b.tvs     ? `<div><em>${b.tvs}</em></div>` : ''}
+      ${b.details ? `<div>${b.details}</div>` : ''}
+      ${b.tvs     ? `<div>${b.tvs}</div>` : ''}
       ${b.affiliation ? `<div><small>${b.affiliation}</small></div>` : ''}
       ${b.submitted_as ? `<div><small>Submitted as: ${b.submitted_as}</small></div>` : ''}
     `;
