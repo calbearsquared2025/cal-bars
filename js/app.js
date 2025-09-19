@@ -1,58 +1,27 @@
-// ===== Cal Bars Map — frontend (uses promo, details, tvs) =====
+// Cal Bars Map — MapLibre GL JS + MapTiler (Basic v2 Light)
+// Replace the previous style with Basic v2 Light.
+
+// ===== Config =====
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv';
 const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8';
 const MAX_RESULTS = 25;
 
-// Base layer (single provider)
-const baseLayer = L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  {
-    subdomains: 'abcd',
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-  }
-);
+// MapTiler (vector)
+const ORIGIN = location.hostname;
+const MAPTILER_KEY = (
+  ORIGIN === 'calbearsquared2025.github.io'
+) ? 'jNqIsIVa4dP9qv7vQ8fy' // PROD
+  : 'jNqIsIVa4dP9qv7vQ8fy'; // DEV (replace with localhost key if needed)
 
-// Map init
-const map = L.map('map', {
-  center: [37.8715, -122.2730],
-  zoom: 11,
-  layers: [baseLayer]
-});
+// Switch to Basic v2 Light style
+const MAPTILER_STYLE = `https://api.maptiler.com/maps/basic-v2-light/style.json?key=${MAPTILER_KEY}`;
 
-document.getElementById('submitLink').href = SUBMIT_FORM_URL;
-document.getElementById('dataSourceLink').href = CSV_URL;
-
+// ===== Globals =====
+let map;
 let bars = [];
-let markers = L.layerGroup().addTo(map);
+let markers = [];
 
-/* ---------- Cal-themed icons ---------- */
-const CalIcon = L.icon({
-  iconUrl: 'data:image/svg+xml;utf8,' + encodeURIComponent(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
-      <defs>
-        <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stop-color="#002676"/>
-          <stop offset="100%" stop-color="#001b58"/>
-        </linearGradient>
-      </defs>
-      <path d="M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z" fill="url(#g)"/>
-      <circle cx="14" cy="14" r="6" fill="#FDB515"/>
-    </svg>
-  `),
-  iconSize: [28, 42],
-  iconAnchor: [14, 40],
-  popupAnchor: [0, -34],
-});
-
-const YouIcon = L.divIcon({
-  className: '',
-  html: '<div style="background:#FDB515;border:2px solid #002676;width:16px;height:16px;border-radius:50%;"></div>',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
-
-/* ---------- Utils ---------- */
+// ===== Utilities =====
 function haversine(lat1, lon1, lat2, lon2){
   const toRad = d=> d*Math.PI/180;
   const R = 3958.8;
@@ -84,15 +53,75 @@ function loadCSV(){
   });
 }
 
-function fitToMarkers(){
-  const bounds = L.latLngBounds([]);
-  markers.eachLayer(l => {
-    if (l.getLatLng) bounds.extend(l.getLatLng());
-  });
-  if (bounds.isValid()) map.fitBounds(bounds.pad(0.15));
+function setStatus(msg){
+  const el = document.getElementById('status');
+  if (el) el.textContent = msg;
 }
 
-/* ---------- Rendering ---------- */
+// ===== Custom Pins =====
+const CAL_PIN_SVG_RAW = `
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
+  <defs>
+    <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#002676"/>
+      <stop offset="100%" stop-color="#001b58"/>
+    </linearGradient>
+  </defs>
+  <path d="M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z" fill="url(#g)"/>
+  <circle cx="14" cy="14" r="6" fill="#FDB515"/>
+</svg>`;
+
+function makeCalPinEl(){
+  const el = document.createElement('div');
+  el.className = 'cal-pin';
+  el.innerHTML = CAL_PIN_SVG_RAW;
+  return el;
+}
+
+function makeYouDotEl(){
+  const el = document.createElement('div');
+  el.style.width = '18px';
+  el.style.height = '18px';
+  el.style.background = '#FDB515';
+  el.style.border = '2px solid #002676';
+  el.style.borderRadius = '50%';
+  return el;
+}
+
+// ===== Map setup =====
+function initMap(){
+  map = new maplibregl.Map({
+    container: 'map',
+    style: MAPTILER_STYLE,
+    center: [-122.2730, 37.8715],
+    zoom: 11
+  });
+  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+}
+
+function clearMarkers(){
+  markers.forEach(m=> m.remove());
+  markers = [];
+}
+
+function addMarker(lon, lat, popupHtml, isOrigin = false){
+  const el = isOrigin ? makeYouDotEl() : makeCalPinEl();
+  const marker = new maplibregl.Marker({ element: el, anchor: isOrigin ? 'center' : 'bottom' })
+    .setLngLat([lon, lat])
+    .setPopup(new maplibregl.Popup({ offset: isOrigin ? 12 : 24 }).setHTML(popupHtml))
+    .addTo(map);
+  markers.push(marker);
+  return marker;
+}
+
+function fitToMarkers(){
+  if (!markers.length) return;
+  const bounds = new maplibregl.LngLatBounds();
+  markers.forEach(m=> bounds.extend(m.getLngLat()));
+  map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 0 });
+}
+
+// ===== Rendering =====
 function renderList(origin, radiusMiles){
   const withDist = bars.map(b=>{
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
@@ -103,6 +132,7 @@ function renderList(origin, radiusMiles){
     .slice(0, MAX_RESULTS);
 
   const ol = document.getElementById('results');
+  if (!ol) return;
   ol.innerHTML = '';
   withDist.forEach(b=>{
     const miles = Number.isFinite(b.distance) ? b.distance.toFixed(1) + ' mi' : 'n/a';
@@ -118,23 +148,21 @@ function renderList(origin, radiusMiles){
       ${b.details ? `<div>${b.details}</div>` : ''}
       ${b.tvs     ? `<div>${b.tvs}</div>` : ''}
       ${b.affiliation ? `<div><small>${b.affiliation}</small></div>` : ''}
-      ${b.submitted_as ? `<div><small>Submitted as: ${b.submitted_as}</small></div>` : ''}
+      ${b.submitted_as ? `<div><small>${b.submitted_as}</small></div>` : ''}
     `;
     li.style.cursor = 'pointer';
     li.addEventListener('click', ()=>{
       const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-      if (isFinite(lat) && isFinite(lon)) map.setView([lat, lon], 14);
+      if (isFinite(lat) && isFinite(lon)) map.jumpTo({ center: [lon, lat], zoom: 14 });
     });
     ol.appendChild(li);
   });
 }
 
 function renderMarkers(origin, radiusMiles, showOrigin = true){
-  markers.clearLayers();
+  clearMarkers();
 
-  if (showOrigin) {
-    L.marker([origin.lat, origin.lon], { icon: YouIcon }).addTo(markers).bindPopup('You');
-  }
+  if (showOrigin) addMarker(origin.lon, origin.lat, 'You', true);
 
   bars.forEach(b=>{
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
@@ -154,59 +182,70 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
       ${b.tvs     ? `<br>${b.tvs}` : ''}
       ${b.affiliation ? `<br><small>${b.affiliation}</small>` : ''}
     `;
-    L.marker([lat, lon], { icon: CalIcon }).addTo(markers).bindPopup(popup);
+    addMarker(lon, lat, popup);
   });
 
   fitToMarkers();
 }
 
-/* ---------- Main ---------- */
+// ===== Main =====
 async function main(){
-  document.getElementById('status').textContent = 'Loading bars…';
+  const submitLink = document.getElementById('submitLink');
+  const dataLink = document.getElementById('dataSourceLink');
+  if (submitLink) submitLink.href = SUBMIT_FORM_URL;
+  if (dataLink) dataLink.href = CSV_URL;
+
+  setStatus('Loading bars…');
   try {
     bars = await loadCSV();
-    document.getElementById('status').textContent = `Loaded ${bars.length} bars`;
+    setStatus(`Loaded ${bars.length} bars`);
 
-    // Plot all bars on load (no origin marker)
     const origin = { lat: 37.8715, lon: -122.2730 };
     const radius = 500;
     renderMarkers(origin, radius, false);
     renderList(origin, radius);
-
-  } catch(e) {
+  } catch(e){
     console.error(e);
-    document.getElementById('status').textContent = 'Failed to load data';
+    setStatus('Failed to load data');
   }
 }
 
-document.getElementById('searchBtn').addEventListener('click', async ()=>{
-  const q = document.getElementById('address').value.trim();
-  const radius = parseFloat(document.getElementById('radius').value) || 50;
-  if(!q) return;
-  document.getElementById('status').textContent = 'Geocoding…';
-  try{
-    const loc = await geocode(q);
-    document.getElementById('status').textContent = `Center: ${loc.display}`;
-    map.setView([loc.lat, loc.lon], 11);
-    renderMarkers(loc, radius);
-    renderList(loc, radius);
-  }catch(e){
-    document.getElementById('status').textContent = 'Address not found';
-  }
-});
+function wireSearch(){
+  const btn = document.getElementById('searchBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async ()=>{
+    const q = (document.getElementById('address')?.value || '').trim();
+    const radius = parseFloat(document.getElementById('radius')?.value) || 50;
+    if(!q) return;
+    setStatus('Geocoding…');
+    try{
+      const loc = await geocode(q);
+      setStatus(`Center: ${loc.display}`);
+      map.jumpTo({ center: [loc.lon, loc.lat], zoom: 11 });
+      renderMarkers(loc, radius);
+      renderList(loc, radius);
+    }catch(e){
+      setStatus('Address not found');
+    }
+  });
+}
 
+function wireModal(){
+  const aboutBtn = document.getElementById('aboutBtn');
+  const aboutModal = document.getElementById('aboutModal');
+  const aboutClose = document.getElementById('aboutClose');
+  if (aboutBtn && aboutModal && aboutClose) {
+    const open = () => aboutModal.setAttribute('aria-hidden','false');
+    const close = () => aboutModal.setAttribute('aria-hidden','true');
+    aboutBtn.addEventListener('click', open);
+    aboutClose.addEventListener('click', close);
+    aboutModal.addEventListener('click', (e)=> { if (e.target === aboutModal) close(); });
+    document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
+  }
+}
+
+// Boot
+initMap();
+wireSearch();
+wireModal();
 main();
-// About modal wiring
-const aboutBtn = document.getElementById('aboutBtn');
-const aboutModal = document.getElementById('aboutModal');
-const aboutClose = document.getElementById('aboutClose');
-
-if (aboutBtn && aboutModal && aboutClose) {
-  const open = () => aboutModal.setAttribute('aria-hidden','false');
-  const close = () => aboutModal.setAttribute('aria-hidden','true');
-  aboutBtn.addEventListener('click', open);
-  aboutClose.addEventListener('click', close);
-  aboutModal.addEventListener('click', (e)=> { if (e.target === aboutModal) close(); });
-  document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
-}
-

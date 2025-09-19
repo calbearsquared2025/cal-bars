@@ -1,29 +1,25 @@
 <!doctype html>
 <html lang="en">
 <head>
- <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-CZV3JSBNJK"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-CZV3JSBNJK');
-</script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CZV3JSBNJK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-CZV3JSBNJK');
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cal Bars Map (Unofficial)</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
 
-  <!-- Leaflet CSS (no integrity/crossorigin to avoid blocking) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<!-- in <head>, before styles.css -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
-
+  <!-- MapLibre GL (vector) -->
+  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
+  
   <!-- Site CSS -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -32,18 +28,14 @@
   <img src="assets/bear_paw.svg" alt="Bear paw" width="36" height="36" />
   <div class="header-stack">
     <div class="title">California Golden Bars — The Unofficial List of Cal Bars Populated by You!</div>
-
     <div class="tagline">
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform"
-         class="tagline-link">Submit a bar here!</a>
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" class="tagline-link">Submit a bar here!</a>
     </div>
-
     <div class="meta">
-      Questions/Corrections/Bug Reports/Removals?:
+      Corrections?:
       <a href="mailto:calbearsquared2025@gmail.com">Email</a> |
       <a href="https://x.com/calbearsquared">Twitter</a>
     </div>
-
     <div class="disclaimer">
       <em>Unofficial, fan-run project. Not affiliated with UC Berkeley, Cal Athletics, or any listed bars.
       Data is crowd-sourced and unverified.</em>
@@ -51,38 +43,34 @@
   </div>
 </header>
 
+<section id="controls" class="search-panel" role="search">
+  <input type="text" id="address" placeholder="Enter your address or city (e.g., Oakland, CA)" />
+  <button id="searchBtn">Search</button>
+  <label title="Limit results by distance">
+    <input type="number" id="radius" inputmode="numeric" pattern="[0-9]*" value="50" min="1" max="1000"> miles
+  </label>
+  <span id="status" aria-live="polite"></span>
+</section>
 
-  <section id="controls" class="search-panel" role="search">
-    <input type="text" id="address" placeholder="Enter your address or city (e.g., Oakland, CA)" />
-    <button id="searchBtn">Search</button>
-    <label title="Limit results by distance">
-      <input type="number" id="radius" inputmode="numeric" pattern="[0-9]*" value="50" min="1" max="1000">
-      miles
-    </label>
-    <span id="status" aria-live="polite"></span>
-  </section>
+<main>
+  <div id="map" role="region" aria-label="Map of nearby bars"></div>
+  <aside id="list" aria-label="Nearest bars">
+    <h2>Nearest Bars</h2>
+    <ol id="results"></ol>
+  </aside>
+</main>
 
-  <main>
-    <div id="map" role="region" aria-label="Map of nearby bars"></div>
-    <aside id="list" aria-label="Nearest bars">
-      <h2>Nearest Bars</h2>
-      <ol id="results"></ol>
-    </aside>
-  </main>
+<footer>
+  <small>
+    Website by <a href="https://x.com/calbearsquared">CalBearSquared</a> · Share with friends!
+    <a id="submitLink" href="bit.ly/calbars" target="_blank" rel="noopener">bit.ly/calbars</a>
+    · <a href="#" id="dataSourceLink" target="_blank" rel="noopener">Data source</a>
+    · <a id="submitLink" href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit a bar</a>
+    · <a href="javascript:void(0)" id="aboutBtn">About this project</a>
+  </small>
+</footer>
 
-  <footer>
-    <small>
-      Website by<a href="https://x.com/calbearsquared">CalBearSquared</a> Share with friends!  <a id="submitLink" href="bit.ly/calbars" target="_blank" rel="noopener">bit.ly/calbars</a> 
-<a href="#" id="dataSourceLink" target="_blank" rel="noopener">Data source</a> · 
-      <a id="submitLink" href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit a bar</a> ·
-<a href="javascript:void(0)" id="aboutBtn">About this project</a>
-    </small>
-  </footer>
-
-  <!-- Scripts -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-  <script src="js/app.js" defer></script>
+<!-- About modal -->
 <div id="aboutModal" class="modal" aria-hidden="true">
   <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
     <button class="modal__close" id="aboutClose" aria-label="Close">×</button>
@@ -90,12 +78,15 @@
     <p>
       I first had the idea for this project when I was wandering around Pismo Beach trying to find a bar to
       watch the Cal–SMU game and realized there was no real resource. This is meant to be a crowdsourced list of Cal Bars far and wide so you
-      can always cheer on the Golden Bears with friends wherever you are. Please contact me with any
-      questions, and Go Bears!
+      can always cheer on the Golden Bears with friends wherever you are. Please contact me with any questions, and Go Bears!
     </p>
     <p><small>Unofficial fan project. Not affiliated with UC Berkeley, Cal Athletics, or the Cal Alumni Association.</small></p>
   </div>
 </div>
 
+<!-- Scripts -->
+<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+<script src="js/app.js" defer></script>
 </body>
 </html>
