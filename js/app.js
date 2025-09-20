@@ -176,7 +176,7 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
     const popup = `
       <strong>${b.name || 'Unnamed Bar'}</strong><br>
       ${addr}
-      ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Website</a>` : ''}
+      ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Google Maps</a>` : ''}
       ${b.promo   ? `<br><br><em>${b.promo}</em>` : ''}
       ${b.details ? `<br>${b.details}` : ''}
       ${b.tvs     ? `<br>${b.tvs}` : ''}
