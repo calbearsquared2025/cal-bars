@@ -185,3 +185,56 @@ footer a, footer button.footer-link {
 
 /* ========= Focus styles ========= */
 a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset: 2px; }
+
+/* === iOS safe-area: make header blue behind the status bar === */
+.header {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+}
+@supports (padding: max(0px)) {
+  .header {
+    padding-top: max(env(safe-area-inset-top, 0px), 10px);
+  }
+}
+
+/* === Desktop (unchanged) === */
+@media (min-width: 901px) {
+  main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    min-height: 0;
+  }
+  .mobile-only { display: none; }
+}
+
+/* === Mobile: flex column so “hide map” never smooshes the list === */
+@media (max-width: 900px) {
+  main {
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* allow children to shrink */
+  }
+
+  /* Map gets ~56% of the small viewport; avoids iOS URL bar jumps */
+  #map {
+    flex: 0 0 56svh;
+    min-height: 220px;
+  }
+
+  /* When hidden, collapse the map and let the list fill */
+  body.map-hidden #map {
+    flex-basis: 0;
+    height: 0;
+    min-height: 0;
+  }
+
+  /* List always fills the rest and can scroll */
+  #list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    border-left: 0;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .mobile-only { display: inline-block; }
+}
