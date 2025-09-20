@@ -188,3 +188,12 @@ a:focus, button:focus, input:focus{ outline:2px solid var(--cal-gold); outline-o
   .header .title{ font-size:1.25rem; }
   .search-panel button{ padding:9px 12px; }
 }
+/* Show the toggle only on mobile */
+.mobile-only { display: none; }
+@media (max-width: 900px){
+  .mobile-only { display: inline-flex; }
+}
+
+/* Collapsed map state */
+main.map-collapsed { grid-template-rows: 0 auto; }
+#map.is-hidden { display: none; }
