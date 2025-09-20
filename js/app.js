@@ -244,43 +244,27 @@ function wireModal(){
   }
 }
 // Map collapse toggle (mobile)
-(function(){
-  const btn  = document.getElementById('toggleMapBtn');
-  const map  = document.getElementById('map');
-  const main = document.querySelector('main');
-  if (!btn || !map || !main) return;
+function wireMapToggle(){
+  const btn = document.getElementById('toggleMapBtn');
+  if (!btn) return;
 
-  function setRowsForCurrentBreakpoint(){
-    const mobile = window.matchMedia('(max-width: 900px)').matches;
-    if (!mobile && map.classList.contains('is-hidden')) {
-      // If user collapsed on mobile, restore when back to desktop
-      map.classList.remove('is-hidden');
-      main.classList.remove('map-collapsed');
-      btn.textContent = 'Hide map';
-    }
-    if (mobile && !map.classList.contains('is-hidden')) {
-      // ensure default mobile rows when visible
-      main.style.gridTemplateRows = '56vh auto';
-    } else if (mobile && map.classList.contains('is-hidden')) {
-      main.style.gridTemplateRows = '0 auto';
-    } else {
-      main.style.gridTemplateRows = ''; // desktop uses CSS grid definition
-    }
-  }
+  const update = () => {
+    const hidden = document.body.classList.contains('map-hidden');
+    btn.textContent = hidden ? 'Show map' : 'Hide map';
+  };
 
   btn.addEventListener('click', () => {
-    const hidden = map.classList.toggle('is-hidden');
-    main.classList.toggle('map-collapsed', hidden);
-    btn.textContent = hidden ? 'Show map' : 'Hide map';
-    setRowsForCurrentBreakpoint();
+    document.body.classList.toggle('map-hidden');
+    update();
+    if (window.map && typeof map.resize === 'function') map.resize(); // keep tiles crisp
   });
 
-  // keep things sane on orientation/resize
-  window.addEventListener('resize', setRowsForCurrentBreakpoint);
-  setRowsForCurrentBreakpoint();
-})();
+  update();
+}
+
 // Boot
 initMap();
 wireSearch();
 wireModal();
+wireMapToggle();   // <-- ensure this line is present
 main();
