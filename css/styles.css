@@ -2,6 +2,48 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 
+/* ========= Landscape Warning ========= */
+.landscape-warning {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 50, 98, 0.95);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.landscape-warning-content {
+  text-align: center;
+  color: #FDB515;
+  background: rgba(0, 50, 98, 0.9);
+  padding: 30px;
+  border-radius: 12px;
+  border: 2px solid #FDB515;
+  max-width: 300px;
+}
+
+.landscape-warning-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.landscape-warning-text {
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+/* Show landscape warning on mobile landscape */
+@media (max-width: 900px) and (orientation: landscape) {
+  .landscape-warning {
+    display: flex;
+  }
+}
+
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -23,6 +65,21 @@ body {
   background: #003262; /* Berkeley Blue */
   color: #FDB515;      /* Cal Gold accents */
   border-bottom: 1px solid #0b2a55;
+  /* Ensure blue extends behind status bar */
+  position: relative;
+  z-index: 10;
+}
+
+/* Fix iPhone header background - extend blue behind status bar */
+.header::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: #003262;
+  z-index: -1;
 }
 .header-stack { display: flex; flex-direction: column; gap: 2px; }
 
@@ -117,6 +174,8 @@ footer {
   border-top: 1px solid #e5e7eb;
   background: #f8fafc;
   color: #0f172a;
+  /* Add bottom padding for iPhone URL bar */
+  padding-bottom: max(10px, env(safe-area-inset-bottom) + 10px);
 }
 footer small { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 footer a, footer button.footer-link {
@@ -156,7 +215,11 @@ footer a, footer button.footer-link {
   .mobile-only { display: inline-block; }
 
   main { grid-template-columns: 1fr; grid-template-rows: 56vh auto; } /* map height then list */
-  #list { border-left: none; border-top: 1px solid #e5e7eb; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  #list { 
+    border-left: none; 
+    border-top: 1px solid #e5e7eb; 
+    padding-bottom: max(20px, env(safe-area-inset-bottom) + 10px); 
+  }
 
   /* When user hides the map via the toggle */
   main.map-collapsed { grid-template-rows: 0 auto !important; }
@@ -234,6 +297,7 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
     overflow: auto;
     border-left: 0;
     border-top: 1px solid #e5e7eb;
+    padding-bottom: max(20px, env(safe-area-inset-bottom) + 10px);
   }
 
   .mobile-only { display: inline-block; }
