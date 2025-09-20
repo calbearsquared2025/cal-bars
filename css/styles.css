@@ -130,6 +130,24 @@ body {
   cursor: pointer;
 }
 .search-panel button:hover { filter: brightness(0.95); }
+
+/* Find Me button styling */
+#findMeBtn {
+  background: #FDB515;
+  border-color: #FDB515;
+  color: #003262;
+  font-weight: 600;
+}
+#findMeBtn:hover {
+  background: #e6a413;
+  border-color: #e6a413;
+}
+#findMeBtn:disabled {
+  background: #cbd5e1;
+  border-color: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+}
 #status { margin-left: auto; font-size: 0.9rem; color: #334155; }
 
 /* Mobile-only toggle visibility */
@@ -239,6 +257,13 @@ footer a, footer button.footer-link {
   .search-panel button { padding: 10px 14px; }
   .search-panel input[type="number"] { width: 68px; padding: 8px; }
   #status { font-size: .85rem; }
+  
+  /* Find Me button on mobile */
+  #findMeBtn { 
+    font-size: 0.9rem; 
+    padding: 10px 12px;
+    flex-shrink: 0;
+  }
 }
 
 @media (max-width: 360px) {

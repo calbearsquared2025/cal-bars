@@ -41,6 +41,50 @@ async function geocode(q){
   return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), display: data[0].display_name };
 }
 
+// Geolocation function
+function getCurrentLocation(){
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation is not supported by this browser'));
+      return;
+    }
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 300000 // 5 minutes
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        resolve({ 
+          lat, 
+          lon, 
+          display: `Current location (${lat.toFixed(4)}, ${lon.toFixed(4)})` 
+        });
+      },
+      (error) => {
+        let message = 'Location access denied';
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            message = 'Location access denied. Please enable location permissions.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            message = 'Location information unavailable.';
+            break;
+          case error.TIMEOUT:
+            message = 'Location request timed out.';
+            break;
+        }
+        reject(new Error(message));
+      },
+      options
+    );
+  });
+}
+
 function loadCSV(){
   return new Promise((resolve,reject)=>{
     Papa.parse(CSV_URL, {
@@ -230,6 +274,35 @@ function wireSearch(){
   });
 }
 
+function wireFindMe(){
+  const btn = document.getElementById('findMeBtn');
+  if (!btn) return;
+  
+  btn.addEventListener('click', async ()=>{
+    const radius = parseFloat(document.getElementById('radius')?.value) || 50;
+    
+    // Disable button and show loading state
+    btn.disabled = true;
+    btn.textContent = '📍 Finding...';
+    setStatus('Getting your location…');
+    
+    try{
+      const loc = await getCurrentLocation();
+      setStatus(`Found: ${loc.display}`);
+      map.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
+      renderMarkers(loc, radius);
+      renderList(loc, radius);
+    }catch(e){
+      setStatus(e.message);
+      console.error('Geolocation error:', e);
+    }finally{
+      // Re-enable button
+      btn.disabled = false;
+      btn.textContent = '📍 Find Me';
+    }
+  });
+}
+
 function wireModal(){
   const aboutBtn = document.getElementById('aboutBtn');
   const aboutModal = document.getElementById('aboutModal');
@@ -265,6 +338,7 @@ function wireMapToggle(){
 // Boot
 initMap();
 wireSearch();
+wireFindMe();
 wireModal();
 wireMapToggle();   // <-- ensure this line is present
 main();
