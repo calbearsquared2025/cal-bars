@@ -176,7 +176,7 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
     const popup = `
       <strong>${b.name || 'Unnamed Bar'}</strong><br>
       ${addr}
-      ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Website</a>` : ''}
+      ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Google Maps</a>` : ''}
       ${b.promo   ? `<br><br><em>${b.promo}</em>` : ''}
       ${b.details ? `<br>${b.details}` : ''}
       ${b.tvs     ? `<br>${b.tvs}` : ''}
@@ -243,7 +243,42 @@ function wireModal(){
     document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
   }
 }
+// Map collapse toggle (mobile)
+(function(){
+  const btn  = document.getElementById('toggleMapBtn');
+  const map  = document.getElementById('map');
+  const main = document.querySelector('main');
+  if (!btn || !map || !main) return;
 
+  function setRowsForCurrentBreakpoint(){
+    const mobile = window.matchMedia('(max-width: 900px)').matches;
+    if (!mobile && map.classList.contains('is-hidden')) {
+      // If user collapsed on mobile, restore when back to desktop
+      map.classList.remove('is-hidden');
+      main.classList.remove('map-collapsed');
+      btn.textContent = 'Hide map';
+    }
+    if (mobile && !map.classList.contains('is-hidden')) {
+      // ensure default mobile rows when visible
+      main.style.gridTemplateRows = '56vh auto';
+    } else if (mobile && map.classList.contains('is-hidden')) {
+      main.style.gridTemplateRows = '0 auto';
+    } else {
+      main.style.gridTemplateRows = ''; // desktop uses CSS grid definition
+    }
+  }
+
+  btn.addEventListener('click', () => {
+    const hidden = map.classList.toggle('is-hidden');
+    main.classList.toggle('map-collapsed', hidden);
+    btn.textContent = hidden ? 'Show map' : 'Hide map';
+    setRowsForCurrentBreakpoint();
+  });
+
+  // keep things sane on orientation/resize
+  window.addEventListener('resize', setRowsForCurrentBreakpoint);
+  setRowsForCurrentBreakpoint();
+})();
 // Boot
 initMap();
 wireSearch();
