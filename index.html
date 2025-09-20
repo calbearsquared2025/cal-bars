@@ -31,6 +31,7 @@
 
 
   <meta charset="utf-8">
+  <meta name="description" content="Find Cal bars near you! Interactive map of California Golden Bears watch parties and alumni bars across the country. Crowdsourced by fans, for fans.">
   <!-- Single, safe-area viewport for iOS -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#003262">
@@ -44,9 +45,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Preconnect to external resources -->
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://nominatim.openstreetmap.org">
 
   <!-- MapLibre GL -->
-  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet"></noscript>
 
   <!-- Site CSS -->
   <link rel="stylesheet" href="css/styles.css">
