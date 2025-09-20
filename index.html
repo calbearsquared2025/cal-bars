@@ -1,34 +1,37 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
+  <!-- Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CZV3JSBNJK"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-CZV3JSBNJK');
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date()); gtag('config', 'G-CZV3JSBNJK');
   </script>
+
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Single, safe-area viewport for iOS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#003262">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <title>Cal Bars Map (Unofficial)</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 
-  <!-- iOS edit per CGPT -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#003262">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
 
-  <!-- MapLibre GL (vector) -->
+  <!-- MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
-  
+
   <!-- Site CSS -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+
 <header class="header">
   <img src="assets/bear_paw.svg" alt="Bear paw" width="36" height="36" />
   <div class="header-stack">
@@ -38,11 +41,10 @@
       <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" class="tagline-link">Add your bar!</a>
     </div>
     <div class="meta">
-      Corrections?: <a href="mailto:calbearsquared2025@gmail.com">Email</a> | <a href="https://x.com/calbearsquared">Twitter</a>
+      Corrections?: <a href="mailto:calbearsquared2025@gmail.com">Email</a> |
+      <a href="https://x.com/calbearsquared">Twitter</a>
     </div>
-    <div class="disclaimer">
-      <em>Fan-run project. Data crowdsourced and unverified.</em>
-    </div>
+    <div class="disclaimer"><em>Fan-run project. Data crowdsourced and unverified.</em></div>
   </div>
 </header>
 
@@ -51,7 +53,8 @@
   <button id="searchBtn">Search</button>
   <label title="Limit results by distance">
     <input type="number" id="radius" inputmode="numeric" pattern="[0-9]*" value="50" min="1" max="1000"> miles
-  </label> <button id="toggleMapBtn" class="btn mobile-only">Hide map</button>
+  </label>
+  <button id="toggleMapBtn" class="mobile-only">Hide map</button>
   <span id="status" aria-live="polite"></span>
 </section>
 
@@ -68,7 +71,6 @@
     Website: <a href="https://x.com/calbearsquared">CalBearSquared</a> ·
     <a href="#" id="dataSourceLink" target="_blank" rel="noopener">Source</a> ·
     <a href="javascript:void(0)" id="aboutBtn">About</a>
-    <span aria-hidden="true"></span>
   </small>
 </footer>
 
@@ -78,15 +80,15 @@
     <button class="modal__close" id="aboutClose" aria-label="Close">×</button>
     <h2 id="aboutTitle">About</h2>
     <p>
-      This project started after I wandered around Pismo Beach unsuccessfully trying to find a place to
-      watch Cal–SMU fellow Bears. It’s a crowdsourced list of Cal bars so Bears can find fellow fans anywhere.
-  </p>
-  <p>
-    Have a correction or a new bar? <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit it here</a>
-    or <a href="mailto:calbearsquared2025@gmail.com">email me</a>. Go Bears!
-  </p>
-  <p><small>Fan-run and unaffiliated with UC Berkeley, Cal Athletics, or any listed bars. Data is crowdsourced and unverified.
-  </small></p>
+      This project started after I wandered around Pismo Beach trying to find a place to
+      watch the Cal–SMU game with fellow Bears. It’s a crowdsourced list of Cal bars so Bears can find fellow fans anywhere.
+    </p>
+    <p>
+      Have a correction or a new bar?
+      <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit it here</a>
+      or <a href="mailto:calbearsquared2025@gmail.com">email me</a>. Go Bears!
+    </p>
+    <p><small>Fan-run and unaffiliated with UC Berkeley, Cal Athletics, or any listed bars. Data is crowdsourced and unverified.</small></p>
   </div>
 </div>
 
