@@ -341,10 +341,38 @@ function wireMapToggle(){
   update();
 }
 
+// Mobile detection and landscape warning
+function initMobileDetection() {
+  const landscapeWarning = document.getElementById('landscape-warning');
+  if (!landscapeWarning) return;
+
+  function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
+           window.innerWidth <= 768;
+  }
+
+  function checkOrientation() {
+    if (isMobileDevice() && window.innerWidth > window.innerHeight && window.innerWidth <= 900) {
+      landscapeWarning.classList.add('mobile-landscape');
+    } else {
+      landscapeWarning.classList.remove('mobile-landscape');
+    }
+  }
+
+  // Check on load and orientation change
+  checkOrientation();
+  window.addEventListener('orientationchange', () => {
+    setTimeout(checkOrientation, 100); // Small delay to let orientation settle
+  });
+  window.addEventListener('resize', checkOrientation);
+}
+
 // Boot
 initMap();
 wireSearch();
 wireFindMe();
 wireModal();
 wireMapToggle();   // <-- ensure this line is present
+initMobileDetection();
 main();

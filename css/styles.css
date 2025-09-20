@@ -37,11 +37,14 @@ html, body { height: 100%; }
   line-height: 1.4;
 }
 
-/* Show landscape warning on mobile landscape */
-@media (max-width: 900px) and (orientation: landscape) {
-  .landscape-warning {
-    display: flex;
-  }
+/* Hide landscape warning by default */
+.landscape-warning {
+  display: none;
+}
+
+/* Show only on mobile devices in landscape */
+.landscape-warning.mobile-landscape {
+  display: flex;
 }
 
 body {
