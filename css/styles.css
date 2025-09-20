@@ -219,3 +219,60 @@ a:focus, button:focus, input:focus {
   outline: 2px solid #FDB515;
   outline-offset: 2px;
 }
+
+/* ===== Quick mobile polish (safe overrides) ===== */
+@media (max-width: 600px) {
+  /* Header: smaller title + tighter spacing */
+  .header { padding: 8px 14px; }
+  .header img { width: 28px; height: 28px; }
+  .header .title {
+    /* Scales down on small screens but stays readable */
+    font-size: clamp(1.15rem, 3.6vw + 0.6rem, 1.55rem);
+    line-height: 1.22;
+    letter-spacing: .1px;
+  }
+  .header .tagline { margin-top: 0; }
+  .header .tagline-link { font-size: .95rem; }
+  .header .meta { font-size: .85rem; line-height: 1.25; }
+  .header .disclaimer { font-size: .80rem; }
+
+  /* Search: make the address field wide; keep actions close by */
+  .search-panel {
+    gap: 6px;
+    padding: 8px 12px;
+  }
+  .search-panel input[type="text"] {
+    flex: 1 1 100%;
+    min-width: 0;
+    padding: 10px 12px;
+  }
+  .search-panel button {
+    padding: 10px 14px;
+  }
+  .search-panel input[type="number"] {
+    width: 68px;
+    padding: 8px;
+  }
+  #status { font-size: .85rem; }
+
+  /* Map/List layout: side-by-side on desktop, stacked on mobile */
+  main {
+    grid-template-columns: 1fr;     /* stack */
+    grid-template-rows: 55vh auto;  /* map height, then list */
+  }
+  #map { height: 55vh; }
+  #list { border-left: 0; border-top: 1px solid #e5e7eb; }
+
+  /* Results: a little lighter/less dense */
+  #list { font-size: .95rem; }
+  #results li { padding: 8px 10px; }
+  #results li strong { font-weight: 600; font-size: .98rem; }
+}
+
+/* Tiny phones */
+@media (max-width: 360px) {
+  .header .title {
+    font-size: 1.25rem;
+  }
+  .search-panel button { padding: 9px 12px; }
+}
