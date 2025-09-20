@@ -83,12 +83,13 @@
 <section id="controls" class="search-panel" role="search">
   <input type="text" id="address" placeholder="Enter your address or city (e.g., Oakland, CA)" />
   <button id="searchBtn">Search</button>
-  <button id="findMeBtn" title="Use your current location">📍 Find Me</button>
+  <button id="findMeBtn" title="Use your current location">Find Me</button>
   <label title="Limit results by distance">
     <input type="number" id="radius" inputmode="numeric" pattern="[0-9]*" value="50" min="1" max="1000"> miles
   </label>
   <button id="toggleMapBtn" class="mobile-only">Hide map</button>
   <span id="status" aria-live="polite"></span>
+  <span id="barsCount" class="bars-count"></span>
 </section>
 
 <main>

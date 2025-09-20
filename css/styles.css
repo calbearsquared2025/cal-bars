@@ -136,7 +136,7 @@ body {
   background: #FDB515;
   border-color: #FDB515;
   color: #003262;
-  font-weight: 600;
+  font-weight: 400;
 }
 #findMeBtn:hover {
   background: #e6a413;
@@ -149,6 +149,12 @@ body {
   cursor: not-allowed;
 }
 #status { margin-left: auto; font-size: 0.9rem; color: #334155; }
+.bars-count { 
+  font-size: 0.85rem; 
+  color: #64748b; 
+  margin-left: 8px;
+  font-weight: 500;
+}
 
 /* Mobile-only toggle visibility */
 .mobile-only { display: none; }

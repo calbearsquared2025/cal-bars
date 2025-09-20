@@ -102,6 +102,11 @@ function setStatus(msg){
   if (el) el.textContent = msg;
 }
 
+function updateBarsCount(count) {
+  const el = document.getElementById('barsCount');
+  if (el) el.textContent = `${count} bars loaded`;
+}
+
 // ===== Custom Pins =====
 const CAL_PIN_SVG_RAW = `
 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
@@ -243,6 +248,7 @@ async function main(){
   try {
     bars = await loadCSV();
     setStatus(`Loaded ${bars.length} bars`);
+    updateBarsCount(bars.length);
 
     const origin = { lat: 37.8715, lon: -122.2730 };
     const radius = 500;
@@ -283,7 +289,7 @@ function wireFindMe(){
     
     // Disable button and show loading state
     btn.disabled = true;
-    btn.textContent = '📍 Finding...';
+    btn.textContent = 'Finding...';
     setStatus('Getting your location…');
     
     try{
@@ -298,7 +304,7 @@ function wireFindMe(){
     }finally{
       // Re-enable button
       btn.disabled = false;
-      btn.textContent = '📍 Find Me';
+      btn.textContent = 'Find Me';
     }
   });
 }
