@@ -54,9 +54,11 @@ body {
   color: #0f172a;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  padding-top: 120px; /* Account for fixed header + search panel */
 }
 
 /* ========= Header ========= */
@@ -69,7 +71,10 @@ body {
   color: #FDB515;      /* Cal Gold accents */
   border-bottom: 1px solid #0b2a55;
   /* Ensure blue extends behind status bar */
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
 }
 
@@ -110,6 +115,11 @@ body {
   padding: 8px 16px;
   background: #e6eef6;
   border-bottom: 1px solid #cbd5e1;
+  position: fixed;
+  top: 80px; /* Below the header */
+  left: 0;
+  right: 0;
+  z-index: 9;
 }
 .search-panel input[type="text"] {
   flex: 1 1 600px;
@@ -131,6 +141,9 @@ body {
   background: #0b5cab;
   color: #fff;
   cursor: pointer;
+  font-size: 0.9rem;
+  min-width: 80px;
+  white-space: nowrap;
 }
 .search-panel button:hover { filter: brightness(0.95); }
 
@@ -165,9 +178,10 @@ body {
 /* ========= Main ========= */
 main {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: calc(100vh - 120px);
   display: grid;
   grid-template-columns: 2fr 1fr;
+  overflow-y: auto;
 }
 #map { width: 100%; height: 100%; }
 
@@ -303,12 +317,17 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   .mobile-only { display: none; }
 }
 
-/* === Mobile: flex column so “hide map” never smooshes the list === */
+/* === Mobile: flex column so "hide map" never smooshes the list === */
 @media (max-width: 900px) {
+  body {
+    padding-top: 140px; /* More space for mobile header + search */
+  }
+  
   main {
     display: flex;
     flex-direction: column;
-    min-height: 0; /* allow children to shrink */
+    min-height: calc(100vh - 140px);
+    overflow-y: auto;
   }
 
   /* Map gets ~56% of the small viewport; avoids iOS URL bar jumps */
