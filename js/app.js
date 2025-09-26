@@ -13,8 +13,8 @@ const MAPTILER_KEY = (
 ) ? 'jNqIsIVa4dP9qv7vQ8fy' // PROD
   : 'jNqIsIVa4dP9qv7vQ8fy'; // DEV (replace with localhost key if needed)
 
-// Switch to Dataviz style
-const MAPTILER_STYLE = `https://api.maptiler.com/maps/dataviz/style.json?key=${MAPTILER_KEY}`;
+// Switch to Basic v2 Light style
+const MAPTILER_STYLE = `https://api.maptiler.com/maps/basic-v2-light/style.json?key=${MAPTILER_KEY}`;
 
 // ===== Globals =====
 let map;
@@ -237,69 +237,6 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
   fitToMarkers();
 }
 
-// ===== Render All Bars (No Filtering) =====
-function renderAllList(){
-  const ol = document.getElementById('results');
-  if (!ol) return;
-  ol.innerHTML = '';
-
-  // Sort bars by name for better organization
-  const sortedBars = [...bars].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-  sortedBars.forEach(b=>{
-    const addr  = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
-    const url   = (b.url && b.url.startsWith('http')) ? b.url : null;
-
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${b.name || 'Unnamed Bar'}</strong><br>
-      <span>${addr}</span><br>
-      ${url ? `<a href="${url}" target="_blank" rel="noopener">Google Maps</a>` : ''}
-      ${b.promo   ? `<div><em>${b.promo}</em></div>` : ''}
-      ${b.details ? `<div>${b.details}</div>` : ''}
-      ${b.tvs     ? `<div>${b.tvs}</div>` : ''}
-      ${b.affiliation ? `<div><small>${b.affiliation}</small></div>` : ''}
-      ${b.submitted_as ? `<div><small>${b.submitted_as}</small></div>` : ''}
-    `;
-    li.style.cursor = 'pointer';
-    li.addEventListener('click', ()=>{
-      const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-      if (isFinite(lat) && isFinite(lon)) map.jumpTo({ center: [lon, lat], zoom: 14 });
-    });
-    ol.appendChild(li);
-  });
-}
-
-function renderAllMarkers(){
-  clearMarkers();
-
-  bars.forEach(b=>{
-    const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-    if(!isFinite(lat) || !isFinite(lon)) return;
-
-    const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
-    const url  = (b.url && b.url.startsWith('http')) ? b.url : null;
-
-    const popup = `
-      <strong>${b.name || 'Unnamed Bar'}</strong><br>
-      ${addr}
-      ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Google Maps</a>` : ''}
-      ${b.promo   ? `<br><br><em>${b.promo}</em>` : ''}
-      ${b.details ? `<br>${b.details}` : ''}
-      ${b.tvs     ? `<br>${b.tvs}` : ''}
-      ${b.affiliation ? `<br><small>${b.affiliation}</small>` : ''}
-    `;
-    addMarker(lon, lat, popup);
-  });
-
-  // Fit map to show all markers with appropriate padding
-  if (markers.length > 0) {
-    const bounds = new maplibregl.LngLatBounds();
-    markers.forEach(m=> bounds.extend(m.getLngLat()));
-    map.fitBounds(bounds, { padding: 48, maxZoom: 4, duration: 0 });
-  }
-}
-
 // ===== Main =====
 async function main(){
   const submitLink = document.getElementById('submitLink');
@@ -313,9 +250,10 @@ async function main(){
     setStatus(`Loaded ${bars.length} bars`);
     updateBarsCount(bars.length);
 
-    // Show all bars instead of filtering by location
-    renderAllMarkers();
-    renderAllList();
+    const origin = { lat: 37.8715, lon: -122.2730 };
+    const radius = 500;
+    renderMarkers(origin, radius, false);
+    renderList(origin, radius);
   } catch(e){
     console.error(e);
     setStatus('Failed to load data');
@@ -384,72 +322,23 @@ function wireModal(){
     document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
   }
 }
-// Map/list toggle (mobile)
+// Map collapse toggle (mobile)
 function wireMapToggle(){
   const btn = document.getElementById('toggleMapBtn');
   if (!btn) return;
 
   const update = () => {
     const hidden = document.body.classList.contains('map-hidden');
-    btn.textContent = hidden ? 'Show map' : 'Show list';
+    btn.textContent = hidden ? 'Show map' : 'Hide map';
   };
 
   btn.addEventListener('click', () => {
-    const isHidden = document.body.classList.contains('map-hidden');
-    
-    if (isHidden) {
-      // Show map - scroll to top
-      document.body.classList.remove('map-hidden');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      // Show list - scroll to list
-      document.body.classList.add('map-hidden');
-      const listElement = document.getElementById('list');
-      if (listElement) {
-        listElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-    
+    document.body.classList.toggle('map-hidden');
     update();
     if (window.map && typeof map.resize === 'function') map.resize(); // keep tiles crisp
   });
 
   update();
-}
-
-// Reset functionality
-function wireReset(){
-  const btn = document.getElementById('resetBtn');
-  if (!btn) return;
-
-  btn.addEventListener('click', () => {
-    // Clear search input
-    const addressInput = document.getElementById('address');
-    if (addressInput) addressInput.value = '';
-    
-    // Reset radius to default
-    const radiusInput = document.getElementById('radius');
-    if (radiusInput) radiusInput.value = '50';
-    
-    // Show all bars
-    renderAllMarkers();
-    renderAllList();
-    
-    // Reset map view to show all bars
-    if (markers.length > 0) {
-      const bounds = new maplibregl.LngLatBounds();
-      markers.forEach(m=> bounds.extend(m.getLngLat()));
-      map.fitBounds(bounds, { padding: 48, maxZoom: 4, duration: 1000 });
-    }
-    
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Remove map-hidden class if it exists
-    document.body.classList.remove('map-hidden');
-    
-    setStatus('Showing all bars');
-  });
 }
 
 // Mobile detection and landscape warning
@@ -484,7 +373,6 @@ initMap();
 wireSearch();
 wireFindMe();
 wireModal();
-wireMapToggle();
-wireReset();
+wireMapToggle();   // <-- ensure this line is present
 initMobileDetection();
 main();

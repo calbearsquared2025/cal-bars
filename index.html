@@ -93,16 +93,15 @@
   <label title="Limit results by distance">
     <input type="number" id="radius" inputmode="numeric" pattern="[0-9]*" value="50" min="1" max="1000"> miles
   </label>
-  <button id="toggleMapBtn" class="mobile-only">Show list</button>
-  <button id="resetBtn" title="Show all bars">Reset</button>
+  <button id="toggleMapBtn" class="mobile-only">Hide map</button>
   <span id="status" aria-live="polite"></span>
   <span id="barsCount" class="bars-count"></span>
 </section>
 
 <main>
-  <div id="map" role="region" aria-label="Map of all bars"></div>
-  <aside id="list" aria-label="All bars">
-    <h2>All Bars</h2>
+  <div id="map" role="region" aria-label="Map of nearby bars"></div>
+  <aside id="list" aria-label="Nearest bars">
+    <h2>Nearest Bars</h2>
     <ol id="results"></ol>
   </aside>
 </main>
