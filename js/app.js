@@ -14,7 +14,7 @@ const MAPTILER_KEY = (
   : 'jNqIsIVa4dP9qv7vQ8fy'; // DEV (replace with localhost key if needed)
 
 // Switch to Basic v2 Light style
-const MAPTILER_STYLE = `https://api.maptiler.com/maps/basic-v2-light/style.json?key=${MAPTILER_KEY}`;
+const MAPTILER_STYLE = `https://api.maptiler.com/maps/dataviz/style.json?key=${MAPTILER_KEY}`;
 
 // ===== Globals =====
 let map;
@@ -142,8 +142,9 @@ function initMap(){
   map = new maplibregl.Map({
     container: 'map',
     style: MAPTILER_STYLE,
-    center: [-122.2730, 37.8715],
-    zoom: 11
+    // was Berkeley + zoom 11
+    center: [-98.5795, 39.8283], // continental U.S. center
+    zoom: 3.5                    // coast-to-coast view
   });
   map.addControl(new maplibregl.NavigationControl(), 'top-right');
 }
@@ -169,16 +170,23 @@ function fitToMarkers(){
   markers.forEach(m=> bounds.extend(m.getLngLat()));
   map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 0 });
 }
-
 // ===== Rendering =====
 function renderList(origin, radiusMiles){
-  const withDist = bars.map(b=>{
+  let withDist = bars.map(b=>{
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
     const d = (isFinite(lat) && isFinite(lon)) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
     return { ...b, distance: d };
-  }).filter(b => b.distance <= radiusMiles)
-    .sort((a,b)=> a.distance - b.distance)
-    .slice(0, MAX_RESULTS);
+  });
+
+  if (isFinite(radiusMiles)) {
+    withDist = withDist
+      .filter(b => b.distance <= radiusMiles)
+      .sort((a,b)=> a.distance - b.distance)
+      .slice(0, MAX_RESULTS);
+  } else {
+    // Keep ALL bars; just reorder by distance to the chosen origin
+    withDist = withDist.sort((a,b)=> a.distance - b.distance);
+  }
 
   const ol = document.getElementById('results');
   if (!ol) return;
@@ -208,7 +216,7 @@ function renderList(origin, radiusMiles){
   });
 }
 
-function renderMarkers(origin, radiusMiles, showOrigin = true){
+function renderMarkers(origin, radiusMiles, showOrigin = true, { fit = true } = {}){
   clearMarkers();
 
   if (showOrigin) addMarker(origin.lon, origin.lat, 'You', true);
@@ -217,7 +225,7 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
     if(!isFinite(lat) || !isFinite(lon)) return;
     const d = haversine(origin.lat, origin.lon, lat, lon);
-    if(d > radiusMiles) return;
+    if (isFinite(radiusMiles) && d > radiusMiles) return;
 
     const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
     const url  = (b.url && b.url.startsWith('http')) ? b.url : null;
@@ -234,7 +242,7 @@ function renderMarkers(origin, radiusMiles, showOrigin = true){
     addMarker(lon, lat, popup);
   });
 
-  fitToMarkers();
+  if (fit) fitToMarkers();
 }
 
 // ===== Main =====
@@ -250,9 +258,9 @@ async function main(){
     setStatus(`Loaded ${bars.length} bars`);
     updateBarsCount(bars.length);
 
-    const origin = { lat: 37.8715, lon: -122.2730 };
-    const radius = 500;
-    renderMarkers(origin, radius, false);
+    const origin = { lat: 39.8283, lon: -98.5795 }; // central U.S.
+    const radius = Infinity;                        // include all bars
+    renderMarkers(origin, radius, false, { fit: true }); // fit on initial load
     renderList(origin, radius);
   } catch(e){
     console.error(e);
@@ -265,15 +273,20 @@ function wireSearch(){
   if (!btn) return;
   btn.addEventListener('click', async ()=>{
     const q = (document.getElementById('address')?.value || '').trim();
-    const radius = parseFloat(document.getElementById('radius')?.value) || 50;
+    // We want to keep ALL bars in the list/map; only reorder by distance
+    const listRadius = Infinity;
     if(!q) return;
     setStatus('Geocoding…');
     try{
       const loc = await geocode(q);
       setStatus(`Center: ${loc.display}`);
       map.jumpTo({ center: [loc.lon, loc.lat], zoom: 11 });
-      renderMarkers(loc, radius);
-      renderList(loc, radius);
+
+      // Map: keep ALL markers, draw origin dot, don't auto-fit (stay zoomed near the dot)
+      renderMarkers(loc, Infinity, true, { fit: false });
+
+      // List: ALL bars, reordered by distance to the searched location
+      renderList(loc, listRadius);
     }catch(e){
       setStatus('Address not found');
     }
@@ -285,7 +298,8 @@ function wireFindMe(){
   if (!btn) return;
   
   btn.addEventListener('click', async ()=>{
-    const radius = parseFloat(document.getElementById('radius')?.value) || 50;
+    // Keep ALL bars; list will reorder by distance to your location
+    const listRadius = Infinity;
     
     // Disable button and show loading state
     btn.disabled = true;
@@ -296,8 +310,12 @@ function wireFindMe(){
       const loc = await getCurrentLocation();
       setStatus(`Found: ${loc.display}`);
       map.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
-      renderMarkers(loc, radius);
-      renderList(loc, radius);
+
+      // Map: keep ALL markers, draw origin dot, don't auto-fit
+      renderMarkers(loc, Infinity, true, { fit: false });
+
+      // List: ALL bars, reordered by distance to you
+      renderList(loc, listRadius);
     }catch(e){
       setStatus(e.message);
       console.error('Geolocation error:', e);

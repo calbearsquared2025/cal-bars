@@ -268,11 +268,12 @@ footer a, footer button.footer-link {
   #status { font-size: .85rem; }
   
   /* Find Me button on mobile */
-  #findMeBtn { 
-    font-size: 0.9rem; 
-    padding: 10px 12px;
-    flex-shrink: 0;
-  }
+ #findMeBtn {
+  background: #FDB515;
+  border-color: #FDB515;
+  color: #003262;
+  font-weight: 400;
+  flex-shrink: 0;
 }
 
 @media (max-width: 360px) {
