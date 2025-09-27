@@ -2,39 +2,6 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 
-/* ========= Landscape Warning ========= */
-.landscape-warning {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 50, 98, 0.95);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.landscape-warning-content {
-  text-align: center;
-  color: #FDB515;
-  background: rgba(0, 50, 98, 0.9);
-  padding: 30px;
-  border-radius: 12px;
-  border: 2px solid #FDB515;
-  max-width: 300px;
-}
-
-.landscape-warning-icon { font-size: 3rem; margin-bottom: 15px; }
-.landscape-warning-text { font-size: 1.1rem; line-height: 1.4; }
-
-/* Hide landscape warning by default */
-.landscape-warning { display: none; }
-/* Show only on mobile devices in landscape */
-.landscape-warning.mobile-landscape { display: flex; }
-
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -47,33 +14,51 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* ========= Landscape Warning ========= */
+.landscape-warning {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 50, 98, 0.95);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.landscape-warning-content {
+  text-align: center;
+  color: #FDB515;
+  background: rgba(0, 50, 98, 0.9);
+  padding: 30px;
+  border-radius: 12px;
+  border: 2px solid #FDB515;
+  max-width: 300px;
+}
+.landscape-warning-icon { font-size: 3rem; margin-bottom: 15px; }
+.landscape-warning-text { font-size: 1.1rem; line-height: 1.4; }
+.landscape-warning.mobile-landscape { display: flex; }
+
 /* ========= Header ========= */
 .header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: calc(10px + env(safe-area-inset-top)) 16px 10px 16px; /* blue behind iOS status bar */
+  padding: calc(10px + env(safe-area-inset-top)) 16px 10px 16px;
   background: #003262; /* Berkeley Blue */
-  color: #FDB515;      /* Cal Gold accents */
+  color: #FDB515;      /* Cal Gold */
   border-bottom: 1px solid #0b2a55;
   position: relative;
   z-index: 10;
 }
-
-/* Fix iPhone header background - extend blue behind status bar */
 .header::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: env(safe-area-inset-top, 0px);
   background: #003262;
   z-index: -1;
 }
-
 .header-stack { display: flex; flex-direction: column; gap: 2px; }
-
 .header .title {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
@@ -82,7 +67,6 @@ body {
   color: #FDB515;
   letter-spacing: .2px;
 }
-
 .header .tagline { margin-top: 2px; }
 .header .tagline-link { color: #e6edf7; text-decoration: underline; font-size: 0.98rem; }
 .header .meta { color: #cfe0f4; font-size: 0.88rem; line-height: 1.25; }
@@ -122,7 +106,7 @@ body {
 }
 .search-panel button:hover { filter: brightness(0.95); }
 
-/* Find Me button styling */
+/* Find Me button (kept same size as Search) */
 #findMeBtn {
   background: #FDB515;
   border-color: #FDB515;
@@ -131,17 +115,23 @@ body {
 }
 #findMeBtn:hover { background: #e6a413; border-color: #e6a413; }
 #findMeBtn:disabled {
-  background: #cbd5e1;
-  border-color: #cbd5e1;
-  color: #64748b;
-  cursor: not-allowed;
+  background: #cbd5e1; border-color: #cbd5e1;
+  color: #64748b; cursor: not-allowed;
 }
 
 #status { margin-left: auto; font-size: 0.9rem; color: #334155; }
 .bars-count { font-size: 0.85rem; color: #64748b; margin-left: 8px; font-weight: 500; }
 
-/* Mobile-only toggle visibility baseline */
-.mobile-only { display: none; }
+/* Show/Hide List button */
+#toggleListBtn {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #e2e8f0;
+  color: #0f172a;
+  cursor: pointer;
+}
+#toggleListBtn:hover { filter: brightness(0.97); }
 
 /* ========= Main ========= */
 main {
@@ -151,7 +141,6 @@ main {
   grid-template-columns: 2fr 1fr;
 }
 #map { width: 100%; height: 100%; }
-
 #list {
   min-height: 0;
   overflow: auto;
@@ -182,7 +171,7 @@ footer {
   border-top: 1px solid #e5e7eb;
   background: #f8fafc;
   color: #0f172a;
-  padding-bottom: max(10px, env(safe-area-inset-bottom) + 10px); /* iPhone URL bar space */
+  padding-bottom: max(10px, env(safe-area-inset-bottom) + 10px);
 }
 footer small { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 footer a, footer button.footer-link {
@@ -217,27 +206,16 @@ footer a, footer button.footer-link {
   border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #0f172a;
 }
 
-/* ========= Show/Hide List button (base) ========= */
-#toggleListBtn {
-  padding: 8px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #e2e8f0;
-  color: #0f172a;
-  cursor: pointer;
-}
-#toggleListBtn:hover { filter: brightness(0.97); }
-
 /* ========= Focus styles ========= */
 a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset: 2px; }
 
-/* === iOS safe-area: make header blue behind the status bar === */
+/* === iOS safe-area: header padding === */
 .header { padding-top: calc(env(safe-area-inset-top, 0px) + 10px); }
 @supports (padding: max(0px)) {
   .header { padding-top: max(env(safe-area-inset-top, 0px), 10px); }
 }
 
-/* === Desktop (unchanged) === */
+/* ========= Desktop ========= */
 @media (min-width: 901px) {
   main {
     display: grid;
@@ -247,31 +225,33 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   .mobile-only { display: none; }
 }
 
-/* ========= Mobile (<=900px): single consolidated block ========= */
+/* ========= Mobile (<=900px) ========= */
 @media (max-width: 900px) {
   .mobile-only { display: inline-block; }
 
-  /* Layout: map first, list below */
+  /* Map-first layout, list below */
   main {
     display: flex;
     flex-direction: column;
-    min-height: 0; /* allow children to shrink */
+    min-height: 0;
   }
 
-  /* Map gets ~56% of small viewport; avoids iOS URL bar jumps */
+  /* Default map height on mobile */
   #map {
     flex: 0 0 56svh;
     min-height: 220px;
   }
 
-  /* When the list is hidden, let the map expand */
-  body.list-hidden #list { display: none; }
-  body.list-hidden #map {
-    flex: 1 1 auto;
-    min-height: 60svh; /* keeps the map nicely tall */
+  /* When list is visible, give list some room (map still tall) */
+  body:not(.list-hidden) #map {
+    flex-basis: 50svh; /* tweak 48–52 to taste */
   }
 
-  /* List occupies remaining space and can scroll */
+  /* When list is hidden, give everything to the map */
+  body.list-hidden #list { display: none; }
+  body.list-hidden #map { flex: 1 1 auto; min-height: 60svh; }
+
+  /* List area */
   #list {
     flex: 1 1 auto;
     min-height: 0;
@@ -286,20 +266,21 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   .header img { width: 28px; height: 28px; }
   .header .title {
     font-size: clamp(1.15rem, 3.6vw + 0.6rem, 1.55rem);
-    line-height: 1.22; letter-spacing: .1px;
+    line-height: 1.22;
+    letter-spacing: .1px;
   }
   .header .tagline-link { font-size: .95rem; }
   .header .meta { font-size: .85rem; }
   .header .disclaimer { font-size: .80rem; }
 
-  /* Search spacing (bigger touch targets on mobile) */
+  /* Controls spacing (bigger targets) */
   .search-panel { gap: 6px; padding: 8px 12px; }
   .search-panel input[type="text"] { flex: 1 1 100%; min-width: 0; padding: 10px 12px; }
   .search-panel button { padding: 10px 14px; }
   .search-panel input[type="number"] { width: 68px; padding: 8px; }
   #status { font-size: .85rem; }
 
-  /* Ensure Find Me keeps size parity with Search */
+  /* Keep Find Me same width as other buttons; avoid shrinking */
   #findMeBtn { flex-shrink: 0; }
 }
 

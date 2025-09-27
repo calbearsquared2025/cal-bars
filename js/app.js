@@ -138,7 +138,7 @@ function initMap(){
   map = new maplibregl.Map({
     container: 'map',
     style: MAPTILER_STYLE,
-    // was Berkeley + zoom 11
+    // CHANGED: default to continental US instead of Berkeley
     center: [-98.5795, 39.8283], // continental U.S. center
     zoom: 3.5                    // coast-to-coast view
   });
@@ -166,8 +166,10 @@ function fitToMarkers(){
   markers.forEach(m=> bounds.extend(m.getLngLat()));
   map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 0 });
 }
+
 // ===== Rendering =====
 function renderList(origin, radiusMiles){
+  // CHANGED: allow Infinity radius to keep ALL bars but reorder by distance
   let withDist = bars.map(b=>{
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
     const d = (isFinite(lat) && isFinite(lon)) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
@@ -241,6 +243,32 @@ function renderMarkers(origin, radiusMiles, showOrigin = true, { fit = true } = 
   if (fit) fitToMarkers();
 }
 
+// ===== NEW: user+nearest helpers =====
+// ADDED: pick the nearest bar to a given location (used after Search/Find Me)
+function nearestBarTo(lat, lon) {
+  let best = null, bestD = Infinity;
+  for (const b of bars) {
+    const bl = parseFloat(b.lat), blon = parseFloat(b.lon);
+    if (!isFinite(bl) || !isFinite(blon)) continue;
+    const d = haversine(lat, lon, bl, blon);
+    if (d < bestD) { bestD = d; best = { lat: bl, lon: blon, d }; }
+  }
+  return best; // { lat, lon, d } or null
+}
+
+// ADDED: frame the map to show both the user dot and the nearest bar
+function focusUserAndNearest(loc) {
+  const nb = nearestBarTo(loc.lat, loc.lon);
+  if (nb) {
+    const bounds = new maplibregl.LngLatBounds();
+    bounds.extend([loc.lon, loc.lat]);
+    bounds.extend([nb.lon, nb.lat]);
+    map.fitBounds(bounds, { padding: 80, maxZoom: 12, duration: 600 });
+  } else {
+    map.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
+  }
+}
+
 // ===== Main =====
 async function main(){
   const submitLink = document.getElementById('submitLink');
@@ -254,6 +282,7 @@ async function main(){
     setStatus(`Loaded ${bars.length} bars`);
     updateBarsCount(bars.length);
 
+    // CHANGED: initial view shows ALL bars nationwide
     const origin = { lat: 39.8283, lon: -98.5795 }; // central U.S.
     const radius = Infinity;                        // include all bars
     renderMarkers(origin, radius, false, { fit: true }); // fit on initial load
@@ -269,8 +298,7 @@ function wireSearch(){
   if (!btn) return;
   btn.addEventListener('click', async ()=>{
     const q = (document.getElementById('address')?.value || '').trim();
-    // We want to keep ALL bars in the list/map; only reorder by distance
-    const listRadius = Infinity;
+    const listRadius = Infinity; // CHANGED: keep ALL bars; only reorder
     if(!q) return;
     setStatus('Geocoding…');
     try{
@@ -278,11 +306,14 @@ function wireSearch(){
       setStatus(`Center: ${loc.display}`);
       map.jumpTo({ center: [loc.lon, loc.lat], zoom: 11 });
 
-      // Map: keep ALL markers, draw origin dot, don't auto-fit (stay zoomed near the dot)
+      // CHANGED: keep ALL markers, draw origin dot, don't auto-fit (we'll frame user+nearest)
       renderMarkers(loc, Infinity, true, { fit: false });
 
-      // List: ALL bars, reordered by distance to the searched location
+      // CHANGED: list shows ALL bars, ordered by distance to the searched spot
       renderList(loc, listRadius);
+
+      // ADDED: show both the user dot and nearest bar in view
+      focusUserAndNearest(loc);
     }catch(e){
       setStatus('Address not found');
     }
@@ -294,8 +325,7 @@ function wireFindMe(){
   if (!btn) return;
   
   btn.addEventListener('click', async ()=>{
-    // Keep ALL bars; list will reorder by distance to your location
-    const listRadius = Infinity;
+    const listRadius = Infinity; // CHANGED: keep ALL bars; only reorder
     
     // Disable button and show loading state
     btn.disabled = true;
@@ -307,11 +337,14 @@ function wireFindMe(){
       setStatus(`Found: ${loc.display}`);
       map.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
 
-      // Map: keep ALL markers, draw origin dot, don't auto-fit
+      // CHANGED: keep ALL markers, draw origin dot, don't auto-fit (we'll frame user+nearest)
       renderMarkers(loc, Infinity, true, { fit: false });
 
-      // List: ALL bars, reordered by distance to you
+      // CHANGED: list shows ALL bars, ordered by distance to you
       renderList(loc, listRadius);
+
+      // ADDED: show both the user dot and nearest bar in view
+      focusUserAndNearest(loc);
     }catch(e){
       setStatus(e.message);
       console.error('Geolocation error:', e);
@@ -336,14 +369,16 @@ function wireModal(){
     document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
   }
 }
-// Show/Hide List toggle (mobile)
+
+// ===== NEW: Show/Hide List toggle (mobile) =====
 function wireListToggle(){
   const btn = document.getElementById('toggleListBtn');
   if (!btn) return;
 
   const update = () => {
     const hidden = document.body.classList.contains('list-hidden');
-    btn.textContent = hidden ? 'Show list ↓' : 'Hide list ↑';
+    // CHANGED: reversed arrows per UX request
+    btn.textContent = hidden ? 'Show list ↑' : 'Hide list ↓';
     btn.setAttribute('aria-expanded', String(!hidden));
   };
 
@@ -354,15 +389,20 @@ function wireListToggle(){
     // Keep tiles crisp after layout change
     if (window.map && typeof map.resize === 'function') map.resize();
 
-    // If we just revealed the list, bring it into view
+    // If we just revealed the list, scroll to its top after layout settles (Safari-friendly)
     if (!document.body.classList.contains('list-hidden')) {
-      document.getElementById('list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const listEl = document.getElementById('list');
+      if (listEl) {
+        setTimeout(() => {
+          const y = listEl.getBoundingClientRect().top + window.pageYOffset - 6;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }, 50);
+      }
     }
   });
 
   update();
 }
-
 
 // Mobile detection and landscape warning
 function initMobileDetection() {
@@ -391,15 +431,15 @@ function initMobileDetection() {
   window.addEventListener('resize', checkOrientation);
 }
 
-// Boot
+// ===== Boot =====
 initMap();
 wireSearch();
 wireFindMe();
 wireModal();
-wireListToggle();        // NEW: replaces wireMapToggle()
+wireListToggle();        // NEW: replaces old wireMapToggle()
 initMobileDetection();
 
-// Start map-first on small screens (hide list by default)
+// CHANGED: Start map-first on small screens (hide list by default)
 if (window.innerWidth <= 900) {
   document.body.classList.add('list-hidden');
 }
