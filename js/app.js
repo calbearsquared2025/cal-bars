@@ -1,6 +1,3 @@
-// Cal Bars Map — MapLibre GL JS + MapTiler (Basic v2 Light)
-// Replace the previous style with Basic v2 Light.
-
 // ===== Config =====
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv';
 const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8';
@@ -13,8 +10,7 @@ const MAPTILER_KEY = (
 ) ? 'jNqIsIVa4dP9qv7vQ8fy' // PROD
   : 'jNqIsIVa4dP9qv7vQ8fy'; // DEV (replace with localhost key if needed)
 
-// Switch to Basic v2 Light style
-const MAPTILER_STYLE = `https://api.maptiler.com/maps/dataviz/style.json?key=${MAPTILER_KEY}`;
+const MAPTILER_STYLE = `https://api.maptiler.com/maps/0199885d-821b-7d60-9aba-5656da203820/style.json?key=${MAPTILER_KEY}`;
 
 // ===== Globals =====
 let map;
@@ -340,24 +336,33 @@ function wireModal(){
     document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
   }
 }
-// Map collapse toggle (mobile)
-function wireMapToggle(){
-  const btn = document.getElementById('toggleMapBtn');
+// Show/Hide List toggle (mobile)
+function wireListToggle(){
+  const btn = document.getElementById('toggleListBtn');
   if (!btn) return;
 
   const update = () => {
-    const hidden = document.body.classList.contains('map-hidden');
-    btn.textContent = hidden ? 'Show map' : 'Hide map';
+    const hidden = document.body.classList.contains('list-hidden');
+    btn.textContent = hidden ? 'Show list ↓' : 'Hide list ↑';
+    btn.setAttribute('aria-expanded', String(!hidden));
   };
 
   btn.addEventListener('click', () => {
-    document.body.classList.toggle('map-hidden');
+    document.body.classList.toggle('list-hidden');
     update();
-    if (window.map && typeof map.resize === 'function') map.resize(); // keep tiles crisp
+
+    // Keep tiles crisp after layout change
+    if (window.map && typeof map.resize === 'function') map.resize();
+
+    // If we just revealed the list, bring it into view
+    if (!document.body.classList.contains('list-hidden')) {
+      document.getElementById('list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   });
 
   update();
 }
+
 
 // Mobile detection and landscape warning
 function initMobileDetection() {
@@ -391,6 +396,19 @@ initMap();
 wireSearch();
 wireFindMe();
 wireModal();
-wireMapToggle();   // <-- ensure this line is present
+wireListToggle();        // NEW: replaces wireMapToggle()
 initMobileDetection();
+
+// Start map-first on small screens (hide list by default)
+if (window.innerWidth <= 900) {
+  document.body.classList.add('list-hidden');
+}
+
+// Optional: if the screen gets wide (rotate / desktop), auto-show the list
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) {
+    document.body.classList.remove('list-hidden');
+  }
+});
+
 main();
