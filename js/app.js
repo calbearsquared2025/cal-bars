@@ -1,9 +1,16 @@
-// ===== Config =====
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&single=true&output=csv';
-const SUBMIT_FORM_URL = 'https://forms.gle/maBc5Z1MUun3WQ4R8';
-const MAX_RESULTS = 25;
+/* ---------------------------------
+   Cal Bars — app.js (final, lean)
+   - Always show ALL pins on the map
+   - Always show ALL bars in the list, sorted by distance
+   - Initial list sorted from Cal Memorial Stadium
+   - ZIP-aware geocoding
+   - Uses mapGL (no window.map collisions)
+   - Loads bars from footer #dataSourceLink (published Google Sheets CSV)
+   - Strict CSV headers:
+     name,address,city,state,zip,lat,lon,url,promo,details,tvs,affiliation,submitted_as,place_id
+---------------------------------- */
 
-// MapTiler (vector)
+// ===== MapTiler (vector) — your live config =====
 const ORIGIN = location.hostname;
 const MAPTILER_KEY = (
   ORIGIN === 'calbearsquared2025.github.io'
@@ -12,98 +19,176 @@ const MAPTILER_KEY = (
 
 const MAPTILER_STYLE = `https://api.maptiler.com/maps/0199885d-821b-7d60-9aba-5656da203820/style.json?key=${MAPTILER_KEY}`;
 
+const DEFAULT_RADIUS_MILES = 50; // kept for possible future use
+
 // ===== Globals =====
-let map;
-let bars = [];
-let markers = [];
+let mapGL = null;
+let bars = [];            // populated by loadBars()
+let barMarkers = [];
+let userMarker = null;
 
-// ===== Utilities =====
-function haversine(lat1, lon1, lat2, lon2){
-  const toRad = d=> d*Math.PI/180;
-  const R = 3958.8;
-  const dLat = toRad(lat2-lat1);
-  const dLon = toRad(lon2-lon1);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R*c;
+// ===== DOM helpers =====
+const $ = (sel) => document.querySelector(sel);
+function setStatus(msg) { const el = $('#status'); if (el) el.textContent = msg || ''; }
+function setBarsCount(text) { const el = $('#barsCount'); if (el) el.textContent = text || ''; }
+
+// ===== CSV loader (strict headers) =====
+function normalizeBar(row){
+  const lat = parseFloat(row.lat);
+  const lon = parseFloat(row.lon);
+  if (!isFinite(lat) || !isFinite(lon)) return null;
+
+  return {
+    name: row.name || 'Bar',
+    address: row.address || '',
+    city: row.city || '',
+    state: row.state || '',
+    zip: row.zip || '',
+    lat, lon,
+    url: row.url || '',
+    promo: row.promo || '',
+    details: row.details || '',
+    tvs: row.tvs || '',
+    affiliation: row.affiliation || '',
+    submitted_as: row.submitted_as || '',
+    place_id: row.place_id || ''
+  };
 }
 
-async function geocode(q){
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=1`;
-  const resp = await fetch(url, { headers: { 'Accept-Language': 'en' } });
-  if(!resp.ok) throw new Error('Geocoding failed');
-  const data = await resp.json();
-  if(!data.length) throw new Error('No results');
-  return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), display: data[0].display_name };
+function getDataSourceUrl(){
+  const el = document.getElementById('dataSourceLink');
+  const href = el?.href;
+  return href && href !== location.href + '#' ? href : 'data/bars.csv';
 }
 
-// Geolocation function
-function getCurrentLocation(){
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('Geolocation is not supported by this browser'));
-      return;
+function loadBars(){
+  return new Promise((resolve, reject)=>{
+    if (Array.isArray(window.bars) && window.bars.length){
+      bars = window.bars.map(normalizeBar).filter(Boolean);
+      setBarsCount(`${bars.length} bars loaded`);
+      return resolve(bars);
     }
 
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 300000 // 5 minutes
-    };
+    const url = getDataSourceUrl();
+    setStatus('Loading bars…');
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        resolve({ 
-          lat, 
-          lon, 
-          display: `Current location (${lat.toFixed(4)}, ${lon.toFixed(4)})` 
-        });
-      },
-      (error) => {
-        let message = 'Location access denied';
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            message = 'Location access denied. Please enable location permissions.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            message = 'Location information unavailable.';
-            break;
-          case error.TIMEOUT:
-            message = 'Location request timed out.';
-            break;
-        }
-        reject(new Error(message));
-      },
-      options
-    );
-  });
-}
+    if (typeof Papa === 'undefined'){
+      const err = new Error('PapaParse not loaded');
+      console.error(err);
+      setStatus('CSV parser missing');
+      return reject(err);
+    }
 
-function loadCSV(){
-  return new Promise((resolve,reject)=>{
-    Papa.parse(CSV_URL, {
+    Papa.parse(url, {
       download: true,
-      header: true,
+      header: true,          // relies on your exact headers
       skipEmptyLines: true,
-      complete: (results)=> resolve(results.data),
-      error: reject
+      complete: (res)=>{
+        const rows = Array.isArray(res.data) ? res.data : [];
+        bars = rows.map(normalizeBar).filter(Boolean);
+        setStatus('');
+        setBarsCount(bars.length ? `${bars.length} bars loaded` : 'No bars in dataset');
+        resolve(bars);
+      },
+      error: (err)=>{
+        console.error('CSV load error:', err);
+        setStatus('Could not load bar data.');
+        reject(err);
+      }
     });
   });
 }
 
-function setStatus(msg){
-  const el = document.getElementById('status');
-  if (el) el.textContent = msg;
+// ===== Distance + nearest =====
+function haversine(lat1, lon1, lat2, lon2){
+  const R = 3958.7613; // miles
+  const toRad = (d)=> d*Math.PI/180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
 }
 
-function updateBarsCount(count) {
-  const el = document.getElementById('barsCount');
-  if (el) el.textContent = `${count} bars loaded`;
+function nearestBarTo(lat, lon){
+  let best = null, bestD = Infinity, bestBar = null;
+  for (const b of bars || []){
+    const bl = parseFloat(b.lat), blon = parseFloat(b.lon);
+    if (!isFinite(bl) || !isFinite(blon)) continue;
+    const d = haversine(lat, lon, bl, blon);
+    if (d < bestD){ bestD = d; best = { lat: bl, lon: blon, d }; bestBar = b; }
+  }
+  return best ? { ...best, bar: bestBar } : null;
 }
 
-// ===== Custom Pins =====
+// ===== Geocoding (ZIP-aware) =====
+async function geocode(q){
+  const raw = (q || '').trim();
+  if (!raw) throw new Error('Empty query');
+
+  const isZip5 = /^\d{5}$/.test(raw);
+  const zipDigits = raw;
+
+  const base = 'https://api.maptiler.com/geocoding';
+  const center = (mapGL && mapGL.getCenter && mapGL.getCenter()) || null;
+  const prox = center ? `&proximity=${center.lng},${center.lat}` : '';
+  const common = `key=${MAPTILER_KEY}&language=en&limit=1`;
+
+  if (isZip5) {
+    // Try 1 — strict US postal_code ONLY, no autocomplete/fuzzy
+    const url1 = `${base}/${zipDigits}.json?${common}&types=postal_code&country=us&autocomplete=false&fuzzyMatch=false`;
+    let resp = await fetch(url1);
+    let data = resp.ok ? await resp.json() : null;
+    let feat = data?.features?.[0];
+
+    // Guard: accept only real postal_code
+    if (feat && !(Array.isArray(feat.place_type) && feat.place_type.includes('postal_code'))) {
+      feat = null;
+    }
+
+    // Try 2 — still postal_code only, but drop country filter
+    if (!feat) {
+      const url2 = `${base}/${zipDigits}.json?${common}&types=postal_code&autocomplete=false&fuzzyMatch=false`;
+      resp = await fetch(url2);
+      data = resp.ok ? await resp.json() : null;
+      feat = data?.features?.find(f => Array.isArray(f.place_type) && f.place_type.includes('postal_code')) || null;
+    }
+
+    // If still nothing, fail cleanly
+    if (!feat) throw new Error('ZIP code not found');
+
+    const [lon, lat] = feat.center || feat.geometry?.coordinates || [];
+    if (!isFinite(lat) || !isFinite(lon)) throw new Error('Bad geocode');
+    return { lat, lon, display: feat.place_name || feat.text || raw };
+  }
+
+  // Non-ZIP text search
+  const urlUS = `${base}/${encodeURIComponent(raw)}.json?${common}&country=us${prox}`;
+  let resp = await fetch(urlUS);
+  if (!resp.ok) throw new Error('Geocoding failed');
+
+  const data = await resp.json();
+  const feat = data?.features?.[0];
+  if (!feat) throw new Error('No results');
+
+  const [lon, lat] = feat.center || feat.geometry?.coordinates || [];
+  if (!isFinite(lat) || !isFinite(lon)) throw new Error('Bad geocode');
+  return { lat, lon, display: feat.place_name || feat.text || raw };
+}
+
+// ===== Location (getCurrentLocation) =====
+function getCurrentLocation(){
+  return new Promise((resolve, reject)=>{
+    if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
+    navigator.geolocation.getCurrentPosition(
+      (pos)=> resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      (err)=> reject(new Error(err?.message || 'Failed to get location')),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  });
+}
+
+// ===== Map + markers =====
+// === Custom Cal pin (blue gradient + gold dot), and a yellow "you" dot ===
 const CAL_PIN_SVG_RAW = `
 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
   <defs>
@@ -125,330 +210,257 @@ function makeCalPinEl(){
 
 function makeYouDotEl(){
   const el = document.createElement('div');
-  el.style.width = '18px';
-  el.style.height = '18px';
-  el.style.background = '#FDB515';
-  el.style.border = '2px solid #002676';
-  el.style.borderRadius = '50%';
+  el.className = 'you-dot';
   return el;
 }
 
-// ===== Map setup =====
-function initMap(){
-  map = new maplibregl.Map({
-    container: 'map',
-    style: MAPTILER_STYLE,
-    // CHANGED: default to continental US instead of Berkeley
-    center: [-98.5795, 39.8283], // continental U.S. center
-    zoom: 3.5                    // coast-to-coast view
-  });
-  map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+function clearBarMarkers(){
+  for (const m of barMarkers) { try { m.remove(); } catch(_){} }
+  barMarkers = [];
 }
 
-function clearMarkers(){
-  markers.forEach(m=> m.remove());
-  markers = [];
+function drawUserMarker(loc){
+  if (!mapGL) return;
+  if (userMarker){ try { userMarker.remove(); } catch(_){} userMarker = null; }
+  userMarker = new maplibregl.Marker({ element: makeYouDotEl(), anchor: 'center' })
+    .setLngLat([loc.lon, loc.lat])
+    .addTo(mapGL);
+}
+function addBarMarkerDefault(b){
+  if (!mapGL) return null;
+  const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
+  const mk = new maplibregl.Marker({ element: makeCalPinEl(), anchor: 'bottom' })
+    .setLngLat([parseFloat(b.lon), parseFloat(b.lat)])
+    .setPopup(new maplibregl.Popup({ offset: 18 }).setHTML(
+      `<strong>${b.name || 'Bar'}</strong>` +
+      (addr ? `<br>${addr}` : '') +
+      (b.url ? `<br><a href="${b.url}" target="_blank" rel="noopener">Google Maps</a>` : '') +
+      (b.promo ? `<br><em>${b.promo}</em>` : '') +
+      (b.details ? `<br>${b.details}` : '') +
+      (b.tvs ? `<br>${b.tvs}` : '') +
+      (b.affiliation ? `<br><small>${b.affiliation}</small>` : '')
+    ))
+    .addTo(mapGL);
+  barMarkers.push(mk);
+  return mk;
 }
 
-function addMarker(lon, lat, popupHtml, isOrigin = false){
-  const el = isOrigin ? makeYouDotEl() : makeCalPinEl();
-  const marker = new maplibregl.Marker({ element: el, anchor: isOrigin ? 'center' : 'bottom' })
-    .setLngLat([lon, lat])
-    .setPopup(new maplibregl.Popup({ offset: isOrigin ? 12 : 24 }).setHTML(popupHtml))
-    .addTo(map);
-  markers.push(marker);
-  return marker;
-}
 
-function fitToMarkers(){
-  if (!markers.length) return;
-  const bounds = new maplibregl.LngLatBounds();
-  markers.forEach(m=> bounds.extend(m.getLngLat()));
-  map.fitBounds(bounds, { padding: 48, maxZoom: 14, duration: 0 });
-}
-
-// ===== Rendering =====
-function renderList(origin, radiusMiles){
-  // CHANGED: allow Infinity radius to keep ALL bars but reorder by distance
-  let withDist = bars.map(b=>{
-    const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-    const d = (isFinite(lat) && isFinite(lon)) ? haversine(origin.lat, origin.lon, lat, lon) : Infinity;
-    return { ...b, distance: d };
-  });
-
-  if (isFinite(radiusMiles)) {
-    withDist = withDist
-      .filter(b => b.distance <= radiusMiles)
-      .sort((a,b)=> a.distance - b.distance)
-      .slice(0, MAX_RESULTS);
-  } else {
-    // Keep ALL bars; just reorder by distance to the chosen origin
-    withDist = withDist.sort((a,b)=> a.distance - b.distance);
+function addBarMarkerCompat(b){
+  if (typeof window.addBarMarker === 'function'){
+    const mk = window.addBarMarker(b, mapGL);
+    if (mk) barMarkers.push(mk);
+    return mk;
   }
-
-  const ol = document.getElementById('results');
-  if (!ol) return;
-  ol.innerHTML = '';
-  withDist.forEach(b=>{
-    const miles = Number.isFinite(b.distance) ? b.distance.toFixed(1) + ' mi' : 'n/a';
-    const addr  = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
-    const url   = (b.url && b.url.startsWith('http')) ? b.url : null;
-
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <strong>${b.name || 'Unnamed Bar'}</strong> — ${miles}<br>
-      <span>${addr}</span><br>
-      ${url ? `<a href="${url}" target="_blank" rel="noopener">Google Maps</a>` : ''}
-      ${b.promo   ? `<div><em>${b.promo}</em></div>` : ''}
-      ${b.details ? `<div>${b.details}</div>` : ''}
-      ${b.tvs     ? `<div>${b.tvs}</div>` : ''}
-      ${b.affiliation ? `<div><small>${b.affiliation}</small></div>` : ''}
-      ${b.submitted_as ? `<div><small>${b.submitted_as}</small></div>` : ''}
-    `;
-    li.style.cursor = 'pointer';
-    li.addEventListener('click', ()=>{
-      const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-      if (isFinite(lat) && isFinite(lon)) map.jumpTo({ center: [lon, lat], zoom: 14 });
-    });
-    ol.appendChild(li);
-  });
+  return addBarMarkerDefault(b);
 }
 
-function renderMarkers(origin, radiusMiles, showOrigin = true, { fit = true } = {}){
-  clearMarkers();
-
-  if (showOrigin) addMarker(origin.lon, origin.lat, 'You', true);
-
-  bars.forEach(b=>{
+// === Always show ALL pins (no filtering) and fit to bounds ===
+function renderAllMarkersAndFit(){
+  clearBarMarkers();
+  for (const b of bars || []){
     const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-    if(!isFinite(lat) || !isFinite(lon)) return;
-    const d = haversine(origin.lat, origin.lon, lat, lon);
-    if (isFinite(radiusMiles) && d > radiusMiles) return;
-
-    const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
-    const url  = (b.url && b.url.startsWith('http')) ? b.url : null;
-
-    const popup = `
-      <strong>${b.name || 'Unnamed Bar'}</strong><br>
-      ${addr}
-      ${url ? `<br><a href="${url}" target="_blank" rel="noopener">Google Maps</a>` : ''}
-      ${b.promo   ? `<br><br><em>${b.promo}</em>` : ''}
-      ${b.details ? `<br>${b.details}` : ''}
-      ${b.tvs     ? `<br>${b.tvs}` : ''}
-      ${b.affiliation ? `<br><small>${b.affiliation}</small>` : ''}
-    `;
-    addMarker(lon, lat, popup);
-  });
-
-  if (fit) fitToMarkers();
-}
-
-// ===== NEW: user+nearest helpers =====
-// ADDED: pick the nearest bar to a given location (used after Search/Find Me)
-function nearestBarTo(lat, lon) {
-  let best = null, bestD = Infinity;
-  for (const b of bars) {
-    const bl = parseFloat(b.lat), blon = parseFloat(b.lon);
-    if (!isFinite(bl) || !isFinite(blon)) continue;
-    const d = haversine(lat, lon, bl, blon);
-    if (d < bestD) { bestD = d; best = { lat: bl, lon: blon, d }; }
+    if (!isFinite(lat) || !isFinite(lon)) continue;
+    addBarMarkerCompat(b);
   }
-  return best; // { lat, lon, d } or null
+  if (barMarkers.length && mapGL){
+    const bounds = new maplibregl.LngLatBounds();
+    barMarkers.forEach(m => bounds.extend(m.getLngLat()));
+    mapGL.fitBounds(bounds, { padding: 64, maxZoom: 6, duration: 0 });
+  }
 }
 
-// ADDED: frame the map to show both the user dot and the nearest bar
-function focusUserAndNearest(loc) {
+// Keep the “you + nearest” framing for context
+function focusUserAndNearest(loc){
+  if (!mapGL) return;
   const nb = nearestBarTo(loc.lat, loc.lon);
-  if (nb) {
+  if (nb){
     const bounds = new maplibregl.LngLatBounds();
     bounds.extend([loc.lon, loc.lat]);
     bounds.extend([nb.lon, nb.lat]);
-    map.fitBounds(bounds, { padding: 80, maxZoom: 12, duration: 600 });
+    mapGL.fitBounds(bounds, { padding: 80, maxZoom: 12, duration: 600 });
   } else {
-    map.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
+    mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
   }
 }
 
-// ===== Main =====
-async function main(){
-  const submitLink = document.getElementById('submitLink');
-  const dataLink = document.getElementById('dataSourceLink');
-  if (submitLink) submitLink.href = SUBMIT_FORM_URL;
-  if (dataLink) dataLink.href = CSV_URL;
+// ===== List: ALWAYS show ALL bars, sorted by distance to `loc` =====
+function renderListAll(loc){
+  const listEl = $('#results');
+  if (!listEl) return;
 
-  setStatus('Loading bars…');
-  try {
-    bars = await loadCSV();
-    setStatus(`Loaded ${bars.length} bars`);
-    updateBarsCount(bars.length);
+  const items = (bars || []).map(b=>{
+    const d = haversine(loc.lat, loc.lon, parseFloat(b.lat), parseFloat(b.lon));
+    return { ...b, _dist: d };
+  }).sort((a,b)=> a._dist - b._dist);
+  listEl.innerHTML = items.map(r=>{
+    const dist = Number.isFinite(r._dist) ? (Math.round(r._dist*10)/10).toFixed(1) : '–';
+    const addr = [r.address, r.city, r.state, r.zip].filter(Boolean).join(', ');
+    const link = r.url ? `<a class="res-link" href="${r.url}" target="_blank" rel="noopener">Maps</a>` : '';
+    return `<li class="res-item">
+      <div class="res-row">
+        <span class="res-name">${r.name || 'Bar'}</span>
+        <span class="res-dist">${dist} mi</span>
+      </div>
+      ${addr ? `<div class="res-meta">${addr}</div>` : ''}
+      <div class="res-actions">
+        ${link}
+        ${r.promo ? `<span class="res-pill">${r.promo}</span>` : ''}
+        ${r.tvs ? `<span class="res-note">${r.tvs}</span>` : ''}
+        ${r.affiliation ? `<span class="res-note">${r.affiliation}</span>` : ''}
+      </div>
+    </li>`;
+  }).join('');
 
-    // CHANGED: initial view shows ALL bars nationwide
-    const origin = { lat: 39.8283, lon: -98.5795 }; // central U.S.
-    const radius = Infinity;                        // include all bars
-    renderMarkers(origin, radius, false, { fit: true }); // fit on initial load
-    renderList(origin, radius);
-  } catch(e){
-    console.error(e);
-    setStatus('Failed to load data');
-  }
+  const total = items.length;
+  setBarsCount(`${total} bars total`);
 }
 
+// ===== Controls =====
 function wireSearch(){
-  const btn = document.getElementById('searchBtn');
+  const btn = $('#searchBtn');
   if (!btn) return;
   btn.addEventListener('click', async ()=>{
-    const q = (document.getElementById('address')?.value || '').trim();
-    const listRadius = Infinity; // CHANGED: keep ALL bars; only reorder
-    if(!q) return;
+    const q = ($('#address')?.value || '').trim();
+    if (!q) return;
     setStatus('Geocoding…');
     try{
       const loc = await geocode(q);
-      setStatus(`Center: ${loc.display}`);
-      map.jumpTo({ center: [loc.lon, loc.lat], zoom: 11 });
+      setStatus('');
+      drawUserMarker(loc);
+      if (mapGL) mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 11 });
 
-      // CHANGED: keep ALL markers, draw origin dot, don't auto-fit (we'll frame user+nearest)
-      renderMarkers(loc, Infinity, true, { fit: false });
+      // Keep ALL pins visible
+      renderAllMarkersAndFit();
 
-      // CHANGED: list shows ALL bars, ordered by distance to the searched spot
-      renderList(loc, listRadius);
+      // List: ALL bars sorted by the searched spot
+      renderListAll(loc);
 
-      // ADDED: show both the user dot and nearest bar in view
+      // Frame you + nearest for context
       focusUserAndNearest(loc);
-    }catch(e){
+    } catch (e){
+      console.error(e);
       setStatus('Address not found');
     }
   });
+  const input = $('#address');
+  if (input) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btn.click(); // trigger the same handler as clicking Search
+      }
+    });
+  }
+
 }
 
 function wireFindMe(){
-  const btn = document.getElementById('findMeBtn');
+  const btn = $('#findMeBtn');
   if (!btn) return;
-  
   btn.addEventListener('click', async ()=>{
-    const listRadius = Infinity; // CHANGED: keep ALL bars; only reorder
-    
-    // Disable button and show loading state
-    btn.disabled = true;
-    btn.textContent = 'Finding...';
-    setStatus('Getting your location…');
-    
+    setStatus('Locating…');
     try{
       const loc = await getCurrentLocation();
-      setStatus(`Found: ${loc.display}`);
-      map.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
+      setStatus('');
+      drawUserMarker(loc);
+      if (mapGL) mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
 
-      // CHANGED: keep ALL markers, draw origin dot, don't auto-fit (we'll frame user+nearest)
-      renderMarkers(loc, Infinity, true, { fit: false });
+      // Keep ALL pins visible
+      renderAllMarkersAndFit();
 
-      // CHANGED: list shows ALL bars, ordered by distance to you
-      renderList(loc, listRadius);
+      // List: ALL bars sorted by your location
+      renderListAll(loc);
 
-      // ADDED: show both the user dot and nearest bar in view
+      // Frame you + nearest
       focusUserAndNearest(loc);
-    }catch(e){
-      setStatus(e.message);
-      console.error('Geolocation error:', e);
-    }finally{
-      // Re-enable button
-      btn.disabled = false;
-      btn.textContent = 'Find Me';
+    } catch(e){
+      setStatus(e.message || 'Location failed');
     }
   });
 }
 
-function wireModal(){
-  const aboutBtn = document.getElementById('aboutBtn');
-  const aboutModal = document.getElementById('aboutModal');
-  const aboutClose = document.getElementById('aboutClose');
-  if (aboutBtn && aboutModal && aboutClose) {
-    const open = () => aboutModal.setAttribute('aria-hidden','false');
-    const close = () => aboutModal.setAttribute('aria-hidden','true');
-    aboutBtn.addEventListener('click', open);
-    aboutClose.addEventListener('click', close);
-    aboutModal.addEventListener('click', (e)=> { if (e.target === aboutModal) close(); });
-    document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') close(); });
-  }
-}
-
-// ===== NEW: Show/Hide List toggle (mobile) =====
+// ===== Show/Hide List toggle — map becomes half-height when list shown =====
 function wireListToggle(){
-  const btn = document.getElementById('toggleListBtn');
-  if (!btn) return;
+  const btn = $('#toggleListBtn');
+  const listEl = $('#list');
+  if (!btn || !listEl) return;
 
-  const update = () => {
-    const hidden = document.body.classList.contains('list-hidden');
-    // CHANGED: reversed arrows per UX request
-    btn.textContent = hidden ? 'Show list ↑' : 'Hide list ↓';
-    btn.setAttribute('aria-expanded', String(!hidden));
+  const applyState = (shown) => {
+    document.body.classList.toggle('list-shown', shown);
+    btn.textContent = shown ? 'Hide list ↓' : 'Show list ↑';
+    btn.setAttribute('aria-expanded', String(shown));
+    setTimeout(()=> { if (mapGL && typeof mapGL.resize === 'function') mapGL.resize(); }, 50);
   };
 
+  // init based on current class
+  applyState(document.body.classList.contains('list-shown'));
+
   btn.addEventListener('click', () => {
-    document.body.classList.toggle('list-hidden');
-    update();
-
-    // Keep tiles crisp after layout change
-    if (window.map && typeof map.resize === 'function') map.resize();
-
-    // If we just revealed the list, scroll to its top after layout settles (Safari-friendly)
-    if (!document.body.classList.contains('list-hidden')) {
-      const listEl = document.getElementById('list');
-      if (listEl) {
-        setTimeout(() => {
-          const y = listEl.getBoundingClientRect().top + window.pageYOffset - 6;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }, 50);
-      }
+    const nowShown = !document.body.classList.contains('list-shown');
+    applyState(nowShown);
+    if (nowShown) {
+      setTimeout(()=>{
+        const y = listEl.getBoundingClientRect().top + window.pageYOffset - 6;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }, 60);
     }
   });
-
-  update();
 }
 
-// Mobile detection and landscape warning
-function initMobileDetection() {
-  const landscapeWarning = document.getElementById('landscape-warning');
-  if (!landscapeWarning) return;
-
-  function isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           (navigator.maxTouchPoints && navigator.maxTouchPoints > 1) ||
-           window.innerWidth <= 768;
+// ===== Map init =====
+function ensureMap(){
+  if (mapGL) return;
+  if (typeof maplibregl === 'undefined') {
+    console.error('MapLibre GL JS not loaded');
+    return;
   }
-
-  function checkOrientation() {
-    if (isMobileDevice() && window.innerWidth > window.innerHeight && window.innerWidth <= 900) {
-      landscapeWarning.classList.add('mobile-landscape');
-    } else {
-      landscapeWarning.classList.remove('mobile-landscape');
-    }
+  const mapEl = $('#map');
+  if (!mapEl){
+    console.warn('No #map element found — cannot initialize map.');
+    return;
   }
-
-  // Check on load and orientation change
-  checkOrientation();
-  window.addEventListener('orientationchange', () => {
-    setTimeout(checkOrientation, 100); // Small delay to let orientation settle
+  mapGL = new maplibregl.Map({
+    container: 'map',
+    style: MAPTILER_STYLE, // your live style
+    center: [-98.5795, 39.8283], // USA center
+    zoom: 4
   });
-  window.addEventListener('resize', checkOrientation);
+  mapGL.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  mapGL.on('error', (e)=>{
+    if (e?.error?.status === 403) {
+      console.error('Map style 403. Check MAPTILER_KEY or allowed domains.');
+      setStatus('Map style blocked (403). Double-check MapTiler key/domains.');
+    }
+  });
 }
 
 // ===== Boot =====
-initMap();
-wireSearch();
-wireFindMe();
-wireModal();
-wireListToggle();        // NEW: replaces old wireMapToggle()
-initMobileDetection();
+async function boot(){
+  ensureMap();
+  wireSearch();
+  wireFindMe();
 
-// CHANGED: Start map-first on small screens (hide list by default)
-if (window.innerWidth <= 900) {
-  document.body.classList.add('list-hidden');
+  try{
+    await loadBars();
+
+    // Map: show ALL pins and fit
+    renderAllMarkersAndFit();
+
+    // List: sort by California Memorial Stadium
+    const memorialStadium = { lat: 37.8719, lon: -122.2600 };
+    renderListAll(memorialStadium);
+  } catch(e){
+    console.error(e);
+  }
 }
 
-// Optional: if the screen gets wide (rotate / desktop), auto-show the list
-window.addEventListener('resize', () => {
-  if (window.innerWidth > 900) {
-    document.body.classList.remove('list-hidden');
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  boot();
+  wireListToggle();
 });
 
-main();
+// Expose a few helpers for quick console checks
+window.CalBars = { loadBars, geocode, nearestBarTo, renderAllMarkersAndFit, renderListAll, haversine };

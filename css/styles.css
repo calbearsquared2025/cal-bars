@@ -166,6 +166,39 @@ main {
 #results small { color: #475569; }
 
 /* ========= Footer ========= */
+/* Structured results styling (matches renderListAll) */
+#results { list-style: none; padding-left: 0; }
+.res-item { margin: 8px 0; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
+.res-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.res-name { font-weight: 700; color: #0f172a; }
+.res-dist { font-variant-numeric: tabular-nums; color: #64748b; font-weight: 700; }
+.res-meta { color: #475569; font-size: 0.92rem; margin-top: 2px; }
+.res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.res-link {
+  color: #fff; background: #0b5cab; padding: 4px 8px; border-radius: 999px;
+  font-size: 0.82rem; text-decoration: none;
+}
+.res-link:hover { filter: brightness(0.95); }
+.res-pill {
+  color: #1f2937; background: #fff3d1; border: 1px solid #ffe39b;
+  padding: 3px 8px; border-radius: 999px; font-size: 0.82rem;
+}
+.res-note { color: #6b7280; font-size: 0.82rem; }
+
+/* Custom map markers */
+.cal-pin svg {
+  display: block;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
+}
+.you-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FDB515;      /* Cal gold */
+  border: 2px solid #002053;/* deep blue ring */
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
+}
+
 footer {
   padding: 10px 16px;
   border-top: 1px solid #e5e7eb;
@@ -243,13 +276,16 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   }
 
   /* When list is visible, give list some room (map still tall) */
-  body:not(.list-hidden) #map {
+   body:not(.list-hidden) #map {
     flex-basis: 50svh; /* tweak 48–52 to taste */
   }
 
+  }
+
   /* When list is hidden, give everything to the map */
-  body.list-hidden #list { display: none; }
-  body.list-hidden #map { flex: 1 1 auto; min-height: 60svh; }
+  body:not(.list-shown) #list { display: none; }
+  body:not(.list-shown) #map  { flex: 1 1 auto; min-height: 60svh; }
+
 
   /* List area */
   #list {
@@ -283,6 +319,8 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   /* Keep Find Me same width as other buttons; avoid shrinking */
   #findMeBtn { flex-shrink: 0; }
 }
+  /* Smooth height transitions on toggle */
+  #map, #list { transition: height 180ms ease, max-height 180ms ease, flex-basis 180ms ease; }
 
 /* ========= Very small phones ========= */
 @media (max-width: 360px) {

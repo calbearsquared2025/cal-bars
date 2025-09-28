@@ -9,30 +9,28 @@
     gtag('js', new Date()); gtag('config', 'G-CZV3JSBNJK');
   </script>
 
-<!-- Open Graph / iMessage -->
-<meta property="og:title" content="California Golden Bars — Find Your Local Cal Bar!" />
-<meta property="og:description" content="Crowdsourced map of Cal bars where Bears gather to watch games. Add your spot!" />
-<meta property="og:image" content="https://calgoldenbars.com/assets/social-preview.png.png" />
-<meta property="og:image:width" content="1200" />
-<meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="California Golden Bars - Interactive map showing Cal bars across the country" />
-<meta property="og:url" content="https://calgoldenbars.com" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="California Golden Bars" />
+  <!-- Open Graph / iMessage -->
+  <meta property="og:title" content="California Golden Bars — Find Your Local Cal Bar!" />
+  <meta property="og:description" content="Crowdsourced map of Cal bars where Bears gather to watch games. Add your spot!" />
+  <meta property="og:image" content="https://calgoldenbars.com/assets/social-preview.png.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="California Golden Bars - Interactive map showing Cal bars across the country" />
+  <meta property="og:url" content="https://calgoldenbars.com" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="California Golden Bars" />
 
-<!-- Twitter -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="California Golden Bars — Find Your Local Cal Bar!" />
-<meta name="twitter:description" content="Crowdsourced map of Cal bars where Bears gather to watch games. Add your spot!" />
-<meta name="twitter:image" content="https://calgoldenbars.com/assets/social-preview.png.png" />
-<meta name="twitter:image:alt" content="California Golden Bars - Interactive map showing Cal bars across the country" />
-<meta name="twitter:site" content="@calbearsquared" />
-<meta name="twitter:creator" content="@calbearsquared" />
-
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="California Golden Bars — Find Your Local Cal Bar!" />
+  <meta name="twitter:description" content="Crowdsourced map of Cal bars where Bears gather to watch games. Add your spot!" />
+  <meta name="twitter:image" content="https://calgoldenbars.com/assets/social-preview.png.png" />
+  <meta name="twitter:image:alt" content="California Golden Bars - Interactive map showing Cal bars across the country" />
+  <meta name="twitter:site" content="@calbearsquared" />
+  <meta name="twitter:creator" content="@calbearsquared" />
 
   <meta charset="utf-8">
   <meta name="description" content="Find Cal bars near you! Interactive map of California Golden Bears watch parties and alumni bars across the country. Crowdsourced by fans, for fans.">
-  <!-- Single, safe-area viewport for iOS -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#003262">
   <meta name="mobile-web-app-capable" content="yes">
@@ -45,8 +43,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
-  
-  <!-- Preconnect to external resources -->
+
+  <!-- Preconnect -->
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://nominatim.openstreetmap.org">
 
@@ -87,15 +85,14 @@
 </header>
 
 <section id="controls" class="search-panel" role="search">
-  <input type="text" id="address" placeholder="Enter your address or city (e.g., Oakland, CA)" />
+  <input type="text" id="address" placeholder="Enter address, city, or ZIP" />
   <button id="searchBtn">Search</button>
   <button id="findMeBtn" title="Use your current location">Find Me</button>
-  <label title="Limit results by distance">
-    <input type="number" id="radius" inputmode="numeric" pattern="[0-9]*" value="50" min="1" max="1000"> miles
-  </label>
-<button id="toggleListBtn" class="mobile-only" aria-controls="list" aria-expanded="false">
-  Show list ↓
-</button>  <span id="status" aria-live="polite"></span>
+
+  <button id="toggleListBtn" class="mobile-only" aria-controls="list" aria-expanded="false">
+    Show list ↓
+  </button>
+  <span id="status" aria-live="polite"></span>
   <span id="barsCount" class="bars-count"></span>
 </section>
 
@@ -110,7 +107,8 @@
 <footer>
   <small>
     Website: <a href="https://x.com/calbearsquared">CalBearSquared</a> ·
-    <a href="#" id="dataSourceLink" target="_blank" rel="noopener">Source</a> ·
+    <!-- ✅ Your live CSV Source link preserved exactly -->
+    <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&amp;single=true&amp;output=csv" id="dataSourceLink" target="_blank" rel="noopener">Source</a> ·
     <a href="javascript:void(0)" id="aboutBtn">About</a>
   </small>
 </footer>
