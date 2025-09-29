@@ -297,7 +297,7 @@ function renderListAll(loc){
   listEl.innerHTML = items.map(r=>{
     const dist = Number.isFinite(r._dist) ? (Math.round(r._dist*10)/10).toFixed(1) : '–';
     const addr = [r.address, r.city, r.state, r.zip].filter(Boolean).join(', ');
-    const link = r.url ? `<a class="res-link" href="${r.url}" target="_blank" rel="noopener">Maps</a>` : '';
+    const link = r.url ? `<a class="res-link" href="${r.url}" target="_blank" rel="noopener">Google Maps</a>` : '';
     return `<li class="res-item">
       <div class="res-row">
         <span class="res-name">${r.name || 'Bar'}</span>
@@ -461,6 +461,21 @@ document.addEventListener('DOMContentLoaded', () => {
   boot();
   wireListToggle();
 });
+// Ensure desktop starts with list visible, regardless of prior classes
+const desktopMQ = window.matchMedia('(hover: hover) and (pointer: fine)');
+function applyDesktopListState(e){
+  const isDesktop = e.matches ?? desktopMQ.matches;
+  if (isDesktop) {
+    document.body.classList.add('list-shown');
+    document.body.classList.remove('list-hidden');
+  }
+  // Resize map after layout change
+  if (window.mapGL && typeof mapGL.resize === 'function') {
+    setTimeout(() => mapGL.resize(), 50);
+  }
+}
+applyDesktopListState(desktopMQ);
+desktopMQ.addEventListener('change', applyDesktopListState);
 
 // Expose a few helpers for quick console checks
 window.CalBars = { loadBars, geocode, nearestBarTo, renderAllMarkersAndFit, renderListAll, haversine };
