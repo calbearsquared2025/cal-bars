@@ -93,21 +93,23 @@ body {
   background: #e6eef6;
   border-bottom: 1px solid #cbd5e1;
 }
-.search-panel input[type="text"] {
-  flex: 1 1 600px;
-  min-width: 220px;
-  padding: 8px;
+
   .search-panel input[type="text"],
-.search-panel input[type="number"],
-.search-panel button {
+  .search-panel input[type="number"],
+  .search-panel button {
   font-size: 16px;           /* stops iOS focus zoom */
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation; /* prevents double-tap zoom on buttons */
 }
 
+.search-panel input[type="text"] {
+  flex: 1 1 600px;
+  min-width: 220px;
+  padding: 8px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
 }
+
 .search-panel input[type="number"] {
   width: 72px;
   padding: 6px;
