@@ -482,9 +482,25 @@ function wireListToggle(){
     }
   });
 }
+// Compute [ [minLon, minLat], [maxLon, maxLat] ] from loaded bars
+function getBarsExtent(){
+  let minLon =  Infinity, minLat =  Infinity;
+  let maxLon = -Infinity, maxLat = -Infinity;
+  for (const b of bars || []){
+    const lon = parseFloat(b.lon), lat = parseFloat(b.lat);
+    if (!isFinite(lon) || !isFinite(lat)) continue;
+    if (lon < minLon) minLon = lon;
+    if (lat < minLat) minLat = lat;
+    if (lon > maxLon) maxLon = lon;
+    if (lat > maxLat) maxLat = lat;
+  }
+  return (isFinite(minLon) && isFinite(minLat) && isFinite(maxLon) && isFinite(maxLat))
+    ? [[minLon, minLat], [maxLon, maxLat]]
+    : null;
+}
 
 // ===== Map init =====
-function ensureMap(){
+function ensureMap(initialBounds){
   if (mapGL) return;
   if (typeof maplibregl === 'undefined') {
     console.error('MapLibre GL JS not loaded');
@@ -495,45 +511,53 @@ function ensureMap(){
     console.warn('No #map element found — cannot initialize map.');
     return;
   }
-  mapGL = new maplibregl.Map({
-    container: 'map',
-    style: MAPTILER_STYLE, // your live style
-    center: [-98.5795, 39.8283], // USA center
-    zoom: 4
-  });
-  mapGL.addControl(new maplibregl.NavigationControl(), 'top-right');
-  
-// --- Legend control (inside the map, won't affect list layout)
-function createLegendControl(){
-  const ctrl = {
-    onAdd(){ 
-      const el = document.createElement('div');
-      el.className = 'maplibregl-ctrl map-legend';
-      el.innerHTML = `
-        <div class="legend-item">
-          <span class="legend-pin legend-official"></span>
-          Watch Parties/Promos
-        </div>
-        <div class="legend-item">
-          <span class="legend-pin legend-regular"></span>
-          Cal Bar
-        </div>
-      `;
-      this._container = el;
-      return el;
-    },
-    onRemove(){
-      if (this._container?.parentNode) {
-        this._container.parentNode.removeChild(this._container);
-      }
-      this._container = undefined;
-    }
-  };
-  return ctrl;
-}
 
-// Add legend to bottom-left corner of the map
-mapGL.addControl(createLegendControl(), 'bottom-left');
+  const opts = { container: 'map', style: MAPTILER_STYLE };
+
+  // Start at final bounds to avoid initial camera jump
+  if (initialBounds){
+    opts.bounds = initialBounds;                       // [[west,south],[east,north]]
+    opts.fitBoundsOptions = { padding: 64, maxZoom: 6 };
+  } else {
+    // Fallback if no bars yet
+    opts.center = [-98.5795, 39.8283];
+    opts.zoom = 4;
+  }
+
+  mapGL = new maplibregl.Map(opts);
+  mapGL.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  // --- Legend control (inside the map, won't affect list layout)
+  function createLegendControl(){
+    const ctrl = {
+      onAdd(){
+        const el = document.createElement('div');
+        el.className = 'maplibregl-ctrl map-legend';
+        el.innerHTML = `
+          <div class="legend-item">
+            <span class="legend-pin legend-official"></span>
+            Watch Parties/Promos
+          </div>
+          <div class="legend-item">
+            <span class="legend-pin legend-regular"></span>
+            Cal Bar
+          </div>
+        `;
+        this._container = el;
+        return el;
+      },
+      onRemove(){
+        if (this._container?.parentNode) {
+          this._container.parentNode.removeChild(this._container);
+        }
+        this._container = undefined;
+      }
+    };
+    return ctrl;
+  }
+
+  // Add legend to bottom-left corner of the map
+  mapGL.addControl(createLegendControl(), 'bottom-left');
 
   mapGL.on('error', (e)=>{
     if (e?.error?.status === 403) {
@@ -543,16 +567,20 @@ mapGL.addControl(createLegendControl(), 'bottom-left');
   });
 }
 
+
 // ===== Boot =====
 async function boot(){
-  ensureMap();
   wireSearch();
   wireFindMe();
 
   try{
     await loadBars();
 
-    // Map: show ALL pins and fit
+    // Create map already framed to all bars to avoid initial zoom jump
+    const extent = getBarsExtent();
+    ensureMap(extent);
+
+    // Map: show ALL pins and fit (no visible move if bounds already set)
     renderAllMarkersAndFit();
 
     // List: sort by California Memorial Stadium
@@ -562,6 +590,7 @@ async function boot(){
     console.error(e);
   }
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   boot();
