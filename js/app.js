@@ -31,6 +31,21 @@ let userMarker = null;
 const $ = (sel) => document.querySelector(sel);
 function setStatus(msg) { const el = $('#status'); if (el) el.textContent = msg || ''; }
 function setBarsCount(text) { const el = $('#barsCount'); if (el) el.textContent = text || ''; }
+// Show/hide the list programmatically and keep the toggle button in sync
+function setListShown(shown){
+  document.body.classList.toggle('list-shown', shown);
+  if (shown) document.body.classList.remove('list-hidden'); // defensive
+
+  const btn = $('#toggleListBtn');
+  if (btn){
+    btn.textContent = shown ? 'Hide list ↓' : 'Show list ↑';
+    btn.setAttribute('aria-expanded', String(shown));
+  }
+  // Map needs a resize after layout change
+  if (mapGL && typeof mapGL.resize === 'function'){
+    setTimeout(() => mapGL.resize(), 50);
+  }
+}
 
 // ===== CSV loader (strict headers) =====
 function normalizeBar(row){
@@ -359,6 +374,7 @@ function wireSearch(){
 
       // List: ALL bars sorted by the searched spot
       renderListAll(loc);
+      setListShown(true); // auto-show list on mobile
 
       // Frame you + nearest for context
       focusUserAndNearest(loc);
@@ -411,10 +427,8 @@ function wireListToggle(){
   if (!btn || !listEl) return;
 
   const applyState = (shown) => {
-    document.body.classList.toggle('list-shown', shown);
-    btn.textContent = shown ? 'Hide list ↓' : 'Show list ↑';
-    btn.setAttribute('aria-expanded', String(shown));
-    setTimeout(()=> { if (mapGL && typeof mapGL.resize === 'function') mapGL.resize(); }, 50);
+      setListShown(shown);
+
   };
 
   // init based on current class

@@ -69,7 +69,6 @@ body {
   margin: 0;                 /* ensure no extra spacing */
 }
 
-}
 .header .tagline { margin-top: 2px;}
 .header .tagline-link {  margin-bottom: 10px; color: #e6edf7; text-decoration: underline; font-size: 0.98rem; }
 .header .meta { color: #cfe0f4; font-size: 0.88rem; line-height: 1.25; }
@@ -98,6 +97,14 @@ body {
   flex: 1 1 600px;
   min-width: 220px;
   padding: 8px;
+  .search-panel input[type="text"],
+.search-panel input[type="number"],
+.search-panel button {
+  font-size: 16px;           /* stops iOS focus zoom */
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation; /* prevents double-tap zoom on buttons */
+}
+
   border: 1px solid #cbd5e1;
   border-radius: 6px;
 }
@@ -287,8 +294,6 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   /* When list is visible, give list some room (map still tall) */
    body:not(.list-hidden) #map {
     flex-basis: 40svh; /* tweak 48–52 to taste */
-  }
-
   }
 
   /* When list is hidden, give everything to the map */
