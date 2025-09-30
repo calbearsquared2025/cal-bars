@@ -13,6 +13,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+/* iOS: prevent focus zoom by keeping controls ≥16px */
+input,
+select,
+textarea,
+button {
+font-size: 16px; /* critical for iOS */
+}
+html { -webkit-text-size-adjust: 100%; }
 
 /* ========= Landscape Warning ========= */
 .landscape-warning {
@@ -96,6 +104,7 @@ body {
 }
 
   .search-panel input[type="text"],
+  .search-panel input[type="search"],
   .search-panel input[type="number"],
   .search-panel button {
   font-size: 16px;           /* stops iOS focus zoom */
