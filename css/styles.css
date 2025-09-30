@@ -43,7 +43,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: calc(10px + env(safe-area-inset-top)) 16px 10px 16px;
+  padding: 0 16px 10px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
   background: #003262; /* Berkeley Blue */
   color: #FDB515;      /* Cal Gold */
   border-bottom: 1px solid #0b2a55;
@@ -52,11 +53,11 @@ body {
 }
 .header::before {
   content: '';
-  position: fixed;
+  position: absolute;
   top: 0; left: 0; right: 0;
   height: env(safe-area-inset-top, 0px);
   background: #003262;
-  z-index: -1;
+  z-index: 0;
 }
 .header-stack { display: flex; flex-direction: column; gap: 2px; }
 .header .title {
@@ -155,12 +156,20 @@ body {
 
 /* ========= Main ========= */
 main {
-  flex: 1 1 auto;
+  flex: 1 1 auto; 
   min-height: 0;
-  display: grid;
-  grid-template-columns: 2fr 1fr;
+  display: flex;
+  flex-direction: column;
+
 }
-#map { width: 100%; height: 100%; }
+
+#map {
+  width: 100%;
+  height: auto;        /* allow flex sizing */
+  flex: 0 0 56svh;     /* default mobile height */
+  min-height: 220px;
+}
+
 #list {
   min-height: 0;
   overflow: auto;
@@ -171,8 +180,14 @@ main {
   font-size: 0.95rem;
   font-weight: 400;
 }
+
 #list h2 { margin: 8px 0 10px; color: #0f172a; font-size: 1.05rem; font-weight: 600; }
-#results { margin: 0; padding-left: 20px; }
+#results {
+  margin: 0;
+  list-style: none;
+  padding-left: 0;
+}
+
 #results li {
   margin: 8px 0;
   padding: 10px;
@@ -185,7 +200,6 @@ main {
 
 /* ========= Footer ========= */
 /* Structured results styling (matches renderListAll) */
-#results { list-style: none; padding-left: 0; }
 .res-item { margin: 8px 0; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
 .res-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .res-name { font-weight: 700; color: #0f172a; }
@@ -261,7 +275,6 @@ footer a, footer button.footer-link {
 a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset: 2px; }
 
 /* === iOS safe-area: header padding === */
-.header { padding-top: calc(env(safe-area-inset-top, 0px) + 10px); }
 @supports (padding: max(0px)) {
   .header { padding-top: max(env(safe-area-inset-top, 0px), 10px); }
 }
@@ -280,20 +293,7 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
 @media (max-width: 900px) {
   .mobile-only { display: inline-block; }
 
-  /* Map-first layout, list below */
-  main {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-
-  /* Default map height on mobile */
-  #map {
-    flex: 0 0 56svh;
-    min-height: 220px;
-  }
-
-  /* When list is visible, give list some room (map still tall) */
+   /* When list is visible, give list some room (map still tall) */
    body:not(.list-hidden) #map {
     flex-basis: 40svh; /* tweak 48–52 to taste */
   }

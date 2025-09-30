@@ -411,6 +411,7 @@ function wireFindMe(){
 
       // List: ALL bars sorted by your location
       renderListAll(loc);
+      setListShown(true);
 
       // Frame you + nearest
       focusUserAndNearest(loc);
