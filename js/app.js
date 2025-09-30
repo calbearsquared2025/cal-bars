@@ -17,7 +17,7 @@ const MAPTILER_KEY = (
 ) ? 'jNqIsIVa4dP9qv7vQ8fy' // PROD
   : 'jNqIsIVa4dP9qv7vQ8fy'; // DEV (replace with localhost key if needed)
 
-const MAPTILER_STYLE = `https://api.maptiler.com/maps/0199885d-821b-7d60-9aba-5656da203820/style.json?key=${MAPTILER_KEY}`;
+const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98cc3dbf3d7c/style.json?key=${MAPTILER_KEY}`;
 
 const DEFAULT_RADIUS_MILES = 50; // kept for possible future use
 
@@ -189,24 +189,40 @@ function getCurrentLocation(){
 
 // ===== Map + markers =====
 // === Custom Cal pin (blue gradient + gold dot), and a yellow "you" dot ===
+// Blue pin with gold dot (default)
 const CAL_PIN_SVG_RAW = `
 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
   <defs>
-    <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+    <linearGradient id="g-blue" x1="0" x2="0" y1="0" y2="1">
       <stop offset="0%" stop-color="#002676"/>
       <stop offset="100%" stop-color="#001b58"/>
     </linearGradient>
   </defs>
-  <path d="M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z" fill="url(#g)"/>
+  <path d="M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z" fill="url(#g-blue)"/>
   <circle cx="14" cy="14" r="6" fill="#FDB515"/>
 </svg>`;
 
-function makeCalPinEl(){
+// Gold pin with blue dot (official)
+const CAL_PIN_SVG_OFFICIAL = `
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
+  <defs>
+    <linearGradient id="g-gold" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0%" stop-color="#FDB515"/>
+      <stop offset="100%" stop-color="#e6a413"/>
+    </linearGradient>
+  </defs>
+  <path d="M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z" fill="url(#g-gold)"/>
+  <circle cx="14" cy="14" r="6" fill="#002676"/>
+</svg>`;
+
+
+function makeCalPinEl(isOfficial = false){
   const el = document.createElement('div');
   el.className = 'cal-pin';
-  el.innerHTML = CAL_PIN_SVG_RAW;
+  el.innerHTML = isOfficial ? CAL_PIN_SVG_OFFICIAL : CAL_PIN_SVG_RAW;
   return el;
 }
+
 
 function makeYouDotEl(){
   const el = document.createElement('div');
@@ -230,7 +246,8 @@ function drawUserMarker(loc){
 function addBarMarkerDefault(b){
   if (!mapGL) return null;
   const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
-  const mk = new maplibregl.Marker({ element: makeCalPinEl(), anchor: 'bottom' })
+  const isOfficial = !!(b.promo && /official/i.test(b.promo));
+  const mk = new maplibregl.Marker({ element: makeCalPinEl(isOfficial), anchor: 'bottom' })
     .setLngLat([parseFloat(b.lon), parseFloat(b.lat)])
     .setPopup(new maplibregl.Popup({ offset: 18 }).setHTML(
       `<strong>${b.name || 'Bar'}</strong>` +
@@ -306,8 +323,14 @@ function renderListAll(loc){
       ${addr ? `<div class="res-meta">${addr}</div>` : ''}
       <div class="res-actions">
         ${link}
-        ${r.promo ? `<span class="res-pill">${r.promo}</span>` : ''}
+       ${r.promo
+   ?    (/official/i.test(r.promo)
+         ? `<span class="res-pill">${r.promo}</span>`
+         : `<span class="res-note">${r.promo}</span>`)
+   : ''}
+
         ${r.tvs ? `<span class="res-note">${r.tvs}</span>` : ''}
+        ${r.details ? `<span class="res-note">${r.details}</span>` : ''}
         ${r.affiliation ? `<span class="res-note">${r.affiliation}</span>` : ''}
       </div>
     </li>`;
@@ -428,6 +451,38 @@ function ensureMap(){
     zoom: 4
   });
   mapGL.addControl(new maplibregl.NavigationControl(), 'top-right');
+  
+// --- Legend control (inside the map, won't affect list layout)
+function createLegendControl(){
+  const ctrl = {
+    onAdd(){ 
+      const el = document.createElement('div');
+      el.className = 'maplibregl-ctrl map-legend';
+      el.innerHTML = `
+        <div class="legend-item">
+          <span class="legend-pin legend-official"></span>
+          Watch Parties/Promos
+        </div>
+        <div class="legend-item">
+          <span class="legend-pin legend-regular"></span>
+          Cal Bar
+        </div>
+      `;
+      this._container = el;
+      return el;
+    },
+    onRemove(){
+      if (this._container?.parentNode) {
+        this._container.parentNode.removeChild(this._container);
+      }
+      this._container = undefined;
+    }
+  };
+  return ctrl;
+}
+
+// Add legend to bottom-left corner of the map
+mapGL.addControl(createLegendControl(), 'bottom-left');
 
   mapGL.on('error', (e)=>{
     if (e?.error?.status === 403) {

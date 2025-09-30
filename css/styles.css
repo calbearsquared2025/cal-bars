@@ -61,17 +61,28 @@ body {
 .header-stack { display: flex; flex-direction: column; gap: 2px; }
 .header .title {
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
+  font-weight: 700;          /* was 600 */
   font-size: 1.45rem;
-  line-height: 1.25;
+  line-height: 1.15;         /* was 1.25 */
   color: #FDB515;
-  letter-spacing: .2px;
+  letter-spacing: .1px;      /* was .2px */
+  margin: 0;                 /* ensure no extra spacing */
 }
-.header .tagline { margin-top: 2px; }
-.header .tagline-link { color: #e6edf7; text-decoration: underline; font-size: 0.98rem; }
+
+}
+.header .tagline { margin-top: 2px;}
+.header .tagline-link {  margin-bottom: 10px; color: #e6edf7; text-decoration: underline; font-size: 0.98rem; }
 .header .meta { color: #cfe0f4; font-size: 0.88rem; line-height: 1.25; }
+.header .meta a {
+  text-decoration: none;
+}
+.header .meta a:hover {
+  text-decoration: underline; /* still show on hover */
+}
+
 .header .disclaimer { color: #cfe0f4; font-size: 0.82rem; line-height: 1.2; }
 .header a { color: inherit; }
+
 
 /* ========= Search / Controls ========= */
 .search-panel {
@@ -161,8 +172,6 @@ main {
   background: #fff;
 }
 #results li strong { font-size: 0.98rem; font-weight: 600; letter-spacing: 0.1px; }
-#results a { color: #0b5cab; text-decoration: none; }
-#results a:hover { text-decoration: underline; }
 #results small { color: #475569; }
 
 /* ========= Footer ========= */
@@ -277,7 +286,7 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
 
   /* When list is visible, give list some room (map still tall) */
    body:not(.list-hidden) #map {
-    flex-basis: 50svh; /* tweak 48–52 to taste */
+    flex-basis: 40svh; /* tweak 48–52 to taste */
   }
 
   }
@@ -321,6 +330,47 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
 }
   /* Smooth height transitions on toggle */
   #map, #list { transition: height 180ms ease, max-height 180ms ease, flex-basis 180ms ease; }
+
+/* ===== Map legend (MapLibre control) ===== */
+.maplibregl-ctrl.map-legend{
+  background: rgba(255,255,255,0.95);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  font-size: 12px;
+  color: #334155;
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 38px; /* raise above MapTiler attribution */
+
+}
+
+.map-legend .legend-item{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.map-legend .legend-pin{
+  width: 14px;
+  height: 21px;
+  display: inline-block;
+  background-size: cover;
+}
+
+/* Blue pin with gold dot (regular) */
+.map-legend .legend-regular{
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='21' viewBox='0 0 28 42'><defs><linearGradient id='g-blue' x1='0' x2='0' y1='0' y2='1'><stop offset='0%' stop-color='%23002676'/><stop offset='100%' stop-color='%23001b58'/></linearGradient></defs><path d='M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z' fill='url(%23g-blue)'/><circle cx='14' cy='14' r='6' fill='%23FDB515'/></svg>");
+}
+
+/* Gold pin with blue dot (official) */
+.map-legend .legend-official{
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='21' viewBox='0 0 28 42'><defs><linearGradient id='g-gold' x1='0' x2='0' y1='0' y2='1'><stop offset='0%' stop-color='%23FDB515'/><stop offset='100%' stop-color='%23e6a413'/></linearGradient></defs><path d='M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z' fill='url(%23g-gold)'/><circle cx='14' cy='14' r='6' fill='%23002676'/></svg>");
+}
+
 
 /* ========= Very small phones ========= */
 @media (max-width: 360px) {
