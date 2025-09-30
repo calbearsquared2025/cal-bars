@@ -31,6 +31,13 @@ let userMarker = null;
 const $ = (sel) => document.querySelector(sel);
 function setStatus(msg) { const el = $('#status'); if (el) el.textContent = msg || ''; }
 function setBarsCount(text) { const el = $('#barsCount'); if (el) el.textContent = text || ''; }
+const esc = (s = '') => String(s).replace(/[&<>"']/g, m => ({
+'&': '&amp;',
+'<': '&lt;',
+'>': '&gt;',
+'"': '&quot;',
+"'": '&#39;'
+}[m]));
 // Show/hide the list programmatically and keep the toggle button in sync
 function setListShown(shown){
   document.body.classList.toggle('list-shown', shown);
@@ -71,10 +78,10 @@ function normalizeBar(row){
 }
 
 function getDataSourceUrl(){
-  const el = document.getElementById('dataSourceLink');
-  const href = el?.href;
-  return href && href !== location.href + '#' ? href : 'data/bars.csv';
+  const raw = document.getElementById('dataSourceLink')?.getAttribute('href') || '';
+  return raw && raw !== '#' ? raw : 'data/bars.csv';
 }
+
 
 function loadBars(){
   return new Promise((resolve, reject)=>{
@@ -260,20 +267,38 @@ function drawUserMarker(loc){
 }
 function addBarMarkerDefault(b){
   if (!mapGL) return null;
+
   const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
   const isOfficial = !!(b.promo && /official/i.test(b.promo));
+
+  // Escape text fields
+  const name = esc(b.name || 'Bar');
+  const safeAddr = esc(addr);
+  const promo = esc(b.promo || '');
+  const details = esc(b.details || '');
+  const tvs = esc(b.tvs || '');
+  const aff = esc(b.affiliation || '');
+
+  // Validate and escape URL
+  const linkHtml = b.url && /^https?:\/\//i.test(b.url)
+    ? `<br><a href="${esc(b.url)}" target="_blank" rel="noopener">Google Maps</a>`
+    : '';
+
   const mk = new maplibregl.Marker({ element: makeCalPinEl(isOfficial), anchor: 'bottom' })
     .setLngLat([parseFloat(b.lon), parseFloat(b.lat)])
-    .setPopup(new maplibregl.Popup({ offset: 18 }).setHTML(
-      `<strong>${b.name || 'Bar'}</strong>` +
-      (addr ? `<br>${addr}` : '') +
-      (b.url ? `<br><a href="${b.url}" target="_blank" rel="noopener">Google Maps</a>` : '') +
-      (b.promo ? `<br><em>${b.promo}</em>` : '') +
-      (b.details ? `<br>${b.details}` : '') +
-      (b.tvs ? `<br>${b.tvs}` : '') +
-      (b.affiliation ? `<br><small>${b.affiliation}</small>` : '')
-    ))
+    .setPopup(
+      new maplibregl.Popup({ offset: 18 }).setHTML(
+        `<strong>${name}</strong>` +
+        (addr ? `<br>${safeAddr}` : '') +
+        linkHtml +
+        (b.promo ? `<br><em>${promo}</em>` : '') +
+        (b.details ? `<br>${details}` : '') +
+        (b.tvs ? `<br>${tvs}` : '') +
+        (b.affiliation ? `<br><small>${aff}</small>` : '')
+      )
+    )
     .addTo(mapGL);
+
   barMarkers.push(mk);
   return mk;
 }
@@ -326,27 +351,40 @@ function renderListAll(loc){
     const d = haversine(loc.lat, loc.lon, parseFloat(b.lat), parseFloat(b.lon));
     return { ...b, _dist: d };
   }).sort((a,b)=> a._dist - b._dist);
+
   listEl.innerHTML = items.map(r=>{
     const dist = Number.isFinite(r._dist) ? (Math.round(r._dist*10)/10).toFixed(1) : '–';
     const addr = [r.address, r.city, r.state, r.zip].filter(Boolean).join(', ');
-    const link = r.url ? `<a class="res-link" href="${r.url}" target="_blank" rel="noopener">Google Maps</a>` : '';
+
+    // Escape text fields
+    const safe = {
+      name: esc(r.name || 'Bar'),
+      addr: esc(addr),
+      promo: esc(r.promo || ''),
+      tvs: esc(r.tvs || ''),
+      details: esc(r.details || ''),
+      aff: esc(r.affiliation || '')
+    };
+
+    // Validate and escape URL
+    const link = r.url && /^https?:\/\//i.test(r.url)
+      ? `<a class="res-link" href="${esc(r.url)}" target="_blank" rel="noopener">Google Maps</a>`
+      : '';
+
     return `<li class="res-item">
       <div class="res-row">
-        <span class="res-name">${r.name || 'Bar'}</span>
+        <span class="res-name">${safe.name}</span>
         <span class="res-dist">${dist} mi</span>
       </div>
-      ${addr ? `<div class="res-meta">${addr}</div>` : ''}
+      ${addr ? `<div class="res-meta">${safe.addr}</div>` : ''}
       <div class="res-actions">
         ${link}
-       ${r.promo
-   ?    (/official/i.test(r.promo)
-         ? `<span class="res-pill">${r.promo}</span>`
-         : `<span class="res-note">${r.promo}</span>`)
-   : ''}
-
-        ${r.tvs ? `<span class="res-note">${r.tvs}</span>` : ''}
-        ${r.details ? `<span class="res-note">${r.details}</span>` : ''}
-        ${r.affiliation ? `<span class="res-note">${r.affiliation}</span>` : ''}
+        ${r.promo ? (/official/i.test(r.promo)
+          ? `<span class="res-pill">${safe.promo}</span>`
+          : `<span class="res-note">${safe.promo}</span>`) : ''}
+        ${r.tvs ? `<span class="res-note">${safe.tvs}</span>` : ''}
+        ${r.details ? `<span class="res-note">${safe.details}</span>` : ''}
+        ${r.affiliation ? `<span class="res-note">${safe.aff}</span>` : ''}
       </div>
     </li>`;
   }).join('');
@@ -367,7 +405,6 @@ function wireSearch(){
       const loc = await geocode(q);
       setStatus('');
       drawUserMarker(loc);
-      if (mapGL) mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 11 });
 
       // Keep ALL pins visible
       renderAllMarkersAndFit();
@@ -404,7 +441,6 @@ function wireFindMe(){
       const loc = await getCurrentLocation();
       setStatus('');
       drawUserMarker(loc);
-      if (mapGL) mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
 
       // Keep ALL pins visible
       renderAllMarkersAndFit();
@@ -531,21 +567,6 @@ document.addEventListener('DOMContentLoaded', () => {
   boot();
   wireListToggle();
 });
-// Ensure desktop starts with list visible, regardless of prior classes
-const desktopMQ = window.matchMedia('(hover: hover) and (pointer: fine)');
-function applyDesktopListState(e){
-  const isDesktop = e.matches ?? desktopMQ.matches;
-  if (isDesktop) {
-    document.body.classList.add('list-shown');
-    document.body.classList.remove('list-hidden');
-  }
-  // Resize map after layout change
-  if (window.mapGL && typeof mapGL.resize === 'function') {
-    setTimeout(() => mapGL.resize(), 50);
-  }
-}
-applyDesktopListState(desktopMQ);
-desktopMQ.addEventListener('change', applyDesktopListState);
 
 // Expose a few helpers for quick console checks
 window.CalBars = { loadBars, geocode, nearestBarTo, renderAllMarkersAndFit, renderListAll, haversine };
