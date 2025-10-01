@@ -251,7 +251,7 @@ main {
 .res-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .res-name { font-weight: 700; color: #0f172a; }
 .res-dist { font-variant-numeric: tabular-nums; color: #64748b; font-weight: 700; }
-.res-meta { color: #475569; font-size: 0.92rem; margin-top: 2px; }
+.res-meta { color: #475569; font-size: 0.75rem; margin-top: 2px; }
 .res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
 .res-link {
   color: #fff; background: #003262; padding: 4px 8px; border-radius: 999px;
@@ -508,8 +508,8 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 }
 
 .popup-card .res-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.popup-card .res-name {font-size: 1.1rem; font-weight: 700; color:#0f172a}
-.popup-card .res-meta { font-size: 0.85rem; color: #475569; margin-top: 2px; }
+.popup-card .res-name {font-size: 1.0rem; font-weight: 700; color:#0f172a}
+.popup-card .res-meta { font-size: 0.75rem; color: #475569; margin-top: 2px; }
 
 /* Reuse list action styling; ensure inline items don't dangle */
 .popup-card .res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
@@ -567,6 +567,26 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   font: inherit;
   color: inherit;
 }
+/* prevent click/tap fill on the legend toggle */
+.map-legend .legend-toggle {
+  -webkit-tap-highlight-color: transparent; /* iOS/Android tap flash */
+}
+
+/* no background or glow on click/focus (mouse/touch) */
+.map-legend .legend-toggle:active,
+.map-legend .legend-toggle:focus {
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* keep only keyboard focus glow */
+.map-legend .legend-toggle:focus-visible {
+  background: transparent;             /* ensure no fill */
+  box-shadow: 0 0 0 2px rgba(253,181,21,.25);
+  border-radius: 8px;
+}
+
 
 /* Mini (collapsed) view: two pins only */
 .map-legend.is-collapsed .legend-full { display: none; }
