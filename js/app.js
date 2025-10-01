@@ -1,15 +1,3 @@
-/* ---------------------------------
-   Cal Bars — app.js (final, lean)
-   - Always show ALL pins on the map
-   - Always show ALL bars in the list, sorted by distance
-   - Initial list sorted from Cal Memorial Stadium
-   - ZIP-aware geocoding
-   - Uses mapGL (no window.map collisions)
-   - Loads bars from footer #dataSourceLink (published Google Sheets CSV)
-   - Strict CSV headers:
-     name,address,city,state,zip,lat,lon,url,promo,details,tvs,affiliation,submitted_as,place_id
----------------------------------- */
-
 // ===== MapTiler (vector) — your live config =====
 const ORIGIN = location.hostname;
 const MAPTILER_KEY = (
@@ -26,6 +14,14 @@ let mapGL = null;
 let bars = [];            // populated by loadBars()
 let barMarkers = [];
 let userMarker = null;
+
+// ===== Increasing Padding =====
+function uiPadding() {
+  const isMobile = window.matchMedia('(max-width: 900px)').matches;
+  // extra bottom so the bar pin + popup clear legend/attribution/safe-area
+  if (isMobile) return { top: 80, right: 48, bottom: 220, left: 48 };
+  return { top: 80, right: 80, bottom: 140, left: 80 };
+}
 
 // ===== DOM helpers =====
 const $ = (sel) => document.querySelector(sel);
@@ -271,37 +267,47 @@ function addBarMarkerDefault(b){
   const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
   const isOfficial = !!(b.promo && /official/i.test(b.promo));
 
-  // Escape text fields
-  const name = esc(b.name || 'Bar');
-  const safeAddr = esc(addr);
-  const promo = esc(b.promo || '');
-  const details = esc(b.details || '');
-  const tvs = esc(b.tvs || '');
-  const aff = esc(b.affiliation || '');
+  // Escape text
+  const safe = {
+    name: esc(b.name || 'Bar'),
+    addr: esc(addr),
+    promo: esc(b.promo || ''),
+    details: esc(b.details || ''),
+    tvs: esc(b.tvs || ''),
+    aff: esc(b.affiliation || '')
+  };
 
-  // Validate and escape URL
+  // Validate URL
   const linkHtml = b.url && /^https?:\/\//i.test(b.url)
-    ? `<br><a href="${esc(b.url)}" target="_blank" rel="noopener">Google Maps</a>`
+    ? `<div class="popup-link"><a href="${esc(b.url)}" target="_blank" rel="noopener">Open in Google&nbsp;Maps</a></div>`
     : '';
+
+  const html = `
+    <div class="popup">
+      <div class="popup-title">${safe.name}${isOfficial ? ' <span class="pill">Official</span>' : ''}</div>
+      ${addr ? `<div class="popup-addr">${safe.addr}</div>` : ''}
+      ${safe.promo ? `<div class="popup-note">${safe.promo}</div>` : ''}
+      ${safe.tvs ? `<div class="popup-note">${safe.tvs}</div>` : ''}
+      ${safe.details ? `<div class="popup-note">${safe.details}</div>` : ''}
+      ${safe.aff ? `<div class="popup-note">${safe.aff}</div>` : ''}
+      ${linkHtml}
+    </div>
+  `;
+
+  const isMobile = window.matchMedia('(max-width: 900px)').matches;
+  const popup = new maplibregl.Popup({ offset: isMobile ? 28 : 18 }).setHTML(html);
 
   const mk = new maplibregl.Marker({ element: makeCalPinEl(isOfficial), anchor: 'bottom' })
     .setLngLat([parseFloat(b.lon), parseFloat(b.lat)])
-    .setPopup(
-      new maplibregl.Popup({ offset: 18 }).setHTML(
-        `<strong>${name}</strong>` +
-        (addr ? `<br>${safeAddr}` : '') +
-        linkHtml +
-        (b.promo ? `<br><em>${promo}</em>` : '') +
-        (b.details ? `<br>${details}` : '') +
-        (b.tvs ? `<br>${tvs}` : '') +
-        (b.affiliation ? `<br><small>${aff}</small>` : '')
-      )
-    )
+    .setPopup(popup)
     .addTo(mapGL);
 
+  // Tag marker to find it later
+  mk.__bar = b;
   barMarkers.push(mk);
   return mk;
 }
+
 
 
 function addBarMarkerCompat(b){
@@ -324,7 +330,7 @@ function renderAllMarkersAndFit(){
   if (barMarkers.length && mapGL){
     const bounds = new maplibregl.LngLatBounds();
     barMarkers.forEach(m => bounds.extend(m.getLngLat()));
-    mapGL.fitBounds(bounds, { padding: 64, maxZoom: 6, duration: 0 });
+    mapGL.fitBounds(bounds, { padding: uiPadding(), maxZoom: 6, duration: 0 });
   }
 }
 
@@ -332,15 +338,26 @@ function renderAllMarkersAndFit(){
 function focusUserAndNearest(loc){
   if (!mapGL) return;
   const nb = nearestBarTo(loc.lat, loc.lon);
-  if (nb){
-    const bounds = new maplibregl.LngLatBounds();
-    bounds.extend([loc.lon, loc.lat]);
-    bounds.extend([nb.lon, nb.lat]);
-    mapGL.fitBounds(bounds, { padding: 80, maxZoom: 12, duration: 600 });
-  } else {
+  if (!nb){
     mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
+    return;
   }
+
+  const bounds = new maplibregl.LngLatBounds();
+  bounds.extend([loc.lon, loc.lat]);
+  bounds.extend([nb.lon, nb.lat]);
+
+  const pad = uiPadding();
+  // Ask MapLibre for a camera that respects our asymmetric padding
+  const cam = mapGL.cameraForBounds(bounds, { padding: pad });
+  // Prevent over-zoom when points are extremely close (mobile issue)
+  const MAX_REASONABLE_Z = 15;
+  if (cam && typeof cam.zoom === 'number') cam.zoom = Math.min(cam.zoom, MAX_REASONABLE_Z);
+
+  if (cam) mapGL.easeTo({ ...cam, duration: 600 });
+  else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z, duration: 600 });
 }
+
 
 // ===== List: ALWAYS show ALL bars, sorted by distance to `loc` =====
 function renderListAll(loc){
@@ -547,7 +564,7 @@ function ensureMap(initialBounds){
   // Start at final bounds to avoid initial camera jump
   if (initialBounds){
     opts.bounds = initialBounds;                       // [[west,south],[east,north]]
-    opts.fitBoundsOptions = { padding: 64, maxZoom: 6 };
+    opts.fitBoundsOptions = { padding: uiPadding(), maxZoom: 6 };
   } else {
     // Fallback if no bars yet
     opts.center = [-98.5795, 39.8283];
@@ -634,6 +651,18 @@ document.addEventListener('DOMContentLoaded', () => {
   wireAboutModal(); // <-- add this line
 
 });
+
+// Minimal debounce
+const _debounce = (fn, d=200) => {
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), d); };
+};
+
+window.addEventListener('orientationchange', () => { if (mapGL) mapGL.resize(); });
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', _debounce(() => { if (mapGL) mapGL.resize(); }, 200));
+}
+
 
 // Expose a few helpers for quick console checks
 window.CalBars = { loadBars, geocode, nearestBarTo, renderAllMarkersAndFit, renderListAll, haversine };
