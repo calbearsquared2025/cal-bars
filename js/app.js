@@ -476,6 +476,7 @@ function wireSearch(){
       // Update list + show it (mobile). This changes layout height.
       renderListAll(loc);
       setListShown(true);
+      window.Legend?.collapse();
 
       // After layout settles, cancel any prior camera moves, resize, then focus
       requestAnimationFrame(() => {
@@ -605,6 +606,7 @@ function wireFindMe(){
       // Update list + show it (mobile). This changes layout height.
       renderListAll(loc);
       setListShown(true);
+      window.Legend?.collapse();
 
       // After layout settles, cancel any prior camera moves, resize, then focus
       requestAnimationFrame(() => {
@@ -670,11 +672,14 @@ function wireListToggle(){
     const nowShown = !document.body.classList.contains('list-shown');
     applyState(nowShown);
     if (nowShown) {
+      window.Legend?.collapse(); // <— collapse legend when list opens
       setTimeout(()=>{
         const y = listEl.getBoundingClientRect().top + window.pageYOffset - 6;
         window.scrollTo({ top: y, behavior: 'smooth' });
-      }, 60);
-    }
+  }, 60);
+}
+
+    
   });
 }
 
@@ -829,9 +834,18 @@ function createLegendControl({ collapsedDefault = true } = {}) {
 
       toggleBtn = container.querySelector('.legend-toggle');
       toggleBtn.addEventListener('click', onToggle);
+      // expose a tiny API for other code paths (safe if not yet created)
+window.Legend = {
+  collapse(){ isCollapsed = true; updateUI(); },
+  expand(){ isCollapsed = false; updateUI(); },
+  toggle(){ onToggle(new Event('click')); }
+};
+
       updateUI();
       return container;
     },
+
+    
     onRemove() {
       if (toggleBtn) toggleBtn.removeEventListener('click', onToggle);
       if (container && container.parentNode) container.parentNode.removeChild(container);
