@@ -101,6 +101,8 @@ html { -webkit-text-size-adjust: 100%; }
   padding: 8px 16px;
   background: #e6eef6;
   border-bottom: 1px solid #cbd5e1;
+  position: relative;  /* keep this */
+  z-index: 20;         /* new: ensures dropdown sits above header panel */
 }
 
   .search-panel input[type="text"],
@@ -165,6 +167,45 @@ html { -webkit-text-size-adjust: 100%; }
 }
 #toggleListBtn:hover { filter: brightness(0.97); }
 
+#autocomplete-list {
+  position: absolute;
+  top: 100%;  /* directly under input */
+  left: 0; 
+  right: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: auto; /* instead of 100%, so it fits panel */
+  max-height: 200px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 2px 0 0;
+  padding: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+  z-index: 2000; /* above map + controls */
+}
+
+/* start hidden */
+#autocomplete-list { display: none; }
+
+/* show only when JS adds .open */
+#autocomplete-list.open { display: block; }
+
+/* also hide if empty, as a safety */
+#autocomplete-list:empty { display: none; }
+
+
+#autocomplete-list li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+#autocomplete-list li:hover,
+#autocomplete-list li.active {
+  background: #f0f4ff;
+}
+
+
 /* ========= Main ========= */
 main {
   flex: 1 1 auto; 
@@ -212,6 +253,8 @@ main {
 /* ========= Footer ========= */
 /* Structured results styling (matches renderListAll) */
 .res-item { margin: 8px 0; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
+.res-item.is-active { outline: 1px solid #003262; outline-offset: 2px; }
+.res-item[aria-selected="true"] { background: #f3f6fb; }
 .res-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .res-name { font-weight: 700; color: #0f172a; }
 .res-dist { font-variant-numeric: tabular-nums; color: #64748b; font-weight: 700; }
@@ -284,7 +327,12 @@ footer a, footer button.footer-link {
 }
 
 /* ========= Focus styles ========= */
-a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset: 2px; }
+/* Replace bright gold outlines with soft shadow */
+a:focus, button:focus, input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(253, 181, 21, 0.25); /* subtle Cal gold glow */
+  border-radius: 4px; /* optional: makes the glow look smoother */
+}
 
 /* === iOS safe-area: header padding === */
 @supports (padding: max(0px)) {
@@ -350,35 +398,63 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   /* Smooth height transitions on toggle */
   #map, #list { transition: height 180ms ease, max-height 180ms ease, flex-basis 180ms ease; }
 
+.ac-wrap {
+  position: relative;
+  flex: 1 1 600px;
+  min-width: 220px;
+}
+.ac-wrap input[type="text"] { width: 100%; }
+
+
 /* ===== Map legend (MapLibre control) ===== */
-.maplibregl-ctrl.map-legend{
+.maplibregl-ctrl.map-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   background: rgba(255,255,255,0.95);
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  padding: 8px 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  padding: 6px 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06); /* subtle base */
   font-size: 12px;
   color: #334155;
+  margin-bottom: 38px; /* sit above attribution */
+}
+
+/* Toggle button (“chip”) */
+.map-legend .legend-toggle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 2px 4px;
+  margin: 0;
   display: inline-flex;
-  gap: 12px;
   align-items: center;
-  margin-bottom: 38px; /* raise above MapTiler attribution */
-
+  gap: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
 }
 
-.map-legend .legend-item{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+/* No default outline; custom, faint focus for keyboard users */
+.map-legend .legend-toggle:focus { outline: none; }
+.map-legend .legend-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(253, 181, 21, 0.25); /* subtle Cal gold glow */
+  border-radius: 8px;
 }
 
-.map-legend .legend-pin{
-  width: 14px;
-  height: 21px;
-  display: inline-block;
-  background-size: cover;
+/* Motion (respect reduced motion) */
+@media (prefers-reduced-motion: no-preference) {
+  .map-legend,
+  .map-legend .legend-toggle {
+    transition: box-shadow 160ms ease, background 160ms ease, filter 120ms ease;
+  }
 }
+.map-legend .legend-toggle:hover { filter: brightness(0.98); }
+
+/* Items & pins */
+.map-legend .legend-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.map-legend .legend-pin { width: 14px; height: 21px; display: inline-block; background-size: cover; }
 
 /* Blue pin with gold dot (regular) */
 .map-legend .legend-regular{
@@ -449,7 +525,60 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
 .nowrap { white-space: nowrap; }
 .res-link, .res-note, .res-meta { word-break: break-word; }
 
+/* Ensure compact attribution is visible on mobile */
 @media (max-width: 900px) {
-  /* keep the pill small, don’t force min-width */
-/* Ensure collapsed state hides text only when compact AND not expanded */
-.maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-ctrl-attrib-expanded) 
+  .maplibregl-ctrl-attrib.maplibregl-compact {
+    display: block; /* keep it visible */
+  }
+}
+
+
+/* Collapsible legend states */
+.map-legend.is-collapsible {
+  padding: 6px 8px;
+}
+
+.map-legend .legend-toggle {
+  /* make the whole chip a button */
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+/* Mini (collapsed) view: two pins only */
+.map-legend.is-collapsed .legend-full { display: none; }
+.map-legend.is-collapsed .legend-mini { display: inline-flex; gap: 8px; }
+
+/* Expanded view: rows with labels */
+.map-legend:not(.is-collapsed) .legend-mini { display: none; }
+.map-legend:not(.is-collapsed) .legend-full {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Slightly bigger hit target in collapsed mode */
+.map-legend.is-collapsed .legend-toggle {
+  padding: 2px 2px;
+}
+
+/* Make pins look crisp at small size */
+.map-legend .legend-pin {
+  width: 14px;
+  height: 21px;
+  background-size: cover;
+  display: inline-block;
+}
+
+/* Optional: subtle hover */
+.map-legend .legend-toggle:hover { filter: brightness(0.98); }
+.map-legend .legend-toggle:focus { outline: 2px solid #FDB515; outline-offset: 2px; }
+   

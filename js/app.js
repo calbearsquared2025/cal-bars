@@ -34,6 +34,39 @@ const esc = (s = '') => String(s).replace(/[&<>"']/g, m => ({
 '"': '&quot;',
 "'": '&#39;'
 }[m]));
+
+function findMarkerByCoords(lat, lon) {
+  const EPS = 1e-5;
+  return barMarkers.find(m => {
+    const ll = m.getLngLat();
+    return Math.abs(ll.lat - (+lat)) < EPS && Math.abs(ll.lng - (+lon)) < EPS;
+  }) || null;
+}
+
+function focusBar(lat, lon, { openPopup = true } = {}) {
+  if (!mapGL) return;
+  try { mapGL.stop(); } catch(_) {}
+  try { mapGL.resize(); } catch(_) {}
+
+  const center = [Number(lon), Number(lat)];
+  const targetZoom = Math.max(mapGL.getZoom() || 0, 14);
+
+  mapGL.easeTo({ center, zoom: targetZoom, duration: 500, essential: true });
+
+  if (openPopup) {
+    const mk = findMarkerByCoords(lat, lon);
+    if (mk && mk.getPopup) {
+      const onEnd = () => {
+        try { mk.togglePopup(); } catch(_) {}
+        mapGL.off('moveend', onEnd); // clean up
+      };
+      mapGL.on('moveend', onEnd);
+    }
+  }
+}
+
+
+
 // Show/hide the list programmatically and keep the toggle button in sync
 function setListShown(shown){
   document.body.classList.toggle('list-shown', shown);
@@ -344,6 +377,11 @@ function renderAllMarkersAndFit(){
 // Keep the “you + nearest” framing for context
 function focusUserAndNearest(loc){
   if (!mapGL) return;
+
+  // Cancel any ongoing interaction/animation and ensure fresh size
+  try { mapGL.stop(); } catch(_) {}
+  try { mapGL.resize(); } catch(_) {}
+
   const nb = nearestBarTo(loc.lat, loc.lon);
   if (!nb){
     mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
@@ -355,15 +393,14 @@ function focusUserAndNearest(loc){
   bounds.extend([nb.lon, nb.lat]);
 
   const pad = uiPadding();
-  // Ask MapLibre for a camera that respects our asymmetric padding
   const cam = mapGL.cameraForBounds(bounds, { padding: pad });
-  // Prevent over-zoom when points are extremely close (mobile issue)
   const MAX_REASONABLE_Z = 15;
   if (cam && typeof cam.zoom === 'number') cam.zoom = Math.min(cam.zoom, MAX_REASONABLE_Z);
 
-  if (cam) mapGL.easeTo({ ...cam, duration: 600 });
-  else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z, duration: 600 });
+  if (cam) mapGL.easeTo({ ...cam, duration: 600, essential: true });
+  else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z, duration: 600, essential: true });
 }
+
 
 
 // ===== List: ALWAYS show ALL bars, sorted by distance to `loc` =====
@@ -395,7 +432,7 @@ function renderListAll(loc){
     ? `<a class="res-link btn" href="${esc(r.url)}" target="_blank" rel="noopener"><span class="nowrap">Google&nbsp;Maps</span></a>`
       : '';
 
-    return `<li class="res-item">
+return `<li class="res-item" data-lat="${esc(r.lat)}" data-lon="${esc(r.lon)}" data-place="${esc(r.place_id || '')}">
       <div class="res-row">
         <span class="res-name">${safe.name}</span>
         <span class="res-dist">${dist} mi</span>
@@ -419,67 +456,201 @@ function renderListAll(loc){
 
 // ===== Controls =====
 function wireSearch(){
-  const btn = $('#searchBtn');
-  if (!btn) return;
-  btn.addEventListener('click', async ()=>{
-    const q = ($('#address')?.value || '').trim();
+  const btn   = $('#searchBtn');
+  const input = $('#address');
+  if (!btn || !input) return;
+
+  const runSearch = async () => {
+    const q = (input.value || '').trim();
     if (!q) return;
+
     setStatus('Geocoding…');
-    try{
+    try {
       const loc = await geocode(q);
       setStatus('');
-      drawUserMarker(loc);
 
-      // Keep ALL pins visible
+      // Update user marker and show all pins (instant fit, no animation)
+      drawUserMarker(loc);
       renderAllMarkersAndFit();
 
-      // List: ALL bars sorted by the searched spot
+      // Update list + show it (mobile). This changes layout height.
       renderListAll(loc);
-      setListShown(true); // auto-show list on mobile
+      setListShown(true);
 
-      // Frame you + nearest for context
-      focusUserAndNearest(loc);
-    } catch (e){
+      // After layout settles, cancel any prior camera moves, resize, then focus
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            try { mapGL.stop(); } catch(_) {}
+            try { mapGL.resize(); } catch(_) {}
+            focusUserAndNearest(loc);
+          }, 80);
+        });
+      });
+    } catch (e) {
       console.error(e);
       setStatus('Address not found');
     }
-  });
-  const input = $('#address');
-  if (input) {
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        btn.click(); // trigger the same handler as clicking Search
-      }
-    });
-  }
+  };
 
+  // Click = search
+  btn.addEventListener('click', runSearch);
+
+  // Enter-to-search
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      runSearch();
+    }
+  });
+
+  // Autofill commits on mobile
+  input.addEventListener('change', () => {
+    const v = (input.value || '').trim();
+    if (v) runSearch();
+  });
+
+  // (optional) tame noisy virtual keyboards; keep if you like
+  input.addEventListener('input', () => {}, { passive: true });
 }
+
+ function wireAutocomplete() {
+  const input = document.getElementById('address');
+  const suggestions = document.getElementById('autocomplete-list');
+  if (!input || !suggestions) return;
+
+  let controller = null;
+
+  input.addEventListener('input', async () => {
+    const q = input.value.trim();
+    if (!q) {
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('open');   // hide
+      return;
+    }
+
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    try {
+      const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(q)}.json?key=${MAPTILER_KEY}&autocomplete=true&country=us&limit=5&language=en`;
+      const resp = await fetch(url, { signal: controller.signal });
+      if (!resp.ok) return;
+      const data = await resp.json();
+
+      suggestions.innerHTML = '';
+
+      const feats = (data.features || []);
+      if (feats.length === 0) {
+        suggestions.classList.remove('open'); // hide if no results
+        return;
+      }
+
+      for (const f of feats) {
+        const li = document.createElement('li');
+        li.textContent = f.place_name;
+        li.dataset.lat = f.center[1];
+        li.dataset.lon = f.center[0];
+        suggestions.appendChild(li);
+
+        li.addEventListener('click', () => {
+          input.value = f.place_name;          // fill input
+          suggestions.innerHTML = '';
+          suggestions.classList.remove('open'); // hide
+          document.getElementById('searchBtn').click(); // run flow
+        });
+      }
+
+      suggestions.classList.add('open'); // show list when populated
+    } catch (e) {
+      if (e.name !== 'AbortError') console.error(e);
+    }
+  });
+
+  // Hide when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!suggestions.contains(e.target) && e.target !== input) {
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('open'); // hide
+    }
+  });
+
+  // Also hide on escape or blur if you want:
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      suggestions.innerHTML = '';
+      suggestions.classList.remove('open');
+    }
+  });
+}
+
 
 function wireFindMe(){
   const btn = $('#findMeBtn');
   if (!btn) return;
-  btn.addEventListener('click', async ()=>{
-    setStatus('Locating…');
-    try{
+
+  btn.addEventListener('click', async () => {
+    setStatus('Finding…');
+    // (optional) prevent double-clicks during geolocation
+    btn.disabled = true;
+
+    try {
       const loc = await getCurrentLocation();
       setStatus('');
-      drawUserMarker(loc);
 
-      // Keep ALL pins visible
+      // Update user marker and show all pins (instant fit, no animation)
+      drawUserMarker(loc);
       renderAllMarkersAndFit();
 
-      // List: ALL bars sorted by your location
+      // Update list + show it (mobile). This changes layout height.
       renderListAll(loc);
       setListShown(true);
 
-      // Frame you + nearest
-      focusUserAndNearest(loc);
-    } catch(e){
-      setStatus(e.message || 'Location failed');
+      // After layout settles, cancel any prior camera moves, resize, then focus
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            try { mapGL.stop(); } catch(_) {}
+            try { mapGL.resize(); } catch(_) {}
+            focusUserAndNearest(loc);
+          }, 80);
+        });
+      });
+
+    } catch (e) {
+      console.error(e);
+      setStatus(e?.message || 'Location failed');
+    } finally {
+      btn.disabled = false;
     }
   });
 }
+
+function wireListClicks() {
+  const list = document.getElementById('results');
+  if (!list) return;
+
+  list.addEventListener('click', (e) => {
+    // Don’t hijack real links (e.g., Google Maps)
+    if (e.target.closest('a')) return;
+
+    const li = e.target.closest('.res-item');
+    if (!li) return;
+
+    const lat = li.getAttribute('data-lat');
+    const lon = li.getAttribute('data-lon');
+    if (!lat || !lon) return;
+
+    // visual and a11y state
+document.querySelectorAll('.res-item.is-active').forEach(n => n.classList.remove('is-active'));
+li.classList.add('is-active');
+li.setAttribute('aria-selected', 'true');
+
+
+    focusBar(parseFloat(lat), parseFloat(lon), { openPopup: true });
+  });
+}
+
 
 // ===== Show/Hide List toggle — map becomes half-height when list shown =====
 function wireListToggle(){
@@ -597,46 +768,77 @@ if (isMobile) {
     }
   });
 }
+// Add the collapsible legend to bottom-left
+mapGL.addControl(createLegendControl(), 'bottom-left');
 
   
   // --- Legend control (inside the map, won't affect list layout)
-  function createLegendControl(){
-    const ctrl = {
-      onAdd(){
-        const el = document.createElement('div');
-        el.className = 'maplibregl-ctrl map-legend';
-        el.innerHTML = `
-          <div class="legend-item">
+  // --- Collapsible legend control
+// --- Collapsible legend control (clean version, defaults to collapsed)
+function createLegendControl({ collapsedDefault = true } = {}) {
+  // bump the key so everyone starts fresh collapsed
+  const LS_KEY = 'legendCollapsed_v2';
+
+  const getInitial = () => {
+    const v = localStorage.getItem(LS_KEY);
+    return v == null ? collapsedDefault : v === 'true';
+  };
+
+  let container, toggleBtn, isCollapsed = getInitial();
+
+  const updateUI = () => {
+    container.classList.toggle('is-collapsed', isCollapsed);
+    toggleBtn.setAttribute('aria-expanded', String(!isCollapsed));
+    toggleBtn.setAttribute('aria-label', isCollapsed ? 'Show legend' : 'Hide legend');
+    localStorage.setItem(LS_KEY, String(isCollapsed));
+  };
+
+  const onToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    isCollapsed = !isCollapsed;
+    updateUI();
+  };
+
+  return {
+    onAdd() {
+      container = document.createElement('div');
+      container.className = 'maplibregl-ctrl map-legend is-collapsible';
+
+      container.innerHTML = `
+        <button class="legend-toggle" type="button" aria-expanded="false">
+          <!-- Collapsed: two pins side-by-side -->
+          <div class="legend-mini" aria-hidden="true">
             <span class="legend-pin legend-official"></span>
-            Watch Parties/Promos
-          </div>
-          <div class="legend-item">
             <span class="legend-pin legend-regular"></span>
-            Cal Bar
           </div>
-        `;
-        this._container = el;
-        return el;
-      },
-      onRemove(){
-        if (this._container?.parentNode) {
-          this._container.parentNode.removeChild(this._container);
-        }
-        this._container = undefined;
-      }
-    };
-    return ctrl;
-  }
 
-  // Add legend to bottom-left corner of the map
-  mapGL.addControl(createLegendControl(), 'bottom-left');
+          <!-- Expanded: full legend rows -->
+          <div class="legend-full">
+            <div class="legend-item">
+              <span class="legend-pin legend-official"></span>
+              <span class="legend-label">Watch Parties/Promos</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-pin legend-regular"></span>
+              <span class="legend-label">Cal Bar</span>
+            </div>
+          </div>
+        </button>
+      `;
 
-  mapGL.on('error', (e)=>{
-    if (e?.error?.status === 403) {
-      console.error('Map style 403. Check MAPTILER_KEY or allowed domains.');
-      setStatus('Map style blocked (403). Double-check MapTiler key/domains.');
+      toggleBtn = container.querySelector('.legend-toggle');
+      toggleBtn.addEventListener('click', onToggle);
+      updateUI();
+      return container;
+    },
+    onRemove() {
+      if (toggleBtn) toggleBtn.removeEventListener('click', onToggle);
+      if (container && container.parentNode) container.parentNode.removeChild(container);
     }
-  });
+  };
+}
+
 }
 
 
@@ -645,6 +847,9 @@ async function boot(){
   setListShown(false); // start with list hidden on mobile
   wireSearch();
   wireFindMe();
+  wireListClicks();
+  wireAutocomplete();
+
 
   try{
     await loadBars();

@@ -82,10 +82,23 @@
 </header>
 
 <section id="controls" class="search-panel" role="search">
-  <input type="text"
+<div class="ac-wrap">
+ <input
   id="address"
-  placeholder="Enter address or city"
-  autocomplete="address-line2"/>
+  name="street-address"             
+  autocomplete="street-address"    
+  autocapitalize="off"
+  autocorrect="off"
+  spellcheck="false"
+  inputmode="text"
+  placeholder="Enter city or full address"
+/>
+
+  <ul id="autocomplete-list" role="listbox" aria-label="Suggestions"></ul>
+</div>
+
+<ul id="autocomplete-list"></ul>
+
 
   <div class="controls-row">
     <button id="searchBtn">Search</button>
@@ -108,7 +121,7 @@
 
 <footer>
   <small>
-   By CalBearSquared <a href="https://x.com/calbearsquared">Twitter</a> <a href="mailto:calbearsquared2025@gmail.com">Email</a>
+   By Matthew Putzulu <a href="https://x.com/calbearsquared">Twitter</a> <a href="mailto:calbearsquared2025@gmail.com">Email</a>
         <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&amp;single=true&amp;output=csv" id="dataSourceLink" target="_blank" rel="noopener">Source</a> 
     <a href="javascript:void(0)" id="aboutBtn">About</a>
   </small>
