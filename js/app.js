@@ -41,7 +41,7 @@ const esc = (s = '') => String(s).replace(/[&<>"']/g, m => ({
 // Show/hide the list programmatically and keep the toggle button in sync
 function setListShown(shown){
   document.body.classList.toggle('list-shown', shown);
-  if (shown) document.body.classList.remove('list-hidden'); // defensive
+  document.body.classList.toggle('list-hidden', !shown);  // <-- add this line
 
   const btn = $('#toggleListBtn');
   if (btn){
@@ -390,7 +390,7 @@ function renderListAll(loc){
   }).join('');
 
   const total = items.length;
-  setBarsCount(`${total} bars total`);
+  setBarsCount(`${total} Cal bars`);
 }
 
 // ===== Controls =====
@@ -525,8 +525,10 @@ function ensureMap(initialBounds){
   }
 
   mapGL = new maplibregl.Map(opts);
+  requestAnimationFrame(() => requestAnimationFrame(() => { if (mapGL) mapGL.resize(); }));
   mapGL.addControl(new maplibregl.NavigationControl(), 'top-right');
 
+  
   // --- Legend control (inside the map, won't affect list layout)
   function createLegendControl(){
     const ctrl = {
@@ -570,6 +572,7 @@ function ensureMap(initialBounds){
 
 // ===== Boot =====
 async function boot(){
+  setListShown(false); // start with list hidden on mobile
   wireSearch();
   wireFindMe();
 
@@ -582,6 +585,9 @@ async function boot(){
 
     // Map: show ALL pins and fit (no visible move if bounds already set)
     renderAllMarkersAndFit();
+
+    setTimeout(() => { if (mapGL) mapGL.resize(); });
+
 
     // List: sort by California Memorial Stadium
     const memorialStadium = { lat: 37.8719, lon: -122.2600 };
