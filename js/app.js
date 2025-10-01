@@ -482,6 +482,36 @@ function wireListToggle(){
     }
   });
 }
+
+function wireAboutModal() {
+  const btn   = document.getElementById('aboutBtn');
+  const modal = document.getElementById('aboutModal');
+  const close = document.getElementById('aboutClose');
+
+  if (!btn || !modal || !close) return; // nothing to wire
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    modal.setAttribute('aria-hidden', 'false');
+  });
+
+  close.addEventListener('click', () => {
+    modal.setAttribute('aria-hidden', 'true');
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.setAttribute('aria-hidden', 'true'); // close if clicking backdrop
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
 // Compute [ [minLon, minLat], [maxLon, maxLat] ] from loaded bars
 function getBarsExtent(){
   let minLon =  Infinity, minLat =  Infinity;
@@ -601,6 +631,8 @@ async function boot(){
 document.addEventListener('DOMContentLoaded', () => {
   boot();
   wireListToggle();
+  wireAboutModal(); // <-- add this line
+
 });
 
 // Expose a few helpers for quick console checks
