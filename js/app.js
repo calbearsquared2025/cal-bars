@@ -43,6 +43,15 @@ function findMarkerByCoords(lat, lon) {
   }) || null;
 }
 
+function isLngLatVisible(lngLat, pad = 60) {
+  if (!mapGL) return false;
+  const p = mapGL.project(lngLat);
+  const c = mapGL.getContainer();
+  const w = c.clientWidth, h = c.clientHeight;
+  return p.x >= pad && p.y >= pad && p.x <= (w - pad) && p.y <= (h - pad);
+}
+
+
 function focusBar(lat, lon, { openPopup = true } = {}) {
   if (!mapGL) return;
   try { mapGL.stop(); } catch(_) {}
@@ -649,7 +658,22 @@ li.classList.add('is-active');
 li.setAttribute('aria-selected', 'true');
 
 
-    focusBar(parseFloat(lat), parseFloat(lon), { openPopup: true });
+const latF = parseFloat(lat), lonF = parseFloat(lon);
+const ll = [lonF, latF];
+const mk = findMarkerByCoords(latF, lonF);
+const currentZoom = mapGL.getZoom() || 0;
+
+// if already visible, just open the popup
+if (isLngLatVisible(ll)) {
+  if (mk && mk.togglePopup) mk.togglePopup();
+  return;
+}
+
+// otherwise, pan to it at the SAME zoom (no zoom-in/out)
+mapGL.easeTo({ center: ll, zoom: currentZoom, duration: 500, essential: true });
+if (mk && mk.togglePopup) {
+  mapGL.once('moveend', () => { try { mk.togglePopup(); } catch(_) {} });
+}
   });
 }
 
