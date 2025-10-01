@@ -41,7 +41,7 @@ function setListShown(shown){
 
   const btn = $('#toggleListBtn');
   if (btn){
-    btn.textContent = shown ? 'Hide list ↓' : 'Show list ↑';
+    btn.textContent = shown ? 'Hide list' : 'Show list';
     btn.setAttribute('aria-expanded', String(shown));
   }
   // Map needs a resize after layout change
@@ -261,36 +261,42 @@ function drawUserMarker(loc){
     .setLngLat([loc.lon, loc.lat])
     .addTo(mapGL);
 }
-function addBarMarkerDefault(b){
+
+function addBarMarkerDefault(b) {
   if (!mapGL) return null;
 
   const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
   const isOfficial = !!(b.promo && /official/i.test(b.promo));
 
-  // Escape text
+  // Escape + tidy content (strip surrounding quotes)
+  const tidy = s => String(s || '').trim().replace(/^["'](.*)["']$/, '$1');
+
   const safe = {
     name: esc(b.name || 'Bar'),
     addr: esc(addr),
-    promo: esc(b.promo || ''),
-    details: esc(b.details || ''),
-    tvs: esc(b.tvs || ''),
-    aff: esc(b.affiliation || '')
+    promo: esc(tidy(b.promo)),
+    details: esc(tidy(b.details)),
+    tvs: esc(tidy(b.tvs)),
+    aff: esc(tidy(b.affiliation || ''))
   };
 
-  // Validate URL
   const linkHtml = b.url && /^https?:\/\//i.test(b.url)
-    ? `<div class="popup-link"><a href="${esc(b.url)}" target="_blank" rel="noopener">Open in Google&nbsp;Maps</a></div>`
+    ? `<a class="res-link btn" href="${esc(b.url)}" target="_blank" rel="noopener"><span class="nowrap">Google&nbsp;Maps</span></a>`
     : '';
 
   const html = `
-    <div class="popup">
-      <div class="popup-title">${safe.name}${isOfficial ? ' <span class="pill">Official</span>' : ''}</div>
-      ${addr ? `<div class="popup-addr">${safe.addr}</div>` : ''}
-      ${safe.promo ? `<div class="popup-note">${safe.promo}</div>` : ''}
-      ${safe.tvs ? `<div class="popup-note">${safe.tvs}</div>` : ''}
-      ${safe.details ? `<div class="popup-note">${safe.details}</div>` : ''}
-      ${safe.aff ? `<div class="popup-note">${safe.aff}</div>` : ''}
-      ${linkHtml}
+    <div class="popup-card">
+      <div class="res-row">
+        <span class="res-name">${safe.name}${isOfficial ? ' <span class="res-pill">Parties</span>' : ''}</span>
+      </div>
+      ${addr ? `<div class="res-meta">${safe.addr}</div>` : ''}
+      <div class="res-actions">
+        ${linkHtml}
+        ${safe.promo ? `<span class="res-note">${safe.promo}</span>` : ''}
+        ${safe.tvs ? `<span class="res-note">${safe.tvs}</span>` : ''}
+        ${safe.details ? `<span class="res-note">${safe.details}</span>` : ''}
+        ${safe.aff ? `<span class="res-note">${safe.aff}</span>` : ''}
+      </div>
     </div>
   `;
 
@@ -302,11 +308,12 @@ function addBarMarkerDefault(b){
     .setPopup(popup)
     .addTo(mapGL);
 
-  // Tag marker to find it later
+  // Tag marker for lookup
   mk.__bar = b;
   barMarkers.push(mk);
   return mk;
 }
+
 
 
 
@@ -385,7 +392,7 @@ function renderListAll(loc){
 
     // Validate and escape URL
     const link = r.url && /^https?:\/\//i.test(r.url)
-      ? `<a class="res-link" href="${esc(r.url)}" target="_blank" rel="noopener">Google Maps</a>`
+    ? `<a class="res-link btn" href="${esc(r.url)}" target="_blank" rel="noopener"><span class="nowrap">Google&nbsp;Maps</span></a>`
       : '';
 
     return `<li class="res-item">
@@ -397,7 +404,7 @@ function renderListAll(loc){
       <div class="res-actions">
         ${link}
         ${r.promo ? (/official/i.test(r.promo)
-          ? `<span class="res-pill">${safe.promo}</span>`
+          ? `<span class="res-pill">Parties</span>`
           : `<span class="res-note">${safe.promo}</span>`) : ''}
         ${r.tvs ? `<span class="res-note">${safe.tvs}</span>` : ''}
         ${r.details ? `<span class="res-note">${safe.details}</span>` : ''}
@@ -559,7 +566,7 @@ function ensureMap(initialBounds){
     return;
   }
 
-  const opts = { container: 'map', style: MAPTILER_STYLE };
+ const opts = { container: 'map', style: MAPTILER_STYLE, attributionControl: false };
 
   // Start at final bounds to avoid initial camera jump
   if (initialBounds){
@@ -574,6 +581,22 @@ function ensureMap(initialBounds){
   mapGL = new maplibregl.Map(opts);
   requestAnimationFrame(() => requestAnimationFrame(() => { if (mapGL) mapGL.resize(); }));
   mapGL.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  // Attribution: compact on mobile, expanded on desktop
+const isMobile = window.matchMedia('(max-width: 900px)').matches;
+mapGL.addControl(new maplibregl.AttributionControl({ compact: isMobile }), 'bottom-right');
+
+// Guard: on some setups attribution starts expanded until first move.
+// Force-collapse once on mobile.
+if (isMobile) {
+  mapGL.once('load', () => {
+    const el = document.querySelector('.maplibregl-ctrl-attrib');
+    if (el) {
+      el.classList.add('maplibregl-compact');          // <— ensure compact class is present
+      el.classList.remove('maplibregl-ctrl-attrib-expanded'); // ensure collapsed
+    }
+  });
+}
 
   
   // --- Legend control (inside the map, won't affect list layout)

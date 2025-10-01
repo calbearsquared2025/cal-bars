@@ -128,9 +128,9 @@ html { -webkit-text-size-adjust: 100%; }
 }
 .search-panel button {
   padding: 8px 12px;
-  border: 1px solid #0b5cab;
+  border: 1px solid #003262;
   border-radius: 6px;
-  background: #0b5cab;
+  background: #003262;
   color: #fff;
   cursor: pointer;
 }
@@ -160,6 +160,8 @@ html { -webkit-text-size-adjust: 100%; }
   background: #e2e8f0;
   color: #0f172a;
   cursor: pointer;
+  font-size: 16px;
+  line-height: 1.2;
 }
 #toggleListBtn:hover { filter: brightness(0.97); }
 
@@ -216,7 +218,7 @@ main {
 .res-meta { color: #475569; font-size: 0.92rem; margin-top: 2px; }
 .res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
 .res-link {
-  color: #fff; background: #0b5cab; padding: 4px 8px; border-radius: 999px;
+  color: #fff; background: #003262; padding: 4px 8px; border-radius: 999px;
   font-size: 0.82rem; text-decoration: none;
 }
 .res-link:hover { filter: brightness(0.95); }
@@ -250,7 +252,7 @@ footer {
 }
 footer small { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 footer a, footer button.footer-link {
-  color: #0b5cab; text-decoration: underline; background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  color: #003262; text-decoration: underline; background: none; border: none; padding: 0; font: inherit; cursor: pointer;
 }
 
 /* ========= Modal ========= */
@@ -338,7 +340,7 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   /* Controls spacing (bigger targets) */
   .search-panel { gap: 6px; padding: 8px 12px; }
   .search-panel input[type="text"] { flex: 1 1 100%; min-width: 0; padding: 10px 12px; }
-  .search-panel button { padding: 10px 14px; }
+  .search-panel button { padding: 8px 12px; font-size: 16px; line-height: 1.2; }
   .search-panel input[type="number"] { width: 68px; padding: 8px; }
   #status { font-size: .85rem; }
 
@@ -407,3 +409,47 @@ a:focus, button:focus, input:focus { outline: 2px solid #FDB515; outline-offset:
   #map { position: relative; z-index: 0; }
   #list { position: relative; z-index: 1; }
 }
+
+/* Make popups look like list cards */
+.maplibregl-popup-content {
+  padding: 10px 12px; /* tighter, like your cards */
+  border-radius: 12px;
+}
+
+.popup-card .res-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.popup-card .res-name {font-size: 1.1rem; font-weight: 700; color:#0f172a}
+.popup-card .res-meta { font-size: 0.85rem; color: #475569; margin-top: 2px; }
+
+/* Reuse list action styling; ensure inline items don't dangle */
+.popup-card .res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+
+.res-link.btn {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  text-decoration: none;
+  background: #003262;   /* or your existing list button color */
+  color: #fff;
+}
+
+.res-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #fde68a;
+  color: #92400e;
+}
+
+.res-note { color: #334155; }
+
+/* Anti-dangle helpers */
+.nowrap { white-space: nowrap; }
+.res-link, .res-note, .res-meta { word-break: break-word; }
+
+@media (max-width: 900px) {
+  /* keep the pill small, don’t force min-width */
+/* Ensure collapsed state hides text only when compact AND not expanded */
+.maplibregl-ctrl-attrib.maplibregl-compact:not(.maplibregl-ctrl-attrib-expanded) 
