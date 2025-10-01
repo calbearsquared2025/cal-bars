@@ -105,29 +105,22 @@ html { -webkit-text-size-adjust: 100%; }
   z-index: 20;         /* new: ensures dropdown sits above header panel */
 }
 
-  .search-panel input[type="text"],
-  .search-panel input[type="search"],
-  .search-panel input[type="number"],
-  .search-panel button {
-  font-size: 16px;           /* stops iOS focus zoom */
+ .search-panel input,
+.search-panel button {
+  font-size: 16px;
   -webkit-text-size-adjust: 100%;
-  touch-action: manipulation; /* prevents double-tap zoom on buttons */
-}
-
-.search-panel input[type="text"] {
-  flex: 1 1 600px;
-  min-width: 220px;
+  touch-action: manipulation;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
   padding: 8px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
 }
 
-.search-panel input[type="number"] {
-  width: 72px;
-  padding: 6px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+/* Make all inputs stretch */
+.search-panel input {
+  flex: 1 1 100%;
+  min-width: 0;
 }
+
 .search-panel button {
   padding: 8px 12px;
   border: 1px solid #003262;
@@ -343,11 +336,19 @@ a:focus, button:focus, input:focus {
 @media (min-width: 901px) {
   main {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 2fr 1fr;      /* map | list */
+    grid-template-rows: auto 1fr;        /* controls row | content row */
+    grid-template-areas:
+      "controls list"                    /* list starts at the very top */
+      "map      list";                   /* list spans both rows */
     min-height: 0;
   }
-  .mobile-only { display: none; }
+
+  .search-panel { grid-area: controls; } /* left/top; blue bar width = map column */
+  #map          { grid-area: map; }      /* left/bottom */
+  #list         { grid-area: list; }     /* right spanning both rows */
 }
+
 
 /* ========= Mobile (<=900px) ========= */
 @media (max-width: 900px) {
@@ -387,23 +388,37 @@ a:focus, button:focus, input:focus {
 
   /* Controls spacing (bigger targets) */
   .search-panel { gap: 6px; padding: 8px 12px; }
-  .search-panel input[type="text"] { flex: 1 1 100%; min-width: 0; padding: 10px 12px; }
   .search-panel button { padding: 8px 12px; font-size: 16px; line-height: 1.2; }
-  .search-panel input[type="number"] { width: 68px; padding: 8px; }
+  .search-panel input { padding: 10px 12px; }
   #status { font-size: .85rem; }
 
   /* Keep Find Me same width as other buttons; avoid shrinking */
   #findMeBtn { flex-shrink: 0; }
+
+  #map, #list { transition: flex-basis 180ms ease; }
+
 }
-  /* Smooth height transitions on toggle */
-  #map, #list { transition: height 180ms ease, max-height 180ms ease, flex-basis 180ms ease; }
+
+  
+@media (min-width: 901px) {
+  #map, #list { transition: none; }                  /* desktop = instant */
+}
+
 
 .ac-wrap {
   position: relative;
-  flex: 1 1 600px;
-  min-width: 220px;
+  flex: 1 1 100%;               /* take the whole row */
+  min-width: 0;                 /* prevent clipping */
 }
-.ac-wrap input[type="text"] { width: 100%; }
+
+.ac-wrap input { width: 100%; }
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 100%;               /* new line — makes the row wrap below the input */
+}
 
 
 /* ===== Map legend (MapLibre control) ===== */
@@ -475,7 +490,6 @@ a:focus, button:focus, input:focus {
 /* Desktop/laptop (mouse/trackpad): keep the list persistently visible */
 @media (hover: hover) and (pointer: fine){
   /* Ensure two-column layout and visible list */
-  main { display: grid; grid-template-columns: 2fr 1fr; }
   #list { display: block !important; }
   /* Ignore any "list-hidden" class on desktop */
   body.list-hidden #list { display: block !important; }
