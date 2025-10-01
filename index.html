@@ -88,14 +88,16 @@
 
 <section id="controls" class="search-panel" role="search">
   <input type="text" id="address" placeholder="Enter address or city" />
-  <button id="searchBtn">Search</button>
-  <button id="findMeBtn" title="Use your current location">Find Me</button>
 
-  <button id="toggleListBtn" class="mobile-only" aria-controls="list" aria-expanded="false">
-    Show list ↓
-  </button>
-  <span id="status" aria-live="polite"></span>
-  <span id="barsCount" class="bars-count"></span>
+  <div class="controls-row">
+    <button id="searchBtn">Search</button>
+    <button id="findMeBtn" title="Use your current location">Find Me</button>
+    <button id="toggleListBtn" class="mobile-only" aria-controls="list" aria-expanded="false">
+      Show list ↓
+    </button>
+    <span id="status" aria-live="polite"></span>
+    <span id="barsCount" class="bars-count"></span>
+  </div>
 </section>
 
 <main>
