@@ -25,6 +25,21 @@ const CAMERA_LOCK_MS = 1200;
 const DEBUG_MOBILE = /(#|&)\bdebug=1\b/.test(location.hash + location.search)
   || localStorage.getItem('calbars_debug_mobile') === '1';
 
+const distanceCache = new Map(); // key -> { miles: number, text: "1.7 mi" }
+
+function barKey(b) {
+  // Prefer stable place_id; else fall back to lat/lon (rounded so keys match)
+  if (b.place_id) return `pid:${b.place_id}`;
+  const lat = Number.parseFloat(b.lat);
+  const lon = Number.parseFloat(b.lon);
+  return `ll:${lat.toFixed(5)},${lon.toFixed(5)}`;
+}
+
+function formatMiles(d) {
+  const v = Math.round(d * 10) / 10;
+  return `${v.toFixed(1)} mi`;
+}
+
 // ===== Map camera/layout padding tuned for mobile vs desktop =====
 function uiPadding() {
   const isMobile = window.matchMedia('(max-width: 900px)').matches;
@@ -61,7 +76,7 @@ function closeAllPopupsExcept(exceptMarker = null) {
 function openMarkerPopup(mk) {
   if (!mk || !mk.getPopup) return;
   const p = mk.getPopup();
-  if (!p.isOpen()) p.addTo(mapGL); // ensures OPEN (no toggle)
+  if (!p.isOpen()) p.addTo(mapGL);
 }
 
 async function runLocationFlow(loc) {
@@ -72,7 +87,24 @@ async function runLocationFlow(loc) {
   window.Legend?.collapse();
   await waitForMapStable();
   focusUserAndNearest(loc);
+  openNearestPopupAfterMove(loc);
+
 }
+
+function openNearestPopupAfterMove(loc) {
+  if (!mapGL || !loc) return;
+  const nb = nearestBarTo(loc.lat, loc.lon);
+  if (!nb) return;
+
+  // wait for the current camera move to finish to avoid jank
+  mapGL.once('moveend', () => {
+    const mk = findMarkerByCoords(nb.lat, nb.lon);
+    if (!mk) return;
+    closeAllPopupsExcept(mk);
+    openMarkerPopup(mk);
+  });
+}
+
 
 // Wait until the #map box is stable (no size changes) for a short window.
 // Handles flex-basis transitions + URL bar/keyboard changes on iOS.
@@ -378,14 +410,20 @@ function addBarMarkerDefault(b) {
     ? `<a class="res-link btn" href="${esc(b.url)}" target="_blank" rel="noopener"><span class="nowrap">Google&nbsp;Maps</span></a>`
     : '';
 
+  const key = barKey(b);
+  const distText = distanceCache.get(key)?.text || '';
+
   const html = `
     <div class="popup-card">
       <div class="res-row">
-        <span class="res-name">${safe.name}${isOfficial ? ' <span class="res-pill">Parties</span>' : ''}</span>
+        <span class="res-name">
+          ${safe.name}${isOfficial ? ' <span class="res-pill">Parties</span>' : ''}
+        </span>
       </div>
       ${addr ? `<div class="res-meta">${safe.addr}</div>` : ''}
       <div class="res-actions">
         ${linkHtml}
+        ${distText ? `<span class="popup-dist">${esc(distText)} away</span>` : ''}
         ${safe.promo ? `<span class="res-note">${safe.promo}</span>` : ''}
         ${safe.tvs ? `<span class="res-note">${safe.tvs}</span>` : ''}
         ${safe.details ? `<span class="res-note">${safe.details}</span>` : ''}
@@ -394,8 +432,11 @@ function addBarMarkerDefault(b) {
     </div>
   `;
 
+
+
+
   const isMobile = window.matchMedia('(max-width: 900px)').matches;
-  const popup = new maplibregl.Popup({ offset: isMobile ? 28 : 18, closePopupOnClick:true}).setHTML(html);
+  const popup = new maplibregl.Popup({ offset: isMobile ? 28 : 18, }).setHTML(html);
 
   const mk = new maplibregl.Marker({ element: makeCalPinEl(isOfficial), anchor: 'bottom' })
     .setLngLat([parseFloat(b.lon), parseFloat(b.lat)])
@@ -611,11 +652,17 @@ function renderListAll(loc){
     return { ...b, _dist: d };
   }).sort((a,b)=> a._dist - b._dist);
 
+  // Cache distances for popups
+  for (const r of items) {
+    if (Number.isFinite(r._dist)) {
+      distanceCache.set(barKey(r), { miles: r._dist, text: formatMiles(r._dist) });
+    }
+  }
+
   listEl.innerHTML = items.map(r=>{
     const dist = Number.isFinite(r._dist) ? (Math.round(r._dist*10)/10).toFixed(1) : '–';
     const addr = [r.address, r.city, r.state, r.zip].filter(Boolean).join(', ');
 
-    // Escape text fields
     const safe = {
       name: esc(r.name || 'Bar'),
       addr: esc(addr),
@@ -625,12 +672,11 @@ function renderListAll(loc){
       aff: esc(r.affiliation || '')
     };
 
-    // Validate and escape URL
     const link = r.url && /^https?:\/\//i.test(r.url)
-    ? `<a class="res-link btn" href="${esc(r.url)}" target="_blank" rel="noopener"><span class="nowrap">Google&nbsp;Maps</span></a>`
+      ? `<a class="res-link btn" href="${esc(r.url)}" target="_blank" rel="noopener"><span class="nowrap">Google&nbsp;Maps</span></a>`
       : '';
 
-return `<li class="res-item" data-lat="${esc(r.lat)}" data-lon="${esc(r.lon)}" data-place="${esc(r.place_id || '')}">
+    return `<li class="res-item" data-lat="${esc(r.lat)}" data-lon="${esc(r.lon)}" data-place="${esc(r.place_id || '')}">
       <div class="res-row">
         <span class="res-name">${safe.name}</span>
         <span class="res-dist">${dist} mi</span>
@@ -648,8 +694,7 @@ return `<li class="res-item" data-lat="${esc(r.lat)}" data-lon="${esc(r.lon)}" d
     </li>`;
   }).join('');
 
-  const total = items.length;
-  setBarsCount(`${total} Cal bars`);
+  setBarsCount(`${items.length} Cal bars`);
 }
 
 // ===== Controls =====
@@ -818,8 +863,8 @@ const wantPan = () => {
   const currentZoom = mapGL.getZoom() || 0;
   mapGL.easeTo({ center: ll, zoom: currentZoom, duration: 500, essential: true });
   mapGL.once('moveend', () => {
-+    closeAllPopupsExcept(mk);
-+    openMarkerPopup(mk);;
+    closeAllPopupsExcept(mk);
+    openMarkerPopup(mk);
 });
 }
 
@@ -966,10 +1011,11 @@ if (isMobile) {
     }
   });
 }
-// Add the collapsible legend to bottom-left
-mapGL.addControl(createLegendControl(), 'bottom-left');
 
-  
+// Add the collapsible legend: expanded by default on desktop (≥901px), collapsed on mobile
+const isWideScreen = window.matchMedia('(min-width: 901px)').matches;
+mapGL.addControl(createLegendControl({ collapsedDefault: !isWideScreen }), 'bottom-left');
+
 // --- Collapsible legend control (clean version, defaults to collapsed)
 function createLegendControl({ collapsedDefault = true } = {}) {
   const LS_KEY = 'legendCollapsed_v2';
@@ -1093,6 +1139,3 @@ window.addEventListener('orientationchange', () => { if (mapGL) mapGL.resize(); 
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', _debounce(() => { if (mapGL) mapGL.resize(); }, 200));
 }
-
-// Expose a few helpers for quick console checks
-window.CalBars = { loadBars, geocode, nearestBarTo, renderAllMarkersAndFit, renderListAll, haversine };
