@@ -625,5 +625,20 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   display: inline-block;
 }
 
+/* Prevent text/image selection + tap highlight inside legend */
+.map-legend,
+.map-legend * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent drag ghosting for pins/images */
+.map-legend img,
+.map-legend .legend-pin {
+  -webkit-user-drag: none;
+}
 /* Optional: subtle hover */
 .map-legend .legend-toggle:hover { filter: brightness(0.98); }

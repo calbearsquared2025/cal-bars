@@ -49,17 +49,27 @@ const esc = (s = '') => String(s).replace(/[&<>"']/g, m => ({
 "'": '&#39;'
 }[m]));
 
+function closeAllPopupsExcept(exceptMarker = null) {
+  for (const m of barMarkers) {
+    const p = m.getPopup && m.getPopup();
+    if (p && p.isOpen() && m !== exceptMarker) {
+      try { p.remove(); } catch (_) {}
+    }
+  }
+}
+
+function openMarkerPopup(mk) {
+  if (!mk || !mk.getPopup) return;
+  const p = mk.getPopup();
+  if (!p.isOpen()) p.addTo(mapGL); // ensures OPEN (no toggle)
+}
+
 async function runLocationFlow(loc) {
-  // Update user pin and map content without immediate fit/animation
   drawUserMarker(loc);
   renderAllMarkersAndFit({ fit: false });
-
-  // Update list + show it (mobile). This changes layout height.
   renderListAll(loc);
   setListShown(true);
   window.Legend?.collapse();
-
-  // Wait for layout to settle, then focus camera
   await waitForMapStable();
   focusUserAndNearest(loc);
 }
@@ -385,7 +395,7 @@ function addBarMarkerDefault(b) {
   `;
 
   const isMobile = window.matchMedia('(max-width: 900px)').matches;
-  const popup = new maplibregl.Popup({ offset: isMobile ? 28 : 18 }).setHTML(html);
+  const popup = new maplibregl.Popup({ offset: isMobile ? 28 : 18, closePopupOnClick:true}).setHTML(html);
 
   const mk = new maplibregl.Marker({ element: makeCalPinEl(isOfficial), anchor: 'bottom' })
     .setLngLat([parseFloat(b.lon), parseFloat(b.lat)])
@@ -788,13 +798,17 @@ const ll = [lonF, latF];
 const mk = findMarkerByCoords(latF, lonF);
 const wantPan = () => {
   if (isLngLatVisible(ll)) {
-    if (mk && mk.togglePopup) mk.togglePopup();
+    closeAllPopupsExcept(mk);
+    openMarkerPopup(mk);
     return;
   }
   const currentZoom = mapGL.getZoom() || 0;
   mapGL.easeTo({ center: ll, zoom: currentZoom, duration: 500, essential: true });
-  if (mk && mk.togglePopup) mapGL.once('moveend', () => { try { mk.togglePopup(); } catch(_){} });
-};
+  mapGL.once('moveend', () => {
++    closeAllPopupsExcept(mk);
++    openMarkerPopup(mk);;
+});
+}
 
 if (Date.now() < cameraLockUntil) {
   mapGL.once('moveend', wantPan);   // defer until focus completes
@@ -895,7 +909,7 @@ function ensureMap(initialBounds){
     return;
   }
 
- const opts = { container: 'map', style: MAPTILER_STYLE, attributionControl: false };
+ const opts = { container: 'map', style: MAPTILER_STYLE, attributionControl: false, closePopupOnClick: true};
 
   // Start at final bounds to avoid initial camera jump
   if (initialBounds){
