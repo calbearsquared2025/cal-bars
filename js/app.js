@@ -447,7 +447,7 @@ function focusUserAndNearest(loc){
 
   const doFocus = () => {
     try { mapGL.stop(); } catch(_) {}
-    try { mapGL.resize(); } catch(_) {}
+
 
     const startZoom = mapGL.getZoom();
     const startCenter = mapGL.getCenter();
@@ -546,6 +546,7 @@ const applyCam = () => {
     log('applied cam via jump (no-animate)');
   }
 };
+
     // Apply now…
     applyCam();
 
@@ -577,12 +578,24 @@ setTimeout(() => {
 
   };
 
-// Always defer exactly one 'idle' tick; iOS may still be mid-layout otherwise
-try {
-  mapGL.once('idle', doFocus);
-} catch (_) {
-  requestAnimationFrame(() => requestAnimationFrame(doFocus));
-}
+// Defer just enough to let layout settle, but don't miss the event window.
+ const deferFocus = () => {
+   // If style is ready, run next frame to avoid layout thrash.
+   if (mapGL && mapGL.isStyleLoaded && mapGL.isStyleLoaded()) {
+     requestAnimationFrame(doFocus);
+     return;
+   }
+   // Otherwise, wait for the style to finish loading/rendering.
+   const onRender = () => {
+     if (mapGL.isStyleLoaded && mapGL.isStyleLoaded()) {
+       mapGL.off('render', onRender);
+       requestAnimationFrame(doFocus);
+     }
+   };
+   // 'load' may have already fired; 'render' is safer.
+   mapGL.on('render', onRender);
+ };
+ deferFocus();
 
 }
 
@@ -909,7 +922,12 @@ function ensureMap(initialBounds){
     return;
   }
 
- const opts = { container: 'map', style: MAPTILER_STYLE, attributionControl: false, closePopupOnClick: true};
+ const opts = {
+   container: 'map',
+   style: MAPTILER_STYLE,
+   attributionControl: false,
+   fadeDuration: 90  // soften new tile appearance
+};
 
   // Start at final bounds to avoid initial camera jump
   if (initialBounds){
