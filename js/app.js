@@ -51,31 +51,6 @@ function isLngLatVisible(lngLat, pad = 60) {
   return p.x >= pad && p.y >= pad && p.x <= (w - pad) && p.y <= (h - pad);
 }
 
-
-function focusBar(lat, lon, { openPopup = true } = {}) {
-  if (!mapGL) return;
-  try { mapGL.stop(); } catch(_) {}
-  try { mapGL.resize(); } catch(_) {}
-
-  const center = [Number(lon), Number(lat)];
-  const targetZoom = Math.max(mapGL.getZoom() || 0, 14);
-
-  mapGL.easeTo({ center, zoom: targetZoom, duration: 500, essential: true });
-
-  if (openPopup) {
-    const mk = findMarkerByCoords(lat, lon);
-    if (mk && mk.getPopup) {
-      const onEnd = () => {
-        try { mk.togglePopup(); } catch(_) {}
-        mapGL.off('moveend', onEnd); // clean up
-      };
-      mapGL.on('moveend', onEnd);
-    }
-  }
-}
-
-
-
 // Show/hide the list programmatically and keep the toggle button in sync
 function setListShown(shown){
   document.body.classList.toggle('list-shown', shown);
@@ -369,17 +344,17 @@ function addBarMarkerCompat(b){
 }
 
 // === Always show ALL pins (no filtering) and fit to bounds ===
-function renderAllMarkersAndFit(){
+// === Always show ALL pins (no filtering) and fit to bounds ===
+function renderAllMarkersAndFit({ fit = true } = {}) {
   clearBarMarkers();
-  for (const b of bars || []){
-    const lat = parseFloat(b.lat), lon = parseFloat(b.lon);
-    if (!isFinite(lat) || !isFinite(lon)) continue;
-    addBarMarkerCompat(b);
-  }
-  if (barMarkers.length && mapGL){
-    const bounds = new maplibregl.LngLatBounds();
-    barMarkers.forEach(m => bounds.extend(m.getLngLat()));
-    mapGL.fitBounds(bounds, { padding: uiPadding(), maxZoom: 6, duration: 0 });
+
+  // You’re not filtering right now—just render all bars
+  for (const r of bars) addBarMarkerCompat(r);
+
+  if (fit && barMarkers.length && mapGL) {
+    const b = new maplibregl.LngLatBounds();
+    for (const m of barMarkers) b.extend(m.getLngLat());
+    mapGL.fitBounds(b, { padding: uiPadding(), maxZoom: 6, duration: 0 });
   }
 }
 
@@ -480,7 +455,7 @@ function wireSearch(){
 
       // Update user marker and show all pins (instant fit, no animation)
       drawUserMarker(loc);
-      renderAllMarkersAndFit();
+      renderAllMarkersAndFit({ fit: false });
 
       // Update list + show it (mobile). This changes layout height.
       renderListAll(loc);
@@ -610,7 +585,7 @@ function wireFindMe(){
 
       // Update user marker and show all pins (instant fit, no animation)
       drawUserMarker(loc);
-      renderAllMarkersAndFit();
+      renderAllMarkersAndFit({ fit: false });
 
       // Update list + show it (mobile). This changes layout height.
       renderListAll(loc);
@@ -879,7 +854,6 @@ window.Legend = {
 
 }
 
-
 // ===== Boot =====
 async function boot(){
   setListShown(false); // start with list hidden on mobile
@@ -897,7 +871,7 @@ async function boot(){
     ensureMap(extent);
 
     // Map: show ALL pins and fit (no visible move if bounds already set)
-    renderAllMarkersAndFit();
+    renderAllMarkersAndFit({ fit: false });
 
     setTimeout(() => { if (mapGL) mapGL.resize(); });
 
@@ -928,7 +902,6 @@ window.addEventListener('orientationchange', () => { if (mapGL) mapGL.resize(); 
 if (window.visualViewport) {
   window.visualViewport.addEventListener('resize', _debounce(() => { if (mapGL) mapGL.resize(); }, 200));
 }
-
 
 // Expose a few helpers for quick console checks
 window.CalBars = { loadBars, geocode, nearestBarTo, renderAllMarkersAndFit, renderListAll, haversine };

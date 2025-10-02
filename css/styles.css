@@ -2,6 +2,9 @@
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 
+html { background: #002676; }   /* same as header/brand */
+body { background: #fff; }      /* keep page content normal */
+
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -59,14 +62,7 @@ html { -webkit-text-size-adjust: 100%; }
   position: relative;
   z-index: 10;
 }
-.header::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: env(safe-area-inset-top, 0px);
-  background: #002676;
-  z-index: 0;
-}
+
 .header-stack { display: flex; flex-direction: column; gap: 2px; }
 .header .title {
   font-family: 'Inter', sans-serif;
@@ -341,7 +337,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     height: env(safe-area-inset-top);
     background: #002676;        /* match your header */
     pointer-events: none;
-    z-index: 1000;              /* high, but below any full-screen modals if you prefer */
+    z-index: 9;              /* high, but below any full-screen modals if you prefer */
   }
 }
 @supports (padding: env(safe-area-inset-bottom)) {
@@ -395,8 +391,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     overflow: auto;
     border-left: 0;
     border-top: 4px solid #e5e7eb;
-    padding-bottom: max(20px, env(safe-area-inset-bottom) + 10px);
-  }
+      }
 
   /* Header tweaks */
   .header { padding: calc(8px + env(safe-area-inset-top)) 14px 8px 14px; }
