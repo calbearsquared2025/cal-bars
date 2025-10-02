@@ -9,6 +9,13 @@ const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98
 
 const DEFAULT_RADIUS_MILES = 50; // kept for possible future use
 
+// ===== Trying to fix my jump =====
+const PREFERS_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canAnimate = () =>
+  !PREFERS_REDUCED &&
+  document.visibilityState === 'visible' &&
+  !!mapGL && mapGL.isStyleLoaded();
+
 // ===== Globals =====
 let mapGL = null;
 let bars = [];            // populated by loadBars()
@@ -447,18 +454,32 @@ function focusUserAndNearest(loc){
     cameraLockUntil = Date.now() + CAMERA_LOCK_MS;
     mapGL.once('moveend', () => { cameraLockUntil = 0; });
 
-    const applyCam = () => {
-      if (isIOS) {
-        if (cam) mapGL.jumpTo(cam);
-        else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z });
-        log('applied cam via jump (iOS)');
-      } else {
-        if (cam) mapGL.easeTo({ ...cam, duration: 600, essential: true });
-        else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z, duration: 600, essential: true });
-        log('applied cam via ease/fit (non-iOS)');
-      }
-    };
+const applyCam = () => {
+  const targetFit = { padding: pad, maxZoom: MAX_REASONABLE_Z };
+  const targetEase = cam || mapGL.cameraForBounds(bounds, targetFit);
 
+  // guard zoom
+  if (targetEase && typeof targetEase.zoom === 'number') {
+    targetEase.zoom = Math.min(targetEase.zoom, MAX_REASONABLE_Z);
+  }
+
+  if (canAnimate()) {
+    // Try smooth ease first (even on iOS)
+    if (cam) {
+      mapGL.easeTo({ ...targetEase, duration: 700, essential: true });
+    } else {
+      // cameraForBounds occasionally returns null early; ease to center as fallback
+      const c = bounds.getCenter();
+      mapGL.easeTo({ center: c, zoom: 12, duration: 700, essential: true });
+    }
+    log('applied cam via ease (all platforms)');
+  } else {
+    // No animation (reduced motion / hidden tab / style not ready)
+    if (cam) mapGL.jumpTo(targetEase);
+    else mapGL.fitBounds(bounds, targetFit);
+    log('applied cam via jump (no-animate)');
+  }
+};
     // Apply now…
     applyCam();
 
@@ -895,8 +916,6 @@ if (isMobile) {
 mapGL.addControl(createLegendControl(), 'bottom-left');
 
   
-  // --- Legend control (inside the map, won't affect list layout)
-  // --- Collapsible legend control
 // --- Collapsible legend control (clean version, defaults to collapsed)
 function createLegendControl({ collapsedDefault = true } = {}) {
   // bump the key so everyone starts fresh collapsed
