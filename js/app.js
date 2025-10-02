@@ -27,14 +27,16 @@ const CAMERA_LOCK_MS = 1200;
 const DEBUG_MOBILE = /(#|&)\bdebug=1\b/.test(location.hash + location.search)
   || localStorage.getItem('calbars_debug_mobile') === '1';
 
-  
-
 // ===== Increasing Padding =====
 function uiPadding() {
   const isMobile = window.matchMedia('(max-width: 900px)').matches;
   // extra bottom so the bar pin + popup clear legend/attribution/safe-area
   if (isMobile) return { top: 80, right: 48, bottom: 160, left: 48 };
   return { top: 80, right: 80, bottom: 140, left: 80 };
+}
+
+function controlGutterPx() {
+  return window.matchMedia('(max-width: 900px)').matches ? 84 : 72;
 }
 
 // ===== DOM helpers =====
@@ -48,6 +50,7 @@ const esc = (s = '') => String(s).replace(/[&<>"']/g, m => ({
 '"': '&quot;',
 "'": '&#39;'
 }[m]));
+
 
 // Wait until the #map box is stable (no size changes) for a short window.
 // Handles flex-basis transitions + URL bar/keyboard changes on iOS.
@@ -444,10 +447,52 @@ function focusUserAndNearest(loc){
     bounds.extend([loc.lon, loc.lat]);
     bounds.extend([nb.lon, nb.lat]);
 
-    const cam = mapGL.cameraForBounds(bounds, { padding: pad });
-    if (cam && typeof cam.zoom === 'number') {
-      cam.zoom = Math.min(cam.zoom, MAX_REASONABLE_Z);
-    }
+let pad2 = pad; // keep original as-is; use pad2 locally
+
+// Optional: shave a little padding on wider spans (tightens the fit slightly)
+const FAR_MILES_1 = 40;   // suburb-range
+if (nb && nb.d > FAR_MILES_1) {
+  pad2 = {
+    top: pad.top,
+    right: Math.max(32, pad.right - 16),
+    bottom: Math.max(120, pad.bottom - 40),
+    left: Math.max(32, pad.left - 16)
+  };
+  pad2.right += controlGutterPx();
+}
+
+    let cam = mapGL.cameraForBounds(bounds, { padding: pad2 });
+    
+    // Target tighter view, but keep both points fitting by only adjusting padding.
+const MIN_Z_BASE = 8;          // try 8–9 for suburb→city
+const FAR_MILES_2 = 120;       // intercity range
+const TARGET_MIN_Z = (nb && nb.d > FAR_MILES_2) ? 7.0 : MIN_Z_BASE;
+
+if (cam && typeof cam.zoom === 'number' && cam.zoom < TARGET_MIN_Z) {
+  const MIN_PAD = { top: 60, right: 32, bottom: 120, left: 32 };
+  const step = 16;
+  let tries = 0;
+
+  const shrink = (p) => ({
+    top:    Math.max(MIN_PAD.top,    p.top    - step),
+    right:  Math.max(MIN_PAD.right,  p.right  - step),
+    bottom: Math.max(MIN_PAD.bottom, p.bottom - step),
+    left:   Math.max(MIN_PAD.left,   p.left   - step),
+  });
+
+  while (tries < 4 && cam.zoom < TARGET_MIN_Z) {
+    pad2 = shrink(pad2);
+    cam = mapGL.cameraForBounds(bounds, { padding: pad2 });
+    tries++;
+  }
+}
+
+// final sanity cap (keep this single max cap)
+if (cam && typeof cam.zoom === 'number') {
+  cam.zoom = Math.min(cam.zoom, MAX_REASONABLE_Z);
+}
+
+  
     log('computed cam', cam);
 
 
@@ -455,7 +500,7 @@ function focusUserAndNearest(loc){
     mapGL.once('moveend', () => { cameraLockUntil = 0; });
 
 const applyCam = () => {
-  const targetFit = { padding: pad, maxZoom: MAX_REASONABLE_Z };
+  const targetFit = { padding: pad2, maxZoom: MAX_REASONABLE_Z };
   const targetEase = cam || mapGL.cameraForBounds(bounds, targetFit);
 
   // guard zoom
@@ -496,12 +541,12 @@ setTimeout(() => {
   log('verify', { endZoom, endCenter, zoomChanged, centerMoved });
 
   if (!zoomChanged && !centerMoved) {
-    const cam2 = mapGL.cameraForBounds(bounds, { padding: pad });
+    const cam2 = mapGL.cameraForBounds(bounds, { padding: pad2 });
     if (cam2 && typeof cam2.zoom === 'number') {
       cam2.zoom = Math.min(cam2.zoom, MAX_REASONABLE_Z);
     }
     if (cam2) mapGL.jumpTo(cam2);
-    else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z });
+    else mapGL.fitBounds(bounds, { padding: pad2, maxZoom: MAX_REASONABLE_Z });
     log('watchdog forced jump');
 
     // shorten the lock ONLY when the watchdog actually fired
