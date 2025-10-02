@@ -12,7 +12,7 @@
   <!-- Open Graph / iMessage -->
   <meta property="og:title" content="California Golden Bars — Find Your Local Cal Bar!" />
   <meta property="og:description" content="Crowdsourced map of Cal bars where Bears gather to watch games. Add your spot!" />
-  <meta property="og:image" content="https://calgoldenbars.com/assets/social-preview.png.png" />
+  <meta property="og:image" content="https://calgoldenbars.com/assets/social-preview.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="California Golden Bars - Interactive map showing Cal bars across the country" />
@@ -32,11 +32,11 @@
   <meta charset="utf-8">
   <meta name="description" content="Find Cal bars near you! Interactive map of California Golden Bears watch parties and alumni bars across the country. Crowdsourced by fans, for fans.">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#003262">
+  <meta name="theme-color" content="#002676">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
 
   <title>California Golden Bars</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
@@ -50,6 +50,10 @@
   <link rel="preconnect" href="https://unpkg.com">
   <link rel="preconnect" href="https://nominatim.openstreetmap.org">
 
+  <!-- Canonical for SEO -->
+  <link rel="canonical" href="https://calgoldenbars.com/">
+
+  
   <!-- MapLibre GL -->
   <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet"></noscript>
@@ -58,7 +62,7 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-
+  <div class="safe-top-paint" aria-hidden="true"></div>
 <!-- Landscape orientation warning for mobile -->
 <div id="landscape-warning" class="landscape-warning">
   <div class="landscape-warning-content">
@@ -130,21 +134,20 @@
     <button class="modal__close" id="aboutClose" aria-label="Close">×</button>
     <h2 id="aboutTitle">About</h2>
     <p>
-      The idea for this project came while I wandered around Pismo Beach trying to find a place to
-      watch the Cal–SMU game. It’s now a crowdsourced map to help fans find Cal bars accross Bear Territory!
+      California Golden Bars is a crowdsourced map that helps Cal fans find game-day bars across Bear Territory.
     </p>
     <p>
-      Have a correction or a new bar to add?
+      See something wrong or know a new bar?<br>
       <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit it here</a>
       or <a href="mailto:calbearsquared2025@gmail.com">email me</a>. Go Bears!
     </p>
-    <p><small>Fan-run and unaffiliated with UC Berkeley, Cal Athletics, or any listed bars. Data is crowdsourced and unverified.</small></p>
+    <p><small>Fan-run and unaffiliated with UC Berkeley, Cal Athletics or the Cal Alumni Association. Listings community-submitted and unverified.</small></p>
   </div>
 </div>
 
 <!-- Scripts -->
 <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-<script src="js/app.js" defer></script>
+<script src="js/app.js" defer></script><div class="safe-bottom-paint" aria-hidden="true"></div>
 </body>
 </html>

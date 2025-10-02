@@ -53,7 +53,7 @@ html { -webkit-text-size-adjust: 100%; }
   gap: 12px;
   padding: 0 16px 10px;
   padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
-  background: #003262; /* Berkeley Blue */
+  background: #002676; /* Berkeley Blue */
   color: #FDB515;      /* Cal Gold */
   border-bottom: 1px solid #0b2a55;
   position: relative;
@@ -64,7 +64,7 @@ html { -webkit-text-size-adjust: 100%; }
   position: absolute;
   top: 0; left: 0; right: 0;
   height: env(safe-area-inset-top, 0px);
-  background: #003262;
+  background: #002676;
   z-index: 0;
 }
 .header-stack { display: flex; flex-direction: column; gap: 2px; }
@@ -123,9 +123,9 @@ html { -webkit-text-size-adjust: 100%; }
 
 .search-panel button {
   padding: 8px 12px;
-  border: 1px solid #003262;
+  border: 1px solid #002676;
   border-radius: 6px;
-  background: #003262;
+  background: #002676;
   color: #fff;
   cursor: pointer;
   display: inline-flex;
@@ -139,7 +139,7 @@ html { -webkit-text-size-adjust: 100%; }
 #findMeBtn {
   background: #FDB515;
   border-color: #FDB515;
-  color: #003262;
+  color: #002676;
   font-weight: 400;
 }
 #findMeBtn:hover { background: #e6a413; border-color: #e6a413; }
@@ -246,7 +246,7 @@ main {
 /* ========= Footer ========= */
 /* Structured results styling (matches renderListAll) */
 .res-item { margin: 8px 0; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
-.res-item.is-active { outline: 1px solid #003262; outline-offset: 2px; }
+.res-item.is-active { outline: 1px solid #002676; outline-offset: 2px; }
 .res-item[aria-selected="true"] { background: #f3f6fb; }
 .res-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .res-name { font-weight: 700; color: #0f172a; }
@@ -254,7 +254,7 @@ main {
 .res-meta { color: #475569; font-size: 0.75rem; margin-top: 2px; }
 .res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
 .res-link {
-  color: #fff; background: #003262; padding: 4px 8px; border-radius: 999px;
+  color: #fff; background: #002676; padding: 4px 8px; border-radius: 999px;
   font-size: 0.82rem; text-decoration: none;
 }
 .res-link:hover { filter: brightness(0.95); }
@@ -288,7 +288,7 @@ footer {
 }
 footer small { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 footer a, footer button.footer-link {
-  color: #003262; text-decoration: underline; background: none; border: none; padding: 0; font: inherit; cursor: pointer;
+  color: #002676; text-decoration: underline; background: none; border: none; padding: 0; font: inherit; cursor: pointer;
 }
 
 /* ========= Modal ========= */
@@ -312,8 +312,13 @@ footer a, footer button.footer-link {
   padding: 20px 20px 16px;
   box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
-.modal__dialog h2 { margin: 0 0 8px; color: #003262; }
-.modal__dialog p { margin: 8px 0; line-height: 1.5; }
+.modal__dialog h2 { margin: 0 0 8px; color: #002676; }
+.modal__dialog p {
+  margin: 8px 0;
+  font-size: 0.8rem;   
+  line-height: 1.45;  
+}
+
 .modal__close {
   position: absolute; right: 8px; top: 6px;
   border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #0f172a;
@@ -328,10 +333,28 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 }
 
 
-/* === iOS safe-area: header padding === */
-@supports (padding: max(0px)) {
-  .header { padding-top: max(env(safe-area-inset-top, 0px), 10px); }
+/* === iOS safe-area: header/footer padding === */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-top-paint {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: env(safe-area-inset-top);
+    background: #002676;        /* match your header */
+    pointer-events: none;
+    z-index: 1000;              /* high, but below any full-screen modals if you prefer */
+  }
 }
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom-paint{
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: env(safe-area-inset-bottom);
+    background: #f8fafc;   /* match your footer */
+    pointer-events: none;
+    z-index: 1;            /* below everything interactive */
+  }
+}
+
 
 /* ========= Desktop ========= */
 @media (min-width: 901px) {
@@ -371,7 +394,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     min-height: 0;
     overflow: auto;
     border-left: 0;
-    border-top: 1px solid #e5e7eb;
+    border-top: 4px solid #e5e7eb;
     padding-bottom: max(20px, env(safe-area-inset-bottom) + 10px);
   }
 
@@ -395,11 +418,13 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
   /* Keep Find Me same width as other buttons; avoid shrinking */
   #findMeBtn { flex-shrink: 0; }
-
   #map, #list { transition: flex-basis 180ms ease; }
 
+/* Ensure compact attribution is visible on mobile */
+  .maplibregl-ctrl-attrib.maplibregl-compact {
+    display: block; /* keep it visible */
+  }
 }
-
   
 @media (min-width: 901px) {
   #map, #list { transition: none; }                  /* desktop = instant */
@@ -520,7 +545,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   border-radius: 999px;
   font-weight: 600;
   text-decoration: none;
-  background: #003262;   /* or your existing list button color */
+  background: #002676;   /* or your existing list button color */
   color: #fff;
 }
 
@@ -539,14 +564,6 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 /* Anti-dangle helpers */
 .nowrap { white-space: nowrap; }
 .res-link, .res-note, .res-meta { word-break: break-word; }
-
-/* Ensure compact attribution is visible on mobile */
-@media (max-width: 900px) {
-  .maplibregl-ctrl-attrib.maplibregl-compact {
-    display: block; /* keep it visible */
-  }
-}
-
 
 /* Collapsible legend states */
 .map-legend.is-collapsible {
