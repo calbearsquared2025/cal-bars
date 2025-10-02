@@ -7,8 +7,6 @@ const MAPTILER_KEY = (
 
 const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98cc3dbf3d7c/style.json?key=${MAPTILER_KEY}`;
 
-const DEFAULT_RADIUS_MILES = 50; // kept for possible future use
-
 // ===== Camera jump guard: only animate when style is ready & tab visible =====
 const PREFERS_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canAnimate = () =>
@@ -51,6 +49,20 @@ const esc = (s = '') => String(s).replace(/[&<>"']/g, m => ({
 "'": '&#39;'
 }[m]));
 
+async function runLocationFlow(loc) {
+  // Update user pin and map content without immediate fit/animation
+  drawUserMarker(loc);
+  renderAllMarkersAndFit({ fit: false });
+
+  // Update list + show it (mobile). This changes layout height.
+  renderListAll(loc);
+  setListShown(true);
+  window.Legend?.collapse();
+
+  // Wait for layout to settle, then focus camera
+  await waitForMapStable();
+  focusUserAndNearest(loc);
+}
 
 // Wait until the #map box is stable (no size changes) for a short window.
 // Handles flex-basis transitions + URL bar/keyboard changes on iOS.
@@ -120,7 +132,7 @@ function setListShown(shown){
   }
 }
 
-// ===== CSV with headers; fields normalized; invalid lat/lon rows dropped =====
+// ===== CSV loader (expects headers; drops rows with invalid lat/lon) =====
 function normalizeBar(row){
   const lat = parseFloat(row.lat);
   const lon = parseFloat(row.lon);
@@ -290,7 +302,7 @@ const CAL_PIN_SVG_RAW = `
   <circle cx="14" cy="14" r="6" fill="#FDB515"/>
 </svg>`;
 
-// Gold pin with blue dot (“Official” styling tied to promo text containing 'official'.)
+// Gold pin with blue dot ("official")
 const CAL_PIN_SVG_OFFICIAL = `
 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
   <defs>
@@ -336,6 +348,8 @@ function addBarMarkerDefault(b) {
   if (!mapGL) return null;
 
   const addr = [b.address, b.city, b.state, b.zip].filter(Boolean).join(', ');
+
+  // “Official” marker if promo text contains 'official'
   const isOfficial = !!(b.promo && /official/i.test(b.promo));
 
   // Escape + tidy content (strip surrounding quotes)
@@ -621,38 +635,23 @@ function wireSearch(){
   const input = $('#address');
   if (!btn || !input) return;
 
- const runSearch = async () => {
-  const q = (input.value || '').trim();
-  if (!q) return;
+  const runSearch = async () => {
+    const q = (input.value || '').trim();
+    if (!q) return;
 
-  setStatus('Geocoding…');
-  try {
-    const loc = await geocode(q);
-    setStatus('');
+    setStatus('Geocoding…');
+    try {
+      const loc = await geocode(q);
+      setStatus('');
+      await runLocationFlow(loc);
+    } catch (e) {
+      console.error(e);
+      setStatus('Address not found');
+    }
+  };
 
-    // Update user marker and show all pins (instant fit, no animation)
-    drawUserMarker(loc);
-    renderAllMarkersAndFit({ fit: false });
-
-    // Update list + show it (mobile). This changes layout height.
-    renderListAll(loc);
-    setListShown(true);
-    window.Legend?.collapse();
-
-    // Wait for layout to settle, then focus
-    await waitForMapStable();
-    focusUserAndNearest(loc);
-  } catch (e) {
-    console.error(e);
-    setStatus('Address not found');
-  }
-};
- 
-
-  // Click = search
   btn.addEventListener('click', runSearch);
 
-  // Enter-to-search
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -660,15 +659,14 @@ function wireSearch(){
     }
   });
 
-  // Autofill commits on mobile
   input.addEventListener('change', () => {
     const v = (input.value || '').trim();
     if (v) runSearch();
   });
 
-  // (optional) tame noisy virtual keyboards; keep if you like
   input.addEventListener('input', () => {}, { passive: true });
 }
+
 
  function wireAutocomplete() {
   const input = document.getElementById('address');
@@ -750,27 +748,16 @@ function wireFindMe() {
     btn.disabled = true;
 
     try {
-      const loc = await getCurrentLocation();
-      setStatus('');
+  const loc = await getCurrentLocation();
+  setStatus('');
+  await runLocationFlow(loc);
+} catch (e) {
+  console.error(e);
+  setStatus(e?.message || 'Location failed');
+} finally {
+  btn.disabled = false;
+}
 
-      // Update user marker and show all pins (instant fit, no animation)
-      drawUserMarker(loc);
-      renderAllMarkersAndFit({ fit: false });
-
-      // Update list + show it (mobile). This changes layout height.
-      renderListAll(loc);
-      setListShown(true);
-      window.Legend?.collapse();
-
-      // Wait for layout to settle, then focus
-      await waitForMapStable();
-      focusUserAndNearest(loc);
-    } catch (e) {
-      console.error(e);
-      setStatus(e?.message || 'Location failed');
-    } finally {
-      btn.disabled = false;
-    }
   });
 }
 
@@ -799,17 +786,11 @@ li.setAttribute('aria-selected', 'true');
 const latF = parseFloat(lat), lonF = parseFloat(lon);
 const ll = [lonF, latF];
 const mk = findMarkerByCoords(latF, lonF);
-const currentZoom = mapGL.getZoom() || 0;
-
-// if already visible, just open the popup
-if (isLngLatVisible(ll)) {
-  if (mk && mk.togglePopup) mk.togglePopup();
-  return;
-}
-
-// otherwise, pan to it at the SAME zoom (no zoom-in/out)
 const wantPan = () => {
-  if (isLngLatVisible(ll)) { if (mk && mk.togglePopup) mk.togglePopup(); return; }
+  if (isLngLatVisible(ll)) {
+    if (mk && mk.togglePopup) mk.togglePopup();
+    return;
+  }
   const currentZoom = mapGL.getZoom() || 0;
   mapGL.easeTo({ center: ll, zoom: currentZoom, duration: 500, essential: true });
   if (mk && mk.togglePopup) mapGL.once('moveend', () => { try { mk.togglePopup(); } catch(_){} });
