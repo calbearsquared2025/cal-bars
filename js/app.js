@@ -14,12 +14,19 @@ let mapGL = null;
 let bars = [];            // populated by loadBars()
 let barMarkers = [];
 let userMarker = null;
+let cameraLockUntil = 0;
+const CAMERA_LOCK_MS = 1200;
+
+const DEBUG_MOBILE = /(#|&)\bdebug=1\b/.test(location.hash + location.search)
+  || localStorage.getItem('calbars_debug_mobile') === '1';
+
+  
 
 // ===== Increasing Padding =====
 function uiPadding() {
   const isMobile = window.matchMedia('(max-width: 900px)').matches;
   // extra bottom so the bar pin + popup clear legend/attribution/safe-area
-  if (isMobile) return { top: 80, right: 48, bottom: 220, left: 48 };
+  if (isMobile) return { top: 80, right: 48, bottom: 160, left: 48 };
   return { top: 80, right: 80, bottom: 140, left: 80 };
 }
 
@@ -34,6 +41,42 @@ const esc = (s = '') => String(s).replace(/[&<>"']/g, m => ({
 '"': '&quot;',
 "'": '&#39;'
 }[m]));
+
+// Wait until the #map box is stable (no size changes) for a short window.
+// Handles flex-basis transitions + URL bar/keyboard changes on iOS.
+function waitForMapStable({ minStable = 220, timeout = 1500 } = {}) {
+  return new Promise(resolve => {
+    const el = document.getElementById('map');
+    if (!el) return resolve();
+
+    let lastW = el.clientWidth, lastH = el.clientHeight;
+    let stableSince = performance.now();
+    let raf, to;
+
+    const tick = () => {
+      const w = el.clientWidth, h = el.clientHeight;
+      if (w !== lastW || h !== lastH) {
+        lastW = w; lastH = h;
+        stableSince = performance.now();
+        try { mapGL && mapGL.resize(); } catch (_) {}
+      }
+      if (performance.now() - stableSince >= minStable) {
+        cancelAnimationFrame(raf);
+        clearTimeout(to);
+        return resolve();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    // restart the “stable” clock once after the flex transition ends
+    const onTE = () => { stableSince = performance.now(); };
+    el.addEventListener('transitionend', onTE, { once: true });
+
+    to = setTimeout(() => { cancelAnimationFrame(raf); resolve(); }, timeout);
+    tick();
+  });
+}
+
 
 function findMarkerByCoords(lat, lon) {
   const EPS = 1e-5;
@@ -63,7 +106,7 @@ function setListShown(shown){
   }
   // Map needs a resize after layout change
   if (mapGL && typeof mapGL.resize === 'function'){
-    setTimeout(() => mapGL.resize(), 50);
+    setTimeout(() => mapGL.resize(), 150);
   }
 }
 
@@ -359,30 +402,101 @@ function renderAllMarkersAndFit({ fit = true } = {}) {
 }
 
 // Keep the “you + nearest” framing for context
+// Keep the “you + nearest” framing for context — iOS/mobile-safe
 function focusUserAndNearest(loc){
-  if (!mapGL) return;
+  if (!mapGL || !loc) return;
 
-  // Cancel any ongoing interaction/animation and ensure fresh size
-  try { mapGL.stop(); } catch(_) {}
-  try { mapGL.resize(); } catch(_) {}
-
-  const nb = nearestBarTo(loc.lat, loc.lon);
-  if (!nb){
-    mapGL.jumpTo({ center: [loc.lon, loc.lat], zoom: 13 });
-    return;
-  }
-
-  const bounds = new maplibregl.LngLatBounds();
-  bounds.extend([loc.lon, loc.lat]);
-  bounds.extend([nb.lon, nb.lat]);
-
-  const pad = uiPadding();
-  const cam = mapGL.cameraForBounds(bounds, { padding: pad });
   const MAX_REASONABLE_Z = 15;
-  if (cam && typeof cam.zoom === 'number') cam.zoom = Math.min(cam.zoom, MAX_REASONABLE_Z);
+  const pad = uiPadding();
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-  if (cam) mapGL.easeTo({ ...cam, duration: 600, essential: true });
-  else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z, duration: 600, essential: true });
+  const log = (...a) => { if (DEBUG_MOBILE) console.log('[focusUserAndNearest]', ...a); };
+
+  const doFocus = () => {
+    try { mapGL.stop(); } catch(_) {}
+    try { mapGL.resize(); } catch(_) {}
+
+    const startZoom = mapGL.getZoom();
+    const startCenter = mapGL.getCenter();
+    log('start', { startZoom, startCenter });
+
+    const nb = nearestBarTo(loc.lat, loc.lon);
+
+    const jumpUserOnly = () => {
+      const target = { center: [loc.lon, loc.lat], zoom: 13 };
+      if (isIOS) mapGL.jumpTo(target);
+      else mapGL.easeTo({ ...target, duration: 600, essential: true });
+      log('jump user only');
+    };
+
+    if (!nb){ jumpUserOnly(); return; }
+
+    const bounds = new maplibregl.LngLatBounds();
+    bounds.extend([loc.lon, loc.lat]);
+    bounds.extend([nb.lon, nb.lat]);
+
+    const cam = mapGL.cameraForBounds(bounds, { padding: pad });
+    if (cam && typeof cam.zoom === 'number') {
+      cam.zoom = Math.min(cam.zoom, MAX_REASONABLE_Z);
+    }
+    log('computed cam', cam);
+
+
+    cameraLockUntil = Date.now() + CAMERA_LOCK_MS;
+    mapGL.once('moveend', () => { cameraLockUntil = 0; });
+
+    const applyCam = () => {
+      if (isIOS) {
+        if (cam) mapGL.jumpTo(cam);
+        else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z });
+        log('applied cam via jump (iOS)');
+      } else {
+        if (cam) mapGL.easeTo({ ...cam, duration: 600, essential: true });
+        else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z, duration: 600, essential: true });
+        log('applied cam via ease/fit (non-iOS)');
+      }
+    };
+
+    // Apply now…
+    applyCam();
+
+    // …and verify after ~700ms; if no effective change, force a hard jump
+    const verifyDelay = isIOS ? 500 : 700;
+setTimeout(() => {
+  const endZoom = mapGL.getZoom();
+  const endCenter = mapGL.getCenter();
+  const zoomChanged = Math.abs((endZoom || 0) - (startZoom || 0)) > 0.1;
+  const centerMoved =
+    Math.abs((endCenter.lng || 0) - (startCenter.lng || 0)) > 0.001 ||
+    Math.abs((endCenter.lat || 0) - (startCenter.lat || 0)) > 0.001;
+
+  log('verify', { endZoom, endCenter, zoomChanged, centerMoved });
+
+  if (!zoomChanged && !centerMoved) {
+    const cam2 = mapGL.cameraForBounds(bounds, { padding: pad });
+    if (cam2 && typeof cam2.zoom === 'number') {
+      cam2.zoom = Math.min(cam2.zoom, MAX_REASONABLE_Z);
+    }
+    if (cam2) mapGL.jumpTo(cam2);
+    else mapGL.fitBounds(bounds, { padding: pad, maxZoom: MAX_REASONABLE_Z });
+    log('watchdog forced jump');
+
+    // shorten the lock ONLY when the watchdog actually fired
+    cameraLockUntil = Date.now() + 300;
+  }
+}, verifyDelay);
+
+  };
+
+// Always defer exactly one 'idle' tick; iOS may still be mid-layout otherwise
+try {
+  mapGL.once('idle', doFocus);
+} catch (_) {
+  requestAnimationFrame(() => requestAnimationFrame(doFocus));
+}
+
 }
 
 
@@ -444,39 +558,33 @@ function wireSearch(){
   const input = $('#address');
   if (!btn || !input) return;
 
-  const runSearch = async () => {
-    const q = (input.value || '').trim();
-    if (!q) return;
+ const runSearch = async () => {
+  const q = (input.value || '').trim();
+  if (!q) return;
 
-    setStatus('Geocoding…');
-    try {
-      const loc = await geocode(q);
-      setStatus('');
+  setStatus('Geocoding…');
+  try {
+    const loc = await geocode(q);
+    setStatus('');
 
-      // Update user marker and show all pins (instant fit, no animation)
-      drawUserMarker(loc);
-      renderAllMarkersAndFit({ fit: false });
+    // Update user marker and show all pins (instant fit, no animation)
+    drawUserMarker(loc);
+    renderAllMarkersAndFit({ fit: false });
 
-      // Update list + show it (mobile). This changes layout height.
-      renderListAll(loc);
-      setListShown(true);
-      window.Legend?.collapse();
+    // Update list + show it (mobile). This changes layout height.
+    renderListAll(loc);
+    setListShown(true);
+    window.Legend?.collapse();
 
-      // After layout settles, cancel any prior camera moves, resize, then focus
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            try { mapGL.stop(); } catch(_) {}
-            try { mapGL.resize(); } catch(_) {}
-            focusUserAndNearest(loc);
-          }, 80);
-        });
-      });
-    } catch (e) {
-      console.error(e);
-      setStatus('Address not found');
-    }
-  };
+    // Wait for layout to settle, then focus
+    await waitForMapStable();
+    focusUserAndNearest(loc);
+  } catch (e) {
+    console.error(e);
+    setStatus('Address not found');
+  }
+};
+ 
 
   // Click = search
   btn.addEventListener('click', runSearch);
@@ -570,13 +678,12 @@ function wireSearch(){
 }
 
 
-function wireFindMe(){
+function wireFindMe() {
   const btn = $('#findMeBtn');
   if (!btn) return;
 
   btn.addEventListener('click', async () => {
     setStatus('Finding…');
-    // (optional) prevent double-clicks during geolocation
     btn.disabled = true;
 
     try {
@@ -592,17 +699,9 @@ function wireFindMe(){
       setListShown(true);
       window.Legend?.collapse();
 
-      // After layout settles, cancel any prior camera moves, resize, then focus
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            try { mapGL.stop(); } catch(_) {}
-            try { mapGL.resize(); } catch(_) {}
-            focusUserAndNearest(loc);
-          }, 80);
-        });
-      });
-
+      // Wait for layout to settle, then focus
+      await waitForMapStable();
+      focusUserAndNearest(loc);
     } catch (e) {
       console.error(e);
       setStatus(e?.message || 'Location failed');
@@ -611,6 +710,7 @@ function wireFindMe(){
     }
   });
 }
+
 
 function wireListClicks() {
   const list = document.getElementById('results');
@@ -645,10 +745,19 @@ if (isLngLatVisible(ll)) {
 }
 
 // otherwise, pan to it at the SAME zoom (no zoom-in/out)
-mapGL.easeTo({ center: ll, zoom: currentZoom, duration: 500, essential: true });
-if (mk && mk.togglePopup) {
-  mapGL.once('moveend', () => { try { mk.togglePopup(); } catch(_) {} });
+const wantPan = () => {
+  if (isLngLatVisible(ll)) { if (mk && mk.togglePopup) mk.togglePopup(); return; }
+  const currentZoom = mapGL.getZoom() || 0;
+  mapGL.easeTo({ center: ll, zoom: currentZoom, duration: 500, essential: true });
+  if (mk && mk.togglePopup) mapGL.once('moveend', () => { try { mk.togglePopup(); } catch(_){} });
+};
+
+if (Date.now() < cameraLockUntil) {
+  mapGL.once('moveend', wantPan);   // defer until focus completes
+  return;
 }
+wantPan();
+
   });
 }
 
@@ -756,6 +865,16 @@ function ensureMap(initialBounds){
   mapGL = new maplibregl.Map(opts);
   requestAnimationFrame(() => requestAnimationFrame(() => { if (mapGL) mapGL.resize(); }));
   mapGL.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+// Surface useful errors when #debug=1
+mapGL.on('error', (e) => { if (DEBUG_MOBILE) console.error('[MapLibre error]', e?.error || e); });
+
+// If the map container’s box changes (keyboard/list/legend), force a resize
+try {
+  const ro = new ResizeObserver(() => { try { mapGL.resize(); } catch(_) {} });
+  ro.observe(document.getElementById('map'));
+} catch(_) {}
+
 
   // Attribution: compact on mobile, expanded on desktop
 const isMobile = window.matchMedia('(max-width: 900px)').matches;
