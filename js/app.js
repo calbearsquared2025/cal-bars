@@ -9,7 +9,7 @@ const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98
 
 const DEFAULT_RADIUS_MILES = 50; // kept for possible future use
 
-// ===== Trying to fix my jump =====
+// ===== Camera jump guard: only animate when style is ready & tab visible =====
 const PREFERS_REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const canAnimate = () =>
   !PREFERS_REDUCED &&
@@ -18,7 +18,7 @@ const canAnimate = () =>
 
 // ===== Globals =====
 let mapGL = null;
-let bars = [];            // populated by loadBars()
+let bars = [];            
 let barMarkers = [];
 let userMarker = null;
 let cameraLockUntil = 0;
@@ -27,7 +27,7 @@ const CAMERA_LOCK_MS = 1200;
 const DEBUG_MOBILE = /(#|&)\bdebug=1\b/.test(location.hash + location.search)
   || localStorage.getItem('calbars_debug_mobile') === '1';
 
-// ===== Increasing Padding =====
+// ===== Map camera/layout padding tuned for mobile vs desktop =====
 function uiPadding() {
   const isMobile = window.matchMedia('(max-width: 900px)').matches;
   // extra bottom so the bar pin + popup clear legend/attribution/safe-area
@@ -107,7 +107,7 @@ function isLngLatVisible(lngLat, pad = 60) {
 // Show/hide the list programmatically and keep the toggle button in sync
 function setListShown(shown){
   document.body.classList.toggle('list-shown', shown);
-  document.body.classList.toggle('list-hidden', !shown);  // <-- add this line
+  document.body.classList.toggle('list-hidden', !shown);  
 
   const btn = $('#toggleListBtn');
   if (btn){
@@ -120,7 +120,7 @@ function setListShown(shown){
   }
 }
 
-// ===== CSV loader (strict headers) =====
+// ===== CSV with headers; fields normalized; invalid lat/lon rows dropped =====
 function normalizeBar(row){
   const lat = parseFloat(row.lat);
   const lon = parseFloat(row.lon);
@@ -290,7 +290,7 @@ const CAL_PIN_SVG_RAW = `
   <circle cx="14" cy="14" r="6" fill="#FDB515"/>
 </svg>`;
 
-// Gold pin with blue dot (official)
+// Gold pin with blue dot (“Official” styling tied to promo text containing 'official'.)
 const CAL_PIN_SVG_OFFICIAL = `
 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="42" viewBox="0 0 28 42">
   <defs>
@@ -396,12 +396,10 @@ function addBarMarkerCompat(b){
   return addBarMarkerDefault(b);
 }
 
-// === Always show ALL pins (no filtering) and fit to bounds ===
-// === Always show ALL pins (no filtering) and fit to bounds ===
+// === Always show ALL pins (no filtering) and optionally fit to bounds ===
 function renderAllMarkersAndFit({ fit = true } = {}) {
   clearBarMarkers();
 
-  // You’re not filtering right now—just render all bars
   for (const r of bars) addBarMarkerCompat(r);
 
   if (fit && barMarkers.length && mapGL) {
@@ -411,7 +409,6 @@ function renderAllMarkersAndFit({ fit = true } = {}) {
   }
 }
 
-// Keep the “you + nearest” framing for context
 // Keep the “you + nearest” framing for context — iOS/mobile-safe
 function focusUserAndNearest(loc){
   if (!mapGL || !loc) return;
@@ -684,7 +681,7 @@ function wireSearch(){
     const q = input.value.trim();
     if (!q) {
       suggestions.innerHTML = '';
-      suggestions.classList.remove('open');   // hide
+      suggestions.classList.remove('open');   
       return;
     }
 
@@ -701,7 +698,7 @@ function wireSearch(){
 
       const feats = (data.features || []);
       if (feats.length === 0) {
-        suggestions.classList.remove('open'); // hide if no results
+        suggestions.classList.remove('open'); 
         return;
       }
 
@@ -713,14 +710,14 @@ function wireSearch(){
         suggestions.appendChild(li);
 
         li.addEventListener('click', () => {
-          input.value = f.place_name;          // fill input
+          input.value = f.place_name;          
           suggestions.innerHTML = '';
-          suggestions.classList.remove('open'); // hide
-          document.getElementById('searchBtn').click(); // run flow
+          suggestions.classList.remove('open'); 
+          document.getElementById('searchBtn').click(); 
         });
       }
 
-      suggestions.classList.add('open'); // show list when populated
+      suggestions.classList.add('open');
     } catch (e) {
       if (e.name !== 'AbortError') console.error(e);
     }
@@ -730,7 +727,7 @@ function wireSearch(){
   document.addEventListener('click', (e) => {
     if (!suggestions.contains(e.target) && e.target !== input) {
       suggestions.innerHTML = '';
-      suggestions.classList.remove('open'); // hide
+      suggestions.classList.remove('open'); 
     }
   });
 
@@ -842,11 +839,12 @@ function wireListToggle(){
   // init based on current class
   applyState(document.body.classList.contains('list-shown'));
 
+  // collapse legend when list opens
   btn.addEventListener('click', () => {
     const nowShown = !document.body.classList.contains('list-shown');
     applyState(nowShown);
     if (nowShown) {
-      window.Legend?.collapse(); // <— collapse legend when list opens
+      window.Legend?.collapse();
       setTimeout(()=>{
         const y = listEl.getBoundingClientRect().top + window.pageYOffset - 6;
         window.scrollTo({ top: y, behavior: 'smooth' });
@@ -923,7 +921,6 @@ function ensureMap(initialBounds){
     opts.bounds = initialBounds;                       // [[west,south],[east,north]]
     opts.fitBoundsOptions = { padding: uiPadding(), maxZoom: 6 };
   } else {
-    // Fallback if no bars yet
     opts.center = [-98.5795, 39.8283];
     opts.zoom = 4;
   }
@@ -946,8 +943,7 @@ try {
 const isMobile = window.matchMedia('(max-width: 900px)').matches;
 mapGL.addControl(new maplibregl.AttributionControl({ compact: isMobile }), 'bottom-right');
 
-// Guard: on some setups attribution starts expanded until first move.
-// Force-collapse once on mobile.
+// Ensure compact attribution on mobile after load
 if (isMobile) {
   mapGL.once('load', () => {
     const el = document.querySelector('.maplibregl-ctrl-attrib');
@@ -963,7 +959,6 @@ mapGL.addControl(createLegendControl(), 'bottom-left');
   
 // --- Collapsible legend control (clean version, defaults to collapsed)
 function createLegendControl({ collapsedDefault = true } = {}) {
-  // bump the key so everyone starts fresh collapsed
   const LS_KEY = 'legendCollapsed_v2';
 
   const getInitial = () => {
