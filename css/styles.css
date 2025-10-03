@@ -530,7 +530,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 .popup-card .res-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .popup-card .res-name {font-size: 1.0rem; font-weight: 700; color:#0f172a}
 .popup-card .res-meta { font-size: 0.75rem; color: #475569; margin-top: 2px; }
-.popup-card .popup-dist { font-size: 1.0rem; font-weight: 500; color: #64748b; margin-left: 8px; align-self: center; }
+.popup-card .popup-dist { font-size: 0.9rem; font-weight: 500; color: #64748b; margin-left: 8px; align-self: center; }
 
 /* Reuse list action styling; ensure inline items don't dangle */
 .popup-card .res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
