@@ -87,6 +87,11 @@ html { -webkit-text-size-adjust: 100%; }
 .header .disclaimer { color: #cfe0f4; font-size: 0.82rem; line-height: 1.2; }
 .header a { color: inherit; }
 
+.header img.logo-paw {
+  height: 36px;        
+  width: auto;         
+  display: block;
+}
 
 /* ========= Search / Controls ========= */
 .search-panel {
