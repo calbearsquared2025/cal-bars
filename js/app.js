@@ -736,20 +736,59 @@ function wireSearch(){
 }
 
 
- function wireAutocomplete() {
+function wireAutocomplete() {
   const input = document.getElementById('address');
-  const suggestions = document.getElementById('autocomplete-list');
-  if (!input || !suggestions) return;
+  const list  = document.getElementById('autocomplete-list');
+  if (!input || !list) return;
+
+  // ARIA wiring (do it here so you don't touch HTML)
+  input.setAttribute('aria-autocomplete', 'list');
+  input.setAttribute('aria-controls', 'autocomplete-list');
+  list.setAttribute('role', 'listbox');
 
   let controller = null;
+  let features = [];            // last fetched suggestions
+  let currentIndex = -1;        // -1 = none
+  let originalText = '';        // what user typed before navigating
+  let programmaticSet = false;  // prevent input handler loops
+
+  const clearList = () => {
+    list.innerHTML = '';
+    list.classList.remove('open');
+    features = [];
+    currentIndex = -1;
+    input.setAttribute('aria-activedescendant', '');
+  };
+
+  const setActive = (idx) => {
+    const items = list.querySelectorAll('li[role="option"]');
+    items.forEach((el, i) => el.classList.toggle('active', i === idx));
+    if (idx >= 0 && items[idx]) {
+      input.setAttribute('aria-activedescendant', items[idx].id);
+      items[idx].scrollIntoView({ block: 'nearest' });
+    } else {
+      input.setAttribute('aria-activedescendant', '');
+    }
+  };
+
+  const selectIndex = (idx) => {
+    if (idx < 0 || idx >= features.length) return;
+    const f = features[idx];
+    programmaticSet = true;
+    input.value = f.place_name;
+    programmaticSet = false;
+    clearList();
+    // Use your existing pattern to execute the search:
+    document.getElementById('searchBtn')?.click();
+  };
 
   input.addEventListener('input', async () => {
+    if (programmaticSet) return;      // ignore our own updates
     const q = input.value.trim();
-    if (!q) {
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('open');   
-      return;
-    }
+    originalText = q;                  // reset baseline when user types
+    currentIndex = -1;
+
+    if (!q) { clearList(); return; }
 
     if (controller) controller.abort();
     controller = new AbortController();
@@ -757,54 +796,70 @@ function wireSearch(){
     try {
       const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(q)}.json?key=${MAPTILER_KEY}&autocomplete=true&country=us&limit=5&language=en`;
       const resp = await fetch(url, { signal: controller.signal });
-      if (!resp.ok) return;
+      if (!resp.ok) { clearList(); return; }
       const data = await resp.json();
 
-      suggestions.innerHTML = '';
+      features = (data.features || []);
+      if (!features.length) { clearList(); return; }
 
-      const feats = (data.features || []);
-      if (feats.length === 0) {
-        suggestions.classList.remove('open'); 
-        return;
-      }
-
-      for (const f of feats) {
+      // render list
+      list.innerHTML = '';
+      features.forEach((f, i) => {
         const li = document.createElement('li');
+        li.id = `opt-${i}`;
+        li.setAttribute('role', 'option');
         li.textContent = f.place_name;
-        li.dataset.lat = f.center[1];
-        li.dataset.lon = f.center[0];
-        suggestions.appendChild(li);
-
-        li.addEventListener('click', () => {
-          input.value = f.place_name;          
-          suggestions.innerHTML = '';
-          suggestions.classList.remove('open'); 
-          document.getElementById('searchBtn').click(); 
-        });
-      }
-
-      suggestions.classList.add('open');
+        li.dataset.lat = f.center?.[1];
+        li.dataset.lon = f.center?.[0];
+        li.addEventListener('click', () => selectIndex(i));
+        list.appendChild(li);
+      });
+      list.classList.add('open');
     } catch (e) {
       if (e.name !== 'AbortError') console.error(e);
+      clearList();
     }
   });
 
-  // Hide when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!suggestions.contains(e.target) && e.target !== input) {
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('open'); 
-    }
-  });
-
-  // Also hide on escape or blur if you want:
+  // Keyboard nav
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      suggestions.innerHTML = '';
-      suggestions.classList.remove('open');
+    if (!features.length) return;
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (currentIndex === -1) originalText = input.value;
+      const max = features.length;
+      currentIndex = e.key === 'ArrowDown'
+        ? (currentIndex + 1) % max
+        : (currentIndex - 1 + max) % max;
+
+      setActive(currentIndex);
+
+      // Reflect highlighted text into the input
+      programmaticSet = true;
+      input.value = features[currentIndex].place_name;
+      programmaticSet = false;
+      input.setSelectionRange(input.value.length, input.value.length);
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      if (currentIndex >= 0) {
+        e.preventDefault();
+        selectIndex(currentIndex);
+      } // else fall through to your existing Enter handler in wireSearch()
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      programmaticSet = true;
+      input.value = originalText; // restore what the user typed
+      programmaticSet = false;
+      clearList();
     }
+  });
+
+  // Dismiss on outside click
+  document.addEventListener('click', (e) => {
+    if (!list.contains(e.target) && e.target !== input) clearList();
   });
 }
+
 
 
 function wireFindMe() {

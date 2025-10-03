@@ -198,6 +198,8 @@ html { -webkit-text-size-adjust: 100%; }
 #autocomplete-list li.active {
   background: #f0f4ff;
 }
+#autocomplete-list { max-height: 240px; overflow-y: auto; }
+#autocomplete-list li[role="option"].active { background: #eef3ff; }
 
 
 /* ========= Main ========= */
