@@ -3,6 +3,8 @@
 html, body { height: 100%; }
 
 html { background: #002676; }   /* same as header/brand */
+html { -webkit-text-size-adjust: 100%; } /* keep as single, near <html> */
+
 body { background: #fff; }      /* keep page content normal */
 
 body {
@@ -16,14 +18,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
 /* iOS: prevent focus zoom by keeping controls ≥16px */
 input,
 select,
 textarea,
 button {
-font-size: 16px; /* critical for iOS */
+  font-size: 16px; /* critical for iOS */
 }
-html { -webkit-text-size-adjust: 100%; }
 
 /* ========= Landscape Warning ========= */
 .landscape-warning {
@@ -62,7 +64,6 @@ html { -webkit-text-size-adjust: 100%; }
   position: relative;
   z-index: 10;
 }
-
 .header-stack { display: flex; flex-direction: column; gap: 2px; }
 .header .title {
   font-family: 'Inter', sans-serif;
@@ -71,25 +72,18 @@ html { -webkit-text-size-adjust: 100%; }
   line-height: 1.15;         /* was 1.25 */
   color: #FDB515;
   letter-spacing: .1px;      /* was .2px */
-  margin: 0;                 /* ensure no extra spacing */
+  margin: 0;
 }
-
 .header .tagline { margin-top: 2px;}
-.header .tagline-link {  margin-bottom: 10px; color: #e6edf7; text-decoration: underline; font-size: 0.98rem; }
+.header .tagline-link { margin-bottom: 10px; color: #e6edf7; text-decoration: underline; font-size: 0.98rem; }
 .header .meta { color: #cfe0f4; font-size: 0.88rem; line-height: 1.25; }
-.header .meta a {
-  text-decoration: none;
-}
-.header .meta a:hover {
-  text-decoration: underline; /* still show on hover */
-}
-
+.header .meta a { text-decoration: none; }
+.header .meta a:hover { text-decoration: underline; }
 .header .disclaimer { color: #cfe0f4; font-size: 0.82rem; line-height: 1.2; }
 .header a { color: inherit; }
-
 .header img.logo-paw {
-  height: 45px;        
-  width: auto;         
+  height: 45px;
+  width: auto;
   display: block;
 }
 
@@ -103,11 +97,10 @@ html { -webkit-text-size-adjust: 100%; }
   background: #e6eef6;
   border-bottom: 1px solid #cbd5e1;
   position: relative;  /* keep this */
-  z-index: 20;         /* new: ensures dropdown sits above header panel */
+  z-index: 20;         /* ensures dropdown sits above header panel */
 }
-
- .search-panel input,
-.search-panel button {
+.search-panel input,
+.search-panel button:not(#toggleListBtn) {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation;
@@ -116,12 +109,18 @@ html { -webkit-text-size-adjust: 100%; }
   padding: 8px;
 }
 
+#toggleListBtn {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+#toggleListBtn:hover { filter: brightness(0.97); }
+
 /* Make all inputs stretch */
 .search-panel input {
   flex: 1 1 100%;
   min-width: 0;
 }
-
 .search-panel button {
   padding: 8px 12px;
   border: 1px solid #002676;
@@ -132,7 +131,6 @@ html { -webkit-text-size-adjust: 100%; }
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-
 }
 .search-panel button:hover { filter: brightness(0.95); }
 
@@ -152,72 +150,45 @@ html { -webkit-text-size-adjust: 100%; }
 #status { margin-left: auto; font-size: 0.9rem; color: #334155; }
 .bars-count { font-size: 0.85rem; color: #64748b; margin-left: 8px; font-weight: 500; }
 
-/* Show/Hide List button */
-#toggleListBtn {
-  background: #e2e8f0;
-  border-color: #cbd5e1;
-  color: #0f172a;
-}
-#toggleListBtn:hover { filter: brightness(0.97); }
-
-
+/* Autocomplete (merged) */
 #autocomplete-list {
   position: absolute;
   top: 100%;  /* directly under input */
-  left: 0; 
+  left: 0;
   right: 0;
   background: #fff;
   border: 1px solid #ccc;
   border-radius: 6px;
-  width: auto; /* instead of 100%, so it fits panel */
-  max-height: 200px;
+  width: auto;      /* fits panel */
+  max-height: 240px; /* merged 200px + later 240px -> keep 240px (latest effective) */
   overflow-y: auto;
   list-style: none;
   margin: 2px 0 0;
   padding: 0;
   box-shadow: 0 2px 6px rgba(0,0,0,.1);
   z-index: 2000; /* above map + controls */
+  display: none;  /* start hidden */
 }
-
-/* start hidden */
-#autocomplete-list { display: none; }
-
-/* show only when JS adds .open */
 #autocomplete-list.open { display: block; }
-
-/* also hide if empty, as a safety */
 #autocomplete-list:empty { display: none; }
-
-
-#autocomplete-list li {
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
+#autocomplete-list li { padding: 8px 12px; cursor: pointer; }
 #autocomplete-list li:hover,
-#autocomplete-list li.active {
-  background: #f0f4ff;
-}
-#autocomplete-list { max-height: 240px; overflow-y: auto; }
+#autocomplete-list li.active { background: #f0f4ff; }
 #autocomplete-list li[role="option"].active { background: #eef3ff; }
-
 
 /* ========= Main ========= */
 main {
-  flex: 1 1 auto; 
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
-
 }
-
 #map {
   width: 100%;
   height: auto;        /* allow flex sizing */
   flex: 0 0 56svh;     /* default mobile height */
   min-height: 220px;
 }
-
 #list {
   min-height: 0;
   overflow: auto;
@@ -228,14 +199,8 @@ main {
   font-size: 0.95rem;
   font-weight: 400;
 }
-
 #list h2 { margin: 8px 0 10px; color: #0f172a; font-size: 1.05rem; font-weight: 600; }
-#results {
-  margin: 0;
-  list-style: none;
-  padding-left: 0;
-}
-
+#results { margin: 0; list-style: none; padding-left: 0; }
 #results li {
   margin: 8px 0;
   padding: 10px;
@@ -246,8 +211,7 @@ main {
 #results li strong { font-size: 0.98rem; font-weight: 600; letter-spacing: 0.1px; }
 #results small { color: #475569; }
 
-/* ========= Footer ========= */
-/* Structured results styling (matches renderListAll) */
+/* ========= List Card / Result styles ========= */
 .res-item { margin: 8px 0; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; }
 .res-item.is-active { outline: 1px solid #002676; outline-offset: 2px; }
 .res-item[aria-selected="true"] { background: #f3f6fb; }
@@ -261,6 +225,10 @@ main {
   font-size: 0.82rem; text-decoration: none;
 }
 .res-link:hover { filter: brightness(0.95); }
+
+/* Intentional override note:
+   There are TWO .res-pill definitions. The later global .res-pill changes colors/weights.
+   Kept BOTH to preserve current visuals site-wide. */
 .res-pill {
   color: #1f2937; background: #fff3d1; border: 1px solid #ffe39b;
   padding: 3px 8px; border-radius: 999px; font-size: 0.82rem;
@@ -268,37 +236,31 @@ main {
 .res-note { color: #6b7280; font-size: 0.82rem; }
 
 /* Custom map markers */
-.cal-pin svg {
-  display: block;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15));
-}
+.cal-pin svg { display: block; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.15)); }
 .you-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
+  width: 18px; height: 18px; border-radius: 50%;
   background: #FDB515;      /* Cal gold */
   border: 2px solid #002053;/* deep blue ring */
   box-shadow: 0 0 0 2px rgba(0,0,0,0.08);
 }
 
+/* ========= Footer ========= */
 footer {
   padding: 10px 16px;
   border-top: 1px solid #e5e7eb;
   background: #f8fafc;
   color: #0f172a;
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 6px);
-
 }
 footer small {
   display: inline-flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: center;
-  color: #002676;                  /* <- set parent color to inherit from */
+  color: #002676; /* parent color for inherit */
 }
-
 footer a,
-footer button.linklike {           /* <- style linklike buttons same as links */
+footer button.linklike {
   color: inherit;
   text-decoration: underline;
   background: none;
@@ -307,31 +269,17 @@ footer button.linklike {           /* <- style linklike buttons same as links */
   font: inherit;
   cursor: pointer;
 }
-
 footer a:hover,
-footer button.linklike:hover {
-  text-decoration: underline;      /* keep underline on hover */
-}
+footer button.linklike:hover { text-decoration: underline; }
 
+/* Linklike button parity */
 .linklike {
-  background: none;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  color: inherit;          /* match footer link color */
-  font: inherit;           /* match typography */
-  line-height: inherit;
-  text-decoration: none;   /* match default link state */
-  cursor: pointer;
+  background: none; border: 0; padding: 0; margin: 0;
+  color: inherit; font: inherit; line-height: inherit;
+  text-decoration: none; cursor: pointer;
 }
-
-/* hover/active/visited parity with links */
 .linklike:hover,
-.linklike:active {
-  text-decoration: underline;
-}
-
-/* accessible focus style (consistent with links) */
+.linklike:active { text-decoration: underline; }
 .linklike:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
@@ -359,12 +307,7 @@ footer button.linklike:hover {
   box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
 .modal__dialog h2 { margin: 0 0 8px; color: #002676; }
-.modal__dialog p {
-  margin: 8px 0;
-  font-size: 0.8rem;   
-  line-height: 1.45;  
-}
-
+.modal__dialog p { margin: 8px 0; font-size: 0.8rem; line-height: 1.45; }
 .modal__close {
   position: absolute; right: 8px; top: 6px;
   border: none; background: transparent; font-size: 22px; line-height: 1; cursor: pointer; color: #0f172a;
@@ -378,16 +321,15 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   border-radius: 4px;
 }
 
-
 /* === iOS safe-area: header/footer padding === */
 @supports (padding: env(safe-area-inset-top)) {
   .safe-top-paint {
     position: fixed;
     top: 0; left: 0; right: 0;
     height: env(safe-area-inset-top);
-    background: #002676;        /* match your header */
+    background: #002676; /* match header */
     pointer-events: none;
-    z-index: 9;              /* high, but below any full-screen modals if you prefer */
+    z-index: 9;
   }
 }
 @supports (padding: env(safe-area-inset-bottom)) {
@@ -395,44 +337,38 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     position: fixed;
     left: 0; right: 0; bottom: 0;
     height: env(safe-area-inset-bottom);
-    background: #f8fafc;   /* match your footer */
+    background: #f8fafc; /* match footer */
     pointer-events: none;
-    z-index: 1;            /* below everything interactive */
+    z-index: 1;
   }
 }
 
-
-/* ========= Desktop ========= */
+/* ========= Desktop grid ========= */
 @media (min-width: 901px) {
   main {
     display: grid;
     grid-template-columns: 2fr 1fr;      /* map | list */
     grid-template-rows: auto 1fr;        /* controls row | content row */
     grid-template-areas:
-      "controls list"                    /* list starts at the very top */
-      "map      list";                   /* list spans both rows */
+      "controls list"
+      "map      list";
     min-height: 0;
   }
-
-  .search-panel { grid-area: controls; } /* left/top; blue bar width = map column */
-  #map          { grid-area: map; }      /* left/bottom */
-  #list         { grid-area: list; }     /* right spanning both rows */
+  .search-panel { grid-area: controls; }
+  #map          { grid-area: map; }
+  #list         { grid-area: list; }
 }
-
 
 /* ========= Mobile (<=900px) ========= */
 @media (max-width: 900px) {
   .mobile-only { display: inline-block; }
 
   /* When list is visible, give list some room (map still tall) */
-  body.list-shown #map {
-  flex-basis: 40svh; /* tweak 48–52 to taste */
-}
+  body.list-shown #map { flex-basis: 40svh; }
 
   /* When list is hidden, give everything to the map */
   body.list-hidden #list { display: none; }
   body.list-hidden #map  { flex: 1 1 auto; min-height: 60svh; }
-
 
   /* List area */
   #list {
@@ -441,7 +377,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     overflow: auto;
     border-left: 0;
     border-top: 4px solid #e5e7eb;
-      }
+  }
 
   /* Header tweaks */
   .header { padding: calc(8px + env(safe-area-inset-top)) 14px 8px 14px; }
@@ -465,32 +401,43 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   #findMeBtn { flex-shrink: 0; }
   #map, #list { transition: flex-basis 180ms ease; }
 
-/* Ensure compact attribution is visible on mobile */
-  .maplibregl-ctrl-attrib.maplibregl-compact {
-    display: block; /* keep it visible */
-  }
+  /* Ensure compact attribution is visible on mobile */
+  .maplibregl-ctrl-attrib.maplibregl-compact { display: block; }
 }
-  
+
+/* Desktop/laptop (mouse/trackpad): keep the list persistently visible */
+@media (hover: hover) and (pointer: fine){
+  #list { display: block !important; }
+  body.list-hidden #list { display: block !important; }
+  #toggleListBtn { display: none !important; }
+  #map { position: relative; z-index: 0; }
+  #list { position: relative; z-index: 1; }
+}
+
+/* Desktop: transition tweak separated from grid to avoid conflicts */
 @media (min-width: 901px) {
-  #map, #list { transition: none; }                  /* desktop = instant */
+  #map, #list { transition: none; } /* desktop = instant */
 }
 
+/* Very small phones */
+@media (max-width: 360px) {
+  .header .title { font-size: 1.25rem; }
+  .search-panel button { padding: 9px 12px; }
+}
 
+/* ===== Autocomplete layout helpers ===== */
 .ac-wrap {
   position: relative;
-  flex: 1 1 100%;               /* take the whole row */
-  min-width: 0;                 /* prevent clipping */
+  flex: 1 1 100%;  /* take the whole row */
+  min-width: 0;    /* prevent clipping */
 }
-
 .ac-wrap input { width: 100%; }
-
 .controls-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1 1 100%;               /* new line — makes the row wrap below the input */
+  flex: 1 1 100%;  /* let the row wrap below the input */
 }
-
 
 /* ===== Map legend (MapLibre control) ===== */
 .maplibregl-ctrl.map-legend {
@@ -501,18 +448,18 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 6px 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06); /* subtle base */
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
   font-size: 12px;
   color: #334155;
   margin-bottom: 38px; /* sit above attribution */
 }
 
-/* Toggle button (“chip”) */
+/* Toggle button (“chip”) — consolidated */
 .map-legend .legend-toggle {
   appearance: none;
   border: 0;
   background: transparent;
-  padding: 2px 4px;
+  padding: 2px 2px; /* includes collapsed target size */
   margin: 0;
   display: inline-flex;
   align-items: center;
@@ -520,14 +467,18 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   cursor: pointer;
   font: inherit;
   color: inherit;
+  -webkit-tap-highlight-color: transparent; /* iOS/Android tap flash */
 }
-
+.map-legend .legend-toggle:hover { filter: brightness(0.98); }
 /* No default outline; custom, faint focus for keyboard users */
 .map-legend .legend-toggle:focus { outline: none; }
 .map-legend .legend-toggle:focus-visible {
+  background: transparent;             /* ensure no fill */
   box-shadow: 0 0 0 2px rgba(253, 181, 21, 0.25); /* subtle Cal gold glow */
   border-radius: 8px;
 }
+/* no background or glow on click/touch */
+.map-legend .legend-toggle:active { background: transparent; box-shadow: none; }
 
 /* Motion (respect reduced motion) */
 @media (prefers-reduced-motion: no-preference) {
@@ -536,65 +487,72 @@ a:focus-visible, button:focus-visible, input:focus-visible {
     transition: box-shadow 160ms ease, background 160ms ease, filter 120ms ease;
   }
 }
-.map-legend .legend-toggle:hover { filter: brightness(0.98); }
 
-/* Items & pins */
+/* Items & pins — consolidated */
 .map-legend .legend-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-.map-legend .legend-pin { width: 14px; height: 21px; display: inline-block; background-size: cover; }
+.map-legend .legend-pin {
+  width: 14px;
+  height: 21px;
+  background-size: cover;
+  display: inline-block;
+}
 
 /* Blue pin with gold dot (regular) */
 .map-legend .legend-regular{
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='21' viewBox='0 0 28 42'><defs><linearGradient id='g-blue' x1='0' x2='0' y1='0' y2='1'><stop offset='0%' stop-color='%23002676'/><stop offset='100%' stop-color='%23001b58'/></linearGradient></defs><path d='M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z' fill='url(%23g-blue)'/><circle cx='14' cy='14' r='6' fill='%23FDB515'/></svg>");
 }
-
 /* Gold pin with blue dot (official) */
 .map-legend .legend-official{
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='21' viewBox='0 0 28 42'><defs><linearGradient id='g-gold' x1='0' x2='0' y1='0' y2='1'><stop offset='0%' stop-color='%23FDB515'/><stop offset='100%' stop-color='%23e6a413'/></linearGradient></defs><path d='M14 0C6.27 0 0 6.27 0 14c0 9.25 12.22 24.78 13.1 25.9a1.2 1.2 0 0 0 1.8 0C15.78 38.78 28 23.25 28 14 28 6.27 21.73 0 14 0z' fill='url(%23g-gold)'/><circle cx='14' cy='14' r='6' fill='%23002676'/></svg>");
 }
 
-
-/* ========= Very small phones ========= */
-@media (max-width: 360px) {
-  .header .title { font-size: 1.25rem; }
-  .search-panel button { padding: 9px 12px; }
-}
-/* Desktop/laptop (mouse/trackpad): keep the list persistently visible */
-@media (hover: hover) and (pointer: fine){
-  /* Ensure two-column layout and visible list */
-  #list { display: block !important; }
-  /* Ignore any "list-hidden" class on desktop */
-  body.list-hidden #list { display: block !important; }
-  /* No need for a toggle button on desktop */
-  #toggleListBtn { display: none !important; }
-  /* Prevent map from overlaying the list */
-  #map { position: relative; z-index: 0; }
-  #list { position: relative; z-index: 1; }
+/* Collapsible legend states */
+.map-legend.is-collapsible { padding: 6px 8px; }
+.map-legend.is-collapsed .legend-full { display: none; }
+.map-legend.is-collapsed .legend-mini { display: inline-flex; gap: 8px; }
+.map-legend:not(.is-collapsed) .legend-mini { display: none; }
+.map-legend:not(.is-collapsed) .legend-full {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
 }
 
-/* Make popups look like list cards */
+/* Prevent text/image selection + tap highlight inside legend */
+.map-legend,
+.map-legend * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Prevent drag ghosting for pins/images */
+.map-legend img,
+.map-legend .legend-pin { -webkit-user-drag: none; }
+
+/* ========= Map popups styled like list cards ========= */
 .maplibregl-popup-content {
   padding: 10px 12px; /* tighter, like your cards */
   border-radius: 12px;
 }
-
 .popup-card .res-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.popup-card .res-name {font-size: 1.0rem; font-weight: 700; color:#0f172a}
+.popup-card .res-name { font-size: 1.0rem; font-weight: 700; color:#0f172a; }
 .popup-card .res-meta { font-size: 0.75rem; color: #475569; margin-top: 2px; }
 .popup-card .popup-dist { font-size: 0.9rem; font-weight: 500; color: #64748b; margin-left: 8px; align-self: center; }
-
-/* Reuse list action styling; ensure inline items don't dangle */
 .popup-card .res-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
-
 .res-link.btn {
   display: inline-block;
   padding: 6px 10px;
   border-radius: 999px;
   font-weight: 600;
   text-decoration: none;
-  background: #002676;   /* or your existing list button color */
+  background: #002676;   /* matches list button color */
   color: #fff;
 }
 
+/* Intentional override note:
+   Global .res-pill below styles all pills differently (popup + list).
+   Retained to preserve current site-wide appearance. */
 .res-pill {
   display: inline-block;
   padding: 2px 8px;
@@ -610,86 +568,3 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 /* Anti-dangle helpers */
 .nowrap { white-space: nowrap; }
 .res-link, .res-note, .res-meta { word-break: break-word; }
-
-/* Collapsible legend states */
-.map-legend.is-collapsible {
-  padding: 6px 8px;
-}
-
-.map-legend .legend-toggle {
-  /* make the whole chip a button */
-  appearance: none;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  font: inherit;
-  color: inherit;
-}
-/* prevent click/tap fill on the legend toggle */
-.map-legend .legend-toggle {
-  -webkit-tap-highlight-color: transparent; /* iOS/Android tap flash */
-}
-
-/* no background or glow on click/focus (mouse/touch) */
-.map-legend .legend-toggle:active,
-.map-legend .legend-toggle:focus {
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none;
-}
-
-/* keep only keyboard focus glow */
-.map-legend .legend-toggle:focus-visible {
-  background: transparent;             /* ensure no fill */
-  box-shadow: 0 0 0 2px rgba(253,181,21,.25);
-  border-radius: 8px;
-}
-
-
-/* Mini (collapsed) view: two pins only */
-.map-legend.is-collapsed .legend-full { display: none; }
-.map-legend.is-collapsed .legend-mini { display: inline-flex; gap: 8px; }
-
-/* Expanded view: rows with labels */
-.map-legend:not(.is-collapsed) .legend-mini { display: none; }
-.map-legend:not(.is-collapsed) .legend-full {
-  display: inline-flex;
-  gap: 12px;
-  align-items: center;
-}
-
-/* Slightly bigger hit target in collapsed mode */
-.map-legend.is-collapsed .legend-toggle {
-  padding: 2px 2px;
-}
-
-/* Make pins look crisp at small size */
-.map-legend .legend-pin {
-  width: 14px;
-  height: 21px;
-  background-size: cover;
-  display: inline-block;
-}
-
-/* Prevent text/image selection + tap highlight inside legend */
-.map-legend,
-.map-legend * {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Prevent drag ghosting for pins/images */
-.map-legend img,
-.map-legend .legend-pin {
-  -webkit-user-drag: none;
-}
-/* Optional: subtle hover */
-.map-legend .legend-toggle:hover { filter: brightness(0.98); }
