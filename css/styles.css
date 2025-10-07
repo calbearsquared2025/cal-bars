@@ -364,7 +364,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   .mobile-only { display: inline-block; }
 
   /* When list is visible, give list some room (map still tall) */
-  body.list-shown #map { flex-basis: 40svh; }
+  body.list-shown #map { flex-basis: 30svh; }
 
   /* When list is hidden, give everything to the map */
   body.list-hidden #list { display: none; }
