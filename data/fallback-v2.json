@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "2.0",
+  "venues": [
+    {
+      "venue_id": "ven_000001",
+      "slug": "golden-bear-test-pub-berkeley",
+      "name": "Golden Bear Test Pub",
+      "address_line_1": "100 Test Plaza",
+      "address_line_2": "",
+      "city": "Berkeley",
+      "region": "CA",
+      "postal_code": "94704",
+      "country_code": "US",
+      "latitude": 37.8717,
+      "longitude": -122.2728,
+      "website_url": "https://example.com/golden-bear-test-pub",
+      "venue_type": "cal_bar",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Synthetic test record for the v2 data contract.",
+      "photo_url": "",
+      "photo_credit": "",
+      "updated_at": "2026-07-26T12:00:00Z"
+    },
+    {
+      "venue_id": "ven_000002",
+      "slug": "oski-test-taproom-oakland",
+      "name": "Oski Test Taproom",
+      "address_line_1": "200 Sample Street",
+      "address_line_2": "",
+      "city": "Oakland",
+      "region": "CA",
+      "postal_code": "94612",
+      "country_code": "US",
+      "latitude": 37.8044,
+      "longitude": -122.2712,
+      "website_url": "https://example.com/oski-test-taproom",
+      "venue_type": "cal_bar",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "yes",
+      "short_description": "Synthetic Cal Bar used for read-only prototype testing.",
+      "photo_url": "",
+      "photo_credit": "",
+      "updated_at": "2026-07-26T12:00:00Z"
+    },
+    {
+      "venue_id": "ven_000003",
+      "slug": "bear-territory-test-cafe-alameda",
+      "name": "Bear Territory Test Cafe",
+      "address_line_1": "300 Fixture Avenue",
+      "address_line_2": "",
+      "city": "Alameda",
+      "region": "CA",
+      "postal_code": "94501",
+      "country_code": "US",
+      "latitude": 37.7652,
+      "longitude": -122.2416,
+      "website_url": "https://example.com/bear-territory-test-cafe",
+      "venue_type": "community_location",
+      "verification_status": "user_added",
+      "alumni_owned": "unknown",
+      "short_description": "Synthetic Community Location used for testing.",
+      "photo_url": "",
+      "photo_credit": "",
+      "updated_at": "2026-07-26T12:00:00Z"
+    },
+    {
+      "venue_id": "ven_000004",
+      "slug": "california-test-grill-san-francisco",
+      "name": "California Test Grill",
+      "address_line_1": "400 Mockup Road",
+      "address_line_2": "",
+      "city": "San Francisco",
+      "region": "CA",
+      "postal_code": "94103",
+      "country_code": "US",
+      "latitude": 37.7749,
+      "longitude": -122.4194,
+      "website_url": "https://example.com/california-test-grill",
+      "venue_type": "community_location",
+      "verification_status": "user_added",
+      "alumni_owned": "no",
+      "short_description": "Synthetic location; not a production listing.",
+      "photo_url": "",
+      "photo_credit": "",
+      "updated_at": "2026-07-26T12:00:00Z"
+    }
+  ],
+  "games": [
+    {
+      "game_id": "game_2026_01",
+      "season": 2026,
+      "schedule_order": 1,
+      "opponent_name": "Test State",
+      "opponent_short_name": "Test State",
+      "home_away": "home",
+      "game_date": "2026-09-05",
+      "kickoff_at": "2026-09-05T19:30:00Z",
+      "kickoff_status": "confirmed",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-26T12:00:00Z"
+    },
+    {
+      "game_id": "game_2026_02",
+      "season": 2026,
+      "schedule_order": 2,
+      "opponent_name": "Example University",
+      "opponent_short_name": "Example U",
+      "home_away": "away",
+      "game_date": "2026-09-12",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-26T12:00:00Z"
+    }
+  ],
+  "watchParties": [
+    {
+      "watch_party_id": "wp_000001",
+      "venue_id": "ven_000001",
+      "game_id": "game_2026_01",
+      "organizer_name": "Berkeley Test Alumni Group",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://example.com/events/wp-000001",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-09-05T18:30:00Z",
+      "age_policy": "all_ages",
+      "sound_status": "confirmed_on",
+      "restrictions_note": "Synthetic test event; no reservation required.",
+      "game_day_note": "Arrive early for the test workflow.",
+      "event_status": "active",
+      "updated_at": "2026-07-26T12:00:00Z"
+    },
+    {
+      "watch_party_id": "wp_000002",
+      "venue_id": "ven_000003",
+      "game_id": "game_2026_02",
+      "organizer_name": "CGB Test Organizer",
+      "organizer_type": "individual",
+      "official_event_url": "",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Time will be updated after kickoff is announced.",
+      "event_status": "active",
+      "updated_at": "2026-07-26T12:00:00Z"
+    }
+  ],
+  "fanCounts": [
+    {
+      "game_id": "game_2026_01",
+      "venue_id": "ven_000001",
+      "count": 3
+    },
+    {
+      "game_id": "game_2026_01",
+      "venue_id": "ven_000002",
+      "count": 1
+    },
+    {
+      "game_id": "game_2026_02",
+      "venue_id": "ven_000003",
+      "count": 2
+    }
+  ],
+  "venueHistoryCounts": [
+    {
+      "venue_id": "ven_000001",
+      "past_game_count": 5
+    },
+    {
+      "venue_id": "ven_000002",
+      "past_game_count": 2
+    },
+    {
+      "venue_id": "ven_000003",
+      "past_game_count": 1
+    },
+    {
+      "venue_id": "ven_000004",
+      "past_game_count": 0
+    }
+  ],
+  "generatedAt": "2026-07-26T12:00:00Z"
+}
