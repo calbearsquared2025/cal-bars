@@ -31,15 +31,26 @@ The canonical column definitions are encoded in `apps-script/Code.gs` and mirror
 2. Open **Extensions → Apps Script**.
 3. Replace the starter script with `apps-script/Code.gs`.
 4. Add a second script file named `TestData.gs` and copy `apps-script/TestData.gs` into it.
-5. Apply the settings from `apps-script/appsscript.json`.
-6. Run `configureBoundWorkbook()` once and authorize it. This stores the workbook ID in private Apps Script properties.
-7. Run `setupWorkbook()` once. It creates missing tabs and header rows but does not overwrite existing data.
-8. Run `seedTestData()` to add the Milestone 1 synthetic records. The function refuses to run when any canonical data tab contains a non-test row.
-9. Run `buildPublicSnapshotForReview()` and inspect the log output for private fields or malformed records.
-10. Deploy as a Web app only when ready to test the read endpoint:
+5. Add a third script file named `ColumnFormats.gs` and copy `apps-script/ColumnFormats.gs` into it.
+6. Apply the settings from `apps-script/appsscript.json`.
+7. Run `configureBoundWorkbook()` once and authorize it. This stores the workbook ID in private Apps Script properties.
+8. Run `setupWorkbook()` once. It creates missing tabs and header rows but does not overwrite existing data.
+9. Run `normalizeCanonicalTextColumns()` once. It stores `Venues.postal_code` and `Games.game_date` as text and corrects Sheet-coerced values.
+10. Run `seedTestData()` to add the Milestone 1 synthetic records. The function refuses to run when any canonical data tab contains a non-test row.
+11. Run `buildPublicSnapshotForReview()` and inspect the log output for private fields or malformed records.
+12. Deploy as a Web app only when ready to test the read endpoint:
     - Execute as: **Me**
     - Who has access: the minimum setting that permits the public frontend to read the snapshot
-11. Keep the deployment URL out of committed source until a later milestone defines the non-production configuration mechanism.
+13. Keep the deployment URL out of committed source until a later milestone defines the non-production configuration mechanism.
+
+## Canonical text-column normalization
+
+Google Sheets may automatically convert postal codes to numbers and date-only game dates to timezone-bearing Date values. The public contract requires:
+
+- `postal_code` as text, preserving any leading zero
+- `game_date` as `YYYY-MM-DD` without a time or timezone
+
+`normalizeCanonicalTextColumns()` applies plain-text formatting to both columns, rewrites existing values into the required shape, clears the public snapshot cache, and returns a fresh review snapshot. It is owner-only and is not exposed through `doGet()`.
 
 ## Synthetic test-data controls
 
@@ -66,6 +77,7 @@ The endpoint is read-only in Milestone 1. It does not accept Fan Intent, externa
 
 - The workbook remains Restricted.
 - `setupWorkbook()` creates all expected tabs.
+- `normalizeCanonicalTextColumns()` returns postal codes as strings and game dates as `YYYY-MM-DD`.
 - `seedTestData()` creates synthetic rows only when the canonical data tabs are empty or contain only prior test rows.
 - A draft Venue row does not appear publicly.
 - A cancelled or draft Watch Party does not appear publicly.
