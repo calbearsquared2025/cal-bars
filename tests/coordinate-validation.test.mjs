@@ -13,6 +13,7 @@ test('Apps Script excludes published venues with invalid coordinates', () => {
 });
 
 test('map sizing is explicit without runtime monkey patches', () => {
+  assert.match(html, /width: 100%/);
   assert.match(html, /height: calc\(100dvh - var\(--header-height\) - var\(--footer-height\)\)/);
   assert.doesNotMatch(html, /map-layout-guard|snapshot-coordinate-guard|bootstrap\.mjs/);
 });
