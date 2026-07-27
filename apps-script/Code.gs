@@ -148,7 +148,9 @@ function buildPublicSnapshot_() {
   const intentRaw = readSheetObjects_(workbook, 'Fan_Intent');
 
   const venues = venuesRaw
-    .filter(function(row) { return row.publication_status === 'published'; })
+    .filter(function(row) {
+      return row.publication_status === 'published' && hasValidVenueCoordinates_(row);
+    })
     .map(function(row) { return whitelist_(row, CGB_PUBLIC_FIELDS.Venues); });
 
   const games = gamesRaw.map(function(row) {
@@ -253,6 +255,23 @@ function readSheetObjects_(workbook, tabName) {
 function normalizeCellValue_(value) {
   if (value instanceof Date) return value.toISOString();
   return value === null || value === undefined ? '' : value;
+}
+
+function hasValidVenueCoordinates_(row) {
+  const latitudeValue = row && row.latitude;
+  const longitudeValue = row && row.longitude;
+  const hasValues = latitudeValue !== '' && latitudeValue !== null && latitudeValue !== undefined &&
+    longitudeValue !== '' && longitudeValue !== null && longitudeValue !== undefined;
+  const latitude = Number(latitudeValue);
+  const longitude = Number(longitudeValue);
+  const valid = hasValues &&
+    Number.isFinite(latitude) && latitude >= -90 && latitude <= 90 &&
+    Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
+
+  if (!valid) {
+    console.warn('Skipping published venue with invalid coordinates: ' + String((row && row.venue_id) || '(missing venue_id)'));
+  }
+  return valid;
 }
 
 function whitelist_(row, fields) {
