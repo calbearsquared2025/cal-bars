@@ -184,10 +184,16 @@ function renderGameDialog() {
     button.type = 'button';
     button.className = 'game-option';
     button.dataset.selected = String(game.game_id === state.gameId);
-    button.innerHTML = `
-      <span><strong>${gameTitle(game)}</strong><small>${formatKickoff(game)}</small></span>
-      <span class="game-status">${game.game_status}</span>
-    `;
+    const gameInfo = document.createElement('span');
+    const gameName = document.createElement('strong');
+    gameName.textContent = gameTitle(game);
+    const gameTime = document.createElement('small');
+    gameTime.textContent = formatKickoff(game);
+    gameInfo.append(gameName, gameTime);
+    const status = document.createElement('span');
+    status.className = 'game-status';
+    status.textContent = game.game_status;
+    button.append(gameInfo, status);
     button.addEventListener('click', () => {
       state.gameId = game.game_id;
       state.selectedVenueId = null;
@@ -208,9 +214,11 @@ function markerElement(venue) {
   button.className = `cgb-marker marker--${kind}`;
   button.setAttribute('aria-label', `${venue.name}, ${venueTypeLabel(venue)}`);
   button.dataset.venueId = venue.venue_id;
-  button.innerHTML = kind === 'watch-party'
-    ? '<span class="marker-star" aria-hidden="true">★</span>'
-    : '<span class="marker-pin" aria-hidden="true"></span>';
+  const symbol = document.createElement('span');
+  symbol.className = kind === 'watch-party' ? 'marker-star' : 'marker-pin';
+  symbol.setAttribute('aria-hidden', 'true');
+  if (kind === 'watch-party') symbol.textContent = '★';
+  button.append(symbol);
   if (count > 0) {
     const badge = document.createElement('span');
     badge.className = 'marker-count';
@@ -336,7 +344,12 @@ function appendWatchParty(container, party) {
   module.className = 'party-module';
   const title = document.createElement('div');
   title.className = 'party-module__title';
-  title.innerHTML = '<span aria-hidden="true">★</span><strong>Watch Party</strong>';
+  const star = document.createElement('span');
+  star.setAttribute('aria-hidden', 'true');
+  star.textContent = '★';
+  const titleText = document.createElement('strong');
+  titleText.textContent = 'Watch Party';
+  title.append(star, titleText);
   module.append(title);
 
   const hosted = document.createElement('p');
@@ -692,7 +705,11 @@ function renderSuggestions() {
     const button = document.createElement('button');
     button.type = 'button';
     button.setAttribute('role', 'option');
-    button.innerHTML = `<strong>${venue.name}</strong><span>${party ? 'Watch Party · ' : ''}${venue.city}, ${venue.region}</span>`;
+    const name = document.createElement('strong');
+    name.textContent = venue.name;
+    const location = document.createElement('span');
+    location.textContent = `${party ? 'Watch Party · ' : ''}${venue.city}, ${venue.region}`;
+    button.append(name, location);
     button.addEventListener('click', () => {
       dom.searchInput.value = venue.name;
       dom.suggestions.hidden = true;
