@@ -13,7 +13,7 @@ const CGB_TEST_VENUE_IDS = Object.freeze([
 ]);
 
 const CGB_TEST_GAME_IDS = Object.freeze([
-  'game_2025_test_00',
+  'game_2025_99',
   'game_2026_01',
   'game_2026_02'
 ]);
@@ -140,7 +140,7 @@ function seedTestData() {
 
   appendObjects_(workbook, 'Games', [
     {
-      game_id: 'game_2025_test_00',
+      game_id: 'game_2025_99',
       season: 2025,
       schedule_order: 99,
       opponent_name: 'Historical Test Opponent',
@@ -225,9 +225,9 @@ function seedTestData() {
   addTestIntents_(intents, 'game_2026_01', 'ven_000001', 'attending', 3, now);
   addTestIntents_(intents, 'game_2026_01', 'ven_000002', 'attending', 1, now);
   addTestIntents_(intents, 'game_2026_02', 'ven_000003', 'attending', 2, now);
-  addTestIntents_(intents, 'game_2025_test_00', 'ven_000001', 'archived', 1, now);
-  addTestIntents_(intents, 'game_2025_test_00', 'ven_000002', 'archived', 1, now);
-  addTestIntents_(intents, 'game_2025_test_00', 'ven_000003', 'archived', 1, now);
+  addTestIntents_(intents, 'game_2025_99', 'ven_000001', 'archived', 1, now);
+  addTestIntents_(intents, 'game_2025_99', 'ven_000002', 'archived', 1, now);
+  addTestIntents_(intents, 'game_2025_99', 'ven_000003', 'archived', 1, now);
   appendObjects_(workbook, 'Fan_Intent', intents);
 
   clearPublicSnapshotCache_();
