@@ -16,6 +16,19 @@
   <link rel="preconnect" href="https://api.maptiler.com">
   <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .map-view,
+    .map {
+      height: calc(100dvh - var(--header-height) - var(--footer-height));
+    }
+
+    @supports not (height: 100dvh) {
+      .map-view,
+      .map {
+        height: calc(100vh - var(--header-height) - var(--footer-height));
+      }
+    }
+  </style>
 </head>
 <body>
   <header class="site-header">
