@@ -1,0 +1,32 @@
+/* Keep the MapLibre container measurable during startup and responsive layout changes. */
+#app,
+.map-view,
+.map {
+  height: calc(100dvh - var(--header-height) - var(--footer-height));
+  min-height: calc(100dvh - var(--header-height) - var(--footer-height));
+}
+
+@supports not (height: 100dvh) {
+  #app,
+  .map-view,
+  .map {
+    height: calc(100vh - var(--header-height) - var(--footer-height));
+    min-height: calc(100vh - var(--header-height) - var(--footer-height));
+  }
+}
+
+.map-fullscreen #app,
+.map-fullscreen .map-view,
+.map-fullscreen .map {
+  height: 100dvh;
+  min-height: 100dvh;
+}
+
+@supports not (height: 100dvh) {
+  .map-fullscreen #app,
+  .map-fullscreen .map-view,
+  .map-fullscreen .map {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
