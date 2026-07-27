@@ -22,6 +22,11 @@ test('mobile shell includes game selection, map, search, and draggable tray stat
   assert.match(css, /tray--full/);
 });
 
+test('custom venue markers retain MapLibre absolute positioning', () => {
+  assert.match(css, /\.cgb-marker\s*\{[^}]*position:\s*absolute/);
+  assert.doesNotMatch(css, /\.cgb-marker\s*\{[^}]*position:\s*relative/);
+});
+
 test('venue details and sharing preserve game context through stable query URLs', () => {
   assert.match(app, /buildVenueUrl/);
   assert.match(html, /id="detail-view"/);
