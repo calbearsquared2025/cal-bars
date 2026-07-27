@@ -21,6 +21,7 @@ const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 
 const state = {
   snapshot: null,
@@ -32,7 +33,9 @@ const state = {
   markers: new Map(),
   userMarker: null,
   detailMode: false,
-  dataSource: 'fallback'
+  dataSource: 'fallback',
+  mapLayoutWaitFrames: 0,
+  mapLayoutFrame: null
 };
 
 const dom = {};
@@ -237,19 +240,37 @@ function initMap() {
     return;
   }
 
+  const rect = dom.map.getBoundingClientRect();
+  const hasLayout = [rect.width, rect.height, dom.map.clientWidth, dom.map.clientHeight]
+    .every((dimension) => Number.isFinite(dimension) && dimension > 0);
+  if (!hasLayout) {
+    if (state.mapLayoutWaitFrames < MAX_MAP_LAYOUT_WAIT_FRAMES && state.mapLayoutFrame === null) {
+      state.mapLayoutWaitFrames += 1;
+      state.mapLayoutFrame = requestAnimationFrame(() => {
+        state.mapLayoutFrame = null;
+        initMap();
+      });
+    } else if (state.mapLayoutWaitFrames >= MAX_MAP_LAYOUT_WAIT_FRAMES) {
+      dom.mapFallback.hidden = false;
+      dom.map.classList.add('map--fallback');
+    }
+    return;
+  }
+
   const bounds = new maplibregl.LngLatBounds();
   state.snapshot.venues.forEach((venue) => bounds.extend([Number(venue.longitude), Number(venue.latitude)]));
 
   state.map = new maplibregl.Map({
     container: dom.map,
     style: MAPTILER_STYLE,
-    bounds: bounds.isEmpty() ? undefined : bounds,
-    fitBoundsOptions: { padding: 56, maxZoom: 7 },
-    center: bounds.isEmpty() ? [-98.5795, 39.8283] : undefined,
-    zoom: bounds.isEmpty() ? 3.2 : undefined,
+    center: [-98.5795, 39.8283],
+    zoom: 3.2,
     attributionControl: false,
     fadeDuration: 100
   });
+  if (!bounds.isEmpty()) {
+    state.map.fitBounds(bounds, { padding: 56, maxZoom: 7, duration: 0 });
+  }
   state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
   state.map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
   state.map.on('error', (event) => {
