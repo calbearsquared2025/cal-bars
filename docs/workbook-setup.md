@@ -30,15 +30,31 @@ The canonical column definitions are encoded in `apps-script/Code.gs` and mirror
 1. Open the confirmed private v2 workbook.
 2. Open **Extensions → Apps Script**.
 3. Replace the starter script with `apps-script/Code.gs`.
-4. Apply the settings from `apps-script/appsscript.json`.
-5. Run `configureBoundWorkbook()` once and authorize it. This stores the workbook ID in private Apps Script properties.
-6. Run `setupWorkbook()` once. It creates missing tabs and header rows but does not overwrite existing data.
-7. Add new synthetic or test records only. Do not migrate existing production locations during Milestone 1.
-8. Run `buildPublicSnapshotForReview()` and inspect the log output for private fields or malformed records.
-9. Deploy as a Web app only when ready to test the read endpoint:
-   - Execute as: **Me**
-   - Who has access: the minimum setting that permits the public frontend to read the snapshot
-10. Keep the deployment URL out of committed source until a later milestone defines the non-production configuration mechanism.
+4. Add a second script file named `TestData.gs` and copy `apps-script/TestData.gs` into it.
+5. Apply the settings from `apps-script/appsscript.json`.
+6. Run `configureBoundWorkbook()` once and authorize it. This stores the workbook ID in private Apps Script properties.
+7. Run `setupWorkbook()` once. It creates missing tabs and header rows but does not overwrite existing data.
+8. Run `seedTestData()` to add the Milestone 1 synthetic records. The function refuses to run when any canonical data tab contains a non-test row.
+9. Run `buildPublicSnapshotForReview()` and inspect the log output for private fields or malformed records.
+10. Deploy as a Web app only when ready to test the read endpoint:
+    - Execute as: **Me**
+    - Who has access: the minimum setting that permits the public frontend to read the snapshot
+11. Keep the deployment URL out of committed source until a later milestone defines the non-production configuration mechanism.
+
+## Synthetic test-data controls
+
+`seedTestData()` adds clearly labeled, non-production records to:
+
+- `Venues`
+- `Games`
+- `Watch_Parties`
+- `Fan_Intent`
+
+It creates both confirmed and TBD kickoff examples, current Fan Intent counts, and one completed-game history example. Synthetic browser identifiers are generated only inside the private workbook when the function runs; no identifier values are committed to GitHub.
+
+Run `clearTestData()` to remove only the known synthetic rows. It does not delete unrelated rows. Clear the test data before importing or entering real v2 records.
+
+Do not run `seedTestData()` after real records have been added. Its safety check will reject canonical tabs containing non-test rows.
 
 ## Read endpoint
 
@@ -50,7 +66,9 @@ The endpoint is read-only in Milestone 1. It does not accept Fan Intent, externa
 
 - The workbook remains Restricted.
 - `setupWorkbook()` creates all expected tabs.
+- `seedTestData()` creates synthetic rows only when the canonical data tabs are empty or contain only prior test rows.
 - A draft Venue row does not appear publicly.
 - A cancelled or draft Watch Party does not appear publicly.
 - Browser IDs and raw form fields do not appear in the snapshot.
+- `clearTestData()` removes only the synthetic rows.
 - The response validates against `scripts/validate-v2-data.mjs` after saving it locally as JSON.
