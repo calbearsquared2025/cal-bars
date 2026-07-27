@@ -26,3 +26,8 @@ test('test cleanup targets only known test identifiers', () => {
   assert.match(source, /CGB_TEST_GAME_IDS/);
   assert.match(source, /CGB_TEST_WATCH_PARTY_IDS/);
 });
+
+test('synthetic historical game ID follows game_YYYY_NN', () => {
+  assert.match(source, /game_2025_99/);
+  assert.doesNotMatch(source, /game_2025_test_00/);
+});
