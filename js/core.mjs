@@ -145,8 +145,21 @@ export function buildVenueUrl(slug, gameId, baseHref) {
   return url.toString();
 }
 
+export function hasValidVenueCoordinates(venue) {
+  const latitudeValue = venue?.latitude;
+  const longitudeValue = venue?.longitude;
+  if (latitudeValue === null || latitudeValue === undefined || String(latitudeValue).trim() === '') return false;
+  if (longitudeValue === null || longitudeValue === undefined || String(longitudeValue).trim() === '') return false;
+
+  const latitude = Number(latitudeValue);
+  const longitude = Number(longitudeValue);
+  return Number.isFinite(latitude) && latitude >= -90 && latitude <= 90 &&
+    Number.isFinite(longitude) && longitude >= -180 && longitude <= 180;
+}
+
 export function validateSnapshotShape(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return false;
-  return ['venues', 'games', 'watchParties', 'fanCounts', 'venueHistoryCounts']
+  const arraysPresent = ['venues', 'games', 'watchParties', 'fanCounts', 'venueHistoryCounts']
     .every((key) => Array.isArray(snapshot[key]));
+  return arraysPresent && snapshot.venues.every(hasValidVenueCoordinates);
 }
