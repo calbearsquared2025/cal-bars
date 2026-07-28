@@ -64,7 +64,7 @@ test('write and read services archive completed activity while preserving public
 });
 
 test('public responses and committed public files exclude private Fan Intent values', () => {
-  const responseBlock = script.match(/return \{\n    ok: true,[\s\S]*?generatedAt: now\n  \};/)?.[0] || '';
+  const responseBlock = script.match(/return \{\r?\n    ok: true,[\s\S]*?generatedAt: now\r?\n  \};/)?.[0] || '';
   assert.match(responseBlock, /selection: activeSelection \?/);
   assert.doesNotMatch(responseBlock, /browserId|browser_id|fan_intent_id/);
   assert.doesNotMatch(combinedPublicSource, /browser_[A-Za-z0-9_-]{16,}/);
