@@ -1,0 +1,50 @@
+.intent-button[aria-pressed="true"] {
+  border-color: #d39a00;
+  background: var(--cal-gold);
+  color: var(--cal-blue-dark);
+}
+
+.intent-button.is-pending {
+  position: relative;
+  padding-left: 36px;
+}
+
+.intent-button.is-pending::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: cgb-intent-spin .7s linear infinite;
+}
+
+.intent-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #c53d35;
+  border-radius: 12px;
+  background: #fff4f2;
+  color: #70231f;
+  font-size: .8rem;
+  line-height: 1.35;
+}
+
+.intent-feedback .intent-retry {
+  flex: 0 0 auto;
+  color: #70231f;
+  font-weight: 820;
+}
+
+@keyframes cgb-intent-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intent-button.is-pending::before { animation: none; }
+}
