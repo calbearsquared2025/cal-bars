@@ -1,10 +1,10 @@
 /**
- * Cal Golden Bars v2 read-only data foundation.
+ * Cal Golden Bars v2 controlled public read/write foundation.
  *
  * Security boundary:
  * - Workbook ID is stored only in Script Properties.
  * - Public responses are field-whitelisted.
- * - No write API actions are implemented in Milestone 1.
+ * - Fan Intent writes are implemented in FanIntent.gs.
  */
 
 const CGB_SCHEMA_VERSION = '2.0';
@@ -142,6 +142,7 @@ function getPublicSnapshot_() {
 
 function buildPublicSnapshot_() {
   const workbook = getWorkbook_();
+  archiveCompletedFanIntent_(workbook);
   const venuesRaw = readSheetObjects_(workbook, 'Venues');
   const gamesRaw = readSheetObjects_(workbook, 'Games');
   const partiesRaw = readSheetObjects_(workbook, 'Watch_Parties');
