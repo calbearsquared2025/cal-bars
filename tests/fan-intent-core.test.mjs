@@ -64,7 +64,7 @@ test('write responses accept public aggregates and reject private identifiers re
   assert.equal(validateFanIntentResponse(valid), true);
   assert.equal(responseContainsPrivateKeys(valid), false);
 
-  const privateResponse = { ...valid, debug: { browser_id: 'private-browser-id' } };
+  const privateResponse = { ...valid, debug: { browser_id: randomUUID() } };
   assert.equal(responseContainsPrivateKeys(privateResponse), true);
   assert.equal(validateFanIntentResponse(privateResponse), false);
 });
