@@ -535,7 +535,6 @@ function createActionRow(venue, { details = true } = {}) {
   intent.className = 'primary-button intent-button';
   intent.textContent = 'I’ll be here';
   intent.disabled = true;
-  intent.title = 'Check-ins are coming soon';
   row.append(intent);
 
   const directions = document.createElement('a');
@@ -700,11 +699,6 @@ function renderSelectedCard() {
   card.append(countLine);
   appendWatchParty(card, party);
   card.append(createActionRow(venue));
-
-  const previewNote = document.createElement('p');
-  previewNote.className = 'preview-note';
-  previewNote.textContent = 'Preview: check-ins are coming soon.';
-  card.append(previewNote);
   dom.traySelected.append(card);
 }
 
@@ -856,7 +850,7 @@ function renderDetailView() {
 
   const note = document.createElement('p');
   note.className = 'preview-note';
-  note.textContent = 'Preview: check-ins and contribution tools are coming soon.';
+  note.textContent = 'Preview: contribution tools are coming soon.';
   dom.venueDetail.append(note);
 }
 

@@ -42,32 +42,48 @@ No new workbook, public Sheet sharing, formula, trigger, or private-data export 
 4. Run `setupWorkbook()` once. Resolve any reported header mismatch manually; do not overwrite a populated header row.
 5. Run `buildPublicSnapshotForReview()` and confirm that the output contains `venues`, `games`, `watchParties`, `fanCounts`, and `venueHistoryCounts`, but no `browser_id`, `fan_intent_id`, raw row, contact field, workbook ID, or workbook URL.
 6. Deploy a new web-app version that executes as the owner and retains the approved public access setting for the site.
-7. Copy the deployment URL only into the non-production browser configuration:
-
-   ```js
-   CGBPreview.setDataEndpoint('PASTE_NON_PRODUCTION_APPS_SCRIPT_URL_HERE')
-   ```
-
-   The URL remains in that browser's local storage. Do not add it to source files, screenshots, test fixtures, or the pull request.
-8. After any Apps Script change, create another deployment version; editing source alone does not update an existing versioned deployment.
+7. After any Apps Script change, create another deployment version; editing source alone does not update an existing versioned deployment.
 
 No installable trigger is required for Fan Intent.
 
-## Acceptance checks
+## Live-canary acceptance
 
 Use synthetic or owner-approved test records only.
 
-1. Open an upcoming game and select a venue. Confirm the button changes from **I’ll be here** to **You’ll be here · Undo** and the current count increases once.
-2. Tap again. Confirm the selection is withdrawn and the count returns to its prior value.
-3. Select venue A, then venue B for the same game. Confirm A decreases, B increases, and only one `attending` row remains for that browser/game.
-4. Refresh. Confirm the selected venue and button state restore from local browser storage.
-5. Switch to another game and back. Confirm each game's saved selection restores independently.
-6. Tap repeatedly while a request is pending. Confirm controls remain disabled and no duplicate count is created.
-7. Temporarily use an unavailable non-production endpoint. Confirm the optimistic change rolls back, the previous selection returns, and **Retry** is offered.
-8. Restore the endpoint and retry. Confirm the operation completes without double-counting.
-9. Inspect the public GET and POST responses. Confirm neither contains browser identifiers or canonical Fan Intent rows.
-10. Mark a synthetic game completed, load the public snapshot, and confirm current counts disappear while the venue's distinct historical-game count increases.
-11. Complete actual iPhone and desktop checks for selected, pending, failed/retry, undo, move, refresh, and game-switch states.
+The live HTTPS frontend reads the approved public Apps Script web-app endpoint from the `cgb-data-endpoint` metadata in `index.html`. Ordinary live-canary use does not require a bookmarklet, Safari Shortcut, developer console, or local-storage setup.
+
+Routine acceptance for the approved live canary requires:
+
+1. Run the automated test suite and fallback-data validation successfully.
+2. Inspect the public response and confirm it contains no browser identifiers, canonical Fan Intent rows, raw rows, contact fields, workbook identifiers, or workbook URLs.
+3. Confirm the live HTTPS site loads against the approved deployment.
+4. Complete one desktop core-path test: join an upcoming game at venue A, move to venue B, use **Undo**, and refresh to confirm the final selection persists correctly.
+5. Complete one physical-iPhone core-path test covering join, move, **Undo**, refresh persistence, and basic portrait usability.
+
+The desktop and iPhone checks should confirm aggregate counts and button state change once per action. They do not require repeating every diagnostic failure or cache scenario.
+
+## Optional local-preview diagnostics
+
+Use these checks only when diagnosing preview configuration, origin isolation, caching, or failure behavior. They are not routine live-canary acceptance.
+
+- Override the HTML-configured endpoint for the current browser origin:
+
+  ```js
+  CGBPreview.setDataEndpoint('PASTE_NON_PRODUCTION_APPS_SCRIPT_URL_HERE')
+  ```
+
+  The override remains in that origin's local storage. Use `CGBPreview.clearDataEndpoint()` to remove it and return to the endpoint configured in HTML. Do not add diagnostic endpoints to source files, screenshots, test fixtures, or the pull request.
+- Compare `localhost`, the Windows LAN address, or alternate ports when investigating origin-specific local storage. Each scheme, host, and port has independent browser storage.
+- Use browser emulation as a supplemental diagnostic, not as a substitute for the physical-iPhone acceptance check.
+- Force an unavailable endpoint only when verifying optimistic rollback and **Retry**, then restore the approved endpoint before continuing.
+- Repeat cache-busting or fresh-context checks only when stale assets are suspected.
+- Manipulate archival state manually only with synthetic or owner-approved records when diagnosing completed-game behavior.
+
+The normal join, move, withdrawal, pending-state, rollback, and retry behaviors remain covered by automated tests. Clearing browser storage creates a new anonymous identity and should not be part of routine acceptance.
+
+## Completed-game archival check
+
+When archival behavior itself changes or requires focused verification, mark a synthetic game `completed`, load the public snapshot, and confirm current selections are archived, current counts disappear, and the venue's distinct historical-game count increases. Never manipulate actual completed-game data solely for routine canary acceptance.
 
 ## Intended limitations
 

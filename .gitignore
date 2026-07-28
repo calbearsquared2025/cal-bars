@@ -1,0 +1,9 @@
+.clasp.json
+.clasprc.json
+client_secret*.json
+credentials*.json
+token*.json
+*.private.json
+apps-script-response*.tmp
+apps-script-headers*.tmp
+endpoint-response*.tmp

@@ -209,7 +209,7 @@ function failureCopy(error) {
   if (code.includes('game_not_open')) return 'This game is no longer open for selections.';
   if (code.includes('venue_not_found')) return 'This location is not available right now.';
   if (code.includes('selection_conflict')) return 'Your selection changed elsewhere. Refresh and try again.';
-  if (code.includes('not_configured')) return 'Check-ins are not connected on this preview.';
+  if (code.includes('not_configured')) return 'Check-ins are temporarily unavailable.';
   return 'Could not save your selection. Your previous choice was restored.';
 }
 
@@ -394,9 +394,6 @@ function restoreSelectedVenue() {
 
 function patchUi() {
   if (!fanState.snapshot) return;
-  document.querySelectorAll('.preview-note').forEach((note) => {
-    if (/check-ins/i.test(note.textContent)) note.remove();
-  });
   document.querySelectorAll('.location-card').forEach(findVenueForLocationCard);
   const selectedCard = document.querySelector('.selected-card');
   if (selectedCard) venueFromCard(selectedCard);

@@ -138,7 +138,8 @@ test('deferred write and photo features are not implemented in Milestone 2', () 
 test('preview copy does not expose internal milestone numbering to users', () => {
   assert.doesNotMatch(html, /read-only milestone|later milestones/i);
   assert.doesNotMatch(app, /Milestone 3|later milestones/i);
-  assert.match(app, /check-ins are coming soon/i);
+  assert.match(app, /intent\.textContent = 'I’ll be here'/);
+  assert.doesNotMatch(app, /check-ins are coming soon|Preview: check-ins/i);
 });
 
 test('responsive desktop layout retains the same application', () => {

@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
 const client = await readFile(new URL('../js/fan-intent.js', import.meta.url), 'utf8');
 const core = await readFile(new URL('../js/fan-intent-core.mjs', import.meta.url), 'utf8');
 const css = await readFile(new URL('../css/fan-intent.css', import.meta.url), 'utf8');
 const script = await readFile(new URL('../apps-script/FanIntent.gs', import.meta.url), 'utf8');
 const readScript = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
 
-const combinedPublicSource = `${html}\n${client}\n${core}\n${css}`;
+const combinedPublicSource = `${html}\n${app}\n${client}\n${core}\n${css}`;
 
 test('the existing application loads the separate Fan Intent client and visual states', () => {
   assert.match(html, /css\/fan-intent\.css/);
@@ -17,6 +18,15 @@ test('the existing application loads the separate Fan Intent client and visual s
   assert.match(css, /intent-button\[aria-pressed="true"\]/);
   assert.match(css, /intent-button\.is-pending/);
   assert.match(css, /intent-feedback/);
+});
+
+test('the primary action uses current Fan Intent copy without preview-era repair logic', () => {
+  assert.match(app, /intent\.textContent = 'I’ll be here'/);
+  assert.doesNotMatch(app, /check-ins are coming soon/i);
+  assert.doesNotMatch(app, /Preview: check-ins/i);
+  assert.match(client, /not_configured'\)\) return 'Check-ins are temporarily unavailable\.'/);
+  assert.doesNotMatch(client, /not connected on this preview/i);
+  assert.doesNotMatch(client, /querySelectorAll\(['"]\.preview-note['"]\)/);
 });
 
 test('browser identity and one selection per game persist only in local storage', () => {
@@ -36,11 +46,12 @@ test('join, move, withdraw, pending, rollback, and retry are represented', () =>
   assert.match(client, /You’ll be here · Undo/);
 });
 
-test('write requests avoid a JSON preflight and use the configured Apps Script endpoint', () => {
+test('write requests avoid a JSON preflight and use the public HTML endpoint configuration', () => {
   assert.match(client, /method: 'POST'/);
   assert.match(client, /Content-Type': 'text\/plain;charset=UTF-8'/);
   assert.match(client, /configuredEndpoint\(\)/);
-  assert.doesNotMatch(combinedPublicSource, /script\.google\.com\/macros\/s\//);
+  assert.match(html, /name="cgb-data-endpoint"[\s\S]*content="https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec"/);
+  assert.doesNotMatch(client, /script\.google\.com\/macros\/s\//);
 });
 
 test('current aggregates synchronize after writes and on a bounded refresh cadence', () => {
