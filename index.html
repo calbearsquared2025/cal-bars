@@ -85,7 +85,7 @@
       </div>
 
       <section id="venue-tray" class="venue-tray tray--peek" aria-label="Location browser" data-state="peek">
-        <button id="tray-handle" class="tray-handle" type="button" aria-label="Expand location tray" aria-expanded="false">
+        <button id="tray-handle" class="tray-handle" type="button" aria-label="Expand location tray" aria-expanded="false" aria-controls="tray-peek tray-selected tray-list">
           <span></span>
         </button>
         <div id="tray-peek" class="tray-peek">
@@ -104,7 +104,10 @@
               <span class="eyebrow">Selected game</span>
               <h2 id="list-heading">Locations</h2>
             </div>
-            <button id="close-list-button" class="icon-button" type="button" aria-label="Collapse location list">⌄</button>
+            <div class="tray-list__actions">
+              <button id="clear-search-button" class="text-button" type="button" hidden>All locations</button>
+              <button id="close-list-button" class="icon-button" type="button" aria-label="Collapse location list">⌄</button>
+            </div>
           </div>
           <div id="location-list" class="location-list"></div>
         </div>
@@ -135,8 +138,11 @@
   </dialog>
 
   <footer class="site-footer">
-    <span>Fan-run and unaffiliated with UC Berkeley or Cal Athletics.</span>
-    <button id="about-button" class="text-button" type="button">About this preview</button>
+    <span>Not affiliated with Cal Athletics</span>
+    <span aria-hidden="true">·</span>
+    <a href="https://x.com/calbearsquared" target="_blank" rel="noopener" aria-label="Cal Bear Squared on X">@calbearsquared</a>
+    <span aria-hidden="true">·</span>
+    <button id="about-button" class="text-button" type="button">About</button>
   </footer>
 
   <dialog id="about-dialog" class="about-dialog">
@@ -145,8 +151,8 @@
         <h2>About Cal Golden Bars v2</h2>
         <button class="icon-button" value="cancel" aria-label="Close">×</button>
       </div>
-      <p>This read-only milestone demonstrates game selection, venue discovery, Watch Party context, map/list navigation, venue details, directions, and sharing.</p>
-      <p><strong>I’ll be here</strong> check-ins, external venue creation, and contribution forms are intentionally reserved for later milestones.</p>
+      <p>This preview demonstrates game selection, venue discovery, Watch Party context, map/list navigation, venue details, directions, and sharing.</p>
+      <p><strong>I’ll be here</strong> check-ins and contribution tools are coming soon.</p>
     </form>
   </dialog>
 

@@ -2,6 +2,8 @@ import {
   bearCountCopy,
   buildGameUrl,
   buildVenueUrl,
+  calculateMinimalPan,
+  findExactVenueMatch,
   formatKickoff,
   gameTitle,
   getFanCount,
@@ -10,9 +12,15 @@ import {
   getWatchParty,
   historyCountCopy,
   markerKind,
+  NEARBY_RADIUS_MILES,
+  normalizeSearchText,
+  rankNearbyVenues,
   rankVenues,
+  resolveTrayState,
   selectDefaultGame,
+  shareOrCopy,
   validateSnapshotShape,
+  venueBadgeDescriptors,
   venueTypeLabel
 } from './core.mjs';
 
@@ -22,12 +30,15 @@ const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
+const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
+const TRAY_SWIPE_THRESHOLD = 48;
 
 const state = {
   snapshot: null,
   gameId: null,
   selectedVenueId: null,
   origin: null,
+  listQuery: '',
   trayState: 'peek',
   map: null,
   markers: new Map(),
@@ -35,7 +46,10 @@ const state = {
   detailMode: false,
   dataSource: 'fallback',
   mapLayoutWaitFrames: 0,
-  mapLayoutFrame: null
+  mapLayoutFrame: null,
+  venueVisibilityFrame: null,
+  trayResizeObserver: null,
+  lastTraySize: ''
 };
 
 const dom = {};
@@ -60,6 +74,7 @@ function cacheDom() {
     venueDetail: document.querySelector('#venue-detail'),
     detailBack: document.querySelector('#detail-back'),
     map: document.querySelector('#map'),
+    mapToolbar: document.querySelector('.map-toolbar'),
     mapFallback: document.querySelector('#map-fallback'),
     gameButton: document.querySelector('#game-button'),
     gameDialog: document.querySelector('#game-dialog'),
@@ -80,6 +95,7 @@ function cacheDom() {
     trayList: document.querySelector('#tray-list'),
     browseButton: document.querySelector('#browse-locations-button'),
     closeList: document.querySelector('#close-list-button'),
+    clearSearch: document.querySelector('#clear-search-button'),
     listHeading: document.querySelector('#list-heading'),
     locationList: document.querySelector('#location-list'),
     status: document.querySelector('#status'),
@@ -176,7 +192,7 @@ function renderHeaderAndStats() {
   const partyCount = getWatchPartiesForGame(state.snapshot, state.gameId).length;
   dom.partyStat.textContent = `${partyCount} watch ${partyCount === 1 ? 'party' : 'parties'} for this game`;
   dom.locationStat.textContent = `${state.snapshot.venues.length} locations mapped`;
-  dom.listHeading.textContent = `${gameTitle(game)} locations`;
+  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(game)} locations`;
 }
 
 function renderGameDialog() {
@@ -200,9 +216,13 @@ function renderGameDialog() {
     button.addEventListener('click', () => {
       state.gameId = game.game_id;
       state.selectedVenueId = null;
+      state.listQuery = '';
+      state.origin = null;
+      dom.searchInput.value = '';
       setTrayState('peek');
       updateRouteForGame();
       renderAll();
+      renderUserMarker();
       dom.gameDialog.close();
     });
     dom.gameList.append(button);
@@ -215,7 +235,7 @@ function markerElement(venue) {
   const button = document.createElement('button');
   button.type = 'button';
   button.className = `cgb-marker marker--${kind}`;
-  button.setAttribute('aria-label', `${venue.name}, ${venueTypeLabel(venue)}`);
+  button.setAttribute('aria-label', `${venue.name}, ${venueTypeLabel(venue)}. ${bearCountCopy(count)}`);
   button.dataset.venueId = venue.venue_id;
   const symbol = document.createElement('span');
   symbol.className = kind === 'watch-party' ? 'marker-star' : 'marker-pin';
@@ -225,7 +245,7 @@ function markerElement(venue) {
   if (count > 0) {
     const badge = document.createElement('span');
     badge.className = 'marker-count';
-    badge.textContent = String(count);
+    badge.textContent = bearCountCopy(count);
     button.append(badge);
   }
   button.addEventListener('click', () => selectVenue(venue.venue_id));
@@ -280,11 +300,17 @@ function initMap() {
   new ResizeObserver(() => state.map?.resize()).observe(dom.map);
 }
 
+function rankedVisibleVenues(query = state.listQuery) {
+  if (query) return rankVenues(state.snapshot, state.gameId, state.origin, query);
+  if (state.origin) return rankNearbyVenues(state.snapshot, state.gameId, state.origin);
+  return rankVenues(state.snapshot, state.gameId);
+}
+
 function renderMarkers() {
   if (!state.map) return;
   state.markers.forEach((marker) => marker.remove());
   state.markers.clear();
-  state.snapshot.venues.forEach((venue) => {
+  rankedVisibleVenues().forEach(({ venue }) => {
     const element = markerElement(venue);
     element.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
     const marker = new maplibregl.Marker({ element, anchor: 'bottom' })
@@ -308,17 +334,84 @@ function renderUserMarker() {
     .addTo(state.map);
 }
 
+function mapVisibilityMetrics() {
+  const mapRect = dom.map.getBoundingClientRect();
+  const isMobile = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+  const insets = { top: 16, right: 16, bottom: 16, left: 16 };
+
+  if (isMobile && dom.mapToolbar) {
+    const toolbarRect = dom.mapToolbar.getBoundingClientRect();
+    if (toolbarRect.bottom > mapRect.top && toolbarRect.top < mapRect.bottom) {
+      insets.top = Math.max(insets.top, toolbarRect.bottom - mapRect.top + 12);
+    }
+  }
+
+  if (isMobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
+    const trayRect = dom.tray.getBoundingClientRect();
+    if (trayRect.top < mapRect.bottom && trayRect.bottom > mapRect.top) {
+      insets.bottom = Math.max(insets.bottom, mapRect.bottom - Math.max(mapRect.top, trayRect.top) + 12);
+    }
+  }
+
+  return {
+    viewport: { width: mapRect.width, height: mapRect.height },
+    insets
+  };
+}
+
 function panToVenue(venue) {
-  if (!state.map) return;
-  const isMobile = window.matchMedia('(max-width: 899px)').matches;
-  const trayHeight = isMobile ? Math.min(window.innerHeight * 0.48, 410) : 0;
+  if (!state.map || !venue) return;
+  const point = state.map.project([Number(venue.longitude), Number(venue.latitude)]);
+  const { viewport, insets } = mapVisibilityMetrics();
+  const offset = calculateMinimalPan({ point, viewport, insets });
+  if (Math.abs(offset.x) < 0.5 && Math.abs(offset.y) < 0.5) return;
+
+  const currentZoom = state.map.getZoom();
+  const centerPoint = state.map.project(state.map.getCenter());
+  const nextCenter = state.map.unproject([
+    centerPoint.x - offset.x,
+    centerPoint.y - offset.y
+  ]);
   state.map.easeTo({
-    center: [Number(venue.longitude), Number(venue.latitude)],
-    zoom: Math.max(state.map.getZoom(), 12),
-    padding: { top: 80, right: 40, bottom: trayHeight, left: 40 },
-    duration: REDUCED_MOTION ? 0 : 450,
+    center: nextCenter,
+    zoom: currentZoom,
+    duration: REDUCED_MOTION ? 0 : 320,
     essential: true
   });
+}
+
+function clearVenueVisibilitySchedule() {
+  if (state.venueVisibilityFrame !== null) {
+    cancelAnimationFrame(state.venueVisibilityFrame);
+    state.venueVisibilityFrame = null;
+  }
+}
+
+function scheduleSelectedVenueVisibility() {
+  clearVenueVisibilitySchedule();
+  if (!state.map || !state.selectedVenueId || state.detailMode) return;
+
+  state.venueVisibilityFrame = requestAnimationFrame(() => {
+    state.venueVisibilityFrame = requestAnimationFrame(() => {
+      state.venueVisibilityFrame = null;
+      panToVenue(selectedVenue());
+    });
+  });
+}
+
+function observeTrayLayout() {
+  if (typeof ResizeObserver !== 'function' || !dom.tray) return;
+  state.trayResizeObserver?.disconnect();
+  state.trayResizeObserver = new ResizeObserver((entries) => {
+    const rect = entries[0]?.contentRect;
+    if (!rect) return;
+    const size = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
+    if (size === state.lastTraySize) return;
+    state.lastTraySize = size;
+    state.map?.resize();
+    scheduleSelectedVenueVisibility();
+  });
+  state.trayResizeObserver.observe(dom.tray);
 }
 
 function selectVenue(venueId) {
@@ -326,20 +419,33 @@ function selectVenue(venueId) {
   setTrayState('selected');
   renderMarkers();
   renderTray();
-  const venue = selectedVenue();
-  if (venue) panToVenue(venue);
+  scheduleSelectedVenueVisibility();
+}
+
+function trayHandleLabel(next) {
+  if (next === 'full') return 'Collapse location tray';
+  if (next === 'selected') return 'Show all locations';
+  return 'Expand location tray';
 }
 
 function setTrayState(next) {
+  const changed = state.trayState !== next;
   state.trayState = next;
   dom.tray.dataset.state = next;
   dom.tray.className = `venue-tray tray--${next}`;
   dom.trayHandle.setAttribute('aria-expanded', String(next !== 'peek'));
-  dom.trayHandle.setAttribute('aria-label', next === 'full' ? 'Collapse location tray' : 'Expand location tray');
+  dom.trayHandle.setAttribute('aria-label', trayHandleLabel(next));
   dom.trayPeek.hidden = next !== 'peek';
   dom.traySelected.hidden = next !== 'selected';
   dom.trayList.hidden = next !== 'full';
   requestAnimationFrame(() => state.map?.resize());
+  if (changed) scheduleSelectedVenueVisibility();
+  return changed;
+}
+
+function applyTrayAction(action) {
+  const next = resolveTrayState(state.trayState, action, Boolean(state.selectedVenueId));
+  setTrayState(next);
 }
 
 function formatDistance(distance) {
@@ -352,11 +458,16 @@ function directionsUrl(venue) {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${venue.latitude},${venue.longitude}`)}`;
 }
 
-function createBadge(venue, party) {
-  const badge = document.createElement('span');
-  badge.className = party ? 'venue-badge badge--party' : venue.venue_type === 'cal_bar' ? 'venue-badge badge--cal' : 'venue-badge badge--community';
-  badge.textContent = party ? 'WATCH PARTY' : venueTypeLabel(venue);
-  return badge;
+function createBadges(venue, party) {
+  const badges = document.createElement('span');
+  badges.className = 'venue-badges';
+  venueBadgeDescriptors(venue, party).forEach(({ text, kind }) => {
+    const badge = document.createElement('span');
+    badge.className = `venue-badge badge--${kind}`;
+    badge.textContent = text;
+    badges.append(badge);
+  });
+  return badges;
 }
 
 function appendWatchParty(container, party) {
@@ -424,7 +535,7 @@ function createActionRow(venue, { details = true } = {}) {
   intent.className = 'primary-button intent-button';
   intent.textContent = 'I’ll be here';
   intent.disabled = true;
-  intent.title = 'Check-ins are implemented in Milestone 3';
+  intent.title = 'Check-ins are coming soon';
   row.append(intent);
 
   const directions = document.createElement('a');
@@ -453,6 +564,65 @@ function createActionRow(venue, { details = true } = {}) {
   return row;
 }
 
+function legacyCopyUrl(url) {
+  const proxy = document.createElement('textarea');
+  proxy.className = 'copy-proxy';
+  proxy.value = url;
+  proxy.readOnly = true;
+  proxy.setAttribute('aria-hidden', 'true');
+  document.body.append(proxy);
+  proxy.focus();
+  proxy.select();
+  proxy.setSelectionRange(0, proxy.value.length);
+  let copied = false;
+  try {
+    copied = typeof document.execCommand === 'function' && document.execCommand('copy') === true;
+  } catch (_) {}
+  proxy.remove();
+  return copied;
+}
+
+function showManualCopy(url) {
+  document.querySelector('.manual-copy-panel')?.remove();
+  const panel = document.createElement('section');
+  panel.className = 'manual-copy-panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-label', 'Copy venue link');
+
+  const heading = document.createElement('strong');
+  heading.textContent = 'Copy this link';
+  const explanation = document.createElement('p');
+  explanation.textContent = 'Automatic copying is unavailable in this browser. Select and copy the complete URL below.';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.readOnly = true;
+  input.value = url;
+  input.setAttribute('aria-label', 'Venue and selected-game URL');
+  input.addEventListener('focus', () => input.select());
+
+  const actions = document.createElement('div');
+  actions.className = 'manual-copy-actions';
+  const select = document.createElement('button');
+  select.type = 'button';
+  select.className = 'primary-button';
+  select.textContent = 'Select link';
+  select.addEventListener('click', () => {
+    input.focus();
+    input.select();
+  });
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'secondary-button';
+  close.textContent = 'Close';
+  close.addEventListener('click', () => panel.remove());
+  actions.append(select, close);
+  panel.append(heading, explanation, input, actions);
+  document.body.append(panel);
+  input.focus();
+  input.select();
+}
+
 async function shareVenue(venue) {
   const url = buildVenueUrl(venue.slug, state.gameId, location.href);
   const game = selectedGame();
@@ -461,15 +631,24 @@ async function shareVenue(venue) {
     text: `${gameTitle(game)} at ${venue.name}`,
     url
   };
-  try {
-    if (navigator.share) {
-      await navigator.share(payload);
-      return;
-    }
-    await navigator.clipboard.writeText(url);
+  let nativeShareAvailable = typeof navigator.share === 'function';
+  if (nativeShareAvailable && typeof navigator.canShare === 'function') {
+    try { nativeShareAvailable = navigator.canShare(payload); } catch (_) { nativeShareAvailable = false; }
+  }
+  const result = await shareOrCopy({
+    payload,
+    url,
+    share: nativeShareAvailable ? (sharePayload) => navigator.share(sharePayload) : null,
+    writeClipboard: typeof navigator.clipboard?.writeText === 'function'
+      ? (text) => navigator.clipboard.writeText(text)
+      : null,
+    legacyCopy: legacyCopyUrl
+  });
+
+  if (result.method === 'clipboard' || result.method === 'legacy-copy') {
     showStatus('Link copied');
-  } catch (error) {
-    if (error?.name !== 'AbortError') showStatus('Could not share this link');
+  } else if (result.method === 'manual') {
+    showManualCopy(result.url);
   }
 }
 
@@ -490,7 +669,7 @@ function renderSelectedCard() {
   const header = document.createElement('div');
   header.className = 'selected-card__header';
   const heading = document.createElement('div');
-  heading.append(createBadge(venue, party));
+  heading.append(createBadges(venue, party));
   const title = document.createElement('h2');
   title.textContent = venue.name;
   heading.append(title);
@@ -524,19 +703,39 @@ function renderSelectedCard() {
 
   const previewNote = document.createElement('p');
   previewNote.className = 'preview-note';
-  previewNote.textContent = 'Read-only preview: check-ins are enabled in Milestone 3.';
+  previewNote.textContent = 'Preview: check-ins are coming soon.';
   card.append(previewNote);
   dom.traySelected.append(card);
 }
 
-function renderLocationList(query = dom.searchInput.value) {
-  const ranked = rankVenues(state.snapshot, state.gameId, state.origin, query);
+function updateClearSearchVisibility() {
+  const active = Boolean(state.listQuery || state.origin || dom.searchInput.value.trim());
+  dom.clearSearch.hidden = !active;
+}
+
+function renderLocationList(query = state.listQuery) {
+  const ranked = rankedVisibleVenues(query);
   dom.locationList.replaceChildren();
+  dom.listHeading.textContent = query
+    ? `${ranked.length} matching ${ranked.length === 1 ? 'location' : 'locations'}`
+    : state.origin
+      ? `${ranked.length} ${ranked.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
+      : `${gameTitle(selectedGame())} locations`;
+
   if (!ranked.length) {
-    const empty = document.createElement('p');
+    const empty = document.createElement('section');
     empty.className = 'empty-state';
-    empty.textContent = 'No mapped locations match this search.';
+    if (state.origin && !query) {
+      const heading = document.createElement('strong');
+      heading.textContent = `No listed Cal gathering locations within ${NEARBY_RADIUS_MILES} miles.`;
+      const guidance = document.createElement('p');
+      guidance.textContent = 'Try another city or ZIP, or choose All locations to browse every mapped location.';
+      empty.append(heading, guidance);
+    } else {
+      empty.textContent = 'No mapped locations match this search.';
+    }
     dom.locationList.append(empty);
+    updateClearSearchVisibility();
     return;
   }
 
@@ -548,7 +747,7 @@ function renderLocationList(query = dom.searchInput.value) {
     const top = document.createElement('div');
     top.className = 'location-card__top';
     const info = document.createElement('div');
-    info.append(createBadge(venue, party));
+    info.append(createBadges(venue, party));
     const name = document.createElement('strong');
     name.textContent = venue.name;
     info.append(name);
@@ -558,8 +757,7 @@ function renderLocationList(query = dom.searchInput.value) {
     top.append(info);
     const count = document.createElement('span');
     count.className = 'location-card__count';
-    count.textContent = String(fanCount);
-    count.setAttribute('aria-label', `${fanCount} Bears watching here`);
+    count.textContent = bearCountCopy(fanCount);
     top.append(count);
     button.append(top);
     if (party) {
@@ -576,6 +774,7 @@ function renderLocationList(query = dom.searchInput.value) {
     button.addEventListener('click', () => selectVenue(venue.venue_id));
     dom.locationList.append(button);
   });
+  updateClearSearchVisibility();
 }
 
 function renderTray() {
@@ -597,7 +796,7 @@ function renderDetailView() {
   dom.venueDetail.replaceChildren();
   const hero = document.createElement('header');
   hero.className = 'detail-hero';
-  hero.append(createBadge(venue, party));
+  hero.append(createBadges(venue, party));
   const title = document.createElement('h1');
   title.textContent = venue.name;
   hero.append(title);
@@ -657,7 +856,7 @@ function renderDetailView() {
 
   const note = document.createElement('p');
   note.className = 'preview-note';
-  note.textContent = 'Read-only preview: check-ins and contribution forms are implemented in later milestones.';
+  note.textContent = 'Preview: check-ins and contribution tools are coming soon.';
   dom.venueDetail.append(note);
 }
 
@@ -686,28 +885,56 @@ async function geocode(query) {
   return { lon: Number(coordinates[0]), lat: Number(coordinates[1]), label: feature.place_name || query };
 }
 
-function searchExisting(query) {
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) return null;
-  return rankVenues(state.snapshot, state.gameId, state.origin, normalized)[0]?.venue || null;
+function queryMatchesMappedLocationField(query) {
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedQuery) return false;
+  return state.snapshot.venues.some((venue) =>
+    [venue.city, venue.region, venue.postal_code, venue.address_line_1]
+      .some((value) => normalizeSearchText(value).includes(normalizedQuery))
+  );
 }
 
 async function runSearch(query) {
-  const existing = searchExisting(query);
-  if (existing) {
-    selectVenue(existing.venue_id);
-    dom.suggestions.hidden = true;
+  const normalizedQuery = query.trim();
+  if (!normalizedQuery) return;
+
+  const mappedMatches = rankVenues(state.snapshot, state.gameId, state.origin, normalizedQuery);
+  const exact = findExactVenueMatch(mappedMatches.map(({ venue }) => venue), normalizedQuery);
+  dom.suggestions.hidden = true;
+
+  if (exact) {
+    state.origin = null;
+    state.listQuery = '';
+    renderUserMarker();
+    selectVenue(exact.venue_id);
+    updateClearSearchVisibility();
+    return;
+  }
+
+  if (mappedMatches.length && !queryMatchesMappedLocationField(normalizedQuery)) {
+    state.origin = null;
+    state.listQuery = normalizedQuery;
+    renderUserMarker();
+    renderLocationList();
+    renderMarkers();
+    setTrayState('full');
+    showStatus(`${mappedMatches.length} mapped ${mappedMatches.length === 1 ? 'location matches' : 'locations match'} your search`);
     return;
   }
 
   showStatus('Finding that area…', 5000);
   try {
-    state.origin = await geocode(query);
+    state.origin = await geocode(normalizedQuery);
+    state.listQuery = '';
     renderUserMarker();
-    renderLocationList('');
+    const nearby = rankedVisibleVenues();
+    renderLocationList();
+    renderMarkers();
     setTrayState('full');
     state.map?.easeTo({ center: [state.origin.lon, state.origin.lat], zoom: 10, duration: REDUCED_MOTION ? 0 : 500 });
-    showStatus(`Showing locations near ${state.origin.label}`);
+    showStatus(nearby.length
+      ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`
+      : `No listed locations within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`);
   } catch (error) {
     showStatus('Location not found');
   }
@@ -717,10 +944,12 @@ function renderSuggestions() {
   const query = dom.searchInput.value.trim();
   dom.suggestions.replaceChildren();
   if (!query) {
+    state.listQuery = '';
     dom.suggestions.hidden = true;
-    renderLocationList('');
+    renderLocationList();
     return;
   }
+
   const matches = rankVenues(state.snapshot, state.gameId, state.origin, query).slice(0, 5);
   matches.forEach(({ venue, party }) => {
     const button = document.createElement('button');
@@ -733,30 +962,73 @@ function renderSuggestions() {
     button.append(name, location);
     button.addEventListener('click', () => {
       dom.searchInput.value = venue.name;
+      state.origin = null;
+      state.listQuery = '';
       dom.suggestions.hidden = true;
+      renderUserMarker();
       selectVenue(venue.venue_id);
+      updateClearSearchVisibility();
     });
     dom.suggestions.append(button);
   });
   dom.suggestions.hidden = matches.length === 0;
-  renderLocationList(query);
+  state.listQuery = query;
+  renderLocationList();
+  renderMarkers();
+}
+
+function clearSearchResults() {
+  state.listQuery = '';
+  state.origin = null;
+  dom.searchInput.value = '';
+  dom.suggestions.hidden = true;
+  renderUserMarker();
+  renderLocationList();
+  renderMarkers();
+  setTrayState('full');
+  showStatus('Showing all mapped locations');
 }
 
 function wireTrayDrag() {
   let startY = null;
+  let pointerId = null;
+  let suppressNextClick = false;
+
+  const reset = () => {
+    startY = null;
+    pointerId = null;
+  };
+
   dom.trayHandle.addEventListener('pointerdown', (event) => {
     startY = event.clientY;
-    dom.trayHandle.setPointerCapture(event.pointerId);
+    pointerId = event.pointerId;
+    dom.trayHandle.setPointerCapture?.(event.pointerId);
   });
+
   dom.trayHandle.addEventListener('pointerup', (event) => {
-    if (startY === null) return;
+    if (startY === null || event.pointerId !== pointerId) return;
     const delta = event.clientY - startY;
-    startY = null;
-    if (delta < -48) setTrayState('full');
-    else if (delta > 48) setTrayState(state.selectedVenueId ? 'selected' : 'peek');
-    else if (state.trayState === 'peek') setTrayState(state.selectedVenueId ? 'selected' : 'full');
-    else if (state.trayState === 'selected') setTrayState('full');
-    else setTrayState(state.selectedVenueId ? 'selected' : 'peek');
+    reset();
+    if (delta < -TRAY_SWIPE_THRESHOLD) {
+      suppressNextClick = true;
+      window.setTimeout(() => { suppressNextClick = false; }, 0);
+      applyTrayAction('up');
+    } else if (delta > TRAY_SWIPE_THRESHOLD) {
+      suppressNextClick = true;
+      window.setTimeout(() => { suppressNextClick = false; }, 0);
+      applyTrayAction('down');
+    }
+  });
+
+  dom.trayHandle.addEventListener('pointercancel', reset);
+  dom.trayHandle.addEventListener('lostpointercapture', reset);
+  dom.trayHandle.addEventListener('click', (event) => {
+    if (suppressNextClick) {
+      suppressNextClick = false;
+      event.preventDefault();
+      return;
+    }
+    applyTrayAction('toggle');
   });
 }
 
@@ -764,6 +1036,7 @@ function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
   dom.browseButton.addEventListener('click', () => setTrayState('full'));
   dom.closeList.addEventListener('click', () => setTrayState(state.selectedVenueId ? 'selected' : 'peek'));
+  dom.clearSearch.addEventListener('click', clearSearchResults);
   dom.searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const query = dom.searchInput.value.trim();
@@ -785,12 +1058,17 @@ function wireEvents() {
     showStatus('Finding your location…', 5000);
     navigator.geolocation.getCurrentPosition((position) => {
       state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
+      state.listQuery = '';
       renderUserMarker();
-      renderLocationList('');
+      const nearby = rankedVisibleVenues();
+      renderLocationList();
+      renderMarkers();
       setTrayState('full');
       state.map?.easeTo({ center: [state.origin.lon, state.origin.lat], zoom: 11, duration: REDUCED_MOTION ? 0 : 500 });
       dom.nearMe.disabled = false;
-      showStatus('Locations ranked by distance');
+      showStatus(nearby.length
+        ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
+        : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
     }, () => {
       dom.nearMe.disabled = false;
       showStatus('Location permission was not available');
@@ -800,12 +1078,19 @@ function wireEvents() {
     const active = document.body.classList.toggle('map-fullscreen');
     dom.fullscreen.setAttribute('aria-pressed', String(active));
     dom.fullscreen.setAttribute('aria-label', active ? 'Exit full-screen map' : 'Enter full-screen map');
-    requestAnimationFrame(() => state.map?.resize());
+    requestAnimationFrame(() => {
+      state.map?.resize();
+      scheduleSelectedVenueVisibility();
+    });
   });
   dom.aboutButton.addEventListener('click', () => dom.aboutDialog.showModal());
   wireTrayDrag();
+  observeTrayLayout();
   window.addEventListener('popstate', () => location.reload());
-  window.addEventListener('resize', () => state.map?.resize());
+  window.addEventListener('resize', () => {
+    state.map?.resize();
+    scheduleSelectedVenueVisibility();
+  });
 }
 
 async function boot() {
