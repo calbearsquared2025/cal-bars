@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://api.maptiler.com">
   <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/fan-intent.css">
   <style>
     .map-view,
     .map {
@@ -151,12 +152,13 @@
         <h2>About Cal Golden Bars v2</h2>
         <button class="icon-button" value="cancel" aria-label="Close">×</button>
       </div>
-      <p>This preview demonstrates game selection, venue discovery, Watch Party context, map/list navigation, venue details, directions, and sharing.</p>
-      <p><strong>I’ll be here</strong> check-ins and contribution tools are coming soon.</p>
+      <p>Choose a Cal football game, find a gathering location, and select <strong>I’ll be here</strong>.</p>
+      <p>Your selection uses a random identifier stored only in this browser. Cal Golden Bars publishes aggregate Bear counts, not names or attendee lists.</p>
     </form>
   </dialog>
 
   <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>
+  <script type="module" src="js/fan-intent.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
