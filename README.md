@@ -19,12 +19,18 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000/`.
 
-## Milestone 2 preview
+## Data and Fan Intent configuration
 
-The frontend uses this read sequence:
+The frontend uses this public-read sequence:
 
 1. Non-production Apps Script endpoint configured only in browser local storage
 2. Browser last-known-good snapshot
 3. `data/fallback-v2.json`
 
-No deployment URL, workbook identifier, private row, contact information, or browser identifier is committed. See `docs/mobile-interface.md` for preview instructions and scope boundaries.
+Milestone 3 adds a separate Fan Intent client and Apps Script write service for anonymous join, move, and withdrawal operations. The same endpoint is used for public reads and writes. Configure it in a non-production browser with:
+
+```js
+CGBPreview.setDataEndpoint('PASTE_NON_PRODUCTION_APPS_SCRIPT_URL_HERE')
+```
+
+No deployment URL, workbook identifier, private row, contact information, or browser identifier is committed. See `docs/fan-intent-setup.md` for Sheet, Apps Script, privacy, and acceptance instructions.
