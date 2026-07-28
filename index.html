@@ -1,154 +1,156 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <!-- Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CZV3JSBNJK"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date()); gtag('config', 'G-CZV3JSBNJK');
-  </script>
-
-  <!-- Open Graph / iMessage -->
-  <meta property="og:title" content="California Golden Bars — Find Your Local Cal Bar!" />
-  <meta property="og:description" content="Find California Golden Bears bars and watch parties near you. Explore an interactive, crowdsourced map built by fans, for fans." />
-  <meta property="og:image" content="https://calgoldenbars.com/assets/cgbsocial-preview.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="California Golden Bars - Interactive map showing Cal bars across the country" />
-  <meta property="og:url" content="https://calgoldenbars.com" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="California Golden Bars" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="California Golden Bars — Find Your Local Cal Bar!" />
-  <meta name="twitter:description" content="Find California Golden Bears bars and watch parties near you. Explore an interactive, crowdsourced map built by fans, for fans." />
-  <meta name="twitter:image" content="https://calgoldenbars.com/assets/cgbsocial-preview.png" />
-  <meta name="twitter:image:alt" content="California Golden Bars - Interactive map showing Cal bars across the country" />
-  <meta name="twitter:site" content="@calbearsquared" />
-  <meta name="twitter:creator" content="@calbearsquared" />
-
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Find California Golden Bears bars and watch parties near you. Explore an interactive, crowdsourced map built by fans, for fans.">
-  <meta name="theme-color" content="#002676" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#002676" media="(prefers-color-scheme: dark)">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-
-
-  <title>California Golden Bars</title>
+  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">
+  <meta name="theme-color" content="#002676">
+  <meta name="cgb-data-endpoint" content="">
+  <meta property="og:title" content="Cal Golden Bars">
+  <meta property="og:description" content="Find Cal Bars, Community Locations, and game-specific Watch Parties.">
+  <meta property="og:image" content="https://calgoldenbars.com/assets/cgbsocial-preview.png">
+  <meta property="og:type" content="website">
+  <title>Cal Golden Bars</title>
   <link rel="icon" type="image/svg+xml" href="assets/cgbfavicon.svg">
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700&display=swap" rel="stylesheet">
-
-  <!-- Preconnect -->
   <link rel="preconnect" href="https://unpkg.com">
-  <link rel="preconnect" href="https://nominatim.openstreetmap.org">
-
-  <!-- Canonical for SEO -->
-  <link rel="canonical" href="https://calgoldenbars.com/">
-
-  
-  <!-- MapLibre GL -->
-  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" media="print" onload="this.media='all'">
-  <noscript><link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet"></noscript>
-
-  <!-- Site CSS -->
+  <link rel="preconnect" href="https://api.maptiler.com">
+  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .map-view,
+    .map {
+      width: 100%;
+      height: calc(100dvh - var(--header-height) - var(--footer-height));
+    }
+
+    @supports not (height: 100dvh) {
+      .map-view,
+      .map {
+        height: calc(100vh - var(--header-height) - var(--footer-height));
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="safe-top-paint" aria-hidden="true"></div>
-<!-- Landscape orientation warning for mobile -->
-<div id="landscape-warning" class="landscape-warning">
-  <div class="landscape-warning-content">
-    <div class="landscape-warning-icon">📱</div>
-    <div class="landscape-warning-text">
-      <strong>Rotate to Portrait</strong><br>
-      For the best experience, please rotate your device to portrait mode.
-    </div>
-  </div>
-</div>
-
-<header class="header">
-  <img src="assets/bear_paw_logo.svg" alt="Bear paw" class="logo-paw">
-  <div class="header-stack">
-    <div class="title">California Golden Bars</div>
-    <div class="tagline">
-      <i>The Unofficial List of Cal Bars!</i><br>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" class="tagline-link">Add your bar!</a>
-    </div>
-          </div>
-</header>
-
-<main>
-  <section id="controls" class="search-panel" role="search">
-<div class="ac-wrap">
- <input
-  id="address"
-  name="street-address"             
-  autocomplete="street-address"    
-  autocapitalize="off"
-  autocorrect="off"
-  spellcheck="false"
-  inputmode="text"
-  placeholder="Enter city or full address"
-/>
-
-  <ul id="autocomplete-list" role="listbox" aria-label="Suggestions"></ul>
-</div>
-
-  <div class="controls-row">
-    <button id="searchBtn">Search</button>
-    <button id="findMeBtn" title="Use your current location">Find Me</button>
-    <button id="toggleListBtn" class="mobile-only" aria-controls="list" aria-expanded="false">
-      Show list
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="Cal Golden Bars home">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="17" cy="17" r="8"></circle>
+        <circle cx="34" cy="12" r="8"></circle>
+        <circle cx="49" cy="20" r="8"></circle>
+        <circle cx="13" cy="34" r="7"></circle>
+        <path d="M17 50c3-14 12-22 23-20 10 2 16 11 14 20-2 8-10 11-19 9-9 3-17-1-18-9z"></path>
+      </svg>
+      <span class="brand-name">CAL GOLDEN BARS</span>
+    </a>
+    <button id="game-button" class="game-button" type="button" aria-haspopup="dialog" aria-controls="game-dialog">
+      <span class="game-button__eyebrow">Selected game</span>
+      <strong id="header-game-label">Loading schedule…</strong>
+      <span id="header-kickoff">&nbsp;</span>
     </button>
-    <span id="status" aria-live="polite"></span>
-    <span id="barsCount" class="bars-count"></span>
-  </div>
-</section>
+  </header>
 
-  <div id="map" role="region" aria-label="Map of nearby bars"></div>
-  <aside id="list" aria-label="Nearest bars">
-    <h2>Nearest Bars</h2>
-    <ol id="results"></ol>
-  </aside>
+  <main id="app" aria-busy="true">
+    <section id="map-view" class="map-view" aria-label="Game map">
+      <div class="map-toolbar">
+        <div class="opening-stat" aria-live="polite">
+          <strong id="watch-party-stat">— watch parties</strong>
+          <span aria-hidden="true">·</span>
+          <span id="location-stat">— locations mapped</span>
+        </div>
+        <form id="location-search" class="location-search" role="search">
+          <label class="sr-only" for="location-query">Search city, ZIP, or venue</label>
+          <div class="search-field">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.2-4.2m1.2-5.3a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"></path></svg>
+            <input id="location-query" type="search" autocomplete="off" autocapitalize="words" placeholder="City, ZIP, or venue">
+            <button class="search-submit" type="submit">Search</button>
+          </div>
+          <div id="search-suggestions" class="search-suggestions" role="listbox" hidden></div>
+        </form>
+        <div class="map-actions">
+          <button id="near-me-button" class="secondary-button" type="button">
+            <span aria-hidden="true">◎</span> Near me
+          </button>
+          <button id="fullscreen-button" class="icon-button" type="button" aria-pressed="false" aria-label="Enter full-screen map">
+            <span aria-hidden="true">⛶</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="map" class="map" role="region" aria-label="Map of Cal gathering locations">
+        <div id="map-fallback" class="map-fallback" hidden>
+          <strong>Map unavailable</strong>
+          <span>The location list remains available.</span>
+        </div>
+      </div>
+
+      <section id="venue-tray" class="venue-tray tray--peek" aria-label="Location browser" data-state="peek">
+        <button id="tray-handle" class="tray-handle" type="button" aria-label="Expand location tray" aria-expanded="false">
+          <span></span>
+        </button>
+        <div id="tray-peek" class="tray-peek">
+          <button id="browse-locations-button" class="tray-summary" type="button">
+            <span>
+              <strong>Browse gathering locations</strong>
+              <small id="tray-summary-copy">Watch Parties first, then Cal Bars and Community Locations.</small>
+            </span>
+            <span aria-hidden="true">⌃</span>
+          </button>
+        </div>
+        <div id="tray-selected" class="tray-selected" hidden></div>
+        <div id="tray-list" class="tray-list" hidden>
+          <div class="tray-list__header">
+            <div>
+              <span class="eyebrow">Selected game</span>
+              <h2 id="list-heading">Locations</h2>
+            </div>
+            <button id="close-list-button" class="icon-button" type="button" aria-label="Collapse location list">⌄</button>
+          </div>
+          <div id="location-list" class="location-list"></div>
+        </div>
+      </section>
+    </section>
+
+    <section id="detail-view" class="detail-view" hidden aria-label="Venue details">
+      <div class="detail-shell">
+        <a id="detail-back" class="back-link" href="./">← Back to map</a>
+        <article id="venue-detail" class="venue-detail"></article>
+      </div>
+    </section>
   </main>
 
-<footer>
-  <small>
-   By Matthew Putzulu <a href="https://x.com/calbearsquared">Twitter</a> <a href="mailto:calbearsquared2025@gmail.com">Email</a>
-        <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vTO6KT8rcNjx8vbKs2iXOYRFnttCOC6EN7QNGivJBRaRdyAfg8l4kYbsE8vt3onqxBqKrnSvh-EczhU/pub?gid=11952344&amp;single=true&amp;output=csv" id="dataSourceLink" target="_blank" rel="noopener">Source</a> 
-    <button id="aboutBtn" type="button" class="linklike" aria-haspopup="dialog" aria-controls="aboutModal" aria-expanded="false">  About </button>
-  </small>
-</footer>
+  <div id="status" class="status-toast" role="status" aria-live="polite" hidden></div>
 
-<!-- About modal -->
-<div id="aboutModal" class="modal" aria-hidden="true">
-  <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
-    <button class="modal__close" id="aboutClose" aria-label="Close">×</button>
-    <h2 id="aboutTitle">About</h2>
-    <p>
-      California Golden Bars is a crowdsourced map that helps Cal fans find game-day bars across Bear Territory.
-    </p>
-    <p>
-      See something wrong or know a new bar?<br>
-      <a href="https://docs.google.com/forms/d/e/1FAIpQLSekliLBk6vK8MxZsikhFheYdAl4vLGisLMY_3zh2ZKHwygAEw/viewform" target="_blank" rel="noopener">Submit it here</a>
-      or <a href="mailto:calbearsquared2025@gmail.com">email me</a>. Go Bears!
-    </p>
-    <p><small>Fan-run and unaffiliated with UC Berkeley, Cal Athletics or the Cal Alumni Association. Listings community-submitted and unverified.</small></p>
-  </div>
-</div>
+  <dialog id="game-dialog" class="game-dialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-header">
+        <div>
+          <span class="eyebrow">Cal football</span>
+          <h2>Choose a game</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close game selector">×</button>
+      </div>
+      <div id="game-list" class="game-list"></div>
+    </form>
+  </dialog>
 
-<!-- Scripts -->
-<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
-<script src="js/app.js" defer></script><div class="safe-bottom-paint" aria-hidden="true"></div>
+  <footer class="site-footer">
+    <span>Fan-run and unaffiliated with UC Berkeley or Cal Athletics.</span>
+    <button id="about-button" class="text-button" type="button">About this preview</button>
+  </footer>
+
+  <dialog id="about-dialog" class="about-dialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-header">
+        <h2>About Cal Golden Bars v2</h2>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </div>
+      <p>This read-only milestone demonstrates game selection, venue discovery, Watch Party context, map/list navigation, venue details, directions, and sharing.</p>
+      <p><strong>I’ll be here</strong> check-ins, external venue creation, and contribution forms are intentionally reserved for later milestones.</p>
+    </form>
+  </dialog>
+
+  <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
