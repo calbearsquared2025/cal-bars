@@ -71,6 +71,36 @@ export function adjustFanCount(snapshot, gameId, venueId, delta) {
   setFanCount(snapshot, gameId, venueId, current + Number(delta || 0));
 }
 
+export function beginIntentTransaction(snapshot, selections, gameId, venueId, forcedAction = null) {
+  if (!snapshot || !gameId || !venueId) throw new Error('invalid_intent_transaction');
+  const previousSelections = { ...parseStoredSelections(selections) };
+  const previousFanCounts = snapshot.fanCounts.map((row) => ({ ...row }));
+  const currentVenueId = previousSelections[gameId] || null;
+  const action = forcedAction || intentAction(currentVenueId, venueId);
+  const nextVenueId = action === 'withdraw' ? null : venueId;
+  const nextSelections = withStoredSelection(previousSelections, gameId, nextVenueId);
+
+  if (currentVenueId && currentVenueId !== nextVenueId) {
+    adjustFanCount(snapshot, gameId, currentVenueId, -1);
+  }
+  if (nextVenueId && nextVenueId !== currentVenueId) {
+    adjustFanCount(snapshot, gameId, nextVenueId, 1);
+  }
+
+  return {
+    operation: { action, gameId, venueId },
+    previousSelections,
+    previousFanCounts,
+    nextSelections
+  };
+}
+
+export function rollbackIntentTransaction(snapshot, transaction) {
+  if (!snapshot || !transaction) return {};
+  snapshot.fanCounts = transaction.previousFanCounts.map((row) => ({ ...row }));
+  return { ...transaction.previousSelections };
+}
+
 export function applyAggregateResponse(snapshot, response) {
   if (!snapshot || !response || typeof response !== 'object') return false;
   if (!Array.isArray(response.fanCounts) || !Array.isArray(response.venueHistoryCounts)) return false;
@@ -83,7 +113,13 @@ export function applyAggregateResponse(snapshot, response) {
     venue_id: String(row.venue_id || ''),
     past_game_count: Math.max(0, Math.trunc(Number(row.past_game_count) || 0))
   })).filter((row) => row.venue_id);
+  if (response.generatedAt) snapshot.generatedAt = response.generatedAt;
   return true;
+}
+
+export function commitIntentResponse(snapshot, selections, gameId, response) {
+  if (!applyAggregateResponse(snapshot, response)) throw new Error('invalid_aggregate_response');
+  return withStoredSelection(selections, gameId, response.selection?.venue_id || null);
 }
 
 export function responseContainsPrivateKeys(value) {

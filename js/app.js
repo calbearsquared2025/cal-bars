@@ -23,6 +23,15 @@ import {
   venueBadgeDescriptors,
   venueTypeLabel
 } from './core.mjs';
+import {
+  activeFanIntentVenueId,
+  appState as state,
+  emitAppEvent,
+  markApplicationReady,
+  restoreSelectedVenueFromFanIntent,
+  setCanonicalSnapshot,
+  subscribeAppEvent
+} from './app-state.mjs';
 
 const MAPTILER_KEY = 'jNqIsIVa4dP9qv7vQ8fy';
 const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98cc3dbf3d7c/style.json?key=${MAPTILER_KEY}`;
@@ -32,25 +41,6 @@ const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').mat
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
 const TRAY_SWIPE_THRESHOLD = 48;
-
-const state = {
-  snapshot: null,
-  gameId: null,
-  selectedVenueId: null,
-  origin: null,
-  listQuery: '',
-  trayState: 'peek',
-  map: null,
-  markers: new Map(),
-  userMarker: null,
-  detailMode: false,
-  dataSource: 'fallback',
-  mapLayoutWaitFrames: 0,
-  mapLayoutFrame: null,
-  venueVisibilityFrame: null,
-  trayResizeObserver: null,
-  lastTraySize: ''
-};
 
 const dom = {};
 
@@ -64,6 +54,11 @@ function storageSet(key, value) {
 
 function storageRemove(key) {
   try { window.localStorage.removeItem(key); } catch (_) {}
+}
+
+function configuredEndpoint() {
+  return storageGet(DATA_URL_KEY)?.trim() ||
+    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
 }
 
 function cacheDom() {
@@ -105,6 +100,7 @@ function cacheDom() {
 }
 
 function showStatus(message, timeout = 2600) {
+  if (!dom.status) return;
   dom.status.textContent = message;
   dom.status.hidden = false;
   window.clearTimeout(showStatus.timer);
@@ -124,16 +120,14 @@ async function fetchJson(url, timeoutMs = 8000) {
 }
 
 async function loadSnapshot() {
-  const configured = storageGet(DATA_URL_KEY)?.trim() ||
-    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
+  const configured = configuredEndpoint();
 
   if (configured) {
     try {
       const live = await fetchJson(configured);
       if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
       storageSet(LAST_GOOD_KEY, JSON.stringify(live));
-      state.dataSource = 'live';
-      return live;
+      return setCanonicalSnapshot(live, 'live');
     } catch (error) {
       console.warn('Live snapshot unavailable; using last-known-good or fallback.', error);
     }
@@ -144,8 +138,7 @@ async function loadSnapshot() {
     try {
       const snapshot = JSON.parse(cached);
       if (validateSnapshotShape(snapshot)) {
-        state.dataSource = 'last-known-good';
-        return snapshot;
+        return setCanonicalSnapshot(snapshot, 'last-known-good');
       }
     } catch (error) {
       console.warn('Ignoring malformed last-known-good snapshot.', error);
@@ -154,8 +147,19 @@ async function loadSnapshot() {
 
   const fallback = await fetchJson('data/fallback-v2.json');
   if (!validateSnapshotShape(fallback)) throw new Error('Fallback snapshot is invalid');
-  state.dataSource = 'fallback';
-  return fallback;
+  return setCanonicalSnapshot(fallback, 'fallback');
+}
+
+async function refreshSnapshot({ restoreSelection = false } = {}) {
+  const endpoint = configuredEndpoint();
+  if (!endpoint || !state.snapshot) return false;
+  const live = await fetchJson(endpoint);
+  if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
+  storageSet(LAST_GOOD_KEY, JSON.stringify(live));
+  setCanonicalSnapshot(live, 'live');
+  if (restoreSelection) restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty: true });
+  renderAll();
+  return true;
 }
 
 function selectedGame() {
@@ -181,7 +185,11 @@ function initializeRoute() {
 }
 
 function updateRouteForGame() {
-  const url = new URL(buildGameUrl(state.gameId, location.href));
+  const venue = state.detailMode ? selectedVenue() : null;
+  const nextUrl = venue
+    ? buildVenueUrl(venue.slug, state.gameId, location.href)
+    : buildGameUrl(state.gameId, location.href);
+  const url = new URL(nextUrl);
   history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
 }
 
@@ -195,13 +203,31 @@ function renderHeaderAndStats() {
   if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(game)} locations`;
 }
 
+function selectGame(gameId) {
+  state.gameId = gameId;
+  state.listQuery = '';
+  state.origin = null;
+  dom.searchInput.value = '';
+  if (state.detailMode) {
+    state.selectedVenueId = selectedVenue()?.venue_id || state.selectedVenueId;
+  } else {
+    state.selectedVenueId = activeFanIntentVenueId(gameId);
+    setTrayState(state.selectedVenueId ? 'selected' : 'peek');
+  }
+  updateRouteForGame();
+  renderAll();
+  renderUserMarker();
+}
+
 function renderGameDialog() {
   dom.gameList.replaceChildren();
-  const games = [...state.snapshot.games].sort((a, b) => Number(a.season) - Number(b.season) || Number(a.schedule_order) - Number(b.schedule_order));
+  const games = [...state.snapshot.games].sort((a, b) =>
+    Number(a.season) - Number(b.season) || Number(a.schedule_order) - Number(b.schedule_order));
   games.forEach((game) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'game-option';
+    button.dataset.gameId = game.game_id;
     button.dataset.selected = String(game.game_id === state.gameId);
     const gameInfo = document.createElement('span');
     const gameName = document.createElement('strong');
@@ -214,15 +240,7 @@ function renderGameDialog() {
     status.textContent = game.game_status;
     button.append(gameInfo, status);
     button.addEventListener('click', () => {
-      state.gameId = game.game_id;
-      state.selectedVenueId = null;
-      state.listQuery = '';
-      state.origin = null;
-      dom.searchInput.value = '';
-      setTrayState('peek');
-      updateRouteForGame();
-      renderAll();
-      renderUserMarker();
+      selectGame(game.game_id);
       dom.gameDialog.close();
     });
     dom.gameList.append(button);
@@ -293,9 +311,7 @@ function initMap() {
   }
   state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
   state.map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
-  state.map.on('error', (event) => {
-    console.warn('Map error', event?.error || event);
-  });
+  state.map.on('error', (event) => console.warn('Map error', event?.error || event));
   state.map.on('load', renderMarkers);
   new ResizeObserver(() => state.map?.resize()).observe(dom.map);
 }
@@ -353,10 +369,7 @@ function mapVisibilityMetrics() {
     }
   }
 
-  return {
-    viewport: { width: mapRect.width, height: mapRect.height },
-    insets
-  };
+  return { viewport: { width: mapRect.width, height: mapRect.height }, insets };
 }
 
 function panToVenue(venue) {
@@ -368,10 +381,7 @@ function panToVenue(venue) {
 
   const currentZoom = state.map.getZoom();
   const centerPoint = state.map.project(state.map.getCenter());
-  const nextCenter = state.map.unproject([
-    centerPoint.x - offset.x,
-    centerPoint.y - offset.y
-  ]);
+  const nextCenter = state.map.unproject([centerPoint.x - offset.x, centerPoint.y - offset.y]);
   state.map.easeTo({
     center: nextCenter,
     zoom: currentZoom,
@@ -390,7 +400,6 @@ function clearVenueVisibilitySchedule() {
 function scheduleSelectedVenueVisibility() {
   clearVenueVisibilitySchedule();
   if (!state.map || !state.selectedVenueId || state.detailMode) return;
-
   state.venueVisibilityFrame = requestAnimationFrame(() => {
     state.venueVisibilityFrame = requestAnimationFrame(() => {
       state.venueVisibilityFrame = null;
@@ -420,6 +429,7 @@ function selectVenue(venueId) {
   renderMarkers();
   renderTray();
   scheduleSelectedVenueVisibility();
+  emitRendered();
 }
 
 function trayHandleLabel(next) {
@@ -431,6 +441,7 @@ function trayHandleLabel(next) {
 function setTrayState(next) {
   const changed = state.trayState !== next;
   state.trayState = next;
+  if (!dom.tray) return changed;
   dom.tray.dataset.state = next;
   dom.tray.className = `venue-tray tray--${next}`;
   dom.trayHandle.setAttribute('aria-expanded', String(next !== 'peek'));
@@ -492,7 +503,9 @@ function appendWatchParty(container, party) {
     const start = new Date(party.event_start_at);
     if (!Number.isNaN(start.getTime())) {
       const line = document.createElement('p');
-      line.textContent = `Arrive ${new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' }).format(start)}`;
+      line.textContent = `Arrive ${new Intl.DateTimeFormat(undefined, {
+        hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+      }).format(start)}`;
       module.append(line);
     }
   }
@@ -529,10 +542,12 @@ function appendWatchParty(container, party) {
 function createActionRow(venue, { details = true } = {}) {
   const row = document.createElement('div');
   row.className = 'action-row';
+  row.dataset.venueId = venue.venue_id;
 
   const intent = document.createElement('button');
   intent.type = 'button';
   intent.className = 'primary-button intent-button';
+  intent.dataset.venueId = venue.venue_id;
   intent.textContent = 'I’ll be here';
   intent.disabled = true;
   row.append(intent);
@@ -559,7 +574,6 @@ function createActionRow(venue, { details = true } = {}) {
   share.textContent = 'Share';
   share.addEventListener('click', () => shareVenue(venue));
   row.append(share);
-
   return row;
 }
 
@@ -574,9 +588,7 @@ function legacyCopyUrl(url) {
   proxy.select();
   proxy.setSelectionRange(0, proxy.value.length);
   let copied = false;
-  try {
-    copied = typeof document.execCommand === 'function' && document.execCommand('copy') === true;
-  } catch (_) {}
+  try { copied = typeof document.execCommand === 'function' && document.execCommand('copy') === true; } catch (_) {}
   proxy.remove();
   return copied;
 }
@@ -606,10 +618,7 @@ function showManualCopy(url) {
   select.type = 'button';
   select.className = 'primary-button';
   select.textContent = 'Select link';
-  select.addEventListener('click', () => {
-    input.focus();
-    input.select();
-  });
+  select.addEventListener('click', () => { input.focus(); input.select(); });
   const close = document.createElement('button');
   close.type = 'button';
   close.className = 'secondary-button';
@@ -644,11 +653,8 @@ async function shareVenue(venue) {
     legacyCopy: legacyCopyUrl
   });
 
-  if (result.method === 'clipboard' || result.method === 'legacy-copy') {
-    showStatus('Link copied');
-  } else if (result.method === 'manual') {
-    showManualCopy(result.url);
-  }
+  if (result.method === 'clipboard' || result.method === 'legacy-copy') showStatus('Link copied');
+  else if (result.method === 'manual') showManualCopy(result.url);
 }
 
 function renderSelectedCard() {
@@ -665,6 +671,7 @@ function renderSelectedCard() {
 
   const card = document.createElement('article');
   card.className = 'selected-card';
+  card.dataset.venueId = venue.venue_id;
   const header = document.createElement('div');
   header.className = 'selected-card__header';
   const heading = document.createElement('div');
@@ -737,6 +744,7 @@ function renderLocationList(query = state.listQuery) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'location-card';
+    button.dataset.venueId = venue.venue_id;
     button.dataset.selected = String(venue.venue_id === state.selectedVenueId);
     const top = document.createElement('div');
     top.className = 'location-card__top';
@@ -788,6 +796,7 @@ function renderDetailView() {
   const history = getHistoryCount(state.snapshot, venue.venue_id);
 
   dom.venueDetail.replaceChildren();
+  dom.venueDetail.dataset.venueId = venue.venue_id;
   const hero = document.createElement('header');
   hero.className = 'detail-hero';
   hero.append(createBadges(venue, party));
@@ -800,7 +809,8 @@ function renderDetailView() {
   hero.append(city);
   const address = document.createElement('p');
   address.className = 'detail-address';
-  address.textContent = [venue.address_line_1, venue.address_line_2, venue.city, venue.region, venue.postal_code].filter(Boolean).join(', ');
+  address.textContent = [venue.address_line_1, venue.address_line_2, venue.city, venue.region, venue.postal_code]
+    .filter(Boolean).join(', ');
   hero.append(address);
   dom.venueDetail.append(hero);
 
@@ -854,18 +864,36 @@ function renderDetailView() {
   dom.venueDetail.append(note);
 }
 
+function emitRendered() {
+  emitAppEvent('rendered', {
+    snapshot: state.snapshot,
+    gameId: state.gameId,
+    selectedVenueId: state.selectedVenueId,
+    detailMode: state.detailMode
+  });
+}
+
 function renderAll() {
+  if (!state.snapshot) return;
   renderHeaderAndStats();
   renderGameDialog();
   if (state.detailMode) {
     renderDetailView();
-    return;
+  } else {
+    dom.mapView.hidden = false;
+    dom.detailView.hidden = true;
+    renderTray();
+    if (state.map) renderMarkers();
+    else initMap();
   }
-  dom.mapView.hidden = false;
-  dom.detailView.hidden = true;
-  renderTray();
-  if (state.map) renderMarkers();
-  else initMap();
+  emitRendered();
+}
+
+function restoreSelection({ preserveCurrentWhenEmpty = false } = {}) {
+  const before = state.selectedVenueId;
+  restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty });
+  if (!state.detailMode) setTrayState(state.trayState);
+  return before !== state.selectedVenueId;
 }
 
 async function geocode(query) {
@@ -913,6 +941,7 @@ async function runSearch(query) {
     renderMarkers();
     setTrayState('full');
     showStatus(`${mappedMatches.length} mapped ${mappedMatches.length === 1 ? 'location matches' : 'locations match'} your search`);
+    emitRendered();
     return;
   }
 
@@ -925,11 +954,16 @@ async function runSearch(query) {
     renderLocationList();
     renderMarkers();
     setTrayState('full');
-    state.map?.easeTo({ center: [state.origin.lon, state.origin.lat], zoom: 10, duration: REDUCED_MOTION ? 0 : 500 });
+    state.map?.easeTo({
+      center: [state.origin.lon, state.origin.lat],
+      zoom: 10,
+      duration: REDUCED_MOTION ? 0 : 500
+    });
     showStatus(nearby.length
       ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`
       : `No listed locations within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`);
-  } catch (error) {
+    emitRendered();
+  } catch (_) {
     showStatus('Location not found');
   }
 }
@@ -941,6 +975,7 @@ function renderSuggestions() {
     state.listQuery = '';
     dom.suggestions.hidden = true;
     renderLocationList();
+    emitRendered();
     return;
   }
 
@@ -949,11 +984,12 @@ function renderSuggestions() {
     const button = document.createElement('button');
     button.type = 'button';
     button.setAttribute('role', 'option');
+    button.dataset.venueId = venue.venue_id;
     const name = document.createElement('strong');
     name.textContent = venue.name;
-    const location = document.createElement('span');
-    location.textContent = `${party ? 'Watch Party · ' : ''}${venue.city}, ${venue.region}`;
-    button.append(name, location);
+    const locationLine = document.createElement('span');
+    locationLine.textContent = `${party ? 'Watch Party · ' : ''}${venue.city}, ${venue.region}`;
+    button.append(name, locationLine);
     button.addEventListener('click', () => {
       dom.searchInput.value = venue.name;
       state.origin = null;
@@ -969,6 +1005,7 @@ function renderSuggestions() {
   state.listQuery = query;
   renderLocationList();
   renderMarkers();
+  emitRendered();
 }
 
 function clearSearchResults() {
@@ -981,17 +1018,14 @@ function clearSearchResults() {
   renderMarkers();
   setTrayState('full');
   showStatus('Showing all mapped locations');
+  emitRendered();
 }
 
 function wireTrayDrag() {
   let startY = null;
   let pointerId = null;
   let suppressNextClick = false;
-
-  const reset = () => {
-    startY = null;
-    pointerId = null;
-  };
+  const reset = () => { startY = null; pointerId = null; };
 
   dom.trayHandle.addEventListener('pointerdown', (event) => {
     startY = event.clientY;
@@ -1058,11 +1092,16 @@ function wireEvents() {
       renderLocationList();
       renderMarkers();
       setTrayState('full');
-      state.map?.easeTo({ center: [state.origin.lon, state.origin.lat], zoom: 11, duration: REDUCED_MOTION ? 0 : 500 });
+      state.map?.easeTo({
+        center: [state.origin.lon, state.origin.lat],
+        zoom: 11,
+        duration: REDUCED_MOTION ? 0 : 500
+      });
       dom.nearMe.disabled = false;
       showStatus(nearby.length
         ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
         : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
+      emitRendered();
     }, () => {
       dom.nearMe.disabled = false;
       showStatus('Location permission was not available');
@@ -1091,13 +1130,12 @@ async function boot() {
   cacheDom();
   wireEvents();
   try {
-    state.snapshot = await loadSnapshot();
+    await loadSnapshot();
     initializeRoute();
     renderAll();
     dom.app.setAttribute('aria-busy', 'false');
-    if (state.dataSource !== 'live') {
-      console.info(`CGB v2 using ${state.dataSource} data.`);
-    }
+    markApplicationReady();
+    if (state.dataSource !== 'live') console.info(`CGB v2 using ${state.dataSource} data.`);
   } catch (error) {
     console.error(error);
     dom.app.setAttribute('aria-busy', 'false');
@@ -1105,6 +1143,17 @@ async function boot() {
     dom.mapFallback.hidden = false;
   }
 }
+
+window.CGBApp = Object.freeze({
+  getState: () => state,
+  getSnapshot: () => state.snapshot,
+  render: renderAll,
+  refreshSnapshot,
+  restoreSelection,
+  selectGame,
+  showStatus,
+  subscribe: subscribeAppEvent
+});
 
 window.CGBPreview = Object.freeze({
   setDataEndpoint(url) {

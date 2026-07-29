@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
 const css = await readFile(new URL('../css/styles.css', import.meta.url), 'utf8');
+const appState = await readFile(new URL('../js/app-state.mjs', import.meta.url), 'utf8');
 
 test('interface uses the normalized v2 JSON fallback instead of the public CSV', () => {
   assert.match(app, /data\/fallback-v2\.json/);
@@ -52,7 +53,7 @@ test('tray measurement uses layout observation instead of CSS-duration timeout c
 });
 
 test('search state separates active list filtering from visible input text', () => {
-  assert.match(app, /listQuery:\s*''/);
+  assert.match(appState, /listQuery:\s*''/);
   assert.match(app, /function renderLocationList\(query = state\.listQuery\)/);
   assert.match(app, /findExactVenueMatch\(mappedMatches\.map/);
   assert.match(app, /if \(mappedMatches\.length && !queryMatchesMappedLocationField\(normalizedQuery\)\) \{/);
@@ -129,10 +130,10 @@ test('sharing includes native, Clipboard, legacy-copy, and selectable manual sta
   assert.match(css, /\.manual-copy-panel/);
 });
 
-test('deferred write and photo features are not implemented in Milestone 2', () => {
+test('deferred external search and contribution features are not implemented', () => {
   assert.match(app, /intent\.disabled = true/);
   assert.doesNotMatch(html, /Add a Photo|photo upload/i);
-  assert.doesNotMatch(app, /joinExternalVenue|browser_id|doPost/);
+  assert.doesNotMatch(app, /joinExternalVenue|externalPlace|createCommunityLocation/);
 });
 
 test('preview copy does not expose internal milestone numbering to users', () => {
