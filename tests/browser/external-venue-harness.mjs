@@ -5,6 +5,7 @@ import {
 } from '../../js/app-state.mjs';
 
 const result = document.querySelector('#harness-result');
+const searchForm = document.querySelector('#location-search');
 const searchInput = document.querySelector('#location-query');
 const suggestions = document.querySelector('#search-suggestions');
 const dialog = document.querySelector('#external-venue-dialog');
@@ -24,6 +25,32 @@ async function waitFor(predicate, message, timeout = 3000) {
     if (performance.now() - startedAt > timeout) throw new Error(message);
     await wait(25);
   }
+}
+
+function feature({
+  id = 'poi.98765',
+  name = "McNally's Irish Pub",
+  address = '5352 College Ave',
+  city = 'Oakland',
+  region = 'California',
+  postalCode = '94618',
+  longitude = -122.252,
+  latitude = 37.839
+} = {}) {
+  return {
+    id,
+    type: 'Feature',
+    place_type: ['poi'],
+    text: name,
+    place_name: `${name}, ${address}, ${city}, ${region} ${postalCode}, United States`,
+    center: [longitude, latitude],
+    context: [
+      { id: `place.${city.toLowerCase()}`, text: city },
+      { id: `region.${region.toLowerCase()}`, text: region, short_code: 'US-CA' },
+      { id: `postcode.${postalCode}`, text: postalCode },
+      { id: 'country.us', text: 'United States', short_code: 'us' }
+    ]
+  };
 }
 
 const existingVenue = {
@@ -70,6 +97,19 @@ const canonicalExternalVenue = {
   updated_at: '2026-07-29T05:01:00.000Z'
 };
 
+const canonicalSecondVenue = {
+  ...canonicalExternalVenue,
+  venue_id: 'venue_created_2',
+  slug: 'second-external-pub-berkeley',
+  name: 'Second External Pub',
+  address_line_1: '900 Second St',
+  city: 'Berkeley',
+  postal_code: '94710',
+  latitude: 37.87,
+  longitude: -122.3,
+  updated_at: '2026-07-29T05:02:00.000Z'
+};
+
 setCanonicalSnapshot({
   schemaVersion: '2.0',
   venues: [existingVenue],
@@ -81,6 +121,9 @@ setCanonicalSnapshot({
 }, 'harness');
 appState.gameId = 'game_1';
 appState.fanIntent.browserId = 'browser_1234567890abcdef';
+
+let throwPostSuccessRender = false;
+let throwMapMovement = false;
 appState.map = {
   getStyle() {
     return {
@@ -91,62 +134,79 @@ appState.map = {
       }
     };
   },
-  easeTo() {}
+  easeTo() {
+    if (throwMapMovement) throw new Error('mock_map_movement_failed');
+  }
 };
 
 let renderCount = 0;
 let backendCallCount = 0;
 let receivedWrite = null;
+let lastStatus = '';
 window.CGBApp = Object.freeze({
-  render() { renderCount += 1; },
-  showStatus() {}
+  render() {
+    renderCount += 1;
+    if (throwPostSuccessRender && backendCallCount >= 2) throw new Error('mock_post_success_render_failed');
+  },
+  showStatus(message) { lastStatus = message; }
 });
 window.matchMedia = window.matchMedia || (() => ({ matches: false }));
 
+let delayedSearchResolve = null;
 window.fetch = async (url, options = {}) => {
   const parsed = new URL(String(url));
   if (parsed.hostname === 'api.maptiler.com') {
-    return new Response(JSON.stringify({
-      features: [{
-        id: 'poi.98765',
-        type: 'Feature',
-        place_type: ['poi'],
-        text: "McNally's Irish Pub",
-        place_name: "McNally's Irish Pub, 5352 College Ave, Oakland, California 94618, United States",
-        center: [-122.252, 37.839],
-        context: [
-          { id: 'place.oakland', text: 'Oakland' },
-          { id: 'region.california', text: 'California', short_code: 'US-CA' },
-          { id: 'postcode.94618', text: '94618' },
-          { id: 'country.us', text: 'United States', short_code: 'us' }
-        ]
-      }]
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    const query = decodeURIComponent(parsed.pathname);
+    if (query.includes('Delayed Existing')) {
+      return new Promise((resolve) => {
+        delayedSearchResolve = () => resolve(new Response(JSON.stringify({
+          features: [feature({ id: 'poi.delayed', name: 'Delayed External Pub' })]
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+      });
+    }
+    const selectedFeature = query.includes('Second Berkeley')
+      ? feature({
+          id: 'poi.22222',
+          name: 'Second External Pub',
+          address: '900 Second St',
+          city: 'Berkeley',
+          postalCode: '94710',
+          longitude: -122.3,
+          latitude: 37.87
+        })
+      : feature();
+    return new Response(JSON.stringify({ features: [selectedFeature] }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   if (parsed.hostname === 'mock.cgb.invalid') {
     backendCallCount += 1;
     receivedWrite = JSON.parse(options.body);
+    const venue = receivedWrite.externalPlace.placeId === 'poi.22222'
+      ? canonicalSecondVenue
+      : canonicalExternalVenue;
     return new Response(JSON.stringify({
       ok: true,
       action: 'joinExternalVenue',
       schemaVersion: '2.0',
-      venue: canonicalExternalVenue,
+      venue,
       selection: {
         game_id: 'game_1',
-        venue_id: canonicalExternalVenue.venue_id,
+        venue_id: venue.venue_id,
         status: 'attending'
       },
       fanCounts: [{
         game_id: 'game_1',
-        venue_id: canonicalExternalVenue.venue_id,
+        venue_id: venue.venue_id,
         count: 1
       }],
       venueHistoryCounts: [{
-        venue_id: canonicalExternalVenue.venue_id,
+        venue_id: venue.venue_id,
         past_game_count: 0
       }],
-      generatedAt: '2026-07-29T05:01:00.000Z'
+      generatedAt: '2026-07-29T05:02:00.000Z'
     }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   }
 
@@ -156,6 +216,15 @@ window.fetch = async (url, options = {}) => {
 try {
   markApplicationReady();
   await import('../../js/external-venue-search.js');
+
+  searchInput.value = 'Delayed Existing';
+  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(() => delayedSearchResolve, 'Delayed external request did not start');
+  searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  delayedSearchResolve();
+  await wait(50);
+  assert(!suggestions.querySelector('.external-place-result'), 'Stale external results reopened after search submit');
+  assert(!suggestions.querySelector('.search-result-group--external'), 'Stale external group remained after search submit');
 
   searchInput.value = 'McNally Oakland';
   searchInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -191,6 +260,25 @@ try {
   assert(appState.snapshot.fanCounts[0].count === 1, 'Authoritative count was not applied');
   assert(renderCount > 0, 'Shared render path was not invoked');
   assert(!dialog.open, 'Confirmation dialog remained open after success');
+
+  throwPostSuccessRender = true;
+  throwMapMovement = true;
+  searchInput.value = 'Second Berkeley';
+  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(
+    () => suggestions.querySelector('[data-external-place-id="poi.22222"]'),
+    'Second external result did not render'
+  );
+  suggestions.querySelector('[data-external-place-id="poi.22222"]').click();
+  confirmButton.click();
+  await waitFor(
+    () => appState.selectedVenueId === canonicalSecondVenue.venue_id,
+    'Successful write was not committed when post-success UI effects threw'
+  );
+  assert(backendCallCount === 2, 'Second combined write was not sent exactly once');
+  assert(!dialog.open, 'Confirmation remained open after successful write with UI exceptions');
+  assert(window.CGBExternalVenueSearch.getState().retry === null, 'Successful write incorrectly retained retry state');
+  assert(!/Nothing was created|Could not add/.test(lastStatus), 'Successful write displayed creation-failure copy');
 
   document.documentElement.dataset.harness = 'pass';
   result.textContent = 'M4B_BROWSER_HARNESS_PASS';
