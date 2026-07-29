@@ -41,6 +41,7 @@ jobs:
           node --check js/fan-intent-controller.mjs
           node --check js/external-venue-search.js
           node --check js/external-venue-core.mjs
+          node --check scripts/scan-private-values.mjs
 
       - name: Check combined Apps Script syntax
         run: |
@@ -55,7 +56,4 @@ jobs:
         run: git diff --check origin/main...HEAD
 
       - name: Scan committed source for private values
-        run: |
-          ! grep -RIE --exclude-dir=.git --exclude='*.test.mjs' \
-            '(browser_[A-Za-z0-9_-]{16,}|submitter_email[[:space:]]*[:=][[:space:]]*["'"'][^"'"']+|CGB_WORKBOOK_ID[[:space:]]*=[[:space:]]*["'"'][^"'"']+)' \
-            .
+        run: node scripts/scan-private-values.mjs
