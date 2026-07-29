@@ -14,6 +14,22 @@ const CGB_EXTERNAL_FAN_HEADERS = Object.freeze([
   'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
   'created_at', 'updated_at', 'archived_at'
 ]);
+const CGB_US_REGION_CODES = Object.freeze({
+  alabama: 'al', alaska: 'ak', arizona: 'az', arkansas: 'ar', california: 'ca',
+  colorado: 'co', connecticut: 'ct', delaware: 'de', florida: 'fl', georgia: 'ga',
+  hawaii: 'hi', idaho: 'id', illinois: 'il', indiana: 'in', iowa: 'ia', kansas: 'ks',
+  kentucky: 'ky', louisiana: 'la', maine: 'me', maryland: 'md', massachusetts: 'ma',
+  michigan: 'mi', minnesota: 'mn', mississippi: 'ms', missouri: 'mo', montana: 'mt',
+  nebraska: 'ne', nevada: 'nv', 'new hampshire': 'nh', 'new jersey': 'nj',
+  'new mexico': 'nm', 'new york': 'ny', 'north carolina': 'nc', 'north dakota': 'nd',
+  ohio: 'oh', oklahoma: 'ok', oregon: 'or', pennsylvania: 'pa', 'rhode island': 'ri',
+  'south carolina': 'sc', 'south dakota': 'sd', tennessee: 'tn', texas: 'tx',
+  utah: 'ut', vermont: 'vt', virginia: 'va', washington: 'wa',
+  'west virginia': 'wv', wisconsin: 'wi', wyoming: 'wy',
+  'district of columbia': 'dc', 'puerto rico': 'pr', guam: 'gu',
+  'american samoa': 'as', 'northern mariana islands': 'mp',
+  'united states virgin islands': 'vi', 'u s virgin islands': 'vi'
+});
 
 function parseJoinExternalVenueRequest_(event) {
   const contents = event && event.postData && event.postData.contents;
@@ -233,14 +249,32 @@ function slugifyExternalVenue_(value) {
     .replace(/-+/g, '-');
 }
 
+function normalizeExternalComparableText_(value) {
+  let text = cleanExternalText_(value, 240);
+  try { text = text.normalize('NFKD'); } catch (_) {}
+  return text
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function normalizeExternalRegion_(region, countryCode) {
+  const normalized = normalizeExternalComparableText_(region);
+  if (normalizeExternalComparableText_(countryCode) !== 'us') return normalized;
+  if (/^[a-z]{2}$/.test(normalized)) return normalized;
+  return CGB_US_REGION_CODES[normalized] || normalized;
+}
+
 function normalizeExternalAddressParts_(row) {
+  const countryCode = row && row.country_code;
   const joined = [
     row && row.address_line_1,
     row && row.address_line_2,
     row && row.city,
-    row && row.region,
+    normalizeExternalRegion_(row && row.region, countryCode),
     row && row.postal_code,
-    row && row.country_code
+    countryCode
   ].map(function(value) { return cleanExternalText_(value, 240); }).filter(Boolean).join(' ');
   let text = joined;
   try { text = text.normalize('NFKD'); } catch (_) {}
