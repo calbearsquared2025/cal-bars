@@ -2,11 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildMapTilerPostalSearchUrl,
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
   findExistingMapTilerKey,
+  mappedLocationFieldMatches,
   normalizeMapTilerFeature,
+  normalizeMapTilerPostalOrigin,
   normalizeMapTilerResults,
   upsertCanonicalVenue,
   validateJoinExternalVenueResponse
@@ -34,7 +37,7 @@ const publicVenue = {
   address_line_1: '5352 College Ave',
   address_line_2: '',
   city: 'Oakland',
-  region: 'California',
+  region: 'CA',
   postal_code: '94618',
   country_code: 'US',
   latitude: 37.839,
@@ -68,18 +71,43 @@ test('MapTiler POI results normalize into the narrow external-place shape', () =
     source: 'maptiler',
     placeId: 'poi.98765',
     name: "McNally's Irish Pub",
-    address: '5352 College Ave, Oakland, California 94618, United States',
+    address: '5352 College Ave, Oakland, CA 94618, United States',
     addressLine1: '5352 College Ave',
     addressLine2: '',
     city: 'Oakland',
-    region: 'California',
+    region: 'CA',
     postalCode: '94618',
     countryCode: 'US',
     latitude: 37.839,
     longitude: -122.252,
-    locationContext: 'Oakland, California, United States',
+    locationContext: 'Oakland, CA, United States',
     placeType: 'poi'
   });
+});
+
+test('US administrative hierarchy prefers municipality and state over neighborhood and county', () => {
+  const twoPitchers = {
+    id: 'poi.64751681',
+    type: 'Feature',
+    place_type: ['poi'],
+    text: 'Two Pitchers Brewing Company',
+    place_name: 'Two Pitchers Brewing Company, 2344 Webster Street, Northlake, Oakland, Alameda, California 94612, United States',
+    center: [-122.2648491, 37.81296092],
+    context: [
+      { id: 'place.northlake', text: 'Northlake', place_designation: 'neighbourhood' },
+      { id: 'municipality.oakland', text: 'Oakland', place_designation: 'city' },
+      { id: 'county.alameda', text: 'Alameda' },
+      { id: 'region.california', text: 'California', short_code: 'US-CA' },
+      { id: 'postal_code.94612', text: '94612' },
+      { id: 'country.us', text: 'United States', short_code: 'us' }
+    ]
+  };
+
+  const normalized = normalizeMapTilerFeature(twoPitchers);
+  assert.equal(normalized.city, 'Oakland');
+  assert.equal(normalized.region, 'CA');
+  assert.equal(normalized.address, '2344 Webster Street, Oakland, CA 94612, United States');
+  assert.equal(normalized.locationContext, 'Oakland, CA, United States');
 });
 
 test('normalization requires a concrete POI or address with canonical address context', () => {
@@ -96,6 +124,48 @@ test('MapTiler request uses the existing public key, concrete result types, auto
   assert.equal(url.searchParams.get('types'), 'poi,address');
   assert.equal(url.searchParams.get('autocomplete'), 'true');
   assert.equal(url.searchParams.get('limit'), '10');
+});
+
+test('submitted US ZIP geocoding is restricted to an exact US postal-code result', () => {
+  const url = new URL(buildMapTilerPostalSearchUrl('94612', 'existing-public-key'));
+  assert.equal(url.searchParams.get('country'), 'us');
+  assert.equal(url.searchParams.get('types'), 'postal_code');
+  assert.equal(url.searchParams.get('autocomplete'), 'false');
+
+  const origin = normalizeMapTilerPostalOrigin({
+    features: [
+      {
+        id: 'postal_code.94612',
+        place_type: ['postal_code'],
+        text: '94612',
+        place_name: '94612, Oakland, California, United States',
+        center: [-122.271, 37.805],
+        context: [{ id: 'country.us', text: 'United States', short_code: 'us' }]
+      }
+    ]
+  }, '94612');
+  assert.deepEqual(origin, { lat: 37.805, lon: -122.271, label: '94612, Oakland, California, United States' });
+  assert.equal(normalizeMapTilerPostalOrigin({ features: [{
+    id: 'postal_code.94613',
+    place_type: ['postal_code'],
+    text: '94613',
+    center: [-122.2, 37.8],
+    context: [{ id: 'country.us', text: 'United States', short_code: 'us' }]
+  }] }, '94612'), null);
+});
+
+test('exact mapped city and ZIP matches are resolved before area geocoding', () => {
+  const snapshot = {
+    venues: [
+      { venue_id: 'one', city: 'Oakland', region: 'CA', postal_code: '94612' },
+      { venue_id: 'two', city: 'Oakland', region: 'CA', postal_code: '94612' },
+      { venue_id: 'three', city: 'Berkeley', region: 'CA', postal_code: '94704' }
+    ]
+  };
+  assert.deepEqual(mappedLocationFieldMatches(snapshot, '94612').map((venue) => venue.venue_id), ['one', 'two']);
+  assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland').map((venue) => venue.venue_id), ['one', 'two']);
+  assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland, CA').map((venue) => venue.venue_id), ['one', 'two']);
+  assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Two Pitchers').map((venue) => venue.venue_id), []);
 });
 
 test('frontend reuses the key already present in MapTiler resource requests', () => {
