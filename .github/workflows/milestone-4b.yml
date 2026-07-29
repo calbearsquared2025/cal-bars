@@ -17,11 +17,13 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Run complete test suite
         run: npm test
@@ -50,7 +52,7 @@ jobs:
           node --check /tmp/cgb-apps-script.js
 
       - name: Check diff formatting
-        run: git diff --check HEAD^
+        run: git diff --check origin/main...HEAD
 
       - name: Scan committed source for private values
         run: |
