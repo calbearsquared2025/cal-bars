@@ -28,6 +28,14 @@ export const appState = {
     selections: {},
     pending: null,
     retry: null
+  },
+  externalSearch: {
+    query: '',
+    results: [],
+    selected: null,
+    pending: false,
+    retry: null,
+    error: null
   }
 };
 
@@ -110,4 +118,10 @@ export function resetAppStateForTests() {
   appState.fanIntent.selections = {};
   appState.fanIntent.pending = null;
   appState.fanIntent.retry = null;
+  appState.externalSearch.query = '';
+  appState.externalSearch.results = [];
+  appState.externalSearch.selected = null;
+  appState.externalSearch.pending = false;
+  appState.externalSearch.retry = null;
+  appState.externalSearch.error = null;
 }
