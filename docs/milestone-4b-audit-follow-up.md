@@ -23,9 +23,17 @@ Automated coverage includes the actual Two Pitchers hierarchy shape, mapped `946
 
 Keep the original Two Pitchers row and associated Fan Intent intact only until the focused retest is complete. Because the row was created before the parser correction, the code change does not rewrite its stored city, region, or slug. After the corrected result is verified, deliberately repair that row or remove and recreate it while preserving Fan Intent integrity.
 
-## External website metadata decision
+## External venue enrichment decision
 
-MapTiler's documented Search and Geocoding response does not define a stable website field. POI `feature_tags` are experimental, their keys are unspecified, and a website value is not guaranteed. PR #14 therefore continues leaving `website_url` blank for newly created MapTiler venues rather than depending on undocumented metadata.
+MapTiler place search provides the location identity and address needed to create a Community Location, but it does not provide dependable canonical values for the enrichment fields used by CGB:
+
+- `website_url`
+- `photo_url` and `photo_credit`
+- `short_description`
+
+MapTiler's documented Search and Geocoding response does not define a stable website field. POI `feature_tags` are experimental, their keys are unspecified, and a website value is not guaranteed. Photos and an editorial Cal-focused description are also outside the dependable MapTiler result contract. PR #14 therefore leaves these fields blank for newly created MapTiler venues rather than inventing values or depending on undocumented metadata.
+
+The missing values should be supplied later through approved contribution and curation paths: **Suggest an Update** for factual venue information such as a website, **Add a Photo** with permission review, and an edited CGB description derived from a Cal Bar nomination or other reviewed supporting information.
 
 Google Places exposes a supported `websiteUri`, but it is an Enterprise-tier Places field and Google restricts storage of Places content other than specified exceptions such as Place IDs. Google Places data also carries billing, key-management, attribution, privacy-policy, and map-display requirements. A narrow call solely to persist a venue website would therefore conflict with the current durable Google Sheet record model and the locked MapLibre/MapTiler architecture. Google Places is not added in PR #14. Reconsider it only through a separate approved architecture and licensing review.
 
@@ -44,10 +52,14 @@ After the focused hierarchy and ZIP retest passes, these findings should still b
 
 - Resolve the documented scheduling conflict for the missing-location fallback. Milestone 4B contains the exact copy and an HTTPS-only configuration point; Milestone 6 should create/configure the actual form and prefilled venue/game parameters.
 - Update the canonical Development Workflow so it clearly states that Milestone 4 owns the link integration point and Milestone 6 owns form construction and final URL configuration.
+- Add the approved contribution paths that fill MapTiler enrichment gaps: **Suggest an Update** for website and factual corrections, **Add a Photo** for reviewed authorized images, and reviewed editorial description updates where useful.
+- Do not allow a submitter or external API to directly mark a newly created venue as a Cal Bar. The locked model requires every external addition to begin as a Community Location and reserves Cal Bar designation for CGB review.
+- Address the current UX gap by making **Think this is a Cal bar? Nominate as a Cal Bar** available contextually after creation and on the Community Location detail view, with the venue ID and name prefilled.
 
 ## Review during Milestone 7 launch hardening
 
 - Expand full-frontend browser coverage for external creation followed by Undo, move, refresh, future-game browsing, direct venue/game routing, and sharing.
+- Evaluate a lightweight post-selection sharing prompt after a successful **I’ll be here** action. Non-final concept: **Meeting a friend there? Share this location so they can check in too.** It should invoke the existing native-share/copy-link flow, preserve venue and selected-game context, and avoid blocking the successful check-in state.
 - Exercise failure injection after partial Fan Intent updates, during response construction, and during rollback itself. Google Sheets rollback remains best-effort compensating behavior rather than a true transaction.
 - Review the public creation endpoint for practical abuse, malformed-but-valid place payloads, monitoring, and rate-limiting needs. Complex abuse prevention remains deferred unless launch evidence requires it.
 - Replace runtime MapTiler-key discovery with a clearer shared public configuration value if live-browser evidence shows the resource/style scan to be unreliable.
