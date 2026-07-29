@@ -12,16 +12,16 @@ The following material defects were corrected in the current draft PR:
 
 Focused regression coverage was added for the state-name/address comparison, stale external-search invalidation, and successful writes followed by rendering or map exceptions.
 
-## Manual-acceptance defects corrected; retest required
+## Manual-acceptance defects corrected and accepted
 
-Manual testing on July 29, 2026 found two additional material failures. Both are corrected in the draft branch but remain acceptance blockers until Matthew completes the focused retest:
+Manual testing on July 29, 2026 found two additional material failures. Both were corrected, and Matthew's focused physical-device retest confirmed the expected behavior:
 
-1. **External administrative hierarchy:** the MapTiler parser now uses administrative priority instead of first-match response order. A U.S. city-designated municipality is preferred over a neighborhood/local place, state-level `region` is preferred over county, and supported U.S. state codes are persisted canonically. The Two Pitchers regression now resolves Northlake → Oakland and Alameda County → CA, producing `city = Oakland`, `region = CA`, and an Oakland-based slug for newly created records.
-2. **ZIP submission consistency:** an exact canonical city, `city + region`, or ZIP match is rendered directly from the loaded CGB snapshot instead of falling through to external area geocoding. A submitted `94612` query therefore shows the same mapped records already visible in autocomplete. If a five-digit U.S. ZIP has no direct mapped match, its fallback MapTiler request is restricted to `country=us`, `types=postal_code`, `autocomplete=false`, and an exact returned ZIP before the 25-mile radius is applied.
+1. **External administrative hierarchy:** the MapTiler parser now uses administrative priority instead of first-match response order. A U.S. city-designated municipality is preferred over a neighborhood/local place, state-level `region` is preferred over county, and supported U.S. state codes are persisted canonically. The Two Pitchers regression resolves Northlake → Oakland and Alameda County → CA, producing `city = Oakland`, `region = CA`, and an Oakland-based slug for newly created records.
+2. **ZIP submission consistency:** an exact canonical city, `city + region`, or ZIP match is rendered directly from the loaded CGB snapshot instead of falling through to external area geocoding. A submitted `94612` query shows the same mapped records already visible in autocomplete. If a five-digit U.S. ZIP has no direct mapped match, its fallback MapTiler request is restricted to `country=us`, `types=postal_code`, `autocomplete=false`, and an exact returned ZIP before the 25-mile radius is applied.
 
 Automated coverage includes the actual Two Pitchers hierarchy shape, mapped `94612` submission with multiple venues, and restricted unmatched-ZIP geocoding. The complete validation suite and browser harness pass on the corrected branch.
 
-Keep the original Two Pitchers row and associated Fan Intent intact only until the focused retest is complete. Because the row was created before the parser correction, the code change does not rewrite its stored city, region, or slug. After the corrected result is verified, deliberately repair that row or remove and recreate it while preserving Fan Intent integrity.
+After the focused retest, the temporary Two Pitchers Venue row and its associated Fan Intent test row were deleted together. No stale test Venue or orphaned Fan Intent remains from that acceptance scenario.
 
 ## External venue enrichment decision
 
@@ -37,13 +37,13 @@ The missing values should be supplied later through approved contribution and cu
 
 Google Places exposes a supported `websiteUri`, but it is an Enterprise-tier Places field and Google restricts storage of Places content other than specified exceptions such as Place IDs. Google Places data also carries billing, key-management, attribution, privacy-policy, and map-display requirements. A narrow call solely to persist a venue website would therefore conflict with the current durable Google Sheet record model and the locked MapLibre/MapTiler architecture. Google Places is not added in PR #14. Reconsider it only through a separate approved architecture and licensing review.
 
-## Review during Milestone 4B manual acceptance
+## Deferred from Milestone 4B acceptance
 
-After the focused hierarchy and ZIP retest passes, these findings should still be explicitly checked on physical devices:
+The following observations did not block acceptance and should be revisited during later hardening:
 
 - The external confirmation should be reviewed when a game becomes closed while the dialog is already open. The server rejects the write safely, but the external CTA does not currently mirror the existing-venue **Selections closed** state before submission.
 - Success copy and analytics currently say a Community Location was created even when the server reuses an existing Community Location or Cal Bar.
-- Verify the visible **Search** button and the iPhone keyboard search action both leave the intended selected/tray state and do not reopen autocomplete.
+- Recheck the visible **Search** button and the iPhone keyboard search action across representative browsers so committed searches leave the intended selected/tray state and do not reopen autocomplete.
 - Check external-result discoverability when several existing CGB results fill the limited-height suggestion panel.
 - Check focus return, Escape behavior, screen-reader announcements, and keyboard navigation for the listbox and native confirmation dialog.
 - Test representative iPhone portrait and landscape viewports. The current `max-width: 430px` landscape rule is unlikely to match typical iPhone landscape widths and may need adjustment based on device evidence.
@@ -53,6 +53,7 @@ After the focused hierarchy and ZIP retest passes, these findings should still b
 - Resolve the documented scheduling conflict for the missing-location fallback. Milestone 4B contains the exact copy and an HTTPS-only configuration point; Milestone 6 should create/configure the actual form and prefilled venue/game parameters.
 - Update the canonical Development Workflow so it clearly states that Milestone 4 owns the link integration point and Milestone 6 owns form construction and final URL configuration.
 - Add the approved contribution paths that fill MapTiler enrichment gaps: **Suggest an Update** for website and factual corrections, **Add a Photo** for reviewed authorized images, and reviewed editorial description updates where useful.
+- Keep the current conditional website behavior: **Visit venue website** should remain hidden when `website_url` is blank rather than showing a guessed domain, search-result link, or provider page.
 - Do not allow a submitter or external API to directly mark a newly created venue as a Cal Bar. The locked model requires every external addition to begin as a Community Location and reserves Cal Bar designation for CGB review.
 - Address the current UX gap by making **Think this is a Cal bar? Nominate as a Cal Bar** available contextually after creation and on the Community Location detail view, with the venue ID and name prefilled.
 
@@ -63,6 +64,8 @@ After the focused hierarchy and ZIP retest passes, these findings should still b
 - Review external-search proximity behavior. Do not automatically request browser geolocation merely because the user focuses the search field. Instead, offer an explicit user-initiated action such as **Search near my location** or **Use my location to prioritize nearby places**. When granted, use location to bias or rank MapTiler results rather than strictly excluding distant results, because users may be searching for an away-game destination, a future location, or a venue near another person. Preserve ordinary search when permission is denied or not requested.
 - Review MapTiler query gating and request efficiency. The Milestone 4B baseline starts external autocomplete at three characters after a 300 ms pause. A later optimization should keep local CGB matching immediate while applying type-aware external thresholds: wait for a complete five-digit U.S. ZIP or explicit submission for ZIP searches; consider four characters and roughly a 500–600 ms pause for text searches; allow the explicit **Search** action to force a request; and suppress or delay MapTiler when an existing CGB result is already an obvious exact match.
 - Validate any search-gating change against short venue names, short city names, ZIP codes, denied location permission, away-game searches, and explicit keyboard/button submission. Monitor actual MapTiler request volume before and after the change rather than assuming a character threshold alone provides meaningful savings.
+- Revisit the venue activity card so it distinguishes the selected game's Fan Intent, other upcoming Watch Parties or per-game Fan Intent at the same venue, and archived past-game activity. Avoid wording that implies a unique-person season total because the public data contains per-game aggregate selections and the same user may select the same venue for multiple games. Prefer listing upcoming games individually or summarizing activity across a number of games. Consider omitting the second negative historical sentence when no past activity exists rather than stacking two empty-state messages.
+- Review Directions destination construction. Prefer the canonical venue name plus complete street address when available so the navigation provider displays a recognizable destination and can route toward the venue entrance; retain latitude/longitude as the fallback when address fields are incomplete or unusable. This should not require another API.
 - Exercise failure injection after partial Fan Intent updates, during response construction, and during rollback itself. Google Sheets rollback remains best-effort compensating behavior rather than a true transaction.
 - Review the public creation endpoint for practical abuse, malformed-but-valid place payloads, monitoring, and rate-limiting needs. Complex abuse prevention remains deferred unless launch evidence requires it.
 - Replace runtime MapTiler-key discovery with a clearer shared public configuration value if live-browser evidence shows the resource/style scan to be unreliable.
@@ -71,4 +74,4 @@ After the focused hierarchy and ZIP retest passes, these findings should still b
 
 ## Scope guardrail
 
-No item in this note authorizes Milestone 5, Milestone 6, or Milestone 7 implementation. Each item should be reconsidered only in the stated review phase or earlier if manual acceptance reveals a material blocker.
+No item in this note authorizes Milestone 5, Milestone 6, or Milestone 7 implementation. Each item should be reconsidered only in the stated review phase or earlier if a material blocker is discovered.
