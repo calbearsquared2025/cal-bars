@@ -19,11 +19,16 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000/`. This local server is for diagnostics and development checks; it is not part of routine live-canary acceptance.
 
-## Data and Fan Intent
+## Data, Fan Intent, and external venues
 
-Milestone 3 adds a separate Fan Intent client and Apps Script service for anonymous join, move, and withdrawal operations. The approved live canary connects automatically to the public Apps Script web app through the `cgb-data-endpoint` metadata in `index.html`; ordinary live-site use does not require local-storage configuration.
+Milestone 3 adds a separate Fan Intent client and Apps Script service for anonymous join, move, and withdrawal operations. Milestone 4A consolidates the frontend around one canonical application snapshot and state. Milestone 4B adds MapTiler external-place results and the combined `joinExternalVenue` action, which creates or reuses a persistent Community Location only when **I’ll be here** succeeds.
 
-Routine acceptance consists of successful automated tests and data validation, a public-response privacy check, one desktop core-path check, and one physical-iPhone core-path check. See `docs/fan-intent-setup.md` for the exact live-canary checklist and the preserved Sheet, Apps Script, privacy, and completed-game archival instructions.
+The approved live canary connects automatically to the public Apps Script web app through the `cgb-data-endpoint` metadata in `index.html`; ordinary live-site use does not require local-storage configuration. External search reuses the public MapTiler browser key already loaded by the map and does not add a second credential.
+
+Routine acceptance consists of successful automated tests and data validation, public-response privacy checks, desktop and mobile previews, and a physical-iPhone core-path check. See:
+
+- `docs/fan-intent-setup.md` for the existing Fan Intent deployment and acceptance process.
+- `docs/external-venue-search.md` for the external-search architecture, missing-location integration point, Apps Script deployment checklist, and Codespaces/iPhone preview procedure.
 
 For optional local-preview diagnostics, the frontend uses this public-read sequence:
 
