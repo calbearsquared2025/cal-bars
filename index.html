@@ -9,6 +9,7 @@
     name="cgb-data-endpoint"
     content="https://script.google.com/macros/s/AKfycbx5Y4nfnKe7KyaSQHOEvYqpSVtcG7z6KFf1aAnD1NEvIf5y3Xlj1hHUECudo49V4tGlJw/exec"
   >
+  <meta name="cgb-missing-location-form-url" content="">
   <meta property="og:title" content="Cal Golden Bars">
   <meta property="og:description" content="Find Cal Bars, Community Locations, and game-specific Watch Parties.">
   <meta property="og:image" content="https://calgoldenbars.com/assets/cgbsocial-preview.png">
@@ -20,6 +21,7 @@
   <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/fan-intent.css">
+  <link rel="stylesheet" href="css/external-venue.css">
   <style>
     .map-view,
     .map {
@@ -141,6 +143,24 @@
     </form>
   </dialog>
 
+  <dialog id="external-venue-dialog" class="external-venue-dialog" aria-labelledby="external-venue-name">
+    <div class="external-venue-shell">
+      <div class="external-venue-handle" aria-hidden="true"></div>
+      <header class="external-venue-header">
+        <span class="eyebrow">External place result</span>
+        <h2 id="external-venue-name">Selected place</h2>
+        <p id="external-venue-address" class="external-venue-address"></p>
+        <p id="external-venue-context" class="external-venue-context"></p>
+      </header>
+      <p class="external-venue-disclosure">This place is not yet listed as a Cal Bar or Community Location. It will be added only after the server confirms your selection.</p>
+      <p id="external-venue-error" class="external-venue-error" role="alert" hidden></p>
+      <div class="external-venue-actions">
+        <button id="external-venue-confirm" class="primary-button" type="button">I’ll be here</button>
+        <button id="external-venue-cancel" class="secondary-button" type="button">Cancel</button>
+      </div>
+    </div>
+  </dialog>
+
   <footer class="site-footer">
     <span>Not affiliated with Cal Athletics</span>
     <span aria-hidden="true">·</span>
@@ -163,5 +183,6 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>
   <script type="module" src="js/app.js"></script>
   <script type="module" src="js/fan-intent.js"></script>
+  <script type="module" src="js/external-venue-search.js"></script>
 </body>
 </html>
