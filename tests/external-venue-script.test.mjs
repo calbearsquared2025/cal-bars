@@ -209,7 +209,7 @@ test('new external place creates one persistent Community Location and Fan Inten
   assert.equal(created.publication_status, 'published');
   assert.equal(created.external_source, 'maptiler');
   assert.match(created.venue_id, /^venue_uuid-/);
-  assert.equal(created.slug, 'mcnallys-irish-pub-oakland');
+  assert.equal(created.slug, 'mcnally-s-irish-pub-oakland');
   assert.equal(activeFanRows(fanSheet).length, 1);
   assert.equal(activeFanRows(fanSheet)[0].venue_id, created.venue_id);
   assert.deepEqual(response.fanCounts, [{ game_id: 'game_1', venue_id: created.venue_id, count: 1 }]);
@@ -258,10 +258,10 @@ test('ordinary repeated requests remain one Venue and one active Fan Intent', ()
 });
 
 test('slug generation is stable and adds the smallest unique suffix', () => {
-  const collision = baseVenue({ venue_id: 'ven_collision', slug: 'mcnallys-irish-pub-oakland' });
+  const collision = baseVenue({ venue_id: 'ven_collision', slug: 'mcnally-s-irish-pub-oakland' });
   const { api, venueSheet } = buildHarness({ venues: [collision] });
   const response = joinExternal(api);
-  assert.equal(response.venue.slug, 'mcnallys-irish-pub-oakland-2');
+  assert.equal(response.venue.slug, 'mcnally-s-irish-pub-oakland-2');
   assert.equal(sheetObjects(venueSheet, VENUE_HEADERS).find((row) => row.venue_id === response.venue.venue_id).slug, response.venue.slug);
 });
 
