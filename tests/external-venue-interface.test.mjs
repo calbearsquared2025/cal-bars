@@ -71,7 +71,7 @@ test('creation pending prevents duplicate taps and failure retains retry context
   assert.match(join, /externalCreationFailureCopy\(error\)/);
   assert.match(join, /state\.pending = false/);
   assert.doesNotMatch(join.slice(0, join.indexOf('try {')), /upsertCanonicalVenue|snapshot\.venues\.push|adjustFanCount/);
-  assert.match(client, /Nothing was created; try again/);
+  assert.match(core, /Nothing was created; try again/);
 });
 
 test('external-search failure leaves existing CGB results available', () => {
