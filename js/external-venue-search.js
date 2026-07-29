@@ -223,6 +223,17 @@ async function searchExternalPlaces(query, sequence) {
   }
 }
 
+function invalidateExternalSearch() {
+  const state = ensureExternalState();
+  searchSequence += 1;
+  window.clearTimeout(searchTimer);
+  searchController?.abort();
+  searchController = null;
+  state.results = [];
+  state.error = null;
+  dom?.suggestions?.querySelector(':scope > .search-result-group--external')?.remove();
+}
+
 function scheduleExternalSearch() {
   const query = dom.searchInput.value.trim();
   const state = ensureExternalState();
@@ -331,13 +342,27 @@ function commitExternalVenue(response, selected) {
   appState.trayState = 'selected';
   dom.searchInput.value = venue.name;
   dom.suggestions.hidden = true;
-  window.CGBApp?.render();
-  appState.map?.easeTo?.({
-    center: [Number(venue.longitude), Number(venue.latitude)],
-    duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420,
-    essential: true
-  });
   return venue;
+}
+
+function renderApplicationSafely(context) {
+  try {
+    window.CGBApp?.render();
+  } catch (error) {
+    console.error(`External venue ${context} render failed.`, error);
+  }
+}
+
+function panToCommittedVenueSafely(venue) {
+  try {
+    appState.map?.easeTo?.({
+      center: [Number(venue.longitude), Number(venue.latitude)],
+      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420,
+      essential: true
+    });
+  } catch (error) {
+    console.error('External venue map movement failed after a successful write.', error);
+  }
 }
 
 async function joinSelectedExternalVenue() {
@@ -359,28 +384,44 @@ async function joinSelectedExternalVenue() {
     externalPlaceId: selected.placeId
   };
   renderConfirmation();
-  window.CGBApp?.render();
+  renderApplicationSafely('pending-state');
 
   try {
-    const response = await postJoinExternalVenue(selected);
-    commitExternalVenue(response, selected);
-    state.selected = null;
-    state.retry = null;
-    state.error = null;
-    dom.externalDialog.close();
-    window.CGBApp?.showStatus('Community Location added. You’ll be here.', 3200);
-    window.gtag?.('event', 'community_location_created');
-    return true;
-  } catch (error) {
-    state.retry = selected;
-    state.error = externalCreationFailureCopy(error);
-    window.CGBApp?.showStatus(state.error, 5000);
-    return false;
+    let response;
+    try {
+      response = await postJoinExternalVenue(selected);
+    } catch (error) {
+      state.retry = selected;
+      state.error = externalCreationFailureCopy(error);
+      window.CGBApp?.showStatus(state.error, 5000);
+      return false;
+    }
+
+    try {
+      const venue = commitExternalVenue(response, selected);
+      state.selected = null;
+      state.retry = null;
+      state.error = null;
+      if (dom.externalDialog.open) dom.externalDialog.close();
+      window.CGBApp?.showStatus('Community Location added. You’ll be here.', 3200);
+      window.gtag?.('event', 'community_location_created');
+      renderApplicationSafely('post-success');
+      panToCommittedVenueSafely(venue);
+      return true;
+    } catch (error) {
+      console.error('External venue write succeeded but the local application commit failed.', error);
+      state.selected = null;
+      state.retry = null;
+      state.error = null;
+      if (dom.externalDialog.open) dom.externalDialog.close();
+      window.CGBApp?.showStatus('Location saved. Refresh to update the map.', 5000);
+      return true;
+    }
   } finally {
     state.pending = false;
     appState.fanIntent.pending = null;
     renderConfirmation();
-    window.CGBApp?.render();
+    renderApplicationSafely('settled-state');
   }
 }
 
@@ -395,6 +436,7 @@ function cancelConfirmation() {
 
 function cacheDom() {
   dom = {
+    searchForm: document.querySelector('#location-search'),
     searchInput: document.querySelector('#location-query'),
     suggestions: document.querySelector('#search-suggestions'),
     externalDialog: document.querySelector('#external-venue-dialog'),
@@ -413,6 +455,10 @@ async function bootExternalVenueSearch() {
   await waitForApplicationReady();
   if (!cacheDom()) throw new Error('external_search_dom_missing');
   dom.searchInput.addEventListener('input', scheduleExternalSearch);
+  dom.searchForm.addEventListener('submit', invalidateExternalSearch, { capture: true });
+  dom.suggestions.addEventListener('click', (event) => {
+    if (event.target.closest('button[data-venue-id]')) invalidateExternalSearch();
+  }, { capture: true });
   dom.externalConfirm.addEventListener('click', joinSelectedExternalVenue);
   dom.externalCancel.addEventListener('click', cancelConfirmation);
   dom.externalDialog.addEventListener('cancel', (event) => {
@@ -431,6 +477,7 @@ async function bootExternalVenueSearch() {
 }
 
 window.CGBExternalVenueSearch = Object.freeze({
+  invalidate: invalidateExternalSearch,
   retry: joinSelectedExternalVenue,
   getState: () => ensureExternalState()
 });
