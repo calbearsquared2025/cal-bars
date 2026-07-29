@@ -1,0 +1,59 @@
+name: Milestone 4B validation
+
+on:
+  push:
+    branches:
+      - feature/external-venue-search
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run complete test suite
+        run: npm test
+
+      - name: Validate fallback data
+        run: npm run validate:data
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check js/app.js
+          node --check js/app-state.mjs
+          node --check js/core.mjs
+          node --check js/fan-intent.js
+          node --check js/fan-intent-core.mjs
+          node --check js/fan-intent-controller.mjs
+          node --check js/external-venue-search.js
+          node --check js/external-venue-core.mjs
+
+      - name: Check combined Apps Script syntax
+        run: |
+          cat apps-script/Code.gs \
+              apps-script/ColumnFormats.gs \
+              apps-script/ExternalVenue.gs \
+              apps-script/FanIntent.gs \
+              apps-script/TestData.gs > /tmp/cgb-apps-script.js
+          node --check /tmp/cgb-apps-script.js
+
+      - name: Check diff formatting
+        run: git diff --check HEAD^
+
+      - name: Scan committed source for private values
+        run: |
+          ! grep -RIE --exclude-dir=.git --exclude='*.test.mjs' \
+            '(browser_[A-Za-z0-9_-]{16,}|submitter_email[[:space:]]*[:=][[:space:]]*["'"'][^"'"']+|CGB_WORKBOOK_ID[[:space:]]*=[[:space:]]*["'"'][^"'"']+)' \
+            .
