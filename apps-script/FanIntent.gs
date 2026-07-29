@@ -12,11 +12,17 @@ const CGB_FAN_INTENT_LOCK_TIMEOUT_MS = 10000;
 
 function doPost(event) {
   try {
-    const request = parseFanIntentRequest_(event);
+    const action = inspectPostAction_(event);
+    const request = action === 'joinExternalVenue'
+      ? parseJoinExternalVenueRequest_(event)
+      : parseFanIntentRequest_(event);
     const lock = LockService.getScriptLock();
     lock.waitLock(CGB_FAN_INTENT_LOCK_TIMEOUT_MS);
     try {
-      return jsonResponse_(processFanIntentRequest_(request));
+      const response = action === 'joinExternalVenue'
+        ? processJoinExternalVenueRequest_(request)
+        : processFanIntentRequest_(request);
+      return jsonResponse_(response);
     } finally {
       lock.releaseLock();
     }
@@ -27,6 +33,16 @@ function doPost(event) {
       error: publicFanIntentError_(error),
       schemaVersion: CGB_SCHEMA_VERSION
     });
+  }
+}
+
+function inspectPostAction_(event) {
+  const contents = event && event.postData && event.postData.contents;
+  if (!contents) throw fanIntentError_('invalid_request');
+  try {
+    return String(JSON.parse(contents).action || '').trim();
+  } catch (error) {
+    throw fanIntentError_('invalid_json');
   }
 }
 
@@ -266,7 +282,9 @@ function publicFanIntentError_(error) {
   const allowed = [
     'invalid_request', 'invalid_json', 'unsupported_action', 'invalid_browser_id',
     'invalid_game_id', 'invalid_venue_id', 'game_not_found', 'game_not_open',
-    'venue_not_found', 'selection_conflict'
+    'venue_not_found', 'selection_conflict', 'invalid_external_place',
+    'unsupported_external_source', 'invalid_external_place_id', 'invalid_external_name',
+    'invalid_external_address', 'invalid_external_coordinates', 'external_venue_unavailable'
   ];
   const code = String(error && error.cgbCode || '');
   return allowed.indexOf(code) >= 0 ? code : 'write_failed';

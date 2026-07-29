@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="cgb-data-endpoint" content="https://mock.cgb.invalid/exec">
+  <meta name="cgb-missing-location-form-url" content="">
+  <title>Milestone 4B browser harness</title>
+</head>
+<body>
+  <form id="location-search">
+    <input id="location-query" type="search">
+    <div id="search-suggestions" role="listbox">
+      <button type="button" data-venue-id="ven_existing" role="option">
+        <strong>Existing CGB Pub</strong>
+        <span>Oakland, CA</span>
+      </button>
+    </div>
+  </form>
+
+  <dialog id="external-venue-dialog" aria-labelledby="external-venue-name">
+    <h2 id="external-venue-name"></h2>
+    <p id="external-venue-address"></p>
+    <p id="external-venue-context"></p>
+    <p id="external-venue-error" hidden></p>
+    <button id="external-venue-confirm" type="button">I’ll be here</button>
+    <button id="external-venue-cancel" type="button">Cancel</button>
+  </dialog>
+
+  <output id="harness-result">M4B_BROWSER_HARNESS_RUNNING</output>
+  <script type="module" src="external-venue-harness.mjs"></script>
+</body>
+</html>
