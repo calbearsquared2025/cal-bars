@@ -75,6 +75,16 @@ const existingVenue = {
   updated_at: '2026-07-29T05:00:00.000Z'
 };
 
+const secondExistingVenue = {
+  ...existingVenue,
+  venue_id: 'ven_existing_two',
+  slug: 'second-existing-cgb-pub',
+  name: 'Second Existing CGB Pub',
+  address_line_1: '2 Broadway',
+  latitude: 37.81,
+  longitude: -122.26
+};
+
 const canonicalExternalVenue = {
   venue_id: 'venue_created_1',
   slug: 'mcnally-s-irish-pub-oakland',
@@ -82,7 +92,7 @@ const canonicalExternalVenue = {
   address_line_1: '5352 College Ave',
   address_line_2: '',
   city: 'Oakland',
-  region: 'California',
+  region: 'CA',
   postal_code: '94618',
   country_code: 'US',
   latitude: 37.839,
@@ -110,9 +120,10 @@ const canonicalSecondVenue = {
   updated_at: '2026-07-29T05:02:00.000Z'
 };
 
+const initialVenueCount = 2;
 setCanonicalSnapshot({
   schemaVersion: '2.0',
-  venues: [existingVenue],
+  venues: [existingVenue, secondExistingVenue],
   games: [{ game_id: 'game_1', game_status: 'upcoming' }],
   watchParties: [],
   fanCounts: [],
@@ -141,6 +152,7 @@ appState.map = {
 
 let renderCount = 0;
 let backendCallCount = 0;
+let mapTilerCallCount = 0;
 let receivedWrite = null;
 let lastStatus = '';
 window.CGBApp = Object.freeze({
@@ -156,6 +168,7 @@ let delayedSearchResolve = null;
 window.fetch = async (url, options = {}) => {
   const parsed = new URL(String(url));
   if (parsed.hostname === 'api.maptiler.com') {
+    mapTilerCallCount += 1;
     const query = decodeURIComponent(parsed.pathname);
     if (query.includes('Delayed Existing')) {
       return new Promise((resolve) => {
@@ -217,6 +230,17 @@ try {
   markApplicationReady();
   await import('../../js/external-venue-search.js');
 
+  searchInput.value = '94612';
+  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  await wait(25);
+  assert(appState.listQuery === '94612', 'Exact mapped ZIP did not become the canonical list query');
+  assert(appState.origin === null, 'Exact mapped ZIP incorrectly used an external geocode origin');
+  assert(appState.trayState === 'full', 'Exact mapped ZIP did not open the location list');
+  assert(mapTilerCallCount === 0, 'Exact mapped ZIP unnecessarily called MapTiler');
+  assert(/2 mapped locations match 94612/.test(lastStatus), 'Exact mapped ZIP did not report mapped matches');
+  appState.listQuery = '';
+
   searchInput.value = 'Delayed Existing';
   searchInput.dispatchEvent(new Event('input', { bubbles: true }));
   await waitFor(() => delayedSearchResolve, 'Delayed external request did not start');
@@ -236,12 +260,12 @@ try {
 
   assert(suggestions.querySelector('.search-result-group--existing'), 'Existing CGB group missing');
   assert(suggestions.querySelector('.search-result-group--external'), 'External MapTiler group missing');
-  assert(appState.snapshot.venues.length === 1, 'Search created a Venue before confirmation');
+  assert(appState.snapshot.venues.length === initialVenueCount, 'Search created a Venue before confirmation');
   assert(backendCallCount === 0, 'Search called the write backend');
 
   suggestions.querySelector('.external-place-result').click();
   assert(dialog.open, 'External confirmation dialog did not open');
-  assert(appState.snapshot.venues.length === 1, 'Selecting an external result created a Venue');
+  assert(appState.snapshot.venues.length === initialVenueCount, 'Selecting an external result created a Venue');
   assert(document.querySelector('#external-venue-name').textContent === "McNally's Irish Pub", 'Venue verification name missing');
   assert(document.querySelector('#external-venue-address').textContent.includes('5352 College Ave'), 'Venue verification address missing');
 
@@ -255,6 +279,7 @@ try {
   assert(receivedWrite.action === 'joinExternalVenue', 'Wrong write action');
   assert(receivedWrite.gameId === 'game_1', 'Selected game was not preserved');
   assert(receivedWrite.externalPlace.placeId === 'poi.98765', 'Provider place ID was not preserved');
+  assert(receivedWrite.externalPlace.region === 'CA', 'Canonical US state abbreviation was not sent');
   assert(appState.selectedVenueId === canonicalExternalVenue.venue_id, 'Canonical Venue was not selected');
   assert(appState.fanIntent.selections.game_1 === canonicalExternalVenue.venue_id, 'Fan Intent selection was not persisted');
   assert(appState.snapshot.fanCounts[0].count === 1, 'Authoritative count was not applied');
