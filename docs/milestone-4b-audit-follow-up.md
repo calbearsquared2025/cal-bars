@@ -12,24 +12,26 @@ The following material defects were corrected in the current draft PR:
 
 Focused regression coverage was added for the state-name/address comparison, stale external-search invalidation, and successful writes followed by rendering or map exceptions.
 
-## Blocking defects found during manual acceptance
+## Manual-acceptance defects corrected; retest required
 
-Manual testing on July 29, 2026 found two material failures that pause acceptance of PR #14 until corrected and retested:
+Manual testing on July 29, 2026 found two additional material failures. Both are corrected in the draft branch but remain acceptance blockers until Matthew completes the focused retest:
 
-1. **External administrative hierarchy is persisted at the wrong level.** Searching for Two Pitchers Brewing Company in Oakland created a row with `city = Northlake` and `region = Alameda`. Northlake is a neighborhood/local place within Oakland, while Alameda is the county. The canonical row should use `city = Oakland` and `region = CA`. The current parser accepts several city-like and region-like context types but takes the first matching context item rather than preferring municipality/city over neighborhood/local place and state region over county. This also produced the incorrect slug `two-pitchers-brewing-company-northlake` and weakens normalized-address duplicate matching. Add a regression fixture representing Northlake → Oakland → Alameda County → California before acceptance resumes.
-2. **ZIP submission contradicts the visible mapped matches.** Entering `94612` displays multiple mapped locations in autocomplete, but submitting the same ZIP reports zero listed locations within 25 miles. The current submit path recognizes that the query matches a mapped postal-code field, then geocodes the raw query using the first unrestricted MapTiler result and radius-filters from that point. The request is not limited to the United States or to a postal-code result, and it does not validate that the chosen result represents the submitted ZIP. A city/ZIP submission must not report zero nearby locations when the same query already matches mapped venues in that ZIP.
+1. **External administrative hierarchy:** the MapTiler parser now uses administrative priority instead of first-match response order. A U.S. city-designated municipality is preferred over a neighborhood/local place, state-level `region` is preferred over county, and supported U.S. state codes are persisted canonically. The Two Pitchers regression now resolves Northlake → Oakland and Alameda County → CA, producing `city = Oakland`, `region = CA`, and an Oakland-based slug for newly created records.
+2. **ZIP submission consistency:** an exact canonical city, `city + region`, or ZIP match is rendered directly from the loaded CGB snapshot instead of falling through to external area geocoding. A submitted `94612` query therefore shows the same mapped records already visible in autocomplete. If a five-digit U.S. ZIP has no direct mapped match, its fallback MapTiler request is restricted to `country=us`, `types=postal_code`, `autocomplete=false`, and an exact returned ZIP before the 25-mile radius is applied.
 
-Keep the Two Pitchers row and its associated Fan Intent intact as test evidence until the correction and deliberate retest are complete. Do not merge PR #14 while either blocker remains.
+Automated coverage includes the actual Two Pitchers hierarchy shape, mapped `94612` submission with multiple venues, and restricted unmatched-ZIP geocoding. GitHub Actions run `30472231206` passed the complete suite and browser harness.
+
+Keep the original Two Pitchers row and associated Fan Intent intact only until the focused retest is complete. Because the row was created before the parser correction, the code change does not rewrite its stored city, region, or slug. After the corrected result is verified, deliberately repair that row or remove and recreate it while preserving Fan Intent integrity.
 
 ## External website metadata decision
 
-MapTiler's documented Search and Geocoding response does not define a stable website field. POI `feature_tags` are experimental, their keys are unspecified, and a website value is not guaranteed. PR #14 should therefore continue leaving `website_url` blank for newly created MapTiler venues rather than depending on undocumented metadata.
+MapTiler's documented Search and Geocoding response does not define a stable website field. POI `feature_tags` are experimental, their keys are unspecified, and a website value is not guaranteed. PR #14 therefore continues leaving `website_url` blank for newly created MapTiler venues rather than depending on undocumented metadata.
 
-Google Places exposes a supported place website field, but Google Places is not part of the locked current architecture. Reintroducing it would require a separate product, cost, licensing, privacy, key-management, and implementation review; this note does not authorize that change.
+Google Places exposes a supported `websiteUri`, but it is an Enterprise-tier Places field and Google restricts storage of Places content other than specified exceptions such as Place IDs. Google Places data also carries billing, key-management, attribution, privacy-policy, and map-display requirements. A narrow call solely to persist a venue website would therefore conflict with the current durable Google Sheet record model and the locked MapLibre/MapTiler architecture. Google Places is not added in PR #14. Reconsider it only through a separate approved architecture and licensing review.
 
 ## Review during Milestone 4B manual acceptance
 
-After the blocking defects above are corrected, these findings should still be explicitly checked on physical devices:
+After the focused hierarchy and ZIP retest passes, these findings should still be explicitly checked on physical devices:
 
 - The external confirmation should be reviewed when a game becomes closed while the dialog is already open. The server rejects the write safely, but the external CTA does not currently mirror the existing-venue **Selections closed** state before submission.
 - Success copy and analytics currently say a Community Location was created even when the server reuses an existing Community Location or Cal Bar.
