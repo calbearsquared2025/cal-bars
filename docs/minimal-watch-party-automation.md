@@ -63,20 +63,25 @@ Recommended controlled answers:
 - Age Policy: `All ages`, `21+`, `Unknown`
 - Sound Status: `On`, `Off`, `Unknown`
 
+Set the Form confirmation message to:
+
+> Your watch party has been added.
+
 ## Manual Google actions
 
-1. Create a focused Google Form with the question labels above.
-2. Link the Form to the private v2 workbook.
-3. Rename the generated response tab to `Watch_Party_Submissions_Raw`.
-4. Add `apps-script/WatchPartyAutomation.gs` to the bound Apps Script project.
-5. Run `prepareMinimalWatchPartyAutomation()` once and confirm it appends the six private processing columns.
-6. Install an Apps Script trigger:
+1. Inspect the existing `Watch_Party_Submissions_Raw` tab before linking the Form. If it is the empty schema placeholder created during workbook setup, rename it to `Watch_Party_Submissions_Raw_Schema_Backup`. Do not rename or delete it if it contains responses.
+2. Create a focused Google Form with the question labels above.
+3. Link the Form to the private v2 workbook. Google Forms will create a new response sheet.
+4. Rename the newly generated Form response sheet to `Watch_Party_Submissions_Raw`.
+5. Add `apps-script/WatchPartyAutomation.gs` to the spreadsheet-bound Apps Script project.
+6. Run `prepareMinimalWatchPartyAutomation()` once and confirm it appends the six private processing columns to the generated response sheet.
+7. Install an Apps Script trigger:
    - function: `onWatchPartyFormSubmit`
    - event source: **From spreadsheet**
    - event type: **On form submit**
-7. Deploy a new Apps Script web-app version so the public snapshot reads the new canonical rows.
-8. Submit one test response using an existing published Venue ID and Game ID.
-9. Confirm the raw row is `processed`, one canonical row exists, and the Watch Party appears after refresh on desktop and iPhone.
+8. Confirm the currently deployed public web app already contains the accepted Watch Party read endpoint from `main`. Redeploy only if that accepted read code has not yet been deployed.
+9. Submit one test response using an existing published Venue ID and Game ID.
+10. Confirm the generated raw row is `processed`, one canonical row exists, and the Watch Party appears after refresh on desktop and iPhone.
 
 ## Privacy boundary
 
