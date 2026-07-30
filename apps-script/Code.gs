@@ -130,7 +130,7 @@ function buildPublicSnapshotForReview() {
 function getPublicSnapshot_() {
   const cache = CacheService.getScriptCache();
   const cached = cache.get(CGB_PUBLIC_CACHE_KEY);
-  if (cached) return JSON.parse(cached);
+  if (cached && cached !== '__invalidated__') return JSON.parse(cached);
 
   const snapshot = buildPublicSnapshot_();
   const serialized = JSON.stringify(snapshot);
@@ -283,8 +283,12 @@ function whitelist_(row, fields) {
   return output;
 }
 
+function invalidatePublicSnapshotCache_() {
+  clearPublicSnapshotCache_();
+}
+
 function clearPublicSnapshotCache_() {
-  CacheService.getScriptCache().remove(CGB_PUBLIC_CACHE_KEY);
+  CacheService.getScriptCache().put(CGB_PUBLIC_CACHE_KEY, '__invalidated__', 1);
 }
 
 function jsonResponse_(payload) {
