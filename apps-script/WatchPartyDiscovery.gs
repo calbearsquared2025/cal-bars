@@ -41,47 +41,16 @@ const CGB_WATCH_PARTY_SOURCE_KINDS = Object.freeze([
 ]);
 
 const CGB_WATCH_PARTY_FORM_LOCK_TIMEOUT_MS = 10000;
-const CGB_WATCH_PARTY_FORM_HEADER_LABELS = Object.freeze({
-  response_timestamp: 'Timestamp',
-  submitter_role: 'Submitter Role',
-  organizer_name: 'Organizer Name',
-  organizer_type: 'Organizer Type',
-  venue_id_submitted: 'Venue ID (existing)',
-  venue_name_submitted: 'Venue Name',
-  address_submitted: 'Venue Address',
-  game_ids_submitted: 'Game(s)',
-  official_event_url: 'Official Event URL',
-  event_start_information: 'Event Start Information',
-  age_policy: 'Age Policy',
-  sound_status: 'Sound Status',
-  restrictions_note: 'Restrictions Note',
-  game_day_note: 'Game Day Note',
-  submitter_name: 'Submitter Name',
-  submitter_email: 'Submitter Email'
-});
-const CGB_WATCH_PARTY_FORM_REQUIRED_FIELDS = Object.freeze([
-  'response_timestamp', 'submitter_role', 'organizer_name', 'game_ids_submitted'
-]);
 const CGB_WATCH_PARTY_FORM_SOURCE_TYPE_MAP = Object.freeze({
   fan: 'fan_submitted',
   venue: 'venue_submitted',
   alumni: 'alumni_group_submitted',
-  alumni_group: 'alumni_group_submitted',
-  cgb: 'cgb_added',
-  staff: 'cgb_added',
-  owner: 'cgb_added',
-  admin: 'cgb_added'
+  alumni_group: 'alumni_group_submitted'
 });
-const CGB_WATCH_PARTY_FORM_ORGANIZER_TYPE_MAP = Object.freeze({
-  fan: 'individual',
-  venue: 'venue',
-  alumni: 'alumni_group',
-  alumni_group: 'alumni_group',
-  cgb: 'other_organization',
-  staff: 'other_organization',
-  owner: 'other_organization',
-  admin: 'other_organization'
-});
+const CGB_WATCH_PARTY_RAW_ADMIN_FIELDS = Object.freeze([
+  'submission_id', 'processing_status', 'created_watch_party_ids',
+  'created_venue_id', 'processing_error', 'processed_at', 'discovery_id'
+]);
 
 const CGB_WATCH_PARTY_ORGANIZER_TYPES = Object.freeze([
   'alumni_group', 'venue', 'other_organization', 'individual', 'unknown'
@@ -777,7 +746,7 @@ function uniqueWatchPartyValues_(values) {
 }
 
 function processWatchPartyFormSubmission_(event) {
-  const parsed = parseWatchPartyFormSubmission_(event);
+  const formEvent = parseWatchPartyFormEvent_(event);
   const lock = LockService.getScriptLock();
   lock.waitLock(CGB_WATCH_PARTY_FORM_LOCK_TIMEOUT_MS);
   try {
@@ -801,7 +770,21 @@ function processWatchPartyFormSubmission_(event) {
     requireHeaders_(gameTable.headers, CGB_TABS.Games, 'Games');
 
     const now = new Date().toISOString();
-    const existingRaw = findSheetRecordByValue_(rawTable.rows, 'submission_id', parsed.submission_id);
+    const existingRaw = rawTable.rows.find(function(record) {
+      return record.rowNumber === formEvent.response_row_number;
+    }) || null;
+    if (!existingRaw) {
+      throw watchPartyDiscoveryError_('missing_form_response_row');
+    }
+    const parsed = parseWatchPartyFormResponseRow_(formEvent, existingRaw.object);
+    const existingSubmissionId = String(existingRaw.object.submission_id || '').trim();
+    if (existingSubmissionId && existingSubmissionId !== parsed.submission_id) {
+      updateWatchPartyRawAdministrativeFields_(rawSheet, rawTable.headers, existingRaw, {
+        processing_status: 'error',
+        processing_error: 'submission_id_integrity_mismatch'
+      });
+      throw watchPartyDiscoveryError_('submission_id_integrity_mismatch');
+    }
     const existingDiscovery = findSheetRecordByValue_(discoveryTable.rows, 'idempotency_key', parsed.idempotency_key);
     const existingDiscoveryByRaw = existingRaw && existingRaw.object.discovery_id
       ? findSheetRecordByValue_(discoveryTable.rows, 'discovery_id', existingRaw.object.discovery_id)
@@ -817,14 +800,6 @@ function processWatchPartyFormSubmission_(event) {
     let createdVenueId = existingRaw ? String(existingRaw.object.created_venue_id || '') : '';
     let processedAt = existingRaw ? String(existingRaw.object.processed_at || '') : '';
     let createdRows = [];
-
-    if (!rawRecord) {
-      rawRecord = appendWatchPartySheetRecord_(rawSheet, rawTable.headers, buildWatchPartyRawRow_(parsed, now));
-      rawTable.rows.push(rawRecord);
-      rawTable.headers = rawTable.headers.slice();
-      rawProcessingStatus = 'new';
-      rawProcessingError = '';
-    }
 
     if (!discoveryRecord) {
       const candidate = normalizeWatchPartyCandidate_({
@@ -947,7 +922,7 @@ function processWatchPartyFormSubmission_(event) {
     const gameIdSet = new Set(knownGameIds);
     const normalizedGameIds = normalizeGameIdsCandidate_(parsed.game_ids_submitted || '');
     const sourceType = resolveWatchPartyFormSourceType_(parsed.submitter_role);
-    const organizerType = resolveWatchPartyOrganizerType_(parsed.organizer_type || parsed.submitter_role || 'unknown');
+    const organizerType = parsed.organizer_type || 'unknown';
     const resolvedVenue = resolveTrustedWatchPartyVenue_(candidate, venueTable.rows.map(function(record) { return record.object; }), {
       submittedAddress: buildSubmittedWatchPartyAddress_(parsed),
       trustedPlace: null
@@ -971,10 +946,6 @@ function processWatchPartyFormSubmission_(event) {
     if (!cleanWatchPartyText_(parsed.organizer_name, 180)) {
       validationErrors.push('missing_organizer_name');
     }
-    if (sourceType === 'cgb_added' && parsed.submitter_role !== 'cgb' && parsed.submitter_role !== 'staff' && parsed.submitter_role !== 'owner' && parsed.submitter_role !== 'admin') {
-      validationErrors.push('invalid_cgb_submission_context');
-    }
-
     if (resolvedVenue && resolvedVenue.decision === 'use_existing_venue' && resolvedVenue.resolved_venue_id) {
       candidate.resolved_venue_id = resolvedVenue.resolved_venue_id;
     } else if (resolvedVenue && resolvedVenue.decision === 'propose_new_community_location') {
@@ -1095,7 +1066,7 @@ function processWatchPartyFormSubmission_(event) {
       published_at: candidate.published_at || ''
     });
 
-    updateWatchPartySheetRecord_(rawSheet, rawTable.headers, rawRecord, {
+    updateWatchPartyRawAdministrativeFields_(rawSheet, rawTable.headers, rawRecord, {
       submission_id: parsed.submission_id,
       processing_status: rawStatus,
       discovery_id: discoveryId,
@@ -1120,7 +1091,7 @@ function processWatchPartyFormSubmission_(event) {
   }
 }
 
-function parseWatchPartyFormSubmission_(event) {
+function parseWatchPartyFormEvent_(event) {
   if (!event || !event.range || !event.range.getSheet || !event.range.getRow) {
     throw watchPartyDiscoveryError_('invalid_form_event');
   }
@@ -1132,70 +1103,38 @@ function parseWatchPartyFormSubmission_(event) {
   if (!Number.isFinite(rowNumber) || rowNumber < 2) {
     throw watchPartyDiscoveryError_('invalid_form_event');
   }
-  const namedValues = event.namedValues || {};
-  const missing = [];
-  const ambiguous = [];
-  const resolved = {};
-  CGB_WATCH_PARTY_FORM_REQUIRED_FIELDS.forEach(function(field) {
-    const matches = resolveWatchPartyFormHeaderMatches_(namedValues, field);
-    if (matches.length === 0) missing.push(field);
-    else if (matches.length > 1) ambiguous.push(field);
-    else resolved[field] = firstWatchPartyFormValue_(namedValues[matches[0]]);
-  });
-  if (missing.length || ambiguous.length) {
-    throw watchPartyDiscoveryError_('missing_form_headers');
-  }
+  return { response_row_number: rowNumber };
+}
 
-  const responseTimestamp = resolved.response_timestamp || '';
-  const submitterRole = cleanWatchPartyText_(resolved.submitter_role, 80).toLowerCase();
-  const organizerName = cleanWatchPartyText_(resolved.organizer_name, 180);
-  const gameIds = normalizeGameIdsCandidate_(resolved.game_ids_submitted || '').join(',');
-
+function parseWatchPartyFormResponseRow_(formEvent, rawRow) {
+  const responseTimestamp = normalizeCellValue_(rawRow && rawRow.response_timestamp);
+  const submitterRole = cleanWatchPartyText_(rawRow && rawRow.submitter_role, 80).toLowerCase();
+  const organizerName = cleanWatchPartyText_(rawRow && rawRow.organizer_name, 180);
+  const gameIds = normalizeGameIdsCandidate_(rawRow && rawRow.game_ids_submitted).join(',');
+  const rowNumber = formEvent.response_row_number;
   return {
-    submission_id: buildWatchPartySubmissionId_(event, responseTimestamp, rowNumber),
-    idempotency_key: buildWatchPartyDiscoveryIdempotencyKey_('form_submission', buildWatchPartySubmissionId_(event, responseTimestamp, rowNumber)),
+    submission_id: buildWatchPartySubmissionId_(formEvent, responseTimestamp, rowNumber),
+    idempotency_key: buildWatchPartyDiscoveryIdempotencyKey_('form_submission', buildWatchPartySubmissionId_(formEvent, responseTimestamp, rowNumber)),
+    response_row_number: rowNumber,
     source_url: '',
     source_label: 'Google Form submission',
     response_timestamp: responseTimestamp,
     submitter_role: submitterRole,
     organizer_name: organizerName,
-    organizer_type: resolveWatchPartyOrganizerType_(submitterRole),
-    venue_id_submitted: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'venue_id_submitted'), 80),
-    venue_name_submitted: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'venue_name_submitted'), 180),
-    address_submitted: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'address_submitted'), 600),
+    organizer_type: normalizeStoredWatchPartyOrganizerType_(rawRow && rawRow.organizer_type),
+    venue_id_submitted: cleanWatchPartyText_(rawRow && rawRow.venue_id, 80),
+    venue_name_submitted: cleanWatchPartyText_(rawRow && rawRow.venue_name_submitted, 180),
+    address_submitted: cleanWatchPartyText_(rawRow && rawRow.address_submitted, 600),
     game_ids_submitted: gameIds,
-    official_event_url: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'official_event_url'), 2000),
-    event_start_information: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'event_start_information'), 120),
-    age_policy: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'age_policy'), 80),
-    sound_status: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'sound_status'), 80),
-    restrictions_note: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'restrictions_note'), 1200),
-    game_day_note: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'game_day_note'), 1200),
-    submitter_name: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'submitter_name'), 180),
-    submitter_email: cleanWatchPartyText_(resolveWatchPartyFormHeaderValue_(namedValues, 'submitter_email'), 200)
+    official_event_url: cleanWatchPartyText_(rawRow && rawRow.official_event_url, 2000),
+    event_start_information: cleanWatchPartyText_(rawRow && rawRow.event_start_information, 120),
+    age_policy: cleanWatchPartyText_(rawRow && rawRow.age_policy, 80),
+    sound_status: cleanWatchPartyText_(rawRow && rawRow.sound_status, 80),
+    restrictions_note: cleanWatchPartyText_(rawRow && rawRow.restrictions_note, 1200),
+    game_day_note: cleanWatchPartyText_(rawRow && rawRow.game_day_note, 1200),
+    submitter_name: cleanWatchPartyText_(rawRow && rawRow.submitter_name, 180),
+    submitter_email: cleanWatchPartyText_(rawRow && rawRow.submitter_email, 200)
   };
-}
-
-function resolveWatchPartyFormHeaderMatches_(namedValues, field) {
-  const available = Object.keys(namedValues || {}) || [];
-  const normalized = available.map(function(header) { return String(header).trim(); });
-  const labels = [CGB_WATCH_PARTY_FORM_HEADER_LABELS[field] || ''];
-  const aliases = [field, labels[0]].filter(Boolean).map(function(value) { return String(value).trim(); });
-  return normalized.filter(function(header) {
-    return aliases.some(function(alias) {
-      return String(header).toLowerCase() === String(alias).toLowerCase();
-    });
-  });
-}
-
-function resolveWatchPartyFormHeaderValue_(namedValues, field) {
-  const matches = resolveWatchPartyFormHeaderMatches_(namedValues, field);
-  if (!matches.length) return '';
-  return firstWatchPartyFormValue_(namedValues[matches[0]]);
-}
-
-function firstWatchPartyFormValue_(value) {
-  if (Array.isArray(value)) return String(value[0] === null || value[0] === undefined ? '' : value[0]);
-  return String(value === null || value === undefined ? '' : value);
 }
 
 function buildWatchPartySubmissionId_(event, responseTimestamp, rowNumber) {
@@ -1228,9 +1167,9 @@ function resolveWatchPartyFormSourceType_(role) {
   return CGB_WATCH_PARTY_FORM_SOURCE_TYPE_MAP[normalized] || '';
 }
 
-function resolveWatchPartyOrganizerType_(role) {
-  const normalized = cleanWatchPartyText_(role, 80).toLowerCase();
-  return CGB_WATCH_PARTY_FORM_ORGANIZER_TYPE_MAP[normalized] || 'unknown';
+function normalizeStoredWatchPartyOrganizerType_(value) {
+  const normalized = normalizeWatchPartyEnum_(value);
+  return CGB_WATCH_PARTY_ORGANIZER_TYPES.indexOf(normalized) >= 0 ? normalized : 'unknown';
 }
 
 function buildSubmittedWatchPartyAddress_(parsed) {
@@ -1247,34 +1186,6 @@ function buildSubmittedWatchPartyAddress_(parsed) {
   };
 }
 
-function buildWatchPartyRawRow_(parsed, timestamp) {
-  return {
-    response_timestamp: parsed.response_timestamp || timestamp,
-    submission_id: parsed.submission_id,
-    venue_id: parsed.venue_id_submitted || '',
-    venue_name_submitted: parsed.venue_name_submitted || '',
-    address_submitted: parsed.address_submitted || '',
-    game_ids_submitted: parsed.game_ids_submitted || '',
-    organizer_name: parsed.organizer_name || '',
-    organizer_type: parsed.organizer_type || '',
-    official_event_url: parsed.official_event_url || '',
-    event_start_information: parsed.event_start_information || '',
-    age_policy: parsed.age_policy || '',
-    sound_status: parsed.sound_status || '',
-    restrictions_note: parsed.restrictions_note || '',
-    game_day_note: parsed.game_day_note || '',
-    submitter_role: parsed.submitter_role || '',
-    submitter_name: parsed.submitter_name || '',
-    submitter_email: parsed.submitter_email || '',
-    processing_status: 'new',
-    created_watch_party_ids: '[]',
-    created_venue_id: '',
-    processing_error: '',
-    processed_at: '',
-    discovery_id: ''
-  };
-}
-
 function buildWatchPartyCanonicalRow_(discoveryId, publicationKey, watchPartyId, parsed, sourceType, organizerType, gameId, resolvedVenueId, timestamp) {
   return {
     watch_party_id: watchPartyId,
@@ -1283,7 +1194,7 @@ function buildWatchPartyCanonicalRow_(discoveryId, publicationKey, watchPartyId,
     organizer_name: parsed.organizer_name || '',
     organizer_type: organizerType || 'unknown',
     official_event_url: parsed.official_event_url || '',
-    source_type: sourceType || 'fan_submitted',
+    source_type: sourceType || '',
     event_start_at: parsed.event_start_information || '',
     age_policy: parsed.age_policy || '',
     sound_status: parsed.sound_status || '',
@@ -1344,6 +1255,25 @@ function updateWatchPartySheetRecord_(sheet, headers, record, changes) {
   });
   sheet.getRange(record.rowNumber, 1, 1, headers.length).setValues([values]);
   record.values = values;
+  return record;
+}
+
+function updateWatchPartyRawAdministrativeFields_(sheet, headers, record, changes) {
+  const fields = Object.keys(changes);
+  fields.forEach(function(field) {
+    if (CGB_WATCH_PARTY_RAW_ADMIN_FIELDS.indexOf(field) < 0) {
+      throw watchPartyDiscoveryError_('unapproved_raw_field_update');
+    }
+    if (headers.indexOf(field) < 0) {
+      throw watchPartyDiscoveryError_('missing_raw_administrative_column:' + field);
+    }
+  });
+  fields.forEach(function(field) {
+    const index = headers.indexOf(field);
+    sheet.getRange(record.rowNumber, index + 1, 1, 1).setValues([[changes[field]]]);
+    record.values[index] = changes[field];
+    record.object[field] = changes[field];
+  });
   return record;
 }
 

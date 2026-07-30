@@ -28,7 +28,7 @@ const CGB_TABS = Object.freeze({
     'watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type',
     'official_event_url', 'source_type', 'event_start_at', 'age_policy', 'sound_status',
     'restrictions_note', 'game_day_note', 'event_status', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at'
+    'source_submission_id', 'discovery_id', 'publication_key', 'created_at', 'updated_at'
   ],
   Fan_Intent: [
     'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
@@ -45,7 +45,7 @@ const CGB_TABS = Object.freeze({
     'official_event_url', 'event_start_information', 'age_policy', 'sound_status',
     'restrictions_note', 'game_day_note', 'submitter_role', 'submitter_name',
     'submitter_email', 'processing_status', 'created_watch_party_ids',
-    'created_venue_id', 'processing_error', 'processed_at'
+    'created_venue_id', 'processing_error', 'processed_at', 'discovery_id'
   ],
   Listing_Updates_Raw: [
     'response_timestamp', 'submission_id', 'related_venue_id', 'related_watch_party_id',
