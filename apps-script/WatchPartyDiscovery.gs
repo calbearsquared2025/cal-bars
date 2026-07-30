@@ -77,18 +77,24 @@ function verifyWatchPartyDiscoveryWorkbook() {
  */
 function prepareWatchPartyDiscoveryWorkbook() {
   const workbook = getWorkbook_();
-  let discoverySheet = workbook.getSheetByName('Watch_Party_Discovery');
-  if (!discoverySheet) discoverySheet = workbook.insertSheet('Watch_Party_Discovery');
-  ensureHeaderRow_(discoverySheet, CGB_WATCH_PARTY_DISCOVERY_HEADERS);
+  const partySheet = getRequiredSheet_(workbook, 'Watch_Parties');
+  const rawSheet = getRequiredSheet_(workbook, 'Watch_Party_Submissions_Raw');
+  const partyInspection = inspectAppendableHeaders_(partySheet, CGB_WATCH_PARTY_CANONICAL_DISCOVERY_HEADERS);
+  const rawInspection = inspectAppendableHeaders_(rawSheet, CGB_WATCH_PARTY_RAW_DISCOVERY_HEADERS);
 
-  appendApprovedHeaders_(
-    getRequiredSheet_(workbook, 'Watch_Parties'),
-    CGB_WATCH_PARTY_CANONICAL_DISCOVERY_HEADERS
-  );
-  appendApprovedHeaders_(
-    getRequiredSheet_(workbook, 'Watch_Party_Submissions_Raw'),
-    CGB_WATCH_PARTY_RAW_DISCOVERY_HEADERS
-  );
+  let discoverySheet = workbook.getSheetByName('Watch_Party_Discovery');
+  if (discoverySheet) {
+    const discoveryCheck = verifyExactHeaders_(workbook, 'Watch_Party_Discovery', CGB_WATCH_PARTY_DISCOVERY_HEADERS);
+    const hasHeaders = readHeaderRow_(discoverySheet).length > 0;
+    if (hasHeaders && !discoveryCheck.ok) {
+      throw new Error('Header mismatch in tab Watch_Party_Discovery. Resolve manually before continuing.');
+    }
+  } else {
+    discoverySheet = workbook.insertSheet('Watch_Party_Discovery');
+  }
+  ensureHeaderRow_(discoverySheet, CGB_WATCH_PARTY_DISCOVERY_HEADERS);
+  appendApprovedHeaders_(partySheet, CGB_WATCH_PARTY_CANONICAL_DISCOVERY_HEADERS, partyInspection);
+  appendApprovedHeaders_(rawSheet, CGB_WATCH_PARTY_RAW_DISCOVERY_HEADERS, rawInspection);
 
   return verifyWatchPartyDiscoveryWorkbook_(workbook);
 }
@@ -128,26 +134,35 @@ function verifyRequiredHeaders_(workbook, tabName, requiredHeaders) {
 
 function readHeaderRow_(sheet) {
   if (sheet.getLastColumn() < 1) return [];
-  return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0]
-    .map(function(value) { return String(value).trim(); })
-    .filter(function(value) { return value !== ''; });
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0]
+    .map(function(value) { return String(value).trim(); });
+  while (headers.length && headers[headers.length - 1] === '') headers.pop();
+  return headers;
 }
 
-function appendApprovedHeaders_(sheet, headersToAppend) {
+function inspectAppendableHeaders_(sheet, headersToAppend) {
   const existing = readHeaderRow_(sheet);
   if (!existing.length) throw new Error('Missing existing headers in tab ' + sheet.getName());
+  if (existing.indexOf('') >= 0) throw new Error('Blank header gap in tab ' + sheet.getName());
   const duplicates = existing.filter(function(header, index) { return existing.indexOf(header) !== index; });
   if (duplicates.length) throw new Error('Duplicate headers in tab ' + sheet.getName());
-  const missing = headersToAppend.filter(function(header) { return existing.indexOf(header) < 0; });
-  if (!missing.length) return;
-  sheet.getRange(1, existing.length + 1, 1, missing.length).setValues([missing]);
+  return {
+    existing: existing,
+    missing: headersToAppend.filter(function(header) { return existing.indexOf(header) < 0; })
+  };
+}
+
+function appendApprovedHeaders_(sheet, headersToAppend, inspection) {
+  const result = inspection || inspectAppendableHeaders_(sheet, headersToAppend);
+  if (!result.missing.length) return;
+  sheet.getRange(1, result.existing.length + 1, 1, result.missing.length).setValues([result.missing]);
   sheet.setFrozenRows(1);
 }
 
 function normalizeWatchPartyCandidate_(input) {
   const sourceKind = normalizeWatchPartyEnum_(input && input.source_kind);
   const gameIds = normalizeGameIdsCandidate_(input && input.game_ids_candidate);
-  const defaultStatus = sourceKind === 'research' || sourceKind === 'demo' ? 'needs_research' : 'new';
+  const defaultStatus = isPrivateWatchPartySourceKind_(sourceKind) ? 'needs_research' : 'new';
   return {
     discovery_id: cleanWatchPartyText_(input && input.discovery_id, 80),
     idempotency_key: cleanWatchPartyText_(input && input.idempotency_key, 500),
@@ -220,6 +235,12 @@ function validateWatchPartyCandidate_(candidate, options) {
   }
 
   if (settings.forPublication) {
+    if (['ready_to_publish', 'publishing', 'partial_failure'].indexOf(status) < 0) {
+      errors.push('invalid_publication_status');
+    }
+    if (settings.automatic && isPrivateWatchPartySourceKind_(sourceKind)) {
+      errors.push('source_kind_requires_deliberate_publication');
+    }
     if (!isSafeWatchPartyCanonicalId_(candidate && candidate.discovery_id)) errors.push('invalid_discovery_id');
     if (!isSafeWatchPartyCanonicalId_(candidate && candidate.resolved_venue_id)) errors.push('missing_resolved_venue_id');
     errors.push.apply(errors, validateGameIdsForPublication_(gameIds, settings.knownGameIds));
@@ -292,11 +313,20 @@ function resolveWatchPartyDiscoveryDelivery_(sourceKind, sourceRecordId, existin
     };
   }
   if (matches.length === 1) {
+    const discoveryId = String(matches[0].discovery_id || '');
+    if (!isSafeWatchPartyCanonicalId_(discoveryId)) {
+      return {
+        outcome: 'error',
+        error: 'invalid_existing_discovery_id',
+        idempotency_key: idempotencyKey,
+        discovery_id: ''
+      };
+    }
     return {
       outcome: 'return_existing',
       error: '',
       idempotency_key: idempotencyKey,
-      discovery_id: String(matches[0].discovery_id || '')
+      discovery_id: discoveryId
     };
   }
   return {
@@ -331,6 +361,7 @@ function validateWatchPartyCanonicalDiscoveryFields_(row, options) {
     return errors;
   }
   if (!isSafeWatchPartyCanonicalId_(discoveryId)) errors.push('invalid_discovery_id');
+  if (!isSafeWatchPartyCanonicalId_(gameId)) errors.push('invalid_game_id');
   if (!publicationKey) errors.push('missing_publication_key');
   if (isSafeWatchPartyCanonicalId_(discoveryId) && isSafeWatchPartyCanonicalId_(gameId) && publicationKey) {
     if (publicationKey !== buildWatchPartyPublicationKey_(discoveryId, gameId)) {
@@ -358,7 +389,7 @@ function resolveTrustedWatchPartyVenue_(candidate, existingVenues, context) {
   const venues = Array.isArray(existingVenues) ? existingVenues : [];
   const details = context || {};
   const sourceKind = normalizeWatchPartyEnum_(candidate && candidate.source_kind);
-  const unresolvedStatus = sourceKind === 'research' || sourceKind === 'demo'
+  const unresolvedStatus = isPrivateWatchPartySourceKind_(sourceKind)
     ? 'needs_research'
     : 'needs_venue_resolution';
 
@@ -398,27 +429,22 @@ function resolveTrustedWatchPartyVenue_(candidate, existingVenues, context) {
   }
 
   if (isEligibleTrustedWatchPartyPlace_(trustedPlace)) {
+    const proposedVenue = buildProposedWatchPartyVenue_(trustedPlace);
+    if (isPrivateWatchPartySourceKind_(sourceKind) && !details.allowPrivateSourcePublication) {
+      return {
+        decision: 'retain_private',
+        candidate_status: 'needs_research',
+        reason: 'private_source_requires_review',
+        resolved_venue_id: '',
+        proposed_venue: proposedVenue
+      };
+    }
     return {
       decision: 'propose_new_community_location',
       candidate_status: 'ready_to_publish',
       reason: 'complete_trusted_structured_place',
       resolved_venue_id: '',
-      proposed_venue: {
-        name: trustedPlace.name,
-        address_line_1: trustedPlace.addressLine1,
-        address_line_2: trustedPlace.addressLine2,
-        city: trustedPlace.city,
-        region: trustedPlace.region,
-        postal_code: trustedPlace.postalCode,
-        country_code: trustedPlace.countryCode,
-        latitude: trustedPlace.latitude,
-        longitude: trustedPlace.longitude,
-        external_source: trustedPlace.source,
-        external_place_id: trustedPlace.placeId,
-        venue_type: 'community_location',
-        verification_status: 'user_added',
-        publication_status: 'published'
-      }
+      proposed_venue: proposedVenue
     };
   }
 
@@ -436,6 +462,7 @@ function planWatchPartyPublication_(candidate, canonicalRows) {
       existing_watch_party_ids: [],
       missing_game_ids: [],
       duplicate_game_ids: [],
+      invalid_game_ids: [],
       cache_invalidation_permitted: false
     };
   }
@@ -443,21 +470,26 @@ function planWatchPartyPublication_(candidate, canonicalRows) {
   const existingIds = [];
   const missing = [];
   const duplicates = [];
+  const invalid = [];
   gameIds.forEach(function(gameId) {
     const publicationKey = buildWatchPartyPublicationKey_(candidate.discovery_id, gameId);
     const matches = rows.filter(function(row) { return String(row && row.publication_key || '') === publicationKey; });
     if (matches.length > 1) duplicates.push(gameId);
-    else if (matches.length === 1) existingIds.push(String(matches[0].watch_party_id));
-    else missing.push(gameId);
+    else if (matches.length === 1) {
+      const watchPartyId = String(matches[0].watch_party_id || '');
+      if (!isSafeWatchPartyCanonicalId_(watchPartyId)) invalid.push(gameId);
+      else existingIds.push(watchPartyId);
+    } else missing.push(gameId);
   });
 
-  if (duplicates.length) {
+  if (duplicates.length || invalid.length || uniqueWatchPartyValues_(existingIds).length !== existingIds.length) {
     return {
       outcome: 'error',
       candidate_status: 'error',
       existing_watch_party_ids: uniqueWatchPartyValues_(existingIds),
       missing_game_ids: missing,
       duplicate_game_ids: duplicates,
+      invalid_game_ids: invalid,
       cache_invalidation_permitted: false
     };
   }
@@ -468,6 +500,7 @@ function planWatchPartyPublication_(candidate, canonicalRows) {
       existing_watch_party_ids: uniqueWatchPartyValues_(existingIds),
       missing_game_ids: [],
       duplicate_game_ids: [],
+      invalid_game_ids: [],
       cache_invalidation_permitted: true
     };
   }
@@ -477,6 +510,7 @@ function planWatchPartyPublication_(candidate, canonicalRows) {
     existing_watch_party_ids: uniqueWatchPartyValues_(existingIds),
     missing_game_ids: missing,
     duplicate_game_ids: [],
+    invalid_game_ids: [],
     cache_invalidation_permitted: false
   };
 }
@@ -501,7 +535,8 @@ function decideWatchPartyStatusRepair_(candidate, canonicalRows) {
 function isWatchPartyCacheInvalidationPermitted_(publicationPlan) {
   return Boolean(publicationPlan && publicationPlan.cache_invalidation_permitted &&
     publicationPlan.missing_game_ids && publicationPlan.missing_game_ids.length === 0 &&
-    publicationPlan.duplicate_game_ids && publicationPlan.duplicate_game_ids.length === 0);
+    publicationPlan.duplicate_game_ids && publicationPlan.duplicate_game_ids.length === 0 &&
+    publicationPlan.invalid_game_ids && publicationPlan.invalid_game_ids.length === 0);
 }
 
 function normalizeTrustedWatchPartyPlace_(place) {
@@ -518,9 +553,33 @@ function normalizeTrustedWatchPartyPlace_(place) {
     region: cleanWatchPartyText_(place && place.region, 140),
     postalCode: cleanWatchPartyText_(place && (place.postalCode || place.postal_code), 32),
     countryCode: countryCode,
-    latitude: Number(place && place.latitude),
-    longitude: Number(place && place.longitude)
+    latitude: normalizeWatchPartyCoordinate_(place && place.latitude),
+    longitude: normalizeWatchPartyCoordinate_(place && place.longitude)
   };
+}
+
+function buildProposedWatchPartyVenue_(trustedPlace) {
+  return {
+    name: trustedPlace.name,
+    address_line_1: trustedPlace.addressLine1,
+    address_line_2: trustedPlace.addressLine2,
+    city: trustedPlace.city,
+    region: trustedPlace.region,
+    postal_code: trustedPlace.postalCode,
+    country_code: trustedPlace.countryCode,
+    latitude: trustedPlace.latitude,
+    longitude: trustedPlace.longitude,
+    external_source: trustedPlace.source,
+    external_place_id: trustedPlace.placeId,
+    venue_type: 'community_location',
+    verification_status: 'user_added',
+    publication_status: 'published'
+  };
+}
+
+function normalizeWatchPartyCoordinate_(value) {
+  if (value === null || value === undefined || String(value).trim() === '') return NaN;
+  return Number(value);
 }
 
 function isEligibleTrustedWatchPartyPlace_(place) {
@@ -636,6 +695,10 @@ function normalizeJsonListField_(value) {
 function normalizeAttemptCount_(value) {
   const count = Math.floor(Number(value));
   return Number.isFinite(count) && count >= 0 ? count : 0;
+}
+
+function isPrivateWatchPartySourceKind_(sourceKind) {
+  return ['research', 'import', 'demo'].indexOf(normalizeWatchPartyEnum_(sourceKind)) >= 0;
 }
 
 function normalizeWatchPartyEnum_(value) {
