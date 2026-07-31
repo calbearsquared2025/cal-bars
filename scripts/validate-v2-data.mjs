@@ -12,7 +12,8 @@ const FORBIDDEN_KEYS = new Set([
   'browser_id', 'fan_intent_id', 'external_source', 'external_place_id',
   'source_submission_id', 'publication_status', 'created_at',
   'submitter_name', 'submitter_email', 'reviewer_note', 'permission_confirmed',
-  'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url'
+  'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
+  'opponent_short_name'
 ]);
 
 const VENUE_TYPES = new Set(['cal_bar', 'community_location']);
