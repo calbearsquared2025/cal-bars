@@ -12,6 +12,13 @@ test('synthetic fallback satisfies the public contract', () => {
   assert.deepEqual(validateSnapshot(fixture), []);
 });
 
+test('deprecated opponent short names are rejected recursively', () => {
+  const invalid = structuredClone(fixture);
+  invalid.games[0].opponent_short_name = 'UCLA';
+  const errors = validateSnapshot(invalid);
+  assert.ok(errors.some((error) => error.includes('opponent_short_name is forbidden')));
+});
+
 test('private browser identifiers are rejected recursively', () => {
   const invalid = structuredClone(fixture);
   invalid.fanCounts[0].browser_id = 'private-browser-id';
