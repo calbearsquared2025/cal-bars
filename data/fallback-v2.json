@@ -91,27 +91,157 @@
       "game_id": "game_2026_01",
       "season": 2026,
       "schedule_order": 1,
-      "opponent_name": "Test State",
-      "opponent_short_name": "Test State",
+      "opponent_name": "UCLA",
+      "opponent_short_name": "UCLA",
       "home_away": "home",
       "game_date": "2026-09-05",
-      "kickoff_at": "2026-09-05T19:30:00Z",
+      "kickoff_at": "2026-09-06T02:30:00Z",
       "kickoff_status": "confirmed",
       "game_status": "upcoming",
-      "updated_at": "2026-07-26T12:00:00Z"
+      "updated_at": "2026-07-31T16:31:00Z"
     },
     {
       "game_id": "game_2026_02",
       "season": 2026,
       "schedule_order": 2,
-      "opponent_name": "Example University",
-      "opponent_short_name": "Example U",
+      "opponent_name": "Syracuse",
+      "opponent_short_name": "Syracuse",
       "home_away": "away",
       "game_date": "2026-09-12",
+      "kickoff_at": "2026-09-12T19:30:00Z",
+      "kickoff_status": "confirmed",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_03",
+      "season": 2026,
+      "schedule_order": 3,
+      "opponent_name": "Wagner",
+      "opponent_short_name": "Wagner",
+      "home_away": "home",
+      "game_date": "2026-09-19",
+      "kickoff_at": "2026-09-19T19:30:00Z",
+      "kickoff_status": "confirmed",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_04",
+      "season": 2026,
+      "schedule_order": 4,
+      "opponent_name": "Clemson",
+      "opponent_short_name": "Clemson",
+      "home_away": "home",
+      "game_date": "2026-09-25",
+      "kickoff_at": "2026-09-26T02:30:00Z",
+      "kickoff_status": "confirmed",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_05",
+      "season": 2026,
+      "schedule_order": 5,
+      "opponent_name": "UNLV",
+      "opponent_short_name": "UNLV",
+      "home_away": "away",
+      "game_date": "2026-10-03",
+      "kickoff_at": "2026-10-03T19:30:00Z",
+      "kickoff_status": "confirmed",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_06",
+      "season": 2026,
+      "schedule_order": 6,
+      "opponent_name": "Virginia Tech",
+      "opponent_short_name": "Virginia Tech",
+      "home_away": "home",
+      "game_date": "2026-10-10",
       "kickoff_at": "",
       "kickoff_status": "tbd",
       "game_status": "upcoming",
-      "updated_at": "2026-07-26T12:00:00Z"
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_07",
+      "season": 2026,
+      "schedule_order": 7,
+      "opponent_name": "Wake Forest",
+      "opponent_short_name": "Wake Forest",
+      "home_away": "home",
+      "game_date": "2026-10-17",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_08",
+      "season": 2026,
+      "schedule_order": 8,
+      "opponent_name": "SMU",
+      "opponent_short_name": "SMU",
+      "home_away": "away",
+      "game_date": "2026-10-24",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_09",
+      "season": 2026,
+      "schedule_order": 9,
+      "opponent_name": "NC State",
+      "opponent_short_name": "NC State",
+      "home_away": "away",
+      "game_date": "2026-10-31",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_10",
+      "season": 2026,
+      "schedule_order": 10,
+      "opponent_name": "Virginia",
+      "opponent_short_name": "Virginia",
+      "home_away": "away",
+      "game_date": "2026-11-14",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_11",
+      "season": 2026,
+      "schedule_order": 11,
+      "opponent_name": "Stanford",
+      "opponent_short_name": "Stanford",
+      "home_away": "home",
+      "game_date": "2026-11-21",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
+    },
+    {
+      "game_id": "game_2026_12",
+      "season": 2026,
+      "schedule_order": 12,
+      "opponent_name": "Pittsburgh",
+      "opponent_short_name": "Pittsburgh",
+      "home_away": "home",
+      "game_date": "2026-11-28",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-07-31T16:31:00Z"
     }
   ],
   "watchParties": [
@@ -123,13 +253,13 @@
       "organizer_type": "alumni_group",
       "official_event_url": "https://example.com/events/wp-000001",
       "source_type": "cgb_added",
-      "event_start_at": "2026-09-05T18:30:00Z",
+      "event_start_at": "",
       "age_policy": "all_ages",
       "sound_status": "confirmed_on",
       "restrictions_note": "Synthetic test event; no reservation required.",
       "game_day_note": "Arrive early for the test workflow.",
       "event_status": "active",
-      "updated_at": "2026-07-26T12:00:00Z"
+      "updated_at": "2026-07-31T16:31:00Z"
     },
     {
       "watch_party_id": "wp_000002",
@@ -143,9 +273,9 @@
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "Time will be updated after kickoff is announced.",
+      "game_day_note": "Kickoff is supplied by the linked Game record.",
       "event_status": "active",
-      "updated_at": "2026-07-26T12:00:00Z"
+      "updated_at": "2026-07-31T16:31:00Z"
     }
   ],
   "fanCounts": [
@@ -183,5 +313,5 @@
       "past_game_count": 0
     }
   ],
-  "generatedAt": "2026-07-26T12:00:00Z"
+  "generatedAt": "2026-07-31T16:31:00Z"
 }
