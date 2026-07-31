@@ -1,3 +1,4 @@
+import { getWatchParty } from './core.mjs';
 import {
   buildWatchPartyPrefillUrl,
   normalizeWatchPartyFormConfig,
@@ -78,20 +79,30 @@ export function renderWatchPartyFormEntryPoint({
 
   if (!href) return '';
 
+  const existingParty = getWatchParty(
+    state?.snapshot,
+    context?.gameId,
+    context?.venueId
+  );
+
   const section = documentObject.createElement('section');
   section.className = 'watch-party-contribution';
   section.dataset.watchPartyFormEntryPoint = 'true';
 
   const prompt = documentObject.createElement('p');
   prompt.className = 'watch-party-contribution__prompt';
-  prompt.textContent = 'Is there a watch party going on?';
+  prompt.textContent = existingParty
+    ? 'Is there another watch party going on?'
+    : 'Is there a watch party going on?';
 
   const link = documentObject.createElement('a');
   link.className = 'primary-button watch-party-contribution__action';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = 'Submit a Watch Party';
+  link.textContent = existingParty
+    ? 'Add Another Watch Party'
+    : 'Submit a Watch Party';
 
   section.append(prompt, link);
   detail.append(section);
