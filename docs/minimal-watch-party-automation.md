@@ -24,7 +24,6 @@ The minimal processor requires:
 - organizer or host name
 - recognized submitter relationship
 - optional HTTP(S) event URL
-- optional parseable start or arrival time
 
 One selected game creates one canonical Watch Party row. Multiple selected games create one row per game. Valid rows are written with:
 
@@ -32,6 +31,8 @@ One selected game creates one canonical Watch Party row. Multiple selected games
 event_status = active
 publication_status = published
 ```
+
+MVP Watch Parties use the linked Game's kickoff time. The canonical `event_start_at` field remains blank. Put early-arrival instructions or other special timing in the optional `Game Day Note` field.
 
 The public snapshot cache is cleared only after the canonical write and raw-row status update succeed.
 
@@ -50,7 +51,6 @@ Recommended structured fields:
 
 - `Organizer Type`
 - `Official Event URL`
-- `Start or arrival time`
 - `Age Policy`
 - `Sound Status`
 - `Restrictions Note`
