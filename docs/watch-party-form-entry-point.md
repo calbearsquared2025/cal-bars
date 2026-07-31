@@ -73,7 +73,7 @@ Use the Milestone 5A processor labels below. Do not add a separate start-time qu
 
 ### Current Game-field limitation
 
-Google Forms does not support separate machine values and display labels for checkbox or multiple-choice options. The current accepted processor expects exact canonical Game IDs, so a Form option such as **UCLA at Cal — Sat, Sep 5** will not yet resolve to `game_2026_01`.
+Google Forms does not provide separate machine values and display labels for checkbox or multiple-choice options. The current accepted processor expects exact canonical Game IDs, so a Form option such as **UCLA at Cal — Sat, Sep 5** will not yet resolve to `game_2026_01`.
 
 For the immediate private test, use the exact Game IDs in the Form or use a Short answer field populated by the contextual link. This proves the relationship and auto-publication flow, but it is not the preferred production presentation.
 
@@ -117,11 +117,11 @@ Set the Form confirmation message to:
 
 The event website is still validated. The question is where validation occurs.
 
-Google Forms' built-in URL validation generally expects a complete URL such as `https://example.com`. It can reject a bare domain such as `example.com` before Apps Script receives the response. Because the approved correction in PR #20 is intended to accept either format and normalize a bare domain to HTTPS, the Form question should be an optional **Short answer** without built-in URL validation after PR #20 is active.
+Google Forms response validation blocks a submission before Apps Script receives it. A rule that requires a complete URL is therefore incompatible with the approved bare-domain behavior because `example.com` would be rejected before the processor could normalize it to `https://example.com`.
 
-Apps Script then performs the authoritative validation and normalization. This approach accepts the user-friendly input while still rejecting malformed values, credentials, whitespace, and non-web schemes.
+After PR #20 is active, configure the question as an optional **Short answer** without a complete-URL rule. Apps Script then performs the authoritative validation and normalization, accepting a bare domain while rejecting malformed values, credentials, whitespace, and non-web schemes.
 
-If the product instead decides to require complete HTTP(S) URLs and reject bare domains, Google Forms URL validation may be enabled. That would reverse the previously requested `example.com` behavior.
+If the product instead decides to require complete HTTP(S) URLs and reject bare domains, Google Forms response validation may be enabled. That would reverse the previously requested `example.com` behavior.
 
 ## Obtain the Google Forms entry IDs
 
@@ -187,16 +187,13 @@ This is a test-only bridge. The draft PR and production branch remain disabled.
 
 ## Production-configuration constraint
 
-The Form URL and `entry.<digits>` identifiers are not credentials and should not be treated as security secrets. Anyone who can open the public Form or inspect a generated prefilled link can discover them.
+The Form URL and `entry.<digits>` identifiers are public routing identifiers, not credentials or security secrets. Anyone who can open the public Form or inspect a generated prefilled link can discover them.
 
-The actual constraint was narrower: the implementation instruction prohibited committing Matthew's account-specific values to source control. Because the static browser needs those public identifiers at runtime, the PR could not both obey that restriction and ship an active production link.
+The implementation constraint was narrower: the Milestone 5B instruction prohibited committing Matthew's actual account-specific values. A static frontend nevertheless needs those public identifiers at runtime, either embedded in its files or fetched from a public endpoint. The draft PR therefore had to remain disabled until Matthew reviewed the Form and approved how to publish the configuration.
 
-Production therefore needs one explicit activation choice:
+The simplest production choice is a small reviewed source configuration after the Form is final. A public Apps Script runtime configuration is also possible, but it does not make the values secret and adds operational complexity; use it only if centralized configuration changes are worth that cost.
 
-- place the public Form URL and entry IDs in reviewed source configuration; or
-- return them through a small public runtime configuration from the existing Apps Script layer.
-
-The second method keeps the values out of Git history but does not make them secret. It merely centralizes configuration and permits changes without another frontend commit. Private values such as the workbook ID, raw responses, contacts, and credentials remain outside the public configuration.
+Private values such as the workbook ID, raw responses, contacts, and credentials remain outside either public configuration method.
 
 ## Verify the generated prefilled link
 
@@ -225,7 +222,7 @@ Until PR #20 is merged and its revised `apps-script/WatchPartyAutomation.gs` is 
 - do not claim that `example.com` is accepted
 - the current processor requires a complete HTTP(S) URL
 
-After PR #20 is merged and installed, configure **Official Event URL** as an optional **Short answer** question without Google Forms' built-in URL validation.
+After PR #20 is merged and installed, configure **Official Event URL** as an optional **Short answer** question without a complete-URL response-validation rule.
 
 ## Account-bound actions not performed by this PR
 
