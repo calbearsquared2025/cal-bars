@@ -150,7 +150,7 @@ test('native share success remains the first sharing path', async () => {
     payload: { url: 'https://example.com' },
     url: 'https://example.com',
     share: async () => {},
-    writeClipboard: async (url) => { clipboardCalled = true; }
+    writeClipboard: async () => { clipboardCalled = true; }
   });
   assert.deepEqual(result, { method: 'share' });
   assert.equal(clipboardCalled, false);
