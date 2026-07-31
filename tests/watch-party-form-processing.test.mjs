@@ -65,7 +65,12 @@ function objectsFromSheet(sheet) {
   return rows.map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])));
 }
 
-function buildHarness({ venuePublished = true, games = ['game_1'], legacyStartTime } = {}) {
+function buildHarness({
+  venuePublished = true,
+  games = ['game_1'],
+  legacyStartTime,
+  officialEventUrl = 'https://events.example/watch-party'
+} = {}) {
   const rawHeaders = [
     'Timestamp', 'Venue ID (existing)', 'Game(s)', 'Organizer Name', 'Organizer Type',
     'Official Event URL', 'Age Policy', 'Sound Status',
@@ -77,7 +82,7 @@ function buildHarness({ venuePublished = true, games = ['game_1'], legacyStartTi
     'Game(s)': games.join(', '),
     'Organizer Name': 'Cal Alumni Club',
     'Organizer Type': 'Alumni group',
-    'Official Event URL': 'https://events.example/watch-party',
+    'Official Event URL': officialEventUrl,
     'Age Policy': 'All ages',
     'Sound Status': 'On',
     'Restrictions Note': 'Reservations recommended.',
@@ -203,6 +208,33 @@ test('invalid venue records an error and creates no canonical row', () => {
   assert.equal(objectsFromSheet(rawSheet)[0].processing_status, 'error');
   assert.equal(objectsFromSheet(rawSheet)[0].processing_error, 'venue_not_publishable');
   assert.deepEqual(removedCacheKeys, []);
+});
+
+test('bare-domain event website is normalized to HTTPS before publication', () => {
+  const { api, event, rawSheet, watchPartySheet } = buildHarness({
+    officialEventUrl: 'events.example/watch-party'
+  });
+  const result = api.process(event);
+
+  assert.equal(result.ok, true);
+  assert.equal(objectsFromSheet(rawSheet)[0]['Official Event URL'], 'events.example/watch-party');
+  assert.equal(
+    objectsFromSheet(watchPartySheet)[0].official_event_url,
+    'https://events.example/watch-party'
+  );
+});
+
+test('explicit HTTP event website remains unchanged', () => {
+  const { api, event, watchPartySheet } = buildHarness({
+    officialEventUrl: 'http://events.example/watch-party'
+  });
+  const result = api.process(event);
+
+  assert.equal(result.ok, true);
+  assert.equal(
+    objectsFromSheet(watchPartySheet)[0].official_event_url,
+    'http://events.example/watch-party'
+  );
 });
 
 test('invalid public URL fails before publication', () => {
