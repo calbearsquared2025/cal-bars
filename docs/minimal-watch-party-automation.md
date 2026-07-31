@@ -23,7 +23,7 @@ The minimal processor requires:
 - one or more existing `game_id` values
 - organizer or host name
 - recognized submitter relationship
-- optional HTTP(S) event URL
+- optional event website entered as either a bare domain, such as `example.com`, or a full HTTP(S) URL
 
 One selected game creates one canonical Watch Party row. Multiple selected games create one row per game. Valid rows are written with:
 
@@ -51,6 +51,10 @@ Recommended structured fields:
 
 - `Organizer Type`
 - `Official Event URL`
+  - Use an optional **Short answer** question.
+  - Accept either `example.com` or a complete `http://` / `https://` address.
+  - Do not enable Google Forms' built-in URL response validation, because it may reject a bare domain before Apps Script can normalize it.
+  - The processor stores a bare domain with an `https://` prefix.
 - `Age Policy`
 - `Sound Status`
 - `Restrictions Note`
@@ -80,8 +84,9 @@ Set the Form confirmation message to:
    - event source: **From spreadsheet**
    - event type: **On form submit**
 8. Confirm the currently deployed public web app already contains the accepted Watch Party read endpoint from `main`. Redeploy only if that accepted read code has not yet been deployed.
-9. Submit one test response using an existing published Venue ID and Game ID.
-10. Confirm the generated raw row is `processed`, one canonical row exists, and the Watch Party appears after refresh on desktop and iPhone.
+9. Confirm `Official Event URL` is an optional Short answer field without Google Forms URL response validation.
+10. Submit one test response using an existing published Venue ID and Game ID, and enter a bare domain such as `example.com` in the event website field.
+11. Confirm the raw response preserves the submitted text, the canonical `official_event_url` begins with `https://`, the row is `processed`, and the Watch Party link opens after refresh on desktop and iPhone.
 
 ## Privacy boundary
 
