@@ -7,6 +7,7 @@ import {
   calculateMinimalPan,
   findExactVenueMatch,
   formatKickoff,
+  gameTitle,
   getFanCount,
   getHistoryCount,
   markerKind,
@@ -23,6 +24,10 @@ const snapshot = JSON.parse(await readFile(new URL('../data/fallback-v2.json', i
 
 test('next upcoming game is the default', () => {
   assert.equal(selectDefaultGame(snapshot.games, new Date('2026-07-26T12:00:00Z')).game_id, 'game_2026_01');
+});
+
+test('game titles use the single canonical opponent name', () => {
+  assert.equal(gameTitle({ opponent_name: 'North Carolina State', home_away: 'away' }), 'at North Carolina State');
 });
 
 test('TBD kickoff is displayed without a timestamp', () => {
@@ -145,7 +150,7 @@ test('native share success remains the first sharing path', async () => {
     payload: { url: 'https://example.com' },
     url: 'https://example.com',
     share: async () => {},
-    writeClipboard: async () => { clipboardCalled = true; }
+    writeClipboard: async (url) => { clipboardCalled = true; }
   });
   assert.deepEqual(result, { method: 'share' });
   assert.equal(clipboardCalled, false);
