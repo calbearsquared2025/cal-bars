@@ -24,7 +24,6 @@ const CGB_MINIMAL_WATCH_PARTY_FORM_ALIASES = Object.freeze({
   organizer_name: Object.freeze(['Organizer or host', 'Organizer Name', 'organizer_name']),
   organizer_type: Object.freeze(['Organizer Type', 'organizer_type']),
   official_event_url: Object.freeze(['Official Event URL', 'official_event_url']),
-  event_start_at: Object.freeze(['Start or arrival time', 'Event Start Information', 'event_start_information']),
   age_policy: Object.freeze(['Age Policy', 'age_policy']),
   sound_status: Object.freeze(['Sound Status', 'sound_status']),
   restrictions_note: Object.freeze(['Restrictions or reservation information', 'Restrictions Note', 'restrictions_note']),
@@ -212,10 +211,6 @@ function normalizeMinimalWatchPartySubmission_(namedValues) {
     readMinimalWatchPartyFormField_(namedValues, 'official_event_url'),
     2000
   );
-  const eventStartAt = normalizeMinimalWatchPartyDateTime_(
-    readMinimalWatchPartyFormField_(namedValues, 'event_start_at')
-  );
-
   if (!venueId) throw minimalWatchPartyError_('missing_venue_id');
   if (!gameIds.length) throw minimalWatchPartyError_('missing_game_ids');
   if (!organizerName) throw minimalWatchPartyError_('missing_organizer_name');
@@ -231,7 +226,6 @@ function normalizeMinimalWatchPartySubmission_(namedValues) {
     organizer_type: organizerType,
     official_event_url: officialEventUrl,
     source_type: sourceType,
-    event_start_at: eventStartAt,
     age_policy: agePolicy,
     sound_status: soundStatus,
     restrictions_note: cleanMinimalWatchPartyText_(
@@ -269,7 +263,7 @@ function buildMinimalWatchPartyRows_(workbook, submission, submissionId) {
       organizer_type: submission.organizer_type,
       official_event_url: submission.official_event_url,
       source_type: submission.source_type,
-      event_start_at: submission.event_start_at,
+      event_start_at: '',
       age_policy: submission.age_policy,
       sound_status: submission.sound_status,
       restrictions_note: submission.restrictions_note,
@@ -373,14 +367,6 @@ function normalizeMinimalWatchPartyEnum_(value, mapping, defaultValue) {
   const normalized = cleanMinimalWatchPartyText_(value, 120).toLowerCase();
   if (!normalized) return defaultValue;
   return mapping[normalized] || '';
-}
-
-function normalizeMinimalWatchPartyDateTime_(value) {
-  const text = cleanMinimalWatchPartyText_(value, 120);
-  if (!text) return '';
-  const date = new Date(text);
-  if (Number.isNaN(date.getTime())) throw minimalWatchPartyError_('invalid_event_start');
-  return date.toISOString();
 }
 
 function cleanMinimalWatchPartyText_(value, maxLength) {
