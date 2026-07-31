@@ -65,10 +65,10 @@ function objectsFromSheet(sheet) {
   return rows.map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index] ?? ''])));
 }
 
-function buildHarness({ venuePublished = true, games = ['game_1'] } = {}) {
+function buildHarness({ venuePublished = true, games = ['game_1'], legacyStartTime } = {}) {
   const rawHeaders = [
     'Timestamp', 'Venue ID (existing)', 'Game(s)', 'Organizer Name', 'Organizer Type',
-    'Official Event URL', 'Start or arrival time', 'Age Policy', 'Sound Status',
+    'Official Event URL', 'Age Policy', 'Sound Status',
     'Restrictions Note', 'Game Day Note', 'Submitter Role', 'Submitter Email'
   ];
   const rawRow = {
@@ -78,7 +78,6 @@ function buildHarness({ venuePublished = true, games = ['game_1'] } = {}) {
     'Organizer Name': 'Cal Alumni Club',
     'Organizer Type': 'Alumni group',
     'Official Event URL': 'https://events.example/watch-party',
-    'Start or arrival time': '2026-09-05T18:00:00Z',
     'Age Policy': 'All ages',
     'Sound Status': 'On',
     'Restrictions Note': 'Reservations recommended.',
@@ -86,6 +85,10 @@ function buildHarness({ venuePublished = true, games = ['game_1'] } = {}) {
     'Submitter Role': 'Alumni group',
     'Submitter Email': 'private@example.com'
   };
+  if (legacyStartTime !== undefined) {
+    rawHeaders.splice(6, 0, 'Start or arrival time');
+    rawRow['Start or arrival time'] = legacyStartTime;
+  }
   const rawSheet = new SheetMock('Watch_Party_Submissions_Raw', rawHeaders, [rawRow]);
   const venueSheet = new SheetMock('Venues', [
     'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
@@ -146,7 +149,7 @@ function buildHarness({ venuePublished = true, games = ['game_1'] } = {}) {
   return { api: context.__api, event, workbook, rawSheet, watchPartySheet, removedCacheKeys };
 }
 
-test('valid existing-venue submission creates one published canonical Watch Party', () => {
+test('valid submission without a start-time field creates one published canonical Watch Party', () => {
   const { api, event, rawSheet, watchPartySheet, removedCacheKeys } = buildHarness();
   const result = api.process(event);
   assert.equal(result.ok, true);
@@ -158,6 +161,7 @@ test('valid existing-venue submission creates one published canonical Watch Part
   assert.equal(parties[0].game_id, 'game_1');
   assert.equal(parties[0].organizer_type, 'alumni_group');
   assert.equal(parties[0].source_type, 'alumni_group_submitted');
+  assert.equal(parties[0].event_start_at, '');
   assert.equal(parties[0].event_status, 'active');
   assert.equal(parties[0].publication_status, 'published');
   assert.equal('submitter_email' in parties[0], false);
@@ -169,12 +173,25 @@ test('valid existing-venue submission creates one published canonical Watch Part
   assert.deepEqual(removedCacheKeys, ['cgb_v2_public_snapshot']);
 });
 
-test('one submission with two game IDs creates one row per game', () => {
+test('legacy start-time value is ignored without changing the raw response columns', () => {
+  const { api, event, rawSheet, watchPartySheet } = buildHarness({ legacyStartTime: '12:00 PM' });
+  const originalHeaders = rawSheet.values[0].slice();
+  const result = api.process(event);
+
+  assert.equal(result.ok, true);
+  assert.deepEqual(rawSheet.values[0].slice(0, originalHeaders.length), originalHeaders);
+  assert.equal(objectsFromSheet(rawSheet)[0]['Start or arrival time'], '12:00 PM');
+  assert.equal(objectsFromSheet(watchPartySheet)[0].event_start_at, '');
+});
+
+test('one submission with two game IDs creates one blank-start row per game', () => {
   const { api, event, watchPartySheet } = buildHarness({ games: ['game_1', 'game_2'] });
   const result = api.process(event);
   assert.equal(result.ok, true);
   assert.equal(result.created_watch_party_ids.length, 2);
-  assert.deepEqual(objectsFromSheet(watchPartySheet).map((row) => row.game_id), ['game_1', 'game_2']);
+  const parties = objectsFromSheet(watchPartySheet);
+  assert.deepEqual(parties.map((row) => row.game_id), ['game_1', 'game_2']);
+  assert.deepEqual(parties.map((row) => row.event_start_at), ['', '']);
 });
 
 test('invalid venue records an error and creates no canonical row', () => {
