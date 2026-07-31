@@ -23,7 +23,9 @@ const CGB_MINIMAL_WATCH_PARTY_FORM_ALIASES = Object.freeze({
   game_ids: Object.freeze(['Game IDs', 'Game(s)', 'game_ids_submitted']),
   organizer_name: Object.freeze(['Organizer or host', 'Organizer Name', 'organizer_name']),
   organizer_type: Object.freeze(['Organizer Type', 'organizer_type']),
-  official_event_url: Object.freeze(['Official Event URL', 'official_event_url']),
+  official_event_url: Object.freeze([
+    'Official Event URL', 'Official Event Website', 'Event Website', 'Website', 'official_event_url'
+  ]),
   age_policy: Object.freeze(['Age Policy', 'age_policy']),
   sound_status: Object.freeze(['Sound Status', 'sound_status']),
   restrictions_note: Object.freeze(['Restrictions or reservation information', 'Restrictions Note', 'restrictions_note']),
@@ -207,17 +209,13 @@ function normalizeMinimalWatchPartySubmission_(namedValues) {
     CGB_MINIMAL_WATCH_PARTY_SOUND_STATUS_MAP,
     'unknown'
   );
-  const officialEventUrl = cleanMinimalWatchPartyText_(
-    readMinimalWatchPartyFormField_(namedValues, 'official_event_url'),
-    2000
+  const officialEventUrl = normalizeMinimalWatchPartyHttpUrl_(
+    readMinimalWatchPartyFormField_(namedValues, 'official_event_url')
   );
   if (!venueId) throw minimalWatchPartyError_('missing_venue_id');
   if (!gameIds.length) throw minimalWatchPartyError_('missing_game_ids');
   if (!organizerName) throw minimalWatchPartyError_('missing_organizer_name');
   if (!sourceType) throw minimalWatchPartyError_('invalid_submitter_role');
-  if (officialEventUrl && !/^https?:\/\/\S+$/i.test(officialEventUrl)) {
-    throw minimalWatchPartyError_('invalid_official_event_url');
-  }
 
   return {
     venue_id: venueId,
@@ -367,6 +365,41 @@ function normalizeMinimalWatchPartyEnum_(value, mapping, defaultValue) {
   const normalized = cleanMinimalWatchPartyText_(value, 120).toLowerCase();
   if (!normalized) return defaultValue;
   return mapping[normalized] || '';
+}
+
+function normalizeMinimalWatchPartyHttpUrl_(value) {
+  const raw = cleanMinimalWatchPartyText_(value, 2000);
+  if (!raw) return '';
+  if (/\s/.test(raw)) throw minimalWatchPartyError_('invalid_official_event_url');
+
+  const normalized = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+  if (normalized.length > 2000 || !/^https?:\/\/[^/?#\s]+(?:[/?#]\S*)?$/i.test(normalized)) {
+    throw minimalWatchPartyError_('invalid_official_event_url');
+  }
+
+  const authority = normalized.replace(/^https?:\/\//i, '').split(/[/?#]/)[0];
+  if (!authority || authority.indexOf('@') >= 0) {
+    throw minimalWatchPartyError_('invalid_official_event_url');
+  }
+
+  if (authority.charAt(0) === '[') {
+    const closingBracket = authority.indexOf(']');
+    const remainder = closingBracket >= 0 ? authority.slice(closingBracket + 1) : '';
+    if (closingBracket < 0 || (remainder && !/^:\d+$/.test(remainder))) {
+      throw minimalWatchPartyError_('invalid_official_event_url');
+    }
+  } else {
+    const hostAndPort = authority.split(':');
+    const hostname = hostAndPort[0];
+    if (hostAndPort.length > 2 || !hostname ||
+        !/^[a-z0-9.-]+$/i.test(hostname) || hostname.charAt(0) === '.' ||
+        hostname.charAt(hostname.length - 1) === '.' || hostname.indexOf('..') >= 0 ||
+        (hostAndPort.length === 2 && !/^\d+$/.test(hostAndPort[1]))) {
+      throw minimalWatchPartyError_('invalid_official_event_url');
+    }
+  }
+
+  return normalized;
 }
 
 function cleanMinimalWatchPartyText_(value, maxLength) {
