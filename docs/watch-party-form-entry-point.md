@@ -24,7 +24,7 @@ The action remains hidden when the configuration or venue/game context is missin
 
 ## Official 2026 schedule and stable Game IDs
 
-The repository fallback now contains the verified 12-game 2026 regular-season schedule. The owner-only `apps-script/Official2026Schedule.gs` helper can upsert the same rows into the private canonical `Games` tab.
+The private canonical `Games` tab and the repository fallback both contain the verified 12-game 2026 regular-season schedule. The private Sheet is the normal live-data source. `data/fallback-v2.json` is a development and endpoint-failure recovery snapshot, not a second canonical database.
 
 All confirmed times below are Pacific. A blank kickoff remains `kickoff_status = tbd` and renders as the confirmed date followed by **Time TBD**.
 
@@ -43,13 +43,15 @@ All confirmed times below are Pacific. A blank kickoff remains `kickoff_status =
 | `game_2026_11` | Stanford at Cal | Sat, Nov 21 | Time TBD |
 | `game_2026_12` | Pittsburgh at Cal | Sat, Nov 28 | Time TBD |
 
-To populate or refresh the private Sheet after copying the new Apps Script file into the spreadsheet-bound project, run:
+For later schedule changes:
 
-```js
-upsertOfficial2026Schedule();
-```
+1. Update the private canonical `Games` tab.
+2. Keep `kickoff_at` blank whenever `kickoff_status = tbd`.
+3. Clear the Apps Script public snapshot cache.
+4. Verify the public Apps Script response.
+5. Update `data/fallback-v2.json` through a reviewed repository change.
 
-The helper updates existing rows by `game_id`, appends missing rows, preserves unrelated Games, and clears the public snapshot cache after success. This account-bound action is not performed by the repository PR.
+Do not maintain a separate Apps Script schedule constant or helper. That would create a third copy and increase drift risk when dates or kickoff times change.
 
 ## Required Google Form questions
 
@@ -77,7 +79,7 @@ Google Forms does not provide separate machine values and display labels for che
 
 For the immediate private test, use the exact Game IDs in the Form or use a Short answer field populated by the contextual link. This proves the relationship and auto-publication flow, but it is not the preferred production presentation.
 
-The preferred production correction is a backend resolver that accepts approved human-readable Form labels and maps each one to its canonical `game_id` before publication. That change belongs in the Watch Party processor and should be implemented after PR #20 is resolved so the two backend changes remain reviewable rather than modifying the same processor in parallel. `getOfficial2026GameFormChoices()` returns the recommended readable label-to-ID references for that follow-up.
+The preferred production correction is a backend resolver that accepts approved human-readable Form labels and maps each one to its canonical `game_id` before publication. That change belongs in the Watch Party processor and should be implemented after PR #20 is resolved so the two backend changes remain reviewable rather than modifying the same processor in parallel. The schedule table above is the approved label-to-ID reference for that follow-up.
 
 ### Processor-required questions
 
@@ -197,7 +199,7 @@ Private values such as the workbook ID, raw responses, contacts, and credentials
 
 ## Verify the generated prefilled link
 
-1. Populate or refresh the canonical Games rows.
+1. Confirm the private canonical `Games` rows and the fallback schedule are current. If the Sheet changed, clear the public snapshot cache and verify the Apps Script response first.
 2. Configure the test browser with non-sensitive Form configuration.
 3. Open a direct venue/game route such as `?venue=<slug>&game=game_2026_01`.
 4. Confirm the venue detail shows the normal submission copy when no party exists.
@@ -224,6 +226,8 @@ Until PR #20 is merged and its revised `apps-script/WatchPartyAutomation.gs` is 
 
 After PR #20 is merged and installed, configure **Official Event URL** as an optional **Short answer** question without a complete-URL response-validation rule.
 
-## Account-bound actions not performed by this PR
+## Account-bound actions
 
-This repository change does not create or edit the Google Form, link it to the Sheet, install a trigger, copy Apps Script code, run `upsertOfficial2026Schedule()`, deploy Apps Script, change GitHub Pages, change DNS, or change MapTiler.
+The private `CGBv2` `Games` tab was populated directly during acceptance. No schedule helper must be copied into Apps Script.
+
+This repository PR does not create or edit the Google Form, link it to the Sheet, install a trigger, deploy Apps Script, clear an account-bound Apps Script cache, change GitHub Pages, change DNS, or change MapTiler.
