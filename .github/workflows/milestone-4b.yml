@@ -1,4 +1,4 @@
-name: Milestone 5A validation
+name: Milestone 5B validation
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - feature/external-venue-search
       - feature/m5-watch-party-discovery-foundation
       - feature/m5-minimal-watch-party-automation
+      - feature/m5b-watch-party-form-entry-point
   pull_request:
     branches:
       - main
@@ -46,6 +47,8 @@ jobs:
           node --check js/fan-intent-controller.mjs
           node --check js/external-venue-search.js
           node --check js/external-venue-core.mjs
+          node --check js/watch-party-form.js
+          node --check js/watch-party-form-core.mjs
           node --check scripts/run-browser-harness.mjs
           node --check scripts/scan-private-values.mjs
           node --check tests/browser/external-venue-harness.mjs
