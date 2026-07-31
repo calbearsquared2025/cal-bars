@@ -26,7 +26,8 @@ test('next upcoming game is the default', () => {
 });
 
 test('TBD kickoff is displayed without a timestamp', () => {
-  const game = snapshot.games.find((item) => item.game_id === 'game_2026_02');
+  const game = snapshot.games.find((item) => item.kickoff_status === 'tbd');
+  assert.ok(game);
   assert.match(formatKickoff(game, 'en-US'), /Time TBD/);
 });
 
