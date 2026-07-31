@@ -121,6 +121,20 @@ CGBWatchPartyForm.clearConfig();
 
 Clearing configuration is also the rollback method for disabling the CTA in a test browser.
 
+### Physical-iPhone test without an iPhone developer console
+
+Use an uncommitted preview-only edit in a Codespace or local checkout:
+
+1. Check out `feature/m5b-watch-party-form-entry-point`.
+2. Replace the four empty `content` values in `index.html` with the test Form URL and the three entry IDs.
+3. Do not commit or push the edited file.
+4. Start the existing static preview and open its HTTPS forwarded URL on the iPhone.
+5. Complete the physical-iPhone checklist below.
+6. Run `git restore index.html` immediately after testing.
+7. Run `git status --short` and confirm no account-specific Form value remains in the working tree.
+
+This is a test-only bridge. The draft PR and production branch remain disabled.
+
 ## Production-configuration constraint
 
 A static GitHub Pages browser must receive the Form URL and entry IDs to build a prefilled link. Therefore, values used in production cannot be secret from site visitors even if they are not committed to source control.
@@ -130,7 +144,7 @@ This milestone deliberately leaves production disabled. After review, Matthew mu
 - a reviewed configuration-only source change, which would make the values public in Git history; or
 - a small public runtime configuration supplied by the existing Apps Script layer, which avoids a source commit but requires an approved API/configuration change and redeployment.
 
-The current instruction prohibits committing Matthew's actual values, so this PR does not choose or implement either production activation path. Private testing uses the browser-local helper above.
+The current instruction prohibits committing Matthew's actual values, so this PR does not choose or implement either production activation path. Private testing uses the browser-local or uncommitted-preview methods above.
 
 ## Verify the generated prefilled link
 
@@ -146,7 +160,7 @@ The current instruction prohibits committing Matthew's actual values, so this PR
    - the game parameter equals the selected canonical `game_id`
 5. Open the link and confirm the three Form answers are populated correctly.
 6. Change the selected game while remaining on the venue detail and confirm the generated link changes only the game context.
-7. Clear the configuration and confirm the CTA disappears without affecting venue detail, Watch Party rendering, or Fan Intent.
+7. Clear or remove the test configuration and confirm the CTA disappears without affecting venue detail, Watch Party rendering, or Fan Intent.
 
 ## PR #20 website-field caveat
 
