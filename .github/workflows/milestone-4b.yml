@@ -28,6 +28,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Run focused Milestone 5B tests
+        run: node --test tests/watch-party-form-entry-point.test.mjs
+
       - name: Run complete test suite
         run: npm test
 
