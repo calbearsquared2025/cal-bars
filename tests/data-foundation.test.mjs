@@ -37,7 +37,9 @@ test('watch parties must reference public venues and games', () => {
 
 test('TBD kickoff cannot expose a timestamp', () => {
   const invalid = structuredClone(fixture);
-  invalid.games[1].kickoff_at = '2026-09-12T20:00:00Z';
+  const tbdGame = invalid.games.find((game) => game.kickoff_status === 'tbd');
+  assert.ok(tbdGame);
+  tbdGame.kickoff_at = `${tbdGame.game_date}T20:00:00Z`;
   const errors = validateSnapshot(invalid);
   assert.ok(errors.some((error) => error.includes('must be empty when kickoff_status is tbd')));
 });
