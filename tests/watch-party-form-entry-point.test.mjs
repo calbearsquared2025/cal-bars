@@ -142,6 +142,12 @@ test('browser adapter opens a valid Form in a separate secure context and remove
   assert.match(browserAdapter, /Submit a Watch Party/);
 });
 
+test('existing selected-game Watch Parties use an add-another CTA', () => {
+  assert.match(browserAdapter, /getWatchParty\(/);
+  assert.match(browserAdapter, /Is there another watch party going on\?/);
+  assert.match(browserAdapter, /Add Another Watch Party/);
+});
+
 test('browser adapter subscribes to canonical renders so direct routes and selected-game changes stay synchronized', () => {
   assert.match(browserAdapter, /app\.subscribe\('rendered', render\)/);
   assert.match(browserAdapter, /app\.subscribe\('ready', render\)/);
