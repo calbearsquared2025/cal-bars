@@ -5,6 +5,7 @@ on:
     branches:
       - feature/external-venue-search
       - feature/m5-watch-party-discovery-foundation
+      - feature/m5-minimal-watch-party-automation
   pull_request:
     branches:
       - main
@@ -56,6 +57,7 @@ jobs:
               apps-script/ExternalVenue.gs \
               apps-script/FanIntent.gs \
               apps-script/TestData.gs \
+              apps-script/WatchPartyAutomation.gs \
               apps-script/WatchPartyDiscovery.gs > /tmp/cgb-apps-script.js
           node --check /tmp/cgb-apps-script.js
 
