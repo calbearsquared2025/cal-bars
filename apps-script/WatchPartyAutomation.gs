@@ -297,11 +297,17 @@ function buildMinimalWatchPartyRows_(workbook, submission, submissionId) {
     throw minimalWatchPartyError_('venue_not_publishable');
   }
 
-  const gameIdSet = new Set(readSheetObjects_(workbook, 'Games').map(function(row) {
-    return String(row.game_id || '');
-  }).filter(Boolean));
+  const gamesById = new Map();
+  readSheetObjects_(workbook, 'Games').forEach(function(row) {
+    const gameId = String(row.game_id || '');
+    if (gameId) gamesById.set(gameId, row);
+  });
   submission.game_ids.forEach(function(gameId) {
-    if (!gameIdSet.has(gameId)) throw minimalWatchPartyError_('unknown_game_id');
+    const game = gamesById.get(gameId);
+    if (!game) throw minimalWatchPartyError_('unknown_game_id');
+    if (cleanMinimalWatchPartyText_(game.game_status, 40).toLowerCase() !== 'upcoming') {
+      throw minimalWatchPartyError_('game_not_open');
+    }
   });
 
   const now = new Date().toISOString();
