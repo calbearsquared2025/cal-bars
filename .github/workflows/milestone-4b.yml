@@ -29,7 +29,12 @@ jobs:
           node-version: '22'
 
       - name: Run focused Milestone 5B tests
-        run: node --test tests/watch-party-form-entry-point.test.mjs
+        run: |
+          node --test \
+            tests/watch-party-form-entry-point.test.mjs \
+            tests/watch-party-form-processing.test.mjs \
+            tests/watch-party-form-config.test.mjs \
+            tests/watch-party-required-fields.test.mjs
 
       - name: Run complete test suite
         run: npm test
@@ -64,7 +69,8 @@ jobs:
               apps-script/FanIntent.gs \
               apps-script/TestData.gs \
               apps-script/WatchPartyAutomation.gs \
-              apps-script/WatchPartyDiscovery.gs > /tmp/cgb-apps-script.js
+              apps-script/WatchPartyDiscovery.gs \
+              apps-script/WatchPartyFormConfig.gs > /tmp/cgb-apps-script.js
           node --check /tmp/cgb-apps-script.js
 
       - name: Check diff formatting
