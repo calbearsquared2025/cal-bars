@@ -1,0 +1,105 @@
+{
+  "v1_public_row_0002": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0005": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0009": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0010": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0012": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0013": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0016": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0017": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0018": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0019": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0020": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0022": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0025": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0026": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0027": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0028": {
+    "venue_type": "cal_bar",
+    "note": "Product owner approved the proposed Cal Bar classification during Milestone 6A review."
+  },
+  "v1_public_row_0029": {
+    "venue_type": "cal_bar",
+    "note": "Product owner approved the proposed Cal Bar classification during Milestone 6A review."
+  },
+  "v1_public_row_0030": {
+    "venue_type": "cal_bar",
+    "note": "Product owner approved the proposed Cal Bar classification during Milestone 6A review."
+  },
+  "v1_public_row_0032": {
+    "disposition": "accepted",
+    "reason_code": "PRODUCT_OWNER_APPROVED_HISTORICAL_CAL_CONNECTION",
+    "venue_type": "community_location",
+    "short_description": "Hosted the Rocky Mountain Golden Bears’ 2025 Big Game watch party.",
+    "note": "Accepted as a Community Location using only the specific Cal event already documented in the v1 source."
+  },
+  "v1_public_row_0033": {
+    "venue_type": "community_location",
+    "note": "Product owner approved the proposed Community Location classification during Milestone 6A review."
+  },
+  "v1_public_row_0034": {
+    "disposition": "accepted",
+    "reason_code": "PRODUCT_OWNER_APPROVED_HISTORICAL_CAL_CONNECTION",
+    "venue_type": "community_location",
+    "short_description": "Hosted a Cal Bears of Puget Sound Big Game watch party.",
+    "note": "Accepted as a Community Location using only the specific Cal event already documented in the v1 source."
+  },
+  "v1_public_row_0035": {
+    "disposition": "rejected",
+    "reason_code": "VENUE_CLOSED",
+    "venue_type": "community_location",
+    "note": "Product owner approved exclusion after current-business review confirmed that this location is closed."
+  },
+  "v1_public_row_0036": {
+    "disposition": "accepted",
+    "reason_code": "PRODUCT_OWNER_APPROVED_HISTORICAL_CAL_CONNECTION",
+    "venue_type": "community_location",
+    "short_description": "Hosted Chicago’s 2025 Big Game watch party.",
+    "note": "Accepted as a Community Location using only the specific Cal event already documented in the v1 source."
+  }
+}
