@@ -1,6 +1,6 @@
 # Milestone 6B — Approved migration load and reconciliation
 
-**Status:** corrected workbook load complete; public-cache refresh and visual acceptance pending
+**Status:** corrected workbook load and exact readback validation complete; public-cache refresh and visual acceptance pending
 
 ## Scope
 
@@ -20,11 +20,41 @@ The v1 archive remains unchanged.
 
 The first Milestone 6B write used an incorrect non-authoritative 35-row Venue dataset. Its row count and schema matched the expected totals, but its Venue identities did not match either the archived v1 `Public` tab or the approved Milestone 6A package. Matthew detected the problem during visual review after noticing unrelated locations in Atlanta and Cleveland.
 
-The incorrect rows were removed before acceptance. The `Venues` tab was then replaced with the exact 35 approved Milestone 6A rows plus the two preserved user-created rows. The corrected approved-and-preserved Venue payload has SHA-256:
+The incorrect rows were removed before acceptance. The `Venues` tab was then replaced with the exact 35 approved Milestone 6A rows plus the two preserved user-created rows.
 
-`a1e8a6febdca4affa9c6163dc12c8de561049f6831bfe3d3105a9fe30bc4362f`
+The root cause was a separately composed spreadsheet-write payload rather than direct serialization of the already verified approved CSV. Aggregate checks then validated counts and shape without comparing the actual record identities and fields.
 
-This incident establishes an additional load gate: migration reconciliation must compare the complete expected Venue ID set and representative names/cities against the approved package. Counts, schema validity, unique IDs, and unique slugs are necessary but not sufficient.
+## Permanent validation control
+
+`scripts/validate-venue-load.mjs` now compares a workbook-export CSV with the approved migration CSV and fails on any of the following:
+
+- a different or reordered canonical Venue schema;
+- a missing approved Venue ID;
+- an unexpected non-allowlisted Venue;
+- any changed canonical field on an approved Venue, including name, city, coordinates, type, provenance, or timestamps;
+- a missing explicitly preserved pre-existing Venue;
+- duplicate Venue IDs or slugs; or
+- a mismatch between the canonical SHA-256 hash of the expected and actual approved Venue sets.
+
+The validator permits only the explicitly requested `publication_status` transformation from migration `draft` to workbook `published`. Preserved user-created rows must be supplied through an explicit Venue-ID allowlist.
+
+Regression coverage includes the exact failure mode from this incident: a count-matching replacement dataset with an invented Atlanta record fails with missing-approved, unexpected-Venue, and hash-mismatch errors. Relocated records, duplicate identities, and schema drift also fail.
+
+## Exact readback validation
+
+The corrected workbook was exported after the replacement write and validated against the accepted `proposed-venues.csv` artifact.
+
+| Validation | Result |
+|---|---:|
+| Approved Venues expected | 35 |
+| Approved Venues found | 35 |
+| Preserved Venues expected | 2 |
+| Total actual Venues | 37 |
+| Validation issues | 0 |
+| Expected approved-set SHA-256 | `feeac9e7d54e4b826102017f6f374fe65d0ef561db5b8e50447f06978c989834` |
+| Actual approved-set SHA-256 | `feeac9e7d54e4b826102017f6f374fe65d0ef561db5b8e50447f06978c989834` |
+
+The matching hashes cover all 24 canonical Venue fields for all 35 approved records and are order-independent. The private workbook export and preserved Venue IDs are not committed.
 
 ## Final load decisions
 
@@ -54,14 +84,14 @@ This incident establishes an additional load gate: migration reconciliation must
 | Broken Fan Intent Game references | 0 |
 | Approved Venue IDs present exactly once | 35 / 35 |
 
-The corrected workbook contains the approved v1-derived records, including George & Walt's in Oakland, Busby's West in Santa Monica, Cali's Sports Bar & Kitchen in Berkeley, and Town Tavern DC in Washington. The unrelated Atlanta and Cleveland rows from the incorrect first write are absent.
+The corrected workbook contains the approved v1-derived records, including George & Walt's in Oakland, Busby's West in Santa Monica, Cali's Sports Bar & Kitchen in Berkeley, and Town Tavern DC in Washington. The unrelated Atlanta, Cleveland, and Pittsburgh rows from the incorrect first write are absent.
 
 The three approved event-supported Community Locations retain one concise source-supported description. Dogwood Domain is absent as rejected.
 
 ## Privacy and safety review
 
 - The public Venue whitelist was not changed.
-- No private workbook ID, raw response, browser identifier, contact value, or backup URL is committed.
+- No private workbook ID, raw response, browser identifier, contact value, preserved Venue ID, or backup URL is committed.
 - Private provenance fields remain in the workbook and outside the public snapshot.
 - Synthetic browser identifiers and test-only relationships removed from canonical tabs remain recoverable from the private pre-load backup.
 
