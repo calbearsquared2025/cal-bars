@@ -27,9 +27,11 @@ Then open `http://localhost:8000/`. This local server is for diagnostics and dev
 
 ## Data, Fan Intent, external venues, and Watch Parties
 
-Milestone 3 adds a separate Fan Intent client and Apps Script service for anonymous join, move, and withdrawal operations. Milestone 4A consolidates the frontend around one canonical application snapshot and state. Milestone 4B adds MapTiler external-place results and the combined `joinExternalVenue` action, which creates or reuses a persistent Community Location only when **I’ll be here** succeeds. Milestone 5A adds the minimal existing-Venue Watch Party Form processor. Milestone 5B adds a disabled-by-default contextual link from a venue and selected game to that Form.
+Milestone 3 adds a separate Fan Intent client and Apps Script service for anonymous join, move, and withdrawal operations. Milestone 4A consolidates the frontend around one canonical application snapshot and state. Milestone 4B adds MapTiler external-place results and the combined `joinExternalVenue` action, which creates or reuses a persistent Community Location only when **I’ll be here** succeeds. Milestone 5A adds the minimal existing-Venue Watch Party Form processor. Milestone 5B adds the contextual venue/game link, readable multi-game Form choices, and final Form-title processing aliases.
 
 The private canonical `Games` tab and the committed fallback both contain the verified 12-game 2026 regular-season schedule with stable IDs `game_2026_01` through `game_2026_12`. The private Sheet is the normal live-data source; `data/fallback-v2.json` is a development and endpoint-failure recovery snapshot. Update the private `Games` tab first, clear the public snapshot cache, validate the Apps Script response, and then update the fallback through a reviewed repository change. Do not maintain a separate Apps Script copy of the schedule.
+
+The Watch Party Form displays readable date-and-matchup choices derived from canonical game data and does not include kickoff times. Apps Script maps those choices back to stable Game IDs, preserves optional Contact Email only in the private raw response, and normalizes optional bare-domain event links before publication.
 
 The approved live canary connects automatically to the public Apps Script web app through the `cgb-data-endpoint` metadata in `index.html`; ordinary live-site use does not require local-storage configuration. External search reuses the public MapTiler browser key already loaded by the map and does not add a second credential.
 
@@ -38,7 +40,7 @@ Routine acceptance consists of successful automated tests and data validation, p
 - `docs/fan-intent-setup.md` for the existing Fan Intent deployment and acceptance process.
 - `docs/external-venue-search.md` for the external-search architecture, missing-location integration point, Apps Script deployment checklist, and Codespaces/iPhone preview procedure.
 - `docs/minimal-watch-party-automation.md` for the Milestone 5A Google Form processor and account-bound setup.
-- `docs/watch-party-form-entry-point.md` for the Milestone 5B schedule IDs, Form questions, entry-ID discovery, private-test configuration, verification, rollback, and PR #20 caveat.
+- `docs/watch-party-form-entry-point.md` for the finalized Milestone 5B Form contract, readable game mapping, configuration, acceptance, and weekly maintenance.
 
 For optional local-preview diagnostics, the frontend uses this public-read sequence:
 
