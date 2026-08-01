@@ -24,10 +24,15 @@ import {
 } from '../scripts/migrate-v1-venues.mjs';
 
 const fixtureUrl = new URL('./fixtures/v1-venues-sanitized.csv', import.meta.url);
+const approvedOverridesUrl = new URL('../config/migration/milestone-6a-approved-overrides.json', import.meta.url);
 const timestamp = '2026-07-26T00:00:00Z';
 
 async function fixtureRows() {
   return parseCsv(await readFile(fixtureUrl, 'utf8'));
+}
+
+async function approvedOverrides() {
+  return JSON.parse(await readFile(approvedOverridesUrl, 'utf8'));
 }
 
 function simpleRow(overrides = {}) {
@@ -136,11 +141,70 @@ test('classification requires recurring Cal-community evidence and defaults unce
   assert.equal(uncertain.review_required, true);
 });
 
-test('single historical event rows are held rather than converted to Watch Parties', () => {
+test('single historical event rows are held until a product-owner decision is supplied', () => {
   const result = migrateRows([simpleRow({ details: 'Official 2025 Big Game Watch Party' })], { migrationTimestamp: timestamp });
   assert.equal(result.held_records.length, 1);
   assert.equal(result.held_records[0].reason_code, 'EVENT_ONLY_RECURRING_VALUE_UNSUPPORTED');
   assert.equal(result.accepted_venues.length, 0);
+});
+
+test('approved historical-event override creates a Community Location without creating history data', () => {
+  const description = 'Hosted the Fixture Alumni Club’s 2025 Big Game watch party.';
+  const result = migrateRows([simpleRow({ details: 'Official 2025 Big Game Watch Party - Fixture Alumni Club' })], {
+    migrationTimestamp: timestamp,
+    overrides: {
+      v1_public_row_0002: {
+        disposition: 'accepted',
+        reason_code: 'PRODUCT_OWNER_APPROVED_HISTORICAL_CAL_CONNECTION',
+        venue_type: 'community_location',
+        short_description: description,
+        note: 'Approved from existing source evidence only.'
+      }
+    }
+  });
+  assert.equal(result.held_records.length, 0);
+  assert.equal(result.accepted_venues.length, 1);
+  assert.equal(result.accepted_venues[0].venue_type, 'community_location');
+  assert.equal(result.accepted_venues[0].short_description, description);
+  assert.equal(result.accepted_records[0].automated, false);
+
+  const snapshot = buildPublicSnapshot(result, { games: [] }, timestamp);
+  assert.deepEqual(snapshot.watchParties, []);
+  assert.deepEqual(snapshot.fanCounts, []);
+  assert.deepEqual(snapshot.venueHistoryCounts, [{
+    venue_id: result.accepted_venues[0].venue_id,
+    past_game_count: 0
+  }]);
+});
+
+test('approved closed-venue override rejects an otherwise valid historical-event row', () => {
+  const result = migrateRows([simpleRow({ details: 'Official 2025 Big Game Watch Party' })], {
+    migrationTimestamp: timestamp,
+    overrides: {
+      v1_public_row_0002: {
+        disposition: 'rejected',
+        reason_code: 'VENUE_CLOSED',
+        note: 'Product-owner-approved current-business exclusion.'
+      }
+    }
+  });
+  assert.equal(result.accepted_venues.length, 0);
+  assert.equal(result.held_records.length, 0);
+  assert.equal(result.rejected_records.length, 1);
+  assert.equal(result.rejected_records[0].reason_code, 'VENUE_CLOSED');
+  assert.equal(result.rejected_records[0].automated, false);
+});
+
+test('approved Milestone 6A override file records the final four historical-event dispositions', async () => {
+  const overrides = await approvedOverrides();
+  assert.equal(overrides.v1_public_row_0032.disposition, 'accepted');
+  assert.equal(overrides.v1_public_row_0034.disposition, 'accepted');
+  assert.equal(overrides.v1_public_row_0035.disposition, 'rejected');
+  assert.equal(overrides.v1_public_row_0035.reason_code, 'VENUE_CLOSED');
+  assert.equal(overrides.v1_public_row_0036.disposition, 'accepted');
+  assert.match(overrides.v1_public_row_0032.short_description, /Rocky Mountain Golden Bears/);
+  assert.match(overrides.v1_public_row_0034.short_description, /Cal Bears of Puget Sound/);
+  assert.match(overrides.v1_public_row_0036.short_description, /Chicago’s 2025 Big Game/);
 });
 
 test('missing required fields and invalid coordinates use stable rejection reason codes', () => {
