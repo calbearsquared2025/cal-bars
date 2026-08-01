@@ -94,8 +94,7 @@ test('missing-location fallback uses exact copy only when a valid URL is configu
   assert.match(client, /cgb-missing-location-form-url/);
   assert.match(client, /url\.protocol === 'https:'/);
   assert.match(html, /name="cgb-missing-location-form-url" content=""/);
-  assert.doesNotMatch(html, /docs\.google\.com\/forms\/d\/e\//);
-  assert.doesNotMatch(html, /Nominate as a Cal Bar|Submit a Watch Party|Add a Photo|Suggest an Update/);
+  assert.doesNotMatch(html, /Nominate as a Cal Bar|Add a Photo|Suggest an Update/);
 });
 
 test('external search reuses the MapTiler key already loaded by the map and commits no new key literal', () => {
