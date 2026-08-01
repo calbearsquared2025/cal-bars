@@ -55,6 +55,15 @@ test('exact approved identities and allowlisted preserved rows pass', () => {
   assert.equal(result.summary.total_actual, 2);
 });
 
+test('actual export schema must match the canonical Venue field order', () => {
+  const actual = venue({ publication_status: 'published' });
+  delete actual.updated_at;
+  actual.extra_field = 'unexpected';
+  const result = validateVenueLoad({ approvedRows: [venue()], actualRows: [actual] });
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.some((issue) => issue.code === 'ACTUAL_VENUE_SCHEMA_MISMATCH'));
+});
+
 test('count-matching replacement data fails identity validation', () => {
   const result = validateVenueLoad({
     approvedRows: [venue()],
