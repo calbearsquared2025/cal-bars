@@ -1,4 +1,4 @@
-name: Milestone 5B validation
+name: Milestone 6A validation
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - feature/m5-watch-party-discovery-foundation
       - feature/m5-minimal-watch-party-automation
       - feature/m5b-watch-party-form-entry-point
+      - feature/m6a-existing-location-migration
   pull_request:
     branches:
       - main
@@ -37,6 +38,9 @@ jobs:
             tests/watch-party-required-fields.test.mjs \
             tests/watch-party-closed-game.test.mjs
 
+      - name: Run focused Milestone 6A migration tests
+        run: npm run test:migration
+
       - name: Run complete test suite
         run: npm test
 
@@ -58,9 +62,14 @@ jobs:
           node --check js/external-venue-core.mjs
           node --check js/watch-party-form.js
           node --check js/watch-party-form-core.mjs
+          node --check scripts/migrate-v1-venues.mjs
+          node --check scripts/venue-migration-normalize.mjs
+          node --check scripts/venue-migration-core.mjs
+          node --check scripts/venue-migration-reports.mjs
           node --check scripts/run-browser-harness.mjs
           node --check scripts/scan-private-values.mjs
           node --check tests/browser/external-venue-harness.mjs
+          node --check tests/venue-migration.test.mjs
 
       - name: Check combined Apps Script syntax
         run: |

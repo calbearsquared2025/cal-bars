@@ -1,0 +1,11 @@
+name,address,city,state,zip,lat,lon,url,promo,details,tvs,affiliation,submitted_as,place_id
+"Recurring Bear House","100 Test Way","Berkeley","ca","94704","37.871700","-122.272800","example.com","Official watch parties or promos for Cal games","Cal Alumni Club hosts watch parties here every game.","Audio on for Cal games","","Synthetic fixture","fixture_place_001"
+"Neighborhood Tap","  200   Sample Street  ","Oakland","CA","94612","37.804400","-122.271200","https://example.org/neighborhood","This bar would be described as a Cal bar","Good general-purpose sports venue.","","","Synthetic fixture","fixture_place_002"
+"One-Off Event Pub","300 Fixture Avenue","San Francisco","CA","94103","37.774900","-122.419400","","Official watch parties or promos for Cal games","Official 2025 Big Game Watch Party","","","Synthetic fixture","fixture_place_003"
+"Broken Coordinate Bar","400 Invalid Road","Alameda","CA","94501","999","-122.241600","","","","","","Synthetic fixture","fixture_place_004"
+"Same Name","500 Alpha Road","Alameda","CA","94501","37.765200","-122.241600","https://example.net/alpha","","","","","Synthetic fixture","fixture_place_005"
+"Same Name","600 Beta Road","Alameda","CA","94501","37.775200","-122.251600","https://example.net/beta","","","","","Synthetic fixture","fixture_place_006"
+"Duplicate Primary","700 Gamma Road","San Jose","CA","95113","37.338200","-121.886300","https://example.net/duplicate","","","","","Synthetic fixture","fixture_dup_001"
+"Duplicate Variant","700 Gamma Road","San Jose","CA","95113","37.338200","-121.886300","https://example.net/duplicate","","Different unsupported note","","","Synthetic fixture","fixture_dup_001"
+"Unit Test Pub","800 Unit Road #Suite 8","Sacramento","CA","95814","38.581600","-121.494400","https://maps.google.com/?cid=123","","","","Alumni-Owned","Synthetic fixture","fixture_place_009"
+"Unsafe URL Cafe","900 Safety Lane","Davis","CA","","38.544900","-121.740500","javascript:alert(1)","","","","","Synthetic fixture","fixture_place_010"
