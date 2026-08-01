@@ -45,7 +45,7 @@ export function formatKickoff(game, locale) {
 
 export function gameTitle(game) {
   if (!game) return 'Cal football';
-  const opponent = game.opponent_short_name || game.opponent_name || 'Opponent';
+  const opponent = game.opponent_name || 'Opponent';
   if (game.home_away === 'home') return `vs. ${opponent}`;
   if (game.home_away === 'away') return `at ${opponent}`;
   return `vs. ${opponent}`;

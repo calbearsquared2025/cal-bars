@@ -7,6 +7,7 @@ import {
   calculateMinimalPan,
   findExactVenueMatch,
   formatKickoff,
+  gameTitle,
   getFanCount,
   getHistoryCount,
   markerKind,
@@ -25,8 +26,13 @@ test('next upcoming game is the default', () => {
   assert.equal(selectDefaultGame(snapshot.games, new Date('2026-07-26T12:00:00Z')).game_id, 'game_2026_01');
 });
 
+test('game titles use the single canonical opponent name', () => {
+  assert.equal(gameTitle({ opponent_name: 'North Carolina State', home_away: 'away' }), 'at North Carolina State');
+});
+
 test('TBD kickoff is displayed without a timestamp', () => {
-  const game = snapshot.games.find((item) => item.game_id === 'game_2026_02');
+  const game = snapshot.games.find((item) => item.kickoff_status === 'tbd');
+  assert.ok(game);
   assert.match(formatKickoff(game, 'en-US'), /Time TBD/);
 });
 

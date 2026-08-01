@@ -5,6 +5,20 @@ import { readFile } from 'node:fs/promises';
 
 const automation = await readFile(new URL('../apps-script/WatchPartyAutomation.gs', import.meta.url), 'utf8');
 
+const games = [{
+  game_id: 'game_2026_01',
+  season: 2026,
+  schedule_order: 1,
+  opponent_name: 'UCLA',
+  home_away: 'home',
+  game_date: '2026-09-05',
+  kickoff_at: '2026-09-06T02:30:00Z',
+  kickoff_status: 'confirmed',
+  game_status: 'upcoming',
+  updated_at: '2026-07-31T17:43:00Z'
+}];
+const workbook = {};
+
 const context = vm.createContext({
   console: { log() {}, warn() {}, error() {} },
   Date,
@@ -14,32 +28,38 @@ const context = vm.createContext({
   Object,
   Array,
   String,
+  Map,
   Set,
   RegExp,
-  Error
+  Error,
+  URL,
+  readSheetObjects_: (_workbook, tabName) => tabName === 'Games' ? games : []
 });
 
 vm.runInContext(`${automation}\nglobalThis.__normalize = normalizeMinimalWatchPartySubmission_;`, context);
-const normalize = context.__normalize;
+const normalize = (namedValues) => context.__normalize(namedValues, workbook);
 
 function validNamedValues() {
   return {
     'Venue ID (existing)': ['ven_1'],
-    'Game(s)': ['game_1'],
-    'Organizer Name': ['Cal Alumni Club'],
-    'Submitter Role': ['Alumni group'],
-    'Organizer Type': ['Alumni group'],
-    'Age Policy': ['All ages'],
-    'Sound Status': ['On']
+    'Which game or games will have a Watch Party here?': ['Sep 5 — Cal vs. UCLA'],
+    'Organizer or host name': ['Cal Alumni Club'],
+    'What is your relationship to this Watch Party?': [
+      'I represent the alumni group or organization hosting it'
+    ],
+    'Who is organizing or hosting this Watch Party?': ['Alumni group'],
+    'Are there age restrictions?': ['All ages'],
+    'Will the game audio be on?': ['Yes']
   };
 }
 
-test('missing required Form fields fail with specific private error codes', () => {
+test('missing required finalized Form fields fail with specific private error codes', () => {
   const cases = [
     ['Venue ID (existing)', /missing_venue_id/],
-    ['Game(s)', /missing_game_ids/],
-    ['Organizer Name', /missing_organizer_name/],
-    ['Submitter Role', /invalid_submitter_role/]
+    ['Which game or games will have a Watch Party here?', /missing_game_ids/],
+    ['Organizer or host name', /missing_organizer_name/],
+    ['Who is organizing or hosting this Watch Party?', /invalid_organizer_type/],
+    ['What is your relationship to this Watch Party?', /invalid_submitter_role/]
   ];
 
   cases.forEach(([field, expected]) => {
@@ -49,14 +69,13 @@ test('missing required Form fields fail with specific private error codes', () =
   });
 });
 
-test('blank optional controlled fields normalize to public unknown values', () => {
+test('blank optional age and audio fields normalize to public unknown values', () => {
   const namedValues = validNamedValues();
-  delete namedValues['Organizer Type'];
-  delete namedValues['Age Policy'];
-  delete namedValues['Sound Status'];
+  delete namedValues['Are there age restrictions?'];
+  delete namedValues['Will the game audio be on?'];
 
   const submission = normalize(namedValues);
-  assert.equal(submission.organizer_type, 'unknown');
+  assert.equal(submission.organizer_type, 'alumni_group');
   assert.equal(submission.age_policy, 'unknown');
   assert.equal(submission.sound_status, 'unknown');
 });

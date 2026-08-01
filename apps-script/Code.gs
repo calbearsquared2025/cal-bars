@@ -21,8 +21,8 @@ const CGB_TABS = Object.freeze({
     'source_submission_id', 'created_at', 'updated_at'
   ],
   Games: [
-    'game_id', 'season', 'schedule_order', 'opponent_name', 'opponent_short_name',
-    'home_away', 'game_date', 'kickoff_at', 'kickoff_status', 'game_status', 'updated_at'
+    'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
+    'game_date', 'kickoff_at', 'kickoff_status', 'game_status', 'updated_at'
   ],
   Watch_Parties: [
     'watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type',
@@ -72,8 +72,8 @@ const CGB_PUBLIC_FIELDS = Object.freeze({
     'photo_credit', 'updated_at'
   ],
   Games: [
-    'game_id', 'season', 'schedule_order', 'opponent_name', 'opponent_short_name',
-    'home_away', 'game_date', 'kickoff_at', 'kickoff_status', 'game_status', 'updated_at'
+    'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
+    'game_date', 'kickoff_at', 'kickoff_status', 'game_status', 'updated_at'
   ],
   Watch_Parties: [
     'watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type',

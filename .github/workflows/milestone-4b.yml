@@ -1,4 +1,4 @@
-name: Milestone 5A validation
+name: Milestone 5B validation
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - feature/external-venue-search
       - feature/m5-watch-party-discovery-foundation
       - feature/m5-minimal-watch-party-automation
+      - feature/m5b-watch-party-form-entry-point
   pull_request:
     branches:
       - main
@@ -27,6 +28,15 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Run focused Milestone 5B tests
+        run: |
+          node --test \
+            tests/watch-party-form-entry-point.test.mjs \
+            tests/watch-party-form-processing.test.mjs \
+            tests/watch-party-form-config.test.mjs \
+            tests/watch-party-required-fields.test.mjs \
+            tests/watch-party-closed-game.test.mjs
+
       - name: Run complete test suite
         run: npm test
 
@@ -46,6 +56,8 @@ jobs:
           node --check js/fan-intent-controller.mjs
           node --check js/external-venue-search.js
           node --check js/external-venue-core.mjs
+          node --check js/watch-party-form.js
+          node --check js/watch-party-form-core.mjs
           node --check scripts/run-browser-harness.mjs
           node --check scripts/scan-private-values.mjs
           node --check tests/browser/external-venue-harness.mjs
@@ -58,7 +70,8 @@ jobs:
               apps-script/FanIntent.gs \
               apps-script/TestData.gs \
               apps-script/WatchPartyAutomation.gs \
-              apps-script/WatchPartyDiscovery.gs > /tmp/cgb-apps-script.js
+              apps-script/WatchPartyDiscovery.gs \
+              apps-script/WatchPartyFormConfig.gs > /tmp/cgb-apps-script.js
           node --check /tmp/cgb-apps-script.js
 
       - name: Check diff formatting

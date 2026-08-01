@@ -17,18 +17,60 @@ const CGB_MINIMAL_WATCH_PARTY_ADMIN_HEADERS = Object.freeze([
   'processed_at'
 ]);
 
+const CGB_MINIMAL_WATCH_PARTY_MONTHS = Object.freeze([
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+]);
+
 const CGB_MINIMAL_WATCH_PARTY_FORM_ALIASES = Object.freeze({
   response_timestamp: Object.freeze(['Timestamp', 'response_timestamp']),
-  venue_id: Object.freeze(['Venue ID', 'Venue ID (existing)', 'venue_id']),
-  game_ids: Object.freeze(['Game IDs', 'Game(s)', 'game_ids_submitted']),
-  organizer_name: Object.freeze(['Organizer or host', 'Organizer Name', 'organizer_name']),
-  organizer_type: Object.freeze(['Organizer Type', 'organizer_type']),
-  official_event_url: Object.freeze(['Official Event URL', 'official_event_url']),
-  age_policy: Object.freeze(['Age Policy', 'age_policy']),
-  sound_status: Object.freeze(['Sound Status', 'sound_status']),
-  restrictions_note: Object.freeze(['Restrictions or reservation information', 'Restrictions Note', 'restrictions_note']),
-  game_day_note: Object.freeze(['Game-day details', 'Game Day Note', 'game_day_note']),
-  submitter_role: Object.freeze(['Submitter Relationship', 'Submitter Role', 'submitter_role'])
+  venue_id: Object.freeze(['Venue ID (existing)', 'Venue ID', 'venue_id']),
+  venue_name: Object.freeze(['Venue Name', 'venue_name_submitted']),
+  game_ids: Object.freeze([
+    'Which game or games will have a Watch Party here?',
+    'Game IDs',
+    'Game(s)',
+    'game_ids_submitted'
+  ]),
+  organizer_name: Object.freeze([
+    'Organizer or host name',
+    'Organizer or host',
+    'Organizer Name',
+    'organizer_name'
+  ]),
+  organizer_type: Object.freeze([
+    'Who is organizing or hosting this Watch Party?',
+    'Organizer Type',
+    'organizer_type'
+  ]),
+  official_event_url: Object.freeze([
+    'Official event or RSVP link',
+    'Official Event URL',
+    'Official Event Website',
+    'Event Website',
+    'Website',
+    'official_event_url'
+  ]),
+  age_policy: Object.freeze(['Are there age restrictions?', 'Age Policy', 'age_policy']),
+  sound_status: Object.freeze(['Will the game audio be on?', 'Sound Status', 'sound_status']),
+  restrictions_note: Object.freeze([
+    'Restrictions or reservation information',
+    'Restrictions Note',
+    'restrictions_note'
+  ]),
+  game_day_note: Object.freeze([
+    'Anything else fans should know?',
+    'Game-day details',
+    'Game Day Note',
+    'game_day_note'
+  ]),
+  submitter_role: Object.freeze([
+    'What is your relationship to this Watch Party?',
+    'Submitter Relationship',
+    'Submitter Role',
+    'submitter_role'
+  ]),
+  submitter_email: Object.freeze(['Contact Email', 'Submitter Email', 'submitter_email'])
 });
 
 const CGB_MINIMAL_WATCH_PARTY_ORGANIZER_TYPE_MAP = Object.freeze({
@@ -38,7 +80,9 @@ const CGB_MINIMAL_WATCH_PARTY_ORGANIZER_TYPE_MAP = Object.freeze({
   other_organization: 'other_organization',
   'other organization': 'other_organization',
   individual: 'individual',
-  unknown: 'unknown'
+  'individual or group of fans': 'individual',
+  unknown: 'unknown',
+  'not sure': 'unknown'
 });
 
 const CGB_MINIMAL_WATCH_PARTY_AGE_POLICY_MAP = Object.freeze({
@@ -47,6 +91,7 @@ const CGB_MINIMAL_WATCH_PARTY_AGE_POLICY_MAP = Object.freeze({
   '21_plus': '21_plus',
   '21+': '21_plus',
   '21 plus': '21_plus',
+  '21+ only': '21_plus',
   unknown: 'unknown'
 });
 
@@ -54,22 +99,28 @@ const CGB_MINIMAL_WATCH_PARTY_SOUND_STATUS_MAP = Object.freeze({
   confirmed_on: 'confirmed_on',
   'confirmed on': 'confirmed_on',
   on: 'confirmed_on',
+  yes: 'confirmed_on',
   confirmed_off: 'confirmed_off',
   'confirmed off': 'confirmed_off',
   off: 'confirmed_off',
+  no: 'confirmed_off',
   unknown: 'unknown'
 });
 
 const CGB_MINIMAL_WATCH_PARTY_SOURCE_TYPE_MAP = Object.freeze({
   fan: 'fan_submitted',
   individual: 'fan_submitted',
+  'i am organizing it as an individual or group of fans': 'fan_submitted',
+  'i am sharing a public event organized by someone else': 'fan_submitted',
   venue: 'venue_submitted',
   'venue owner or manager': 'venue_submitted',
   'venue owner': 'venue_submitted',
   'venue manager': 'venue_submitted',
+  'i represent the venue hosting it': 'venue_submitted',
   alumni: 'alumni_group_submitted',
   'alumni group': 'alumni_group_submitted',
-  'alumni organizer': 'alumni_group_submitted'
+  'alumni organizer': 'alumni_group_submitted',
+  'i represent the alumni group or organization hosting it': 'alumni_group_submitted'
 });
 
 /**
@@ -113,7 +164,7 @@ function processMinimalWatchPartyFormSubmission_(event) {
       processed_at: ''
     });
 
-    const submission = normalizeMinimalWatchPartySubmission_(context.namedValues);
+    const submission = normalizeMinimalWatchPartySubmission_(context.namedValues, context.workbook);
     const canonicalRows = buildMinimalWatchPartyRows_(context.workbook, submission, submissionId);
     appendMinimalWatchPartyRows_(context.workbook, canonicalRows);
 
@@ -175,7 +226,7 @@ function parseMinimalWatchPartyFormEvent_(event) {
   };
 }
 
-function normalizeMinimalWatchPartySubmission_(namedValues) {
+function normalizeMinimalWatchPartySubmission_(namedValues, workbook) {
   const organizerName = cleanMinimalWatchPartyText_(
     readMinimalWatchPartyFormField_(namedValues, 'organizer_name'),
     180
@@ -184,7 +235,8 @@ function normalizeMinimalWatchPartySubmission_(namedValues) {
     readMinimalWatchPartyFormField_(namedValues, 'venue_id'),
     80
   );
-  const gameIds = parseMinimalWatchPartyGameIds_(
+  const gameIds = resolveMinimalWatchPartyGameIds_(
+    workbook,
     readMinimalWatchPartyFormField_(namedValues, 'game_ids')
   );
   const sourceType = normalizeMinimalWatchPartyEnum_(
@@ -195,7 +247,7 @@ function normalizeMinimalWatchPartySubmission_(namedValues) {
   const organizerType = normalizeMinimalWatchPartyEnum_(
     readMinimalWatchPartyFormField_(namedValues, 'organizer_type'),
     CGB_MINIMAL_WATCH_PARTY_ORGANIZER_TYPE_MAP,
-    'unknown'
+    ''
   );
   const agePolicy = normalizeMinimalWatchPartyEnum_(
     readMinimalWatchPartyFormField_(namedValues, 'age_policy'),
@@ -207,17 +259,16 @@ function normalizeMinimalWatchPartySubmission_(namedValues) {
     CGB_MINIMAL_WATCH_PARTY_SOUND_STATUS_MAP,
     'unknown'
   );
-  const officialEventUrl = cleanMinimalWatchPartyText_(
-    readMinimalWatchPartyFormField_(namedValues, 'official_event_url'),
-    2000
+  const officialEventUrl = normalizeMinimalWatchPartyHttpUrl_(
+    readMinimalWatchPartyFormField_(namedValues, 'official_event_url')
   );
   if (!venueId) throw minimalWatchPartyError_('missing_venue_id');
   if (!gameIds.length) throw minimalWatchPartyError_('missing_game_ids');
   if (!organizerName) throw minimalWatchPartyError_('missing_organizer_name');
+  if (!organizerType) throw minimalWatchPartyError_('invalid_organizer_type');
   if (!sourceType) throw minimalWatchPartyError_('invalid_submitter_role');
-  if (officialEventUrl && !/^https?:\/\/\S+$/i.test(officialEventUrl)) {
-    throw minimalWatchPartyError_('invalid_official_event_url');
-  }
+  if (!agePolicy) throw minimalWatchPartyError_('invalid_age_policy');
+  if (!soundStatus) throw minimalWatchPartyError_('invalid_sound_status');
 
   return {
     venue_id: venueId,
@@ -246,11 +297,17 @@ function buildMinimalWatchPartyRows_(workbook, submission, submissionId) {
     throw minimalWatchPartyError_('venue_not_publishable');
   }
 
-  const gameIdSet = new Set(readSheetObjects_(workbook, 'Games').map(function(row) {
-    return String(row.game_id || '');
-  }).filter(Boolean));
+  const gamesById = new Map();
+  readSheetObjects_(workbook, 'Games').forEach(function(row) {
+    const gameId = String(row.game_id || '');
+    if (gameId) gamesById.set(gameId, row);
+  });
   submission.game_ids.forEach(function(gameId) {
-    if (!gameIdSet.has(gameId)) throw minimalWatchPartyError_('unknown_game_id');
+    const game = gamesById.get(gameId);
+    if (!game) throw minimalWatchPartyError_('unknown_game_id');
+    if (cleanMinimalWatchPartyText_(game.game_status, 40).toLowerCase() !== 'upcoming') {
+      throw minimalWatchPartyError_('game_not_open');
+    }
   });
 
   const now = new Date().toISOString();
@@ -342,8 +399,36 @@ function firstMinimalWatchPartyFormValue_(value) {
   return value === null || value === undefined ? '' : String(value);
 }
 
-function parseMinimalWatchPartyGameIds_(value) {
-  const text = cleanMinimalWatchPartyText_(value, 1000);
+function resolveMinimalWatchPartyGameIds_(workbook, value) {
+  const selections = parseMinimalWatchPartyGameSelections_(value);
+  if (!selections.length) return [];
+
+  const games = readSheetObjects_(workbook, 'Games');
+  const gameIds = new Map();
+  const gameLabels = new Map();
+  games.forEach(function(game) {
+    const gameId = cleanMinimalWatchPartyText_(game && game.game_id, 80);
+    if (!gameId) return;
+    gameIds.set(gameId, gameId);
+    const label = buildMinimalWatchPartyGameLabel_(game);
+    if (label) gameLabels.set(normalizeMinimalWatchPartyGameLabel_(label), gameId);
+  });
+
+  const seen = new Set();
+  return selections.map(function(selection) {
+    const directGameId = gameIds.get(selection);
+    const mappedGameId = directGameId || gameLabels.get(normalizeMinimalWatchPartyGameLabel_(selection));
+    if (!mappedGameId) throw minimalWatchPartyError_('unknown_game_id');
+    return mappedGameId;
+  }).filter(function(gameId) {
+    if (seen.has(gameId)) return false;
+    seen.add(gameId);
+    return true;
+  });
+}
+
+function parseMinimalWatchPartyGameSelections_(value) {
+  const text = cleanMinimalWatchPartyText_(value, 3000);
   if (!text) return [];
   let candidates = [];
   if (text.charAt(0) === '[') {
@@ -355,7 +440,7 @@ function parseMinimalWatchPartyGameIds_(value) {
   if (!candidates.length) candidates = text.split(/[,;\n]+/);
   const seen = new Set();
   return candidates.map(function(item) {
-    return cleanMinimalWatchPartyText_(item, 80);
+    return cleanMinimalWatchPartyText_(item, 240);
   }).filter(function(item) {
     if (!item || seen.has(item)) return false;
     seen.add(item);
@@ -363,10 +448,75 @@ function parseMinimalWatchPartyGameIds_(value) {
   });
 }
 
+function buildMinimalWatchPartyGameLabel_(game) {
+  const gameDate = formatMinimalWatchPartyGameDate_(game && game.game_date);
+  const opponentName = cleanMinimalWatchPartyText_(game && game.opponent_name, 180);
+  if (!gameDate || !opponentName) return '';
+  const relationship = normalizeMinimalWatchPartyGameLabel_(game && game.home_away) === 'away'
+    ? 'Cal at '
+    : 'Cal vs. ';
+  return gameDate + ' — ' + relationship + opponentName;
+}
+
+function formatMinimalWatchPartyGameDate_(value) {
+  const text = cleanMinimalWatchPartyText_(value, 80);
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return '';
+  const monthIndex = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  if (!CGB_MINIMAL_WATCH_PARTY_MONTHS[monthIndex] || !Number.isInteger(day) || day < 1 || day > 31) {
+    return '';
+  }
+  return CGB_MINIMAL_WATCH_PARTY_MONTHS[monthIndex] + ' ' + day;
+}
+
+function normalizeMinimalWatchPartyGameLabel_(value) {
+  return cleanMinimalWatchPartyText_(value, 240)
+    .replace(/[‐‑‒–—―]/g, '-')
+    .replace(/[‘’]/g, "'")
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
 function normalizeMinimalWatchPartyEnum_(value, mapping, defaultValue) {
-  const normalized = cleanMinimalWatchPartyText_(value, 120).toLowerCase();
+  const normalized = cleanMinimalWatchPartyText_(value, 240).toLowerCase();
   if (!normalized) return defaultValue;
   return mapping[normalized] || '';
+}
+
+function normalizeMinimalWatchPartyHttpUrl_(value) {
+  const raw = cleanMinimalWatchPartyText_(value, 2000);
+  if (!raw) return '';
+  if (/\s/.test(raw)) throw minimalWatchPartyError_('invalid_official_event_url');
+
+  const normalized = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+  if (normalized.length > 2000 || !/^https?:\/\/[^/?#\s]+(?:[/?#]\S*)?$/i.test(normalized)) {
+    throw minimalWatchPartyError_('invalid_official_event_url');
+  }
+
+  const authority = normalized.replace(/^https?:\/\//i, '').split(/[/?#]/)[0];
+  if (!authority || authority.indexOf('@') >= 0) {
+    throw minimalWatchPartyError_('invalid_official_event_url');
+  }
+
+  if (authority.charAt(0) === '[') {
+    const closingBracket = authority.indexOf(']');
+    const remainder = closingBracket >= 0 ? authority.slice(closingBracket + 1) : '';
+    if (closingBracket < 0 || (remainder && !/^:\d+$/.test(remainder))) {
+      throw minimalWatchPartyError_('invalid_official_event_url');
+    }
+  } else {
+    const hostAndPort = authority.split(':');
+    const hostname = hostAndPort[0];
+    if (hostAndPort.length > 2 || !hostname ||
+        !/^[a-z0-9.-]+$/i.test(hostname) || hostname.charAt(0) === '.' ||
+        hostname.charAt(hostname.length - 1) === '.' || hostname.indexOf('..') >= 0 ||
+        (hostAndPort.length === 2 && !/^\d+$/.test(hostAndPort[1]))) {
+      throw minimalWatchPartyError_('invalid_official_event_url');
+    }
+  }
+
+  return normalized;
 }
 
 function cleanMinimalWatchPartyText_(value, maxLength) {
