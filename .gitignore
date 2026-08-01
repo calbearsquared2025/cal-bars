@@ -7,3 +7,7 @@ token*.json
 apps-script-response*.tmp
 apps-script-headers*.tmp
 endpoint-response*.tmp
+migration-source/
+migration-output/
+migration-private/
+*.production-source.csv
