@@ -78,7 +78,7 @@ export function resolveWatchPartyFormContext({
   const venue = snapshot.venues.find((item) => clean(item?.venue_id) === clean(selectedVenueId));
   const game = snapshot.games.find((item) => clean(item?.game_id) === clean(gameId));
 
-  if (!venue || !game) return null;
+  if (!venue || !game || clean(game.game_status).toLowerCase() !== 'upcoming') return null;
 
   const venueId = clean(venue.venue_id);
   const venueName = clean(venue.name);
