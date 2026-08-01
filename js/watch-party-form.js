@@ -1,12 +1,10 @@
 import { getWatchParty } from './core.mjs';
 import {
   buildWatchPartyPrefillUrl,
-  normalizeWatchPartyFormConfig,
   resolveWatchPartyFormContext
 } from './watch-party-form-core.mjs';
 
 const CTA_SELECTOR = '[data-watch-party-form-entry-point]';
-const CONFIG_STORAGE_KEY = 'cgb_watch_party_form_config';
 const CONFIG_META_NAMES = Object.freeze({
   formUrl: 'cgb-watch-party-form-url',
   venueIdEntry: 'cgb-watch-party-venue-id-entry',
@@ -18,30 +16,7 @@ function metaContent(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
 
-function storageGet(storageObject, key) {
-  try { return storageObject?.getItem(key) || ''; } catch (_) { return ''; }
-}
-
-function storageSet(storageObject, key, value) {
-  try { storageObject?.setItem(key, value); return true; } catch (_) { return false; }
-}
-
-function storageRemove(storageObject, key) {
-  try { storageObject?.removeItem(key); } catch (_) {}
-}
-
-export function readWatchPartyFormConfig(
-  documentObject = document,
-  storageObject = window.localStorage
-) {
-  const stored = storageGet(storageObject, CONFIG_STORAGE_KEY);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      if (normalizeWatchPartyFormConfig(parsed)) return parsed;
-    } catch (_) {}
-  }
-
+export function readWatchPartyFormConfig(documentObject = document) {
   return {
     formUrl: metaContent(CONFIG_META_NAMES.formUrl, documentObject),
     venueIdEntry: metaContent(CONFIG_META_NAMES.venueIdEntry, documentObject),
@@ -57,8 +32,7 @@ function removeExistingEntryPoint(detail) {
 
 export function renderWatchPartyFormEntryPoint({
   app = window.CGBApp,
-  documentObject = document,
-  storageObject = window.localStorage
+  documentObject = document
 } = {}) {
   const detail = documentObject.querySelector('#venue-detail');
   if (!detail) return '';
@@ -73,7 +47,7 @@ export function renderWatchPartyFormEntryPoint({
     detailMode: state?.detailMode
   });
   const href = buildWatchPartyPrefillUrl(
-    readWatchPartyFormConfig(documentObject, storageObject),
+    readWatchPartyFormConfig(documentObject),
     context
   );
 
@@ -116,26 +90,6 @@ function initializeWatchPartyFormEntryPoint() {
   const render = () => renderWatchPartyFormEntryPoint({ app, documentObject: document });
   app.subscribe('rendered', render);
   app.subscribe('ready', render);
-
-  window.CGBWatchPartyForm = Object.freeze({
-    setConfig(config) {
-      const normalized = normalizeWatchPartyFormConfig(config);
-      if (!normalized) throw new Error('invalid_watch_party_form_config');
-      if (!storageSet(window.localStorage, CONFIG_STORAGE_KEY, JSON.stringify(normalized))) {
-        throw new Error('watch_party_form_config_storage_unavailable');
-      }
-      render();
-      return normalized;
-    },
-    clearConfig() {
-      storageRemove(window.localStorage, CONFIG_STORAGE_KEY);
-      render();
-    },
-    getConfig() {
-      return readWatchPartyFormConfig(document, window.localStorage);
-    }
-  });
-
   render();
 }
 
