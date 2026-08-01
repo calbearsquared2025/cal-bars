@@ -14,132 +14,169 @@ When an active Watch Party already exists for that venue and game, the contribut
 >
 > **Add Another Watch Party**
 
-The link opens the existing Google Form in a new browser context and prepopulates only:
+The link opens the finalized Google Form in a new browser context and prefills only:
 
 - canonical `venue_id`
 - venue name as a human-readable reference
-- selected canonical `game_id`
+- the readable checkbox label for the selected canonical game
 
-The action remains hidden when the configuration or venue/game context is missing or invalid. Fan Intent, browser identifiers, raw responses, contacts, processing fields, workbook identifiers, and Apps Script deployment details are never added to the generated URL.
+The action remains hidden when configuration or venue/game context is missing or invalid. Fan Intent, browser identifiers, raw responses, contacts, processing fields, workbook identifiers, and Apps Script deployment details are never added to the generated URL.
 
-## Official 2026 schedule and stable Game IDs
+## Final Google Form contract
 
-The private canonical `Games` tab and the repository fallback both contain the verified 12-game 2026 regular-season schedule. The private Sheet is the normal live-data source. `data/fallback-v2.json` is a development and endpoint-failure recovery snapshot, not a second canonical database.
+The finalized Form is titled **Cal Golden Bars Watch Party Submission** and uses the following questions.
 
-All confirmed times below are Pacific. A blank kickoff remains `kickoff_status = tbd` and renders as the confirmed date followed by **Time TBD**.
+### Prefilled context
 
-| Game ID | Form reference | Date | Kickoff |
-|---|---|---|---|
-| `game_2026_01` | UCLA at Cal | Sat, Sep 5 | 7:30 PM |
-| `game_2026_02` | Cal at Syracuse | Sat, Sep 12 | 12:30 PM |
-| `game_2026_03` | Wagner at Cal | Sat, Sep 19 | 12:30 PM |
-| `game_2026_04` | Clemson at Cal | Fri, Sep 25 | 7:30 PM |
-| `game_2026_05` | Cal at UNLV | Sat, Oct 3 | 12:30 PM |
-| `game_2026_06` | Virginia Tech at Cal | Sat, Oct 10 | Time TBD |
-| `game_2026_07` | Wake Forest at Cal | Sat, Oct 17 | Time TBD |
-| `game_2026_08` | Cal at SMU | Sat, Oct 24 | Time TBD |
-| `game_2026_09` | Cal at NC State | Sat, Oct 31 | Time TBD |
-| `game_2026_10` | Cal at Virginia | Sat, Nov 14 | Time TBD |
-| `game_2026_11` | Stanford at Cal | Sat, Nov 21 | Time TBD |
-| `game_2026_12` | Pittsburgh at Cal | Sat, Nov 28 | Time TBD |
-
-For later schedule changes:
-
-1. Update the private canonical `Games` tab.
-2. Keep `kickoff_at` blank whenever `kickoff_status = tbd`.
-3. Clear the Apps Script public snapshot cache.
-4. Verify the public Apps Script response.
-5. Update `data/fallback-v2.json` through a reviewed repository change.
-
-Do not maintain a separate Apps Script schedule constant or helper. That would create a third copy and increase drift risk when dates or kickoff times change.
-
-## Required Google Form questions
-
-Use the Milestone 5A processor labels below. Do not add a separate start-time question.
-
-### Prefilled context questions
-
-1. **Venue ID (existing)**
-   - Type: Short answer
+1. **Venue Name**
+   - Short answer
    - Required
-   - Prefilled by the site with the canonical `venue_id`
-2. **Venue Name**
-   - Type: Short answer
-   - Recommended as required for a readable private response log
-   - Prefilled by the site as a reference only
-   - The processor continues to use `venue_id` as the relationship key
-3. **Game(s)**
-   - Type: Checkboxes for multi-game support, or Short answer for the narrow private test
+   - Prefilled from the selected canonical venue
+   - Human-readable confirmation only; the processor continues to use `venue_id` as the relationship key
+2. **Which game or games will have a Watch Party here?**
+   - Checkboxes
    - Required
-   - The site prefills the selected canonical `game_id`
+   - The selected game is prechecked by the site
+   - Additional games at the same venue may be selected
+3. **Venue ID (existing)**
+   - Short answer
+   - Required
+   - Prefilled with the canonical `venue_id`
+   - Positioned at the bottom because it is a technical reference
 
-### Current Game-field limitation
+### Required organizer information
 
-Google Forms does not provide separate machine values and display labels for checkbox or multiple-choice options. The current accepted processor expects exact canonical Game IDs, so a Form option such as **UCLA at Cal — Sat, Sep 5** will not yet resolve to `game_2026_01`.
-
-For the immediate private test, use the exact Game IDs in the Form or use a Short answer field populated by the contextual link. This proves the relationship and auto-publication flow, but it is not the preferred production presentation.
-
-The preferred production correction is a backend resolver that accepts approved human-readable Form labels and maps each one to its canonical `game_id` before publication. That change belongs in the Watch Party processor and should be implemented after PR #20 is resolved so the two backend changes remain reviewable rather than modifying the same processor in parallel. The schedule table above is the approved label-to-ID reference for that follow-up.
-
-### Processor-required questions
-
-4. **Organizer Name** — Short answer, required
-5. **Submitter Role** — Multiple choice, required
-   - `Fan`
-   - `Venue owner or manager`
-   - `Alumni group`
-
-### Recommended structured questions
-
-6. **Organizer Type** — Multiple choice
+4. **Organizer or host name**
+   - Short answer
+   - Required
+5. **Who is organizing or hosting this Watch Party?**
+   - Multiple choice
+   - Required
    - `Alumni group`
    - `Venue`
    - `Other organization`
-   - `Individual`
-   - `Unknown`
-7. **Official Event URL** — Short answer, optional
-8. **Age Policy** — Multiple choice
+   - `Individual or group of fans`
+   - `Not Sure`
+6. **What is your relationship to this Watch Party?**
+   - Multiple choice
+   - Required
+   - `I represent the alumni group or organization hosting it`
+   - `I represent the venue hosting it`
+   - `I am organizing it as an individual or group of fans`
+   - `I am sharing a public event organized by someone else`
+
+### Optional public event information
+
+7. **Official event or RSVP link**
+   - Short answer
+   - Optional
+   - No Google Forms complete-URL validation
+   - Apps Script accepts a bare domain or complete HTTP(S) URL and stores a normalized HTTP(S) URL
+8. **Are there age restrictions?**
+   - Multiple choice
+   - Optional
    - `All ages`
-   - `21+`
-   - `Unknown`
-9. **Sound Status** — Multiple choice
-   - `On`
-   - `Off`
-   - `Unknown`
-10. **Restrictions Note** — Paragraph, optional
-11. **Game Day Note** — Paragraph, optional; use for early-arrival or special timing details
+   - `21+ Only`
+   - Blank normalizes to canonical `unknown`
+9. **Will the game audio be on?**
+   - Multiple choice
+   - Optional
+   - `Yes`
+   - `No`
+   - Blank normalizes to canonical `unknown`
+10. **Anything else fans should know?**
+    - Paragraph
+    - Optional
+    - Stored in canonical `game_day_note`
+    - The former separate restrictions field remains available for legacy or administrative records but is not collected separately by the final public Form
 
-Optional submitter name or email questions may remain private in the Form response sheet. They are not prefilled by the site and are not included in the public snapshot.
+### Optional private contact
 
-Set the Form confirmation message to:
+11. **Contact Email**
+    - Short answer with email validation
+    - Optional
+    - Preserved only in the private raw Form response
+    - Never copied into a canonical Watch Party row or the public snapshot
 
-> Your watch party has been added.
+Do not add a start-time question. Canonical `event_start_at` remains blank for this form workflow. Legacy raw start-time columns and values remain intact and are ignored by the processor.
 
-## Website validation
+## Readable game labels
 
-The event website is still validated. The question is where validation occurs.
+The Form presents date-and-matchup checkbox choices rather than canonical IDs:
 
-Google Forms response validation blocks a submission before Apps Script receives it. A rule that requires a complete URL is therefore incompatible with the approved bare-domain behavior because `example.com` would be rejected before the processor could normalize it to `https://example.com`.
+| Canonical Game ID | Form choice |
+|---|---|
+| `game_2026_01` | `Sep 5 — Cal vs. UCLA` |
+| `game_2026_02` | `Sep 12 — Cal at Syracuse` |
+| `game_2026_03` | `Sep 19 — Cal vs. Wagner` |
+| `game_2026_04` | `Sep 25 — Cal vs. Clemson` |
+| `game_2026_05` | `Oct 3 — Cal at UNLV` |
+| `game_2026_06` | `Oct 10 — Cal vs. Virginia Tech` |
+| `game_2026_07` | `Oct 17 — Cal vs. Wake Forest` |
+| `game_2026_08` | `Oct 24 — Cal at SMU` |
+| `game_2026_09` | `Oct 31 — Cal at NC State` |
+| `game_2026_10` | `Nov 14 — Cal at Virginia` |
+| `game_2026_11` | `Nov 21 — Cal vs. Stanford` |
+| `game_2026_12` | `Nov 28 — Cal vs. Pittsburgh` |
 
-After PR #20 is active, configure the question as an optional **Short answer** without a complete-URL rule. Apps Script then performs the authoritative validation and normalization, accepting a bare domain while rejecting malformed values, credentials, whitespace, and non-web schemes.
+The frontend and Apps Script both derive this label from canonical `game_date`, `home_away`, and `opponent_name`. Kickoff times are deliberately excluded, so a kickoff moving from TBD to confirmed does not require a Form-label change.
 
-If the product instead decides to require complete HTTP(S) URLs and reject bare domains, Google Forms response validation may be enabled. That would reverse the previously requested `example.com` behavior.
+Apps Script accepts the readable labels and retains support for canonical Game IDs in older raw responses. Unknown labels fail before publication.
 
-## Obtain the Google Forms entry IDs
+## Processing behavior
 
-1. Open the Form in edit mode.
-2. Select **More** (`⋮`) and **Get pre-filled link**.
-3. Enter unmistakable sample values in **Venue ID (existing)**, **Venue Name**, and **Game(s)**.
-4. Select **Get link**, then copy the generated URL.
-5. In the URL query string, match each sample value to its `entry.<digits>` parameter.
-6. Record the complete `entry.<digits>` value for each of the three questions.
-7. Verify that all three entry IDs are different.
+On a valid submission, Apps Script:
 
-The frontend accepts either `entry.123456789` or the numeric portion `123456789`; it normalizes numeric values to the standard `entry.` form.
+1. Preserves the complete original Form response in `Watch_Party_Submissions_Raw`.
+2. Reads the finalized friendly question titles while retaining aliases for older question titles.
+3. Resolves each readable game choice to a canonical `game_id` from the private `Games` tab.
+4. Validates the existing published venue and required structured fields.
+5. Normalizes organizer type, submitter relationship, age policy, audio status, and optional event URL.
+6. Creates one canonical Watch Party row per selected game.
+7. Leaves `event_start_at` and `restrictions_note` blank for the finalized Form workflow.
+8. Stores the combined public note in `game_day_note`.
+9. Keeps Contact Email only in the private raw response.
+10. Marks the raw response processed and clears the public snapshot cache only after canonical publication succeeds.
+
+The linked response Sheet may retain columns from deleted or renamed Form questions. Do not delete historical response columns or manually rename Google-owned question headers. The processor trims header whitespace and prioritizes the finalized titles before legacy aliases.
+
+## Event-link validation
+
+The Form field remains optional and does not use Google Forms' complete-URL validation.
+
+Accepted examples:
+
+- `example.com`
+- `www.example.com/event`
+- `https://example.com/event`
+- `http://example.com/event`
+
+Bare domains are stored with an `https://` prefix. Whitespace, credentials, malformed authorities, and non-web schemes are rejected before publication.
+
+This branch now includes the behavior previously isolated in draft PR #20. PR #20 should not also be merged after this branch lands.
+
+## Obtain the three Google Forms entry IDs
+
+The permanent frontend configuration still requires the entry IDs for:
+
+- **Venue ID (existing)**
+- **Venue Name**
+- **Which game or games will have a Watch Party here?**
+
+In the Form editor:
+
+1. Select **More** (`⋮`) and **Get pre-filled link**.
+2. Enter unmistakable sample values in the three fields above.
+3. For the game field, select one exact existing checkbox choice.
+4. Select **Get link** and copy the complete generated URL.
+5. Match each sample value to its `entry.<digits>` query parameter.
+6. Confirm all three entry IDs are different.
+
+The frontend configuration continues to call the checkbox entry `gameIdEntry` for compatibility, but the parameter value is now the exact readable Form choice, not the canonical `game_id`.
 
 ## Repository configuration points
 
-The disabled defaults are the four empty meta tags in `index.html`:
+The disabled defaults remain the four meta tags in `index.html`:
 
 ```html
 <meta name="cgb-watch-party-form-url" content="">
@@ -148,11 +185,9 @@ The disabled defaults are the four empty meta tags in `index.html`:
 <meta name="cgb-watch-party-game-id-entry" content="">
 ```
 
-Do not replace these empty values with Matthew's account-specific values in the Milestone 5B branch.
+After the real entry IDs are verified, replace the empty values through a narrow reviewed commit. These are public routing identifiers, not credentials.
 
-### Private-test configuration without a commit
-
-On the HTTPS preview origin, open the browser developer console and run:
+Until that configuration commit is accepted, browser-local testing remains available:
 
 ```js
 CGBWatchPartyForm.setConfig({
@@ -163,71 +198,35 @@ CGBWatchPartyForm.setConfig({
 });
 ```
 
-The helper validates the URL and entry IDs, stores the values only in that browser origin's local storage, and rerenders the current venue detail. Refreshing the page preserves the private-test configuration in that browser.
-
-Remove the private-test configuration with:
+Remove browser-local configuration with:
 
 ```js
 CGBWatchPartyForm.clearConfig();
 ```
 
-Clearing configuration is also the rollback method for disabling the CTA in a test browser.
+## Acceptance checks
 
-### Physical-iPhone test without an iPhone developer console
+1. Copy the revised `apps-script/WatchPartyAutomation.gs` into the spreadsheet-bound Apps Script project.
+2. Save the project. A web-app redeployment is required only if the deployed project version must include the revised processor source; the spreadsheet form-submit trigger uses saved bound-project code.
+3. Confirm the existing spreadsheet **On form submit** trigger still targets `onWatchPartyFormSubmit`.
+4. Obtain and configure the three Form entry IDs.
+5. Open a venue detail for `game_2026_01` and confirm the generated Form link preselects `Sep 5 — Cal vs. UCLA` plus the correct venue name and ID.
+6. Select a second game in the Form and submit.
+7. Confirm the private raw row preserves the readable checkbox labels and optional Contact Email.
+8. Confirm one canonical Watch Party row exists per selected game, with no contact email and blank `event_start_at`.
+9. Test a bare-domain event link and confirm the canonical URL begins with `https://`.
+10. Confirm the public snapshot and website show the new Watch Parties after refresh.
+11. Repeat the entry-point test in physical iPhone portrait mode.
 
-Use an uncommitted preview-only edit in a Codespace or local checkout:
+## Weekly maintenance
 
-1. Check out `feature/m5b-watch-party-form-entry-point`.
-2. Replace the four empty `content` values in `index.html` with the test Form URL and the three entry IDs.
-3. Do not commit or push the edited file.
-4. Start the existing static preview and open its HTTPS forwarded URL on the iPhone.
-5. Complete the physical-iPhone checklist.
-6. Run `git restore index.html` immediately after testing.
-7. Run `git status --short` and confirm no account-specific Form value remains in the working tree.
+Planning issue #8 records the recurring season checklist. Weekly maintenance includes:
 
-This is a test-only bridge. The draft PR and production branch remain disabled.
+- reviewing official schedule changes
+- updating the canonical `Games` tab
+- keeping Form date-and-matchup choices synchronized with canonical dates
+- pruning completed games from the Form choices without deleting historical canonical Game or Watch Party records
+- clearing and verifying the public snapshot after schedule changes
+- updating `data/fallback-v2.json` through a reviewed repository change when canonical schedule data changes materially
 
-## Production-configuration constraint
-
-The Form URL and `entry.<digits>` identifiers are public routing identifiers, not credentials or security secrets. Anyone who can open the public Form or inspect a generated prefilled link can discover them.
-
-The implementation constraint was narrower: the Milestone 5B instruction prohibited committing Matthew's actual account-specific values. A static frontend nevertheless needs those public identifiers at runtime, either embedded in its files or fetched from a public endpoint. The draft PR therefore had to remain disabled until Matthew reviewed the Form and approved how to publish the configuration.
-
-The simplest production choice is a small reviewed source configuration after the Form is final. A public Apps Script runtime configuration is also possible, but it does not make the values secret and adds operational complexity; use it only if centralized configuration changes are worth that cost.
-
-Private values such as the workbook ID, raw responses, contacts, and credentials remain outside either public configuration method.
-
-## Verify the generated prefilled link
-
-1. Confirm the private canonical `Games` rows and the fallback schedule are current. If the Sheet changed, clear the public snapshot cache and verify the Apps Script response first.
-2. Configure the test browser with non-sensitive Form configuration.
-3. Open a direct venue/game route such as `?venue=<slug>&game=game_2026_01`.
-4. Confirm the venue detail shows the normal submission copy when no party exists.
-5. Confirm a venue with an existing selected-game Watch Party shows **Add Another Watch Party**.
-6. Inspect the link and confirm:
-   - the original Form origin and path are preserved
-   - existing Form query parameters remain
-   - `usp=pp_url` is present unless already configured
-   - the venue ID parameter equals the canonical `venue_id`
-   - the venue-name parameter is decoded correctly, including punctuation and non-ASCII text
-   - the game parameter equals the selected canonical `game_id`
-7. Open the link and confirm the three Form answers are populated correctly.
-8. Change the selected game while remaining on the venue detail and confirm the generated link changes only the game context.
-9. Clear or remove the test configuration and confirm the CTA disappears without affecting venue detail, Watch Party rendering, or Fan Intent.
-
-## PR #20 website-field caveat
-
-Implementation PR #20, **Normalize bare Watch Party website domains**, is separate and is not required for this entry point.
-
-Until PR #20 is merged and its revised `apps-script/WatchPartyAutomation.gs` is copied into the spreadsheet-bound Apps Script project:
-
-- do not claim that `example.com` is accepted
-- the current processor requires a complete HTTP(S) URL
-
-After PR #20 is merged and installed, configure **Official Event URL** as an optional **Short answer** question without a complete-URL response-validation rule.
-
-## Account-bound actions
-
-The private `CGBv2` `Games` tab was populated directly during acceptance. No schedule helper must be copied into Apps Script.
-
-This repository PR does not create or edit the Google Form, link it to the Sheet, install a trigger, deploy Apps Script, clear an account-bound Apps Script cache, change GitHub Pages, change DNS, or change MapTiler.
+A date change requires updating the Form choice. The backend mapping itself is derived from the canonical Games data and does not require a hard-coded code-table edit.
