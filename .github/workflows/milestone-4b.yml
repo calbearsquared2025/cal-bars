@@ -34,7 +34,8 @@ jobs:
             tests/watch-party-form-entry-point.test.mjs \
             tests/watch-party-form-processing.test.mjs \
             tests/watch-party-form-config.test.mjs \
-            tests/watch-party-required-fields.test.mjs
+            tests/watch-party-required-fields.test.mjs \
+            tests/watch-party-closed-game.test.mjs
 
       - name: Run complete test suite
         run: npm test
