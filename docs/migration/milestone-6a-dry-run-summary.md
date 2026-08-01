@@ -1,7 +1,9 @@
 # Milestone 6A dry-run aggregate summary
 
-**Source snapshot:** authorized v1 production `Public` location tab archived July 26, 2026  
-**Migration timestamp:** `2026-07-26T00:00:00Z`  
+**Source snapshot:** authorized v1 production `Public` location tab archived July 26, 2026
+
+**Migration timestamp:** `2026-07-26T00:00:00Z`
+
 **Status:** review-only; no v2 workbook load
 
 ## Reconciliation
