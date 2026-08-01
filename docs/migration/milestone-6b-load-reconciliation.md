@@ -1,6 +1,6 @@
 # Milestone 6B — Approved migration load and reconciliation
 
-**Status:** workbook load complete; public-cache refresh and visual acceptance pending
+**Status:** corrected workbook load complete; public-cache refresh and visual acceptance pending
 
 ## Scope
 
@@ -16,9 +16,19 @@ Before the load, a complete private Drive copy of the destination workbook was c
 
 The v1 archive remains unchanged.
 
-## Load decisions
+## Load correction incident
 
-- Loaded all 35 approved Milestone 6A Venue records.
+The first Milestone 6B write used an incorrect non-authoritative 35-row Venue dataset. Its row count and schema matched the expected totals, but its Venue identities did not match either the archived v1 `Public` tab or the approved Milestone 6A package. Matthew detected the problem during visual review after noticing unrelated locations in Atlanta and Cleveland.
+
+The incorrect rows were removed before acceptance. The `Venues` tab was then replaced with the exact 35 approved Milestone 6A rows plus the two preserved user-created rows. The corrected approved-and-preserved Venue payload has SHA-256:
+
+`a1e8a6febdca4affa9c6163dc12c8de561049f6831bfe3d3105a9fe30bc4362f`
+
+This incident establishes an additional load gate: migration reconciliation must compare the complete expected Venue ID set and representative names/cities against the approved package. Counts, schema validity, unique IDs, and unique slugs are necessary but not sufficient.
+
+## Final load decisions
+
+- Loaded all 35 approved Milestone 6A Venue records from the accepted review package.
 - Changed approved migration candidates from `draft` to `published` for the private v2 workbook load.
 - Preserved the two existing MapTiler-created Community Locations and their two active Fan Intent rows.
 - Removed four synthetic seed Venues (`ven_000001` through `ven_000004`).
@@ -42,8 +52,11 @@ The v1 archive remains unchanged.
 | Duplicate Venue slugs | 0 |
 | Broken Fan Intent Venue references | 0 |
 | Broken Fan Intent Game references | 0 |
+| Approved Venue IDs present exactly once | 35 / 35 |
 
-All 35 approved migration IDs are present exactly once. The three approved event-supported Community Locations retain one concise source-supported description. Dogwood Domain is absent as rejected; the separately approved venue named The Dogwood remains present.
+The corrected workbook contains the approved v1-derived records, including George & Walt's in Oakland, Busby's West in Santa Monica, Cali's Sports Bar & Kitchen in Berkeley, and Town Tavern DC in Washington. The unrelated Atlanta and Cleveland rows from the incorrect first write are absent.
+
+The three approved event-supported Community Locations retain one concise source-supported description. Dogwood Domain is absent as rejected.
 
 ## Privacy and safety review
 
@@ -54,21 +67,23 @@ All 35 approved migration IDs are present exactly once. The three approved event
 
 ## Pending acceptance actions
 
-The Apps Script snapshot cache lasts up to five minutes and workbook edits do not automatically invalidate it. Before visual acceptance, run `clearPublicSnapshotCache_()` in the bound Apps Script project or wait for cache expiry, then verify the v2 preview on desktop and physical iPhone.
+The Apps Script snapshot cache lasts up to five minutes and workbook edits do not automatically invalidate it. Before visual acceptance, wait for cache expiry, then verify the v2 preview on desktop and physical iPhone.
 
 Acceptance checks:
 
 1. The public snapshot contains 37 Venues: 16 Cal Bars and 21 Community Locations.
-2. The four synthetic venue names do not appear.
-3. The Passport Denver, Kells Irish Restaurant & Pub, and The Bad Apple display their approved concise descriptions.
-4. Map markers, list browsing, search, direct venue routes, and selected-venue cards render representative migrated records.
-5. Two Pitchers Brewing Company and Valley Ford Creamery remain present with their existing Fan Intent selections.
-6. Initial load performance is observed with the realistic Venue volume and compared with issue #19.
+2. The four synthetic seed venue names do not appear.
+3. Unapproved first-write records such as the Atlanta Cali's, West 3rd Common in Cleveland, and Some Random Bar in Pittsburgh do not appear.
+4. Approved records such as George & Walt's, Busby's West, Headlands Brewing, and Cali's in Berkeley do appear.
+5. The Passport Denver, Kells Irish Restaurant & Pub, and The Bad Apple display their approved concise descriptions.
+6. Map markers, list browsing, search, direct venue routes, and selected-venue cards render representative migrated records.
+7. Two Pitchers Brewing Company and Valley Ford Creamery remain present with their existing Fan Intent selections.
+8. Initial load performance is observed with the realistic Venue volume and compared with issue #19.
 
 ## Known observation outside the approved migration dataset
 
-The two preserved MapTiler-created Venue rows currently contain `region = US` rather than `CA`. Milestone 6B preserved those user-created records exactly rather than silently changing data outside the approved migration package. The external-place normalization and existing rows should be corrected separately.
+The two preserved MapTiler-created Venue rows currently contain `region = US` rather than `CA`. Milestone 6B preserved those user-created records exactly rather than silently changing data outside the approved migration package. Issue #25 tracks the external-place normalization and existing-row correction.
 
 ## Completion boundary
 
-Do not merge this branch or mark Milestone 6B accepted until the cache-refresh and representative desktop/iPhone checks are complete. Do not begin Milestone 7 automatically.
+Do not merge this branch or mark Milestone 6B accepted until the corrected dataset has passed cache-refresh and representative desktop/iPhone checks. Do not begin Milestone 7 automatically.
