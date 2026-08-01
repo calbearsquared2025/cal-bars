@@ -185,15 +185,11 @@ test('generated URL contains no browser, Fan Intent, contact, or private process
   }
 });
 
-test('index uses empty disabled configuration rather than account-specific placeholders', () => {
-  for (const name of [
-    'cgb-watch-party-form-url',
-    'cgb-watch-party-venue-id-entry',
-    'cgb-watch-party-venue-name-entry',
-    'cgb-watch-party-game-id-entry'
-  ]) {
-    assert.match(indexHtml, new RegExp(`<meta name="${name}" content="">`));
-  }
+test('index uses the verified reviewed Form routing configuration', () => {
+  assert.match(indexHtml, /name="cgb-watch-party-form-url"[\s\S]*?content="https:\/\/docs\.google\.com\/forms\/d\/e\/1FAIpQLSdPF2mVRnIaZtyIwgFB2j9LvrHnl6jENkX6u9_dj1Zew5TTiQ\/viewform"/);
+  assert.match(indexHtml, /<meta name="cgb-watch-party-venue-id-entry" content="entry\.1451856849">/);
+  assert.match(indexHtml, /<meta name="cgb-watch-party-venue-name-entry" content="entry\.307282250">/);
+  assert.match(indexHtml, /<meta name="cgb-watch-party-game-id-entry" content="entry\.1519015315">/);
   assert.match(indexHtml, /js\/watch-party-form\.js/);
   assert.match(indexHtml, /css\/watch-party-form\.css/);
 });
