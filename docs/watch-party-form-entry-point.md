@@ -132,49 +132,57 @@ Bare domains are stored with an `https://` prefix. Whitespace, credentials, malf
 
 This branch incorporates the URL-normalization work previously isolated in draft PR #20. Do not also merge PR #20 after this branch lands.
 
-## Resolve permanent Form configuration
+## Verified permanent Form configuration
 
-The frontend requires public routing identifiers for:
-
-- Form URL
-- **Venue ID (existing)** entry ID
-- **Venue Name** entry ID
-- **Which game or games will have a Watch Party here?** entry ID
-
-Install `apps-script/WatchPartyFormConfig.gs` in the spreadsheet-bound Apps Script project and run:
-
-```javascript
-inspectWatchPartyFormPrefillConfiguration()
-```
-
-The owner-only helper reads the Form linked to `Watch_Party_Submissions_Raw`, verifies the required question titles and types, and returns/logs the Form URL and three `entry.<digits>` values. It creates no response and exposes no private response data.
-
-After verification, commit the returned values to the four reviewed meta tags in `index.html`:
+The owner-only helper `inspectWatchPartyFormPrefillConfiguration()` verified the Form linked to `Watch_Party_Submissions_Raw` and returned these public routing identifiers:
 
 ```html
-<meta name="cgb-watch-party-form-url" content="https://docs.google.com/forms/d/e/.../viewform">
-<meta name="cgb-watch-party-venue-id-entry" content="entry.111111111">
-<meta name="cgb-watch-party-venue-name-entry" content="entry.222222222">
-<meta name="cgb-watch-party-game-id-entry" content="entry.333333333">
+<meta
+  name="cgb-watch-party-form-url"
+  content="https://docs.google.com/forms/d/e/1FAIpQLSdPF2mVRnIaZtyIwgFB2j9LvrHnl6jENkX6u9_dj1Zew5TTiQ/viewform"
+>
+<meta name="cgb-watch-party-venue-id-entry" content="entry.1451856849">
+<meta name="cgb-watch-party-venue-name-entry" content="entry.307282250">
+<meta name="cgb-watch-party-game-id-entry" content="entry.1519015315">
 ```
+
+These values are committed in `index.html`. They are public Google Forms routing identifiers, not credentials.
 
 The checkbox configuration name remains `gameIdEntry` for compatibility, but the prefilled value is the readable Form choice rather than the canonical `game_id`.
 
-There is no browser-console or local-storage configuration path. The CTA remains safely hidden until all four reviewed values are present and valid.
+There is no browser-console or local-storage configuration path.
+
+### Apps Script authorization
+
+`inspectWatchPartyFormPrefillConfiguration()` uses `FormApp.openByUrl()` and therefore requires Google Forms authorization.
+
+When the bound Apps Script project's `appsscript.json` explicitly lists `oauthScopes`, it must include:
+
+```text
+https://www.googleapis.com/auth/forms
+```
+
+After adding that scope, run the inspector manually from the Apps Script editor so Google can display the authorization prompt. Installed triggers cannot request new authorization interactively.
 
 ## Acceptance checks
 
-1. Copy revised `apps-script/WatchPartyAutomation.gs` and new `apps-script/WatchPartyFormConfig.gs` into the bound Apps Script project.
-2. Save the project.
-3. Confirm the spreadsheet **On form submit** trigger still targets `onWatchPartyFormSubmit`.
-4. Run `inspectWatchPartyFormPrefillConfiguration()` and commit the returned public routing values.
-5. Open a venue detail for `game_2026_01` and confirm the real Form preselects `Sep 5 — Cal vs. UCLA` plus the correct venue name and ID.
-6. Select a second game and submit.
-7. Confirm the private raw row preserves readable labels and optional Contact Email.
-8. Confirm one canonical Watch Party exists per selected game, with no contact email and blank `event_start_at`.
-9. Test a bare-domain event link and confirm the canonical URL begins with `https://`.
-10. Confirm the public snapshot and website show the new Watch Parties without private fields.
-11. Repeat the entry-point test in physical iPhone portrait mode.
+Completed:
+
+1. Revised `apps-script/WatchPartyAutomation.gs` installed in the bound Apps Script project.
+2. New `apps-script/WatchPartyFormConfig.gs` installed.
+3. Forms OAuth scope authorized.
+4. Permanent Form URL and all three entry IDs verified and committed.
+
+Remaining before merge:
+
+1. Confirm the spreadsheet **On form submit** trigger still targets `onWatchPartyFormSubmit`.
+2. Open a venue detail for `game_2026_01` and confirm the real Form preselects `Sep 5 — Cal vs. UCLA` plus the correct venue name and ID.
+3. Select a second game and submit.
+4. Confirm the private raw row preserves readable labels and optional Contact Email.
+5. Confirm one canonical Watch Party exists per selected game, with no contact email and blank `event_start_at`.
+6. Test a bare-domain event link and confirm the canonical URL begins with `https://`.
+7. Confirm the public snapshot and website show the new Watch Parties without private fields.
+8. Repeat the entry-point test in responsive desktop and physical iPhone portrait mode.
 
 No Google Sheet schema change is required.
 
