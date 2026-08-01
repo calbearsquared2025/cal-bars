@@ -111,7 +111,8 @@ test('resolves direct-entry venue and game route state from the canonical snapsh
         game_id: 'game_1',
         game_date: '2026-09-05',
         opponent_name: 'UCLA',
-        home_away: 'home'
+        home_away: 'home',
+        game_status: 'upcoming'
       }]
     }
   });
@@ -127,8 +128,14 @@ test('selected-game changes produce a new readable prefill without changing venu
   const snapshot = {
     venues: [{ venue_id: 'venue_1', name: 'Two Pitchers Brewing Company' }],
     games: [
-      { game_id: 'game_1', game_date: '2026-09-05', opponent_name: 'UCLA', home_away: 'home' },
-      { game_id: 'game_2', game_date: '2026-09-12', opponent_name: 'Syracuse', home_away: 'away' }
+      {
+        game_id: 'game_1', game_date: '2026-09-05', opponent_name: 'UCLA',
+        home_away: 'home', game_status: 'upcoming'
+      },
+      {
+        game_id: 'game_2', game_date: '2026-09-12', opponent_name: 'Syracuse',
+        home_away: 'away', game_status: 'upcoming'
+      }
     ]
   };
   const first = resolveWatchPartyFormContext({ snapshot, detailMode: true, selectedVenueId: 'venue_1', gameId: 'game_1' });
@@ -138,16 +145,33 @@ test('selected-game changes produce a new readable prefill without changing venu
   assert.equal(first.venueId, second.venueId);
 });
 
-test('does not create context when venue, game, date, or detail-route state is unavailable', () => {
+test('does not create context when venue, game, date, status, or detail-route state is unavailable', () => {
   const snapshot = {
     venues: [{ venue_id: 'venue_1', name: 'Venue' }],
-    games: [{ game_id: 'game_1', game_date: '2026-09-05', opponent_name: 'UCLA', home_away: 'home' }]
+    games: [{
+      game_id: 'game_1', game_date: '2026-09-05', opponent_name: 'UCLA',
+      home_away: 'home', game_status: 'upcoming'
+    }]
   };
   assert.equal(resolveWatchPartyFormContext({ snapshot, detailMode: false, selectedVenueId: 'venue_1', gameId: 'game_1' }), null);
   assert.equal(resolveWatchPartyFormContext({ snapshot, detailMode: true, selectedVenueId: 'missing', gameId: 'game_1' }), null);
   assert.equal(resolveWatchPartyFormContext({ snapshot, detailMode: true, selectedVenueId: 'venue_1', gameId: 'missing' }), null);
   assert.equal(resolveWatchPartyFormContext({
-    snapshot: { venues: snapshot.venues, games: [{ game_id: 'game_1', opponent_name: 'UCLA', home_away: 'home' }] },
+    snapshot: { venues: snapshot.venues, games: [{
+      game_id: 'game_1', opponent_name: 'UCLA', home_away: 'home', game_status: 'upcoming'
+    }] },
+    detailMode: true,
+    selectedVenueId: 'venue_1',
+    gameId: 'game_1'
+  }), null);
+  assert.equal(resolveWatchPartyFormContext({
+    snapshot: { venues: snapshot.venues, games: [{ ...snapshot.games[0], game_status: 'completed' }] },
+    detailMode: true,
+    selectedVenueId: 'venue_1',
+    gameId: 'game_1'
+  }), null);
+  assert.equal(resolveWatchPartyFormContext({
+    snapshot: { venues: snapshot.venues, games: [{ ...snapshot.games[0], game_status: 'cancelled' }] },
     detailMode: true,
     selectedVenueId: 'venue_1',
     gameId: 'game_1'
