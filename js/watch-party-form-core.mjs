@@ -1,6 +1,10 @@
 const GOOGLE_FORMS_HOST = 'docs.google.com';
 const GOOGLE_FORMS_PATH_PREFIX = '/forms/';
 const ENTRY_ID_PATTERN = /^(?:entry\.)?(\d+)$/;
+const GAME_MONTHS = Object.freeze([
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+]);
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -46,6 +50,21 @@ export function normalizeWatchPartyFormConfig(config = {}) {
   });
 }
 
+export function buildWatchPartyFormGameLabel(game = {}) {
+  const dateMatch = clean(game.game_date).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const opponentName = clean(game.opponent_name);
+  if (!dateMatch || !opponentName) return '';
+
+  const month = GAME_MONTHS[Number(dateMatch[2]) - 1];
+  const day = Number(dateMatch[3]);
+  if (!month || !Number.isInteger(day) || day < 1 || day > 31) return '';
+
+  const relationship = clean(game.home_away).toLowerCase() === 'away'
+    ? 'Cal at '
+    : 'Cal vs. ';
+  return `${month} ${day} — ${relationship}${opponentName}`;
+}
+
 export function resolveWatchPartyFormContext({
   snapshot,
   gameId,
@@ -64,13 +83,15 @@ export function resolveWatchPartyFormContext({
   const venueId = clean(venue.venue_id);
   const venueName = clean(venue.name);
   const canonicalGameId = clean(game.game_id);
+  const gameLabel = buildWatchPartyFormGameLabel(game);
 
-  if (!venueId || !venueName || !canonicalGameId) return null;
+  if (!venueId || !venueName || !canonicalGameId || !gameLabel) return null;
 
   return Object.freeze({
     venueId,
     venueName,
-    gameId: canonicalGameId
+    gameId: canonicalGameId,
+    gameLabel
   });
 }
 
@@ -78,14 +99,14 @@ export function buildWatchPartyPrefillUrl(config, context) {
   const normalizedConfig = normalizeWatchPartyFormConfig(config);
   const venueId = clean(context?.venueId);
   const venueName = clean(context?.venueName);
-  const gameId = clean(context?.gameId);
+  const gameLabel = clean(context?.gameLabel);
 
-  if (!normalizedConfig || !venueId || !venueName || !gameId) return '';
+  if (!normalizedConfig || !venueId || !venueName || !gameLabel) return '';
 
   const url = new URL(normalizedConfig.formUrl);
   if (!url.searchParams.has('usp')) url.searchParams.set('usp', 'pp_url');
   url.searchParams.set(normalizedConfig.venueIdEntry, venueId);
   url.searchParams.set(normalizedConfig.venueNameEntry, venueName);
-  url.searchParams.set(normalizedConfig.gameIdEntry, gameId);
+  url.searchParams.set(normalizedConfig.gameIdEntry, gameLabel);
   return url.toString();
 }
