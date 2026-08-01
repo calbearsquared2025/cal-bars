@@ -72,6 +72,17 @@ export function validateVenueLoad({
   approvedPublicationStatus = 'published'
 }) {
   const issues = [];
+  const actualFields = actualRows.length > 0
+    ? Object.keys(actualRows[0]).filter((field) => field !== 'source_row')
+    : [];
+  if (JSON.stringify(actualFields) !== JSON.stringify(VENUE_FIELDS)) {
+    issues.push({
+      code: 'ACTUAL_VENUE_SCHEMA_MISMATCH',
+      expected_fields: VENUE_FIELDS,
+      actual_fields: actualFields
+    });
+  }
+
   const expectedApproved = approvedRows.map((row) => canonicalVenue(row, approvedPublicationStatus));
   const actual = actualRows.map((row) => canonicalVenue(row));
   const preservedIds = new Set(preservedVenueIds);
