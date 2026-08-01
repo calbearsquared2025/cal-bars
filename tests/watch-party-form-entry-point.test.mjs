@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
+  buildWatchPartyFormGameLabel,
   buildWatchPartyPrefillUrl,
   normalizeGoogleFormsEntryId,
   normalizeWatchPartyFormConfig,
@@ -21,7 +22,8 @@ const CONFIG = Object.freeze({
 const CONTEXT = Object.freeze({
   venueId: 'venue_oakland_01',
   venueName: "O'Neill & Sons – Café",
-  gameId: 'game_2026_ucla'
+  gameId: 'game_2026_01',
+  gameLabel: 'Sep 5 — Cal vs. UCLA'
 });
 
 function parsedPrefill(config = CONFIG, context = CONTEXT) {
@@ -35,11 +37,11 @@ test('normalizes numeric and prefixed Google Forms entry IDs', () => {
   assert.equal(normalizeGoogleFormsEntryId('field.123'), '');
 });
 
-test('builds a prefilled Google Form URL with all required public context', () => {
+test('builds a prefilled Google Form URL with venue context and the readable game choice', () => {
   const { url } = parsedPrefill();
   assert.equal(url.searchParams.get('entry.101'), CONTEXT.venueId);
   assert.equal(url.searchParams.get('entry.202'), CONTEXT.venueName);
-  assert.equal(url.searchParams.get('entry.303'), CONTEXT.gameId);
+  assert.equal(url.searchParams.get('entry.303'), CONTEXT.gameLabel);
   assert.equal(url.searchParams.get('usp'), 'pp_url');
 });
 
@@ -54,7 +56,23 @@ test('preserves the configured base Form URL path, existing query, and hash', ()
 test('uses standards-based URL encoding for spaces, punctuation, ampersands, apostrophes, and non-ASCII text', () => {
   const { href, url } = parsedPrefill();
   assert.equal(url.searchParams.get('entry.202'), "O'Neill & Sons – Café");
+  assert.equal(url.searchParams.get('entry.303'), 'Sep 5 — Cal vs. UCLA');
   assert.match(href, /O%27Neill\+%26\+Sons\+%E2%80%93\+Caf%C3%A9/);
+});
+
+test('builds stable date-and-matchup labels without kickoff times', () => {
+  assert.equal(buildWatchPartyFormGameLabel({
+    game_date: '2026-09-05',
+    opponent_name: 'UCLA',
+    home_away: 'home',
+    kickoff_at: '2026-09-06T02:30:00Z'
+  }), 'Sep 5 — Cal vs. UCLA');
+  assert.equal(buildWatchPartyFormGameLabel({
+    game_date: '2026-09-12',
+    opponent_name: 'Syracuse',
+    home_away: 'away',
+    kickoff_at: '2026-09-12T19:30:00Z'
+  }), 'Sep 12 — Cal at Syracuse');
 });
 
 test('returns no URL when the Form URL is missing', () => {
@@ -74,6 +92,10 @@ test('returns no URL when any entry ID is missing or only partially configured',
   assert.equal(buildWatchPartyPrefillUrl({ ...CONFIG, gameIdEntry: '' }, CONTEXT), '');
 });
 
+test('returns no URL when the readable game label cannot be built', () => {
+  assert.equal(buildWatchPartyPrefillUrl(CONFIG, { ...CONTEXT, gameLabel: '' }), '');
+});
+
 test('rejects duplicate entry IDs that would overwrite context', () => {
   assert.equal(normalizeWatchPartyFormConfig({ ...CONFIG, venueNameEntry: 'entry.101' }), null);
 });
@@ -85,33 +107,51 @@ test('resolves direct-entry venue and game route state from the canonical snapsh
     gameId: 'game_1',
     snapshot: {
       venues: [{ venue_id: 'venue_1', name: 'Two Pitchers Brewing Company' }],
-      games: [{ game_id: 'game_1', opponent_name: 'UCLA' }]
+      games: [{
+        game_id: 'game_1',
+        game_date: '2026-09-05',
+        opponent_name: 'UCLA',
+        home_away: 'home'
+      }]
     }
   });
   assert.deepEqual(context, {
     venueId: 'venue_1',
     venueName: 'Two Pitchers Brewing Company',
-    gameId: 'game_1'
+    gameId: 'game_1',
+    gameLabel: 'Sep 5 — Cal vs. UCLA'
   });
 });
 
-test('selected-game changes produce a new game prefill without changing venue context', () => {
+test('selected-game changes produce a new readable prefill without changing venue context', () => {
   const snapshot = {
     venues: [{ venue_id: 'venue_1', name: 'Two Pitchers Brewing Company' }],
-    games: [{ game_id: 'game_1' }, { game_id: 'game_2' }]
+    games: [
+      { game_id: 'game_1', game_date: '2026-09-05', opponent_name: 'UCLA', home_away: 'home' },
+      { game_id: 'game_2', game_date: '2026-09-12', opponent_name: 'Syracuse', home_away: 'away' }
+    ]
   };
   const first = resolveWatchPartyFormContext({ snapshot, detailMode: true, selectedVenueId: 'venue_1', gameId: 'game_1' });
   const second = resolveWatchPartyFormContext({ snapshot, detailMode: true, selectedVenueId: 'venue_1', gameId: 'game_2' });
-  assert.equal(new URL(buildWatchPartyPrefillUrl(CONFIG, first)).searchParams.get('entry.303'), 'game_1');
-  assert.equal(new URL(buildWatchPartyPrefillUrl(CONFIG, second)).searchParams.get('entry.303'), 'game_2');
+  assert.equal(new URL(buildWatchPartyPrefillUrl(CONFIG, first)).searchParams.get('entry.303'), 'Sep 5 — Cal vs. UCLA');
+  assert.equal(new URL(buildWatchPartyPrefillUrl(CONFIG, second)).searchParams.get('entry.303'), 'Sep 12 — Cal at Syracuse');
   assert.equal(first.venueId, second.venueId);
 });
 
-test('does not create context when venue, game, or detail-route state is unavailable', () => {
-  const snapshot = { venues: [{ venue_id: 'venue_1', name: 'Venue' }], games: [{ game_id: 'game_1' }] };
+test('does not create context when venue, game, date, or detail-route state is unavailable', () => {
+  const snapshot = {
+    venues: [{ venue_id: 'venue_1', name: 'Venue' }],
+    games: [{ game_id: 'game_1', game_date: '2026-09-05', opponent_name: 'UCLA', home_away: 'home' }]
+  };
   assert.equal(resolveWatchPartyFormContext({ snapshot, detailMode: false, selectedVenueId: 'venue_1', gameId: 'game_1' }), null);
   assert.equal(resolveWatchPartyFormContext({ snapshot, detailMode: true, selectedVenueId: 'missing', gameId: 'game_1' }), null);
   assert.equal(resolveWatchPartyFormContext({ snapshot, detailMode: true, selectedVenueId: 'venue_1', gameId: 'missing' }), null);
+  assert.equal(resolveWatchPartyFormContext({
+    snapshot: { venues: snapshot.venues, games: [{ game_id: 'game_1', opponent_name: 'UCLA', home_away: 'home' }] },
+    detailMode: true,
+    selectedVenueId: 'venue_1',
+    gameId: 'game_1'
+  }), null);
 });
 
 test('generated URL contains no browser, Fan Intent, contact, or private processing values', () => {
