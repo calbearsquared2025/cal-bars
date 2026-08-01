@@ -1,11 +1,13 @@
 {
   "name": "cal-golden-bars",
-  "version": "2.0.0-m4b",
+  "version": "2.0.0-m6a",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
+    "test:migration": "node --test tests/venue-migration.test.mjs",
     "test:browser": "node scripts/run-browser-harness.mjs",
-    "validate:data": "node scripts/validate-v2-data.mjs data/fallback-v2.json"
+    "validate:data": "node scripts/validate-v2-data.mjs data/fallback-v2.json",
+    "migration:dry-run": "node scripts/migrate-v1-venues.mjs"
   }
 }
