@@ -6,6 +6,7 @@ import {
 
 const BUTTON_ID = 'external-venue-plan-watch-party';
 const RETRY_SELECTOR = '[data-external-watch-party-form-retry]';
+const STYLE_HREF = 'css/external-watch-party-plan.css';
 let pendingPlan = null;
 let pendingWindow = null;
 
@@ -20,6 +21,14 @@ function readConfig(documentObject = document) {
     venueNameEntry: metaContent('cgb-watch-party-venue-name-entry', documentObject),
     gameIdEntry: metaContent('cgb-watch-party-game-id-entry', documentObject)
   };
+}
+
+function ensureStylesheet(documentObject = document) {
+  if (documentObject.querySelector(`link[href="${STYLE_HREF}"]`)) return;
+  const link = documentObject.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = STYLE_HREF;
+  documentObject.head?.append(link);
 }
 
 function openWaitingWindow(windowObject = window) {
@@ -105,6 +114,7 @@ export function initializeExternalWatchPartyPlan({
   documentObject = document,
   windowObject = window
 } = {}) {
+  ensureStylesheet(documentObject);
   ensurePlanButton({ app, documentObject, windowObject });
   if (!app?.subscribe) return;
 
