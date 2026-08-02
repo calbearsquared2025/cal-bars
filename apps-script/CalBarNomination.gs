@@ -4,31 +4,23 @@
  */
 
 const CGB_CAL_BAR_NOMINATION_APPEND_HEADERS = Object.freeze([
-  'address', 'city', 'region', 'postal_code', 'country_code', 'website_url',
+  'alumni_group_affiliation', 'alumni_owned', 'cal_memorabilia', 'other_cal_connection',
   'source_response_key', 'processing_status', 'processing_error', 'processed_at',
   'duplicate_submission_id'
 ]);
 
-const CGB_CAL_BAR_NOMINATION_STATUSES = Object.freeze([
-  'new', 'needs_review', 'duplicate', 'approved', 'rejected', 'error'
-]);
-
 const CGB_CAL_BAR_NOMINATION_FORM_TITLES = Object.freeze({
-  venueId: 'Selected Venue ID',
   venueName: 'Venue name',
-  address: 'Street address',
-  city: 'City',
-  region: 'State / region',
-  postalCode: 'Postal code',
-  countryCode: 'Country code',
-  websiteUrl: 'Venue website',
-  reason: 'Why should this be a Cal Bar?',
+  reason: 'What makes this a Cal Bar?',
   gatheringFrequency: 'How often do Cal fans gather here?',
-  supportingUrl: 'Supporting link',
+  alumniGroupAffiliation: 'Is an alumni association or Cal group affiliated with this venue?',
+  alumniOwned: 'Is the venue Cal alumni-owned or operated?',
+  calMemorabilia: 'Does the venue display Cal memorabilia or other visible Cal identity?',
+  otherCalConnection: 'Other Cal connection or supporting context',
   submitterRole: 'Your relationship to this venue',
   submitterName: 'Your name',
   submitterEmail: 'Your email',
-  photoLink: 'Photo link'
+  venueId: 'Selected Venue ID'
 });
 
 function prepareCalBarNominationWorkbook() {
@@ -48,7 +40,7 @@ function verifyCalBarNominationWorkbook_(workbook) {
   return verifyRequiredHeaders_(workbook, 'Cal_Bar_Nominations_Raw', required);
 }
 
-/** Install this as an owner-authorized From spreadsheet / On form submit trigger. */
+/** Install as an owner-authorized From spreadsheet / On form submit trigger. */
 function processCalBarNominationFormSubmit(event) {
   const workbook = getWorkbook_();
   const sheet = getRequiredSheet_(workbook, 'Cal_Bar_Nominations_Raw');
@@ -77,9 +69,6 @@ function processCalBarNominationFormSubmit(event) {
       duplicate_submission_id: row.duplicate_submission_id,
       errors: validationErrors
     };
-  } catch (error) {
-    console.error('Cal Bar nomination processing failed.', error);
-    throw error;
   } finally {
     lock.releaseLock();
   }
@@ -91,7 +80,6 @@ function normalizeCalBarNominationEvent_(event, sheet) {
     const entry = named[title];
     return cleanCalBarNominationText_(Array.isArray(entry) ? entry[0] : entry, 2000);
   };
-  const sourceKey = buildCalBarNominationSourceKey_(event, sheet);
   return {
     response_timestamp: event && event.values && event.values[0]
       ? cleanCalBarNominationText_(event.values[0], 100)
@@ -101,21 +89,19 @@ function normalizeCalBarNominationEvent_(event, sheet) {
     venue_name: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.venueName),
     reason: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.reason),
     gathering_frequency: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.gatheringFrequency),
-    supporting_url: normalizeCalBarNominationUrl_(value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.supportingUrl)),
+    supporting_url: '',
     submitter_role: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.submitterRole),
     submitter_name: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.submitterName),
     submitter_email: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.submitterEmail),
-    photo_link: normalizeCalBarNominationUrl_(value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.photoLink)),
+    photo_link: '',
     review_status: 'pending',
     reviewer_note: '',
     reviewed_at: '',
-    address: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.address),
-    city: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.city),
-    region: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.region),
-    postal_code: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.postalCode),
-    country_code: (value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.countryCode) || 'US').toUpperCase(),
-    website_url: normalizeCalBarNominationUrl_(value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.websiteUrl)),
-    source_response_key: sourceKey,
+    alumni_group_affiliation: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.alumniGroupAffiliation),
+    alumni_owned: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.alumniOwned),
+    cal_memorabilia: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.calMemorabilia),
+    other_cal_connection: value(CGB_CAL_BAR_NOMINATION_FORM_TITLES.otherCalConnection),
+    source_response_key: buildCalBarNominationSourceKey_(event, sheet),
     processing_status: 'new',
     processing_error: '',
     processed_at: '',
@@ -128,19 +114,15 @@ function validateCalBarNomination_(row, workbook) {
   if (!row.venue_name) errors.push('missing_venue_name');
   if (!row.reason) errors.push('missing_reason');
   if (!row.gathering_frequency) errors.push('missing_gathering_frequency');
+  if (!row.submitter_role) errors.push('missing_submitter_role');
   if (!row.submitter_email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.submitter_email)) {
     errors.push('invalid_submitter_email');
   }
-  ['supporting_url', 'photo_link', 'website_url'].forEach(function(field) {
-    if (row[field] && !/^https:\/\//i.test(row[field])) errors.push('invalid_' + field);
-  });
   if (row.venue_id) {
     const venues = readSheetObjects_(workbook, 'Venues');
     if (!venues.some(function(venue) { return String(venue.venue_id) === row.venue_id; })) {
       errors.push('unknown_venue_id');
     }
-  } else if (!row.address || !row.city || !row.region) {
-    errors.push('missing_structured_location');
   }
   return Array.from(new Set(errors));
 }
@@ -152,15 +134,13 @@ function findCalBarNominationDuplicate_(sheet, row) {
     if (existing.processing_status === 'rejected') return false;
     if (row.venue_id && existing.venue_id === row.venue_id) return true;
     return normalizeCalBarNominationMatch_(existing.venue_name) === normalizeCalBarNominationMatch_(row.venue_name) &&
-      normalizeCalBarNominationMatch_(existing.city) === normalizeCalBarNominationMatch_(row.city) &&
-      normalizeCalBarNominationMatch_(existing.region) === normalizeCalBarNominationMatch_(row.region);
+      normalizeCalBarNominationMatch_(existing.submitter_email) === normalizeCalBarNominationMatch_(row.submitter_email);
   }) || null;
 }
 
 function writeCalBarNominationRow_(sheet, row) {
   const headers = readHeaderRow_(sheet);
-  const targetRow = sheet.getLastRow() + 1;
-  sheet.getRange(targetRow, 1, 1, headers.length).setValues([
+  sheet.getRange(sheet.getLastRow() + 1, 1, 1, headers.length).setValues([
     headers.map(function(header) { return row[header] === undefined ? '' : row[header]; })
   ]);
 }
@@ -176,13 +156,6 @@ function buildCalBarNominationSourceKey_(event, sheet) {
     const value = byte < 0 ? byte + 256 : byte;
     return ('0' + value.toString(16)).slice(-2);
   }).join('');
-}
-
-function normalizeCalBarNominationUrl_(value) {
-  const text = cleanCalBarNominationText_(value, 2000);
-  if (!text) return '';
-  const candidate = /^https?:\/\//i.test(text) ? text : 'https://' + text;
-  return /^https:\/\//i.test(candidate) ? candidate : '';
 }
 
 function normalizeCalBarNominationMatch_(value) {
