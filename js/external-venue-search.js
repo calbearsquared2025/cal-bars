@@ -17,6 +17,10 @@ import {
   upsertCanonicalVenue,
   validateJoinExternalVenueResponse
 } from './external-venue-core.mjs';
+import {
+  buildMissingLocationFormUrl,
+  shouldShowMissingLocationFallback
+} from './missing-location-core.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const SEARCH_DEBOUNCE_MS = 300;
@@ -44,15 +48,11 @@ function configuredEndpoint() {
     document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
 }
 
-function configuredMissingLocationUrl() {
-  const value = document.querySelector('meta[name="cgb-missing-location-form-url"]')?.content.trim() || '';
-  if (!value) return '';
-  try {
-    const url = new URL(value, location.href);
-    return url.protocol === 'https:' ? url.toString() : '';
-  } catch (_) {
-    return '';
-  }
+function configuredMissingLocationForm() {
+  return {
+    formUrl: document.querySelector('meta[name="cgb-missing-location-form-url"]')?.content.trim() || '',
+    placeNameEntry: document.querySelector('meta[name="cgb-missing-location-form-place-name-entry"]')?.content.trim() || ''
+  };
 }
 
 function ensureExternalState() {
@@ -116,7 +116,9 @@ function decorateExistingResults() {
 }
 
 function missingLocationLink() {
-  const url = configuredMissingLocationUrl();
+  const url = buildMissingLocationFormUrl(configuredMissingLocationForm(), {
+    searchText: ensureExternalState().query
+  });
   if (!url) return null;
   const link = document.createElement('a');
   link.className = 'missing-location-link';
@@ -160,8 +162,11 @@ function showExternalFailure(error) {
     status.setAttribute('role', 'status');
     status.textContent = state.error;
     group.append(status);
-    const fallback = missingLocationLink();
-    if (fallback) group.append(fallback);
+    const existingResultCount = dom.suggestions.querySelectorAll('.search-result-group--existing button[data-venue-id]').length;
+    if (shouldShowMissingLocationFallback({ existingResultCount, normalSearchFinished: true })) {
+      const fallback = missingLocationLink();
+      if (fallback) group.append(fallback);
+    }
   });
 }
 
@@ -176,8 +181,11 @@ function showExternalResults(results) {
       status.className = 'external-search-status';
       status.textContent = 'No concrete external places found.';
       group.append(status);
-      const fallback = missingLocationLink();
-      if (fallback) group.append(fallback);
+      const existingResultCount = dom.suggestions.querySelectorAll('.search-result-group--existing button[data-venue-id]').length;
+      if (shouldShowMissingLocationFallback({ existingResultCount, normalSearchFinished: true })) {
+        const fallback = missingLocationLink();
+        if (fallback) group.append(fallback);
+      }
       return;
     }
 
@@ -197,9 +205,6 @@ function showExternalResults(results) {
       button.addEventListener('click', () => selectExternalPlace(place));
       group.append(button);
     });
-
-    const fallback = missingLocationLink();
-    if (fallback) group.append(fallback);
   });
 }
 
