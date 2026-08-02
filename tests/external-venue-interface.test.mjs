@@ -92,8 +92,9 @@ test('game switching clears stale external confirmation but keeps permanent cano
 test('missing-location fallback uses exact copy only when a valid URL is configured', () => {
   assert.match(client, /Can’t find the location\? Suggest it here\./);
   assert.match(client, /cgb-missing-location-form-url/);
-  assert.match(client, /url\.protocol === 'https:'/);
-  assert.match(html, /name="cgb-missing-location-form-url" content=""/);
+  assert.match(client, /buildMissingLocationFormUrl/);
+  assert.match(html, /name="cgb-missing-location-form-url" content="https:\/\/docs\.google\.com\/forms\/d\/e\/[A-Za-z0-9_-]+\/viewform"/);
+  assert.match(html, /name="cgb-missing-location-form-place-name-entry" content="entry\.\d+"/);
   assert.doesNotMatch(html, /Nominate as a Cal Bar|Add a Photo|Suggest an Update/);
 });
 
