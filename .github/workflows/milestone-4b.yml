@@ -1,23 +1,28 @@
-name: Milestone 6A validation
+name: CGB continuous integration
 
 on:
   push:
     branches:
-      - feature/external-venue-search
-      - feature/m5-watch-party-discovery-foundation
-      - feature/m5-minimal-watch-party-automation
-      - feature/m5b-watch-party-form-entry-point
-      - feature/m6a-existing-location-migration
+      - main
+      - 'feature/**'
+      - 'agent/**'
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: cgb-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
+    name: Validate repository
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -29,7 +34,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run focused Milestone 5B tests
+      - name: Run focused Watch Party tests
         run: |
           node --test \
             tests/watch-party-form-entry-point.test.mjs \
@@ -52,26 +57,9 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
-          node --check js/app.js
-          node --check js/app-state.mjs
-          node --check js/core.mjs
-          node --check js/fan-intent.js
-          node --check js/fan-intent-core.mjs
-          node --check js/fan-intent-controller.mjs
-          node --check js/external-venue-search.js
-          node --check js/external-venue-core.mjs
-          node --check js/watch-party-form.js
-          node --check js/watch-party-form-core.mjs
-          node --check scripts/migrate-v1-venues.mjs
-          node --check scripts/validate-venue-load.mjs
-          node --check scripts/venue-migration-normalize.mjs
-          node --check scripts/venue-migration-core.mjs
-          node --check scripts/venue-migration-reports.mjs
-          node --check scripts/run-browser-harness.mjs
-          node --check scripts/scan-private-values.mjs
-          node --check tests/browser/external-venue-harness.mjs
-          node --check tests/venue-migration.test.mjs
-          node --check tests/venue-load-validation.test.mjs
+          find js scripts tests -type f \( -name '*.js' -o -name '*.mjs' \) -print0 \
+            | sort -z \
+            | xargs -0 -n1 node --check
 
       - name: Check combined Apps Script syntax
         run: |
@@ -86,6 +74,7 @@ jobs:
           node --check /tmp/cgb-apps-script.js
 
       - name: Check diff formatting
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
         run: git diff --check origin/main...HEAD
 
       - name: Scan committed source for private values
