@@ -17,10 +17,17 @@ const snapshot = {
   venues: [{ venue_id: 'venue_1', name: 'Example Pub' }]
 };
 
-test('normalizes a safe minimal Google Form configuration', () => {
-  assert.ok(normalizeCalBarNominationConfig(config));
+test('normalizes a safe Google Form configuration and degrades to a base link without valid prefill IDs', () => {
+  const normalized = normalizeCalBarNominationConfig(config);
+  assert.ok(normalized);
+  assert.equal(normalized.canPrefill, true);
   assert.equal(normalizeCalBarNominationConfig({ ...config, formUrl: 'http://example.com' }), null);
-  assert.equal(normalizeCalBarNominationConfig({ ...config, venueNameEntry: 'entry.1' }), null);
+
+  const duplicateEntries = normalizeCalBarNominationConfig({ ...config, venueNameEntry: 'entry.1' });
+  assert.ok(duplicateEntries);
+  assert.equal(duplicateEntries.canPrefill, false);
+  assert.equal(duplicateEntries.venueIdEntry, '');
+  assert.equal(duplicateEntries.venueNameEntry, '');
 });
 
 test('prefills only selected Venue name and stable Venue ID', () => {
