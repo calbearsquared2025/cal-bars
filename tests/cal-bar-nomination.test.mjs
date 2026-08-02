@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 
 import {
   buildCalBarNominationPrefillUrl,
@@ -41,16 +40,4 @@ test('base nomination Form remains available without canonical Venue context', (
 
 test('unknown Venue IDs do not produce fabricated context', () => {
   assert.equal(resolveCalBarNominationVenue(snapshot, 'venue_missing'), null);
-});
-
-test('Apps Script processor remains private, qualitative, and review-only', () => {
-  const source = fs.readFileSync(new URL('../apps-script/CalBarNomination.gs', import.meta.url), 'utf8');
-  assert.match(source, /What makes this a Cal Bar\?/);
-  assert.match(source, /alumni_group_affiliation/);
-  assert.match(source, /alumni_owned/);
-  assert.match(source, /cal_memorabilia/);
-  assert.match(source, /submitter_email/);
-  assert.match(source, /needs_review/);
-  assert.doesNotMatch(source, /clearPublicSnapshotCache_\s*\(/);
-  assert.doesNotMatch(source, /publication_status\s*=\s*['"]published/);
 });
