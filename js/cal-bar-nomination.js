@@ -4,6 +4,7 @@ import {
 } from './cal-bar-nomination-core.mjs';
 
 const SELECTOR = '[data-cal-bar-nomination-entry]';
+let initialized = false;
 
 function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
@@ -47,13 +48,15 @@ export function renderCalBarNominationEntry({ app = window.CGBApp, documentObjec
   return href;
 }
 
-function initialize() {
-  const app = window.CGBApp;
-  if (!app?.subscribe) return;
-  const render = () => renderCalBarNominationEntry({ app, documentObject: document });
+export function initializeCalBarNominationEntry({
+  app = window.CGBApp,
+  documentObject = document
+} = {}) {
+  if (initialized || !app?.subscribe) return false;
+  initialized = true;
+  const render = () => renderCalBarNominationEntry({ app, documentObject });
   app.subscribe('rendered', render);
   app.subscribe('ready', render);
   render();
+  return true;
 }
-
-initialize();
