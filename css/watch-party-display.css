@@ -1,0 +1,21 @@
+.party-module--multiple {
+  max-height: min(18rem, 42vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.party-module--multiple + .party-module--multiple {
+  margin-top: 0.65rem;
+}
+
+.party-module--multiple .party-module__title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+@media (min-width: 900px) {
+  .party-module--multiple {
+    max-height: 24rem;
+  }
+}
