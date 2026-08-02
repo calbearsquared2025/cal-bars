@@ -1,7 +1,9 @@
 import { buildCommittedExternalVenueWatchPartyUrl } from './external-watch-party-cta-core.mjs';
+import { INTENT_SELECTIONS_STORAGE_KEY } from './fan-intent-core.mjs';
 import {
   beginExternalWatchPartyPlan,
-  resolveExternalWatchPartyPlan
+  resolveExternalWatchPartyPlan,
+  selectionsAfterExternalWatchPartyPlan
 } from './external-watch-party-plan-core.mjs';
 
 const BUTTON_ID = 'external-venue-plan-watch-party';
@@ -83,6 +85,22 @@ function navigateToForm(href, documentObject = document) {
   return false;
 }
 
+function persistCommittedSelection(state, committed, windowObject = window) {
+  if (!state?.fanIntent) return false;
+  const selections = selectionsAfterExternalWatchPartyPlan(
+    state.fanIntent.selections,
+    committed
+  );
+  state.fanIntent.selections = selections;
+  try {
+    windowObject.localStorage.setItem(
+      INTENT_SELECTIONS_STORAGE_KEY,
+      JSON.stringify(selections)
+    );
+  } catch (_) {}
+  return selections[committed.gameId] === committed.venueId;
+}
+
 function ensurePlanButton({ app, documentObject = document, windowObject = window } = {}) {
   const actions = documentObject.querySelector('.external-venue-actions');
   const confirm = documentObject.querySelector('#external-venue-confirm');
@@ -134,6 +152,9 @@ export function initializeExternalWatchPartyPlan({
       return;
     }
     if (!resolution.committed) return;
+
+    persistCommittedSelection(state, resolution.committed, windowObject);
+    app.render?.();
 
     const href = buildCommittedExternalVenueWatchPartyUrl({
       config: readConfig(documentObject),
