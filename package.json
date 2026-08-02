@@ -1,6 +1,6 @@
 {
   "name": "cal-golden-bars",
-  "version": "2.0.0-m6a",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
