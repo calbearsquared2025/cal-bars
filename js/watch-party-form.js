@@ -1,3 +1,4 @@
+import './external-watch-party-cta.js';
 import { getWatchParty } from './core.mjs';
 import {
   buildWatchPartyPrefillUrl,
