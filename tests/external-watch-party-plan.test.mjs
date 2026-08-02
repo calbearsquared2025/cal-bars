@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   beginExternalWatchPartyPlan,
-  resolveExternalWatchPartyPlan
+  resolveExternalWatchPartyPlan,
+  selectionsAfterExternalWatchPartyPlan
 } from '../js/external-watch-party-plan-core.mjs';
 
 test('Plan a Watch Party requires a selected external place and Game', () => {
@@ -43,6 +44,23 @@ test('successful canonical creation resolves the Venue and selected Game', () =>
   assert.equal(result.pending, null);
   assert.deepEqual(result.committed, { venueId: 'venue_1', gameId: 'game_1' });
   assert.equal(result.failed, false);
+});
+
+test('successful Plan flow preserves the new Venue as this browser selection', () => {
+  const selections = selectionsAfterExternalWatchPartyPlan(
+    { game_old: 'venue_old', game_1: 'venue_previous' },
+    { gameId: 'game_1', venueId: 'venue_1' }
+  );
+  assert.deepEqual(selections, {
+    game_old: 'venue_old',
+    game_1: 'venue_1'
+  });
+});
+
+test('missing committed context does not alter stored selections', () => {
+  const original = { game_1: 'venue_previous' };
+  assert.deepEqual(selectionsAfterExternalWatchPartyPlan(original, null), original);
+  assert.notEqual(selectionsAfterExternalWatchPartyPlan(original, null), original);
 });
 
 test('failed creation does not open the Watch Party Form', () => {
