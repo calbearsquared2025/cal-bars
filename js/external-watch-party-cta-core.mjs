@@ -2,6 +2,7 @@ import {
   buildWatchPartyFormGameLabel,
   buildWatchPartyPrefillUrl
 } from './watch-party-form-core.mjs';
+import { withStoredSelection } from './fan-intent-core.mjs';
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -58,6 +59,13 @@ export function observeExternalVenueCommit(previousPending, state = {}) {
     pending: successfulLocalCommit || (!external.pending && external.retry) ? null : pending,
     committed: successfulLocalCommit ? Object.freeze({ venueId, gameId }) : null
   };
+}
+
+export function selectionsAfterExternalCommit(selections, gameId, venueId) {
+  const canonicalGameId = clean(gameId);
+  const canonicalVenueId = clean(venueId);
+  if (!canonicalGameId || !canonicalVenueId) return { ...(selections || {}) };
+  return withStoredSelection(selections, canonicalGameId, canonicalVenueId);
 }
 
 export function buildCommittedExternalVenueWatchPartyUrl({ config, snapshot, gameId, venueId } = {}) {
