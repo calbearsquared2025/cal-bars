@@ -64,7 +64,7 @@ test('failed creation does not open the Watch Party Form', () => {
   assert.equal(result.failed, true);
 });
 
-test('selected-Game change prevents a mismatched Form launch', () => {
+test('selected-Game change cancels a mismatched Form launch', () => {
   const plan = beginExternalWatchPartyPlan({
     selected: { placeId: 'maptiler.1', gameId: 'game_1' }
   });
@@ -74,5 +74,6 @@ test('selected-Game change prevents a mismatched Form launch', () => {
     externalSearch: { pending: false, selected: null, retry: null, error: null }
   });
   assert.equal(result.committed, null);
-  assert.equal(result.pending, plan);
+  assert.equal(result.pending, null);
+  assert.equal(result.failed, true);
 });
