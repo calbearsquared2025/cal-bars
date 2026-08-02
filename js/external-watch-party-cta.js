@@ -2,6 +2,11 @@ import {
   buildCommittedExternalVenueWatchPartyUrl,
   observeExternalVenueCommit
 } from './external-watch-party-cta-core.mjs';
+import {
+  INTENT_SELECTIONS_STORAGE_KEY,
+  withStoredSelection
+} from './fan-intent-core.mjs';
+import { initializeExternalSearchStateGuard } from './external-search-state-guard.js';
 
 const CTA_SELECTOR = '[data-external-watch-party-cta]';
 const STYLE_HREF = 'css/external-watch-party-cta.css';
@@ -31,6 +36,16 @@ function ensureStylesheet(documentObject = document) {
 
 function removeExisting(documentObject = document) {
   documentObject.querySelector(CTA_SELECTOR)?.remove();
+}
+
+function persistCommittedFanIntent(state, gameId, venueId) {
+  if (!state?.fanIntent) return false;
+  const selections = withStoredSelection(state.fanIntent.selections, gameId, venueId);
+  state.fanIntent.selections = selections;
+  try {
+    window.localStorage.setItem(INTENT_SELECTIONS_STORAGE_KEY, JSON.stringify(selections));
+  } catch (_) {}
+  return selections[gameId] === venueId;
 }
 
 export function renderExternalVenueWatchPartyCta({
@@ -78,6 +93,7 @@ function initialize() {
   ensureStylesheet(document);
   const app = window.CGBApp;
   if (!app?.subscribe) return;
+  initializeExternalSearchStateGuard({ app, documentObject: document });
 
   app.subscribe('rendered', () => {
     removeExisting(document);
@@ -89,11 +105,20 @@ function initialize() {
     const key = `${observation.committed.gameId}:${observation.committed.venueId}`;
     if (key === lastCommittedKey) return;
     lastCommittedKey = key;
+
+    const adopted = persistCommittedFanIntent(
+      state,
+      observation.committed.gameId,
+      observation.committed.venueId
+    );
+
     renderExternalVenueWatchPartyCta({
       detail: observation.committed,
       app,
       documentObject: document
     });
+
+    if (adopted) queueMicrotask(() => app.render());
   });
 }
 
