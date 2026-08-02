@@ -18,7 +18,7 @@ export function getWatchPartiesForVenueGame(snapshot, gameId, venueId) {
       party?.game_id === gameId &&
       party?.venue_id === venueId &&
       party?.event_status === 'active' &&
-      party?.publication_status === 'published'
+      (!party?.publication_status || party.publication_status === 'published')
     )
     .filter((party) => {
       const id = String(party?.watch_party_id || '').trim();
