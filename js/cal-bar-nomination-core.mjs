@@ -9,16 +9,32 @@ function entry(value) {
   return match ? `entry.${match[1]}` : '';
 }
 
+function isSupportedGoogleFormUrl(url) {
+  if (url.protocol !== 'https:') return false;
+  if (url.hostname === 'forms.gle') return url.pathname.length > 1;
+  return url.hostname === 'docs.google.com' && url.pathname.startsWith('/forms/');
+}
+
 export function normalizeCalBarNominationConfig(config = {}) {
   let formUrl;
   try { formUrl = new URL(clean(config.formUrl)); } catch (_) { return null; }
-  if (formUrl.protocol !== 'https:' || formUrl.hostname !== 'docs.google.com' || !formUrl.pathname.startsWith('/forms/')) {
-    return null;
-  }
+  if (!isSupportedGoogleFormUrl(formUrl)) return null;
+
   const venueIdEntry = entry(config.venueIdEntry);
   const venueNameEntry = entry(config.venueNameEntry);
-  if (!venueIdEntry || !venueNameEntry || venueIdEntry === venueNameEntry) return null;
-  return Object.freeze({ formUrl: formUrl.toString(), venueIdEntry, venueNameEntry });
+  const canPrefill = Boolean(
+    formUrl.hostname === 'docs.google.com' &&
+    venueIdEntry &&
+    venueNameEntry &&
+    venueIdEntry !== venueNameEntry
+  );
+
+  return Object.freeze({
+    formUrl: formUrl.toString(),
+    venueIdEntry: canPrefill ? venueIdEntry : '',
+    venueNameEntry: canPrefill ? venueNameEntry : '',
+    canPrefill
+  });
 }
 
 export function resolveCalBarNominationVenue(snapshot, venueId) {
@@ -34,11 +50,11 @@ export function resolveCalBarNominationVenue(snapshot, venueId) {
 export function buildCalBarNominationPrefillUrl(config, venueContext = null) {
   const normalized = normalizeCalBarNominationConfig(config);
   if (!normalized) return '';
+  if (!normalized.canPrefill || !venueContext) return normalized.formUrl;
+
   const url = new URL(normalized.formUrl);
   if (!url.searchParams.has('usp')) url.searchParams.set('usp', 'pp_url');
-  if (venueContext) {
-    url.searchParams.set(normalized.venueNameEntry, clean(venueContext.venueName));
-    url.searchParams.set(normalized.venueIdEntry, clean(venueContext.venueId));
-  }
+  url.searchParams.set(normalized.venueNameEntry, clean(venueContext.venueName));
+  url.searchParams.set(normalized.venueIdEntry, clean(venueContext.venueId));
   return url.toString();
 }
