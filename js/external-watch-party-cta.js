@@ -1,8 +1,12 @@
-import { buildCommittedExternalVenueWatchPartyUrl } from './external-watch-party-cta-core.mjs';
+import {
+  buildCommittedExternalVenueWatchPartyUrl,
+  observeExternalVenueCommit
+} from './external-watch-party-cta-core.mjs';
 import { readWatchPartyFormConfig } from './watch-party-form.js';
 
-const EVENT_NAME = 'cgb:external-venue-committed';
 const CTA_SELECTOR = '[data-external-watch-party-cta]';
+let pendingExternalCommit = null;
+let lastCommittedKey = '';
 
 function removeExisting(documentObject = document) {
   documentObject.querySelector(CTA_SELECTOR)?.remove();
@@ -50,10 +54,25 @@ export function renderExternalVenueWatchPartyCta({
 }
 
 function initialize() {
-  document.addEventListener(EVENT_NAME, (event) => {
-    renderExternalVenueWatchPartyCta({ detail: event.detail, app: window.CGBApp, documentObject: document });
+  const app = window.CGBApp;
+  if (!app?.subscribe) return;
+
+  app.subscribe('rendered', () => {
+    removeExisting(document);
+    const state = app.getState?.();
+    const observation = observeExternalVenueCommit(pendingExternalCommit, state);
+    pendingExternalCommit = observation.pending;
+    if (!observation.committed) return;
+
+    const key = `${observation.committed.gameId}:${observation.committed.venueId}`;
+    if (key === lastCommittedKey) return;
+    lastCommittedKey = key;
+    renderExternalVenueWatchPartyCta({
+      detail: observation.committed,
+      app,
+      documentObject: document
+    });
   });
-  window.CGBApp?.subscribe?.('rendered', () => removeExisting(document));
 }
 
 initialize();
