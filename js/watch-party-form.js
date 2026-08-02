@@ -1,3 +1,4 @@
+import { initializeCalBarNominationEntry } from './cal-bar-nomination.js';
 import './external-watch-party-cta.js';
 import { getWatchParty } from './core.mjs';
 import {
@@ -92,6 +93,7 @@ function initializeWatchPartyFormEntryPoint() {
   app.subscribe('rendered', render);
   app.subscribe('ready', render);
   render();
+  initializeCalBarNominationEntry({ app, documentObject: document });
 }
 
 initializeWatchPartyFormEntryPoint();
