@@ -1,3 +1,5 @@
+import { withStoredSelection } from './fan-intent-core.mjs';
+
 function clean(value) {
   return String(value ?? '').trim();
 }
@@ -42,4 +44,11 @@ export function resolveExternalWatchPartyPlan(previousPlan, state = {}) {
     committed: committed ? Object.freeze({ venueId, gameId }) : null,
     failed: false
   });
+}
+
+export function selectionsAfterExternalWatchPartyPlan(selections, committed) {
+  const gameId = clean(committed?.gameId);
+  const venueId = clean(committed?.venueId);
+  if (!gameId || !venueId) return { ...(selections || {}) };
+  return withStoredSelection(selections, gameId, venueId);
 }

@@ -14,6 +14,16 @@
   z-index: 1;
 }
 
+.party-module__report {
+  color: #40516f;
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.65rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
 @media (min-width: 900px) {
   .party-module--multiple {
     max-height: 24rem;

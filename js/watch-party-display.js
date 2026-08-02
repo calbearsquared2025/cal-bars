@@ -1,4 +1,18 @@
 import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';
+import {
+  buildWatchPartyIssueUrl,
+  resolveWatchPartyIssueContext
+} from './watch-party-issue-core.mjs';
+
+function issueConfig() {
+  const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+  return {
+    formUrl: meta('cgb-watch-party-issue-form-url'),
+    venueNameEntry: meta('cgb-watch-party-issue-venue-name-entry'),
+    gameEntry: meta('cgb-watch-party-issue-game-entry'),
+    watchPartyIdEntry: meta('cgb-watch-party-issue-id-entry')
+  };
+}
 
 function appendText(container, text, className = '') {
   if (!text) return;
@@ -8,7 +22,7 @@ function appendText(container, text, className = '') {
   container.append(line);
 }
 
-function renderParty(party, index, total) {
+function renderParty(party, index, total, snapshot) {
   const module = document.createElement('section');
   module.className = 'party-module party-module--multiple';
   module.dataset.watchPartyId = party.watch_party_id;
@@ -52,17 +66,32 @@ function renderParty(party, index, total) {
     module.append(link);
   }
 
+  const reportUrl = buildWatchPartyIssueUrl(
+    issueConfig(),
+    resolveWatchPartyIssueContext(snapshot, party)
+  );
+  if (reportUrl) {
+    const reportLink = document.createElement('a');
+    reportLink.className = 'party-module__report';
+    reportLink.dataset.watchPartyIssueEntry = party.watch_party_id;
+    reportLink.href = reportUrl;
+    reportLink.target = '_blank';
+    reportLink.rel = 'noopener noreferrer';
+    reportLink.textContent = 'Report a problem with this Watch Party';
+    module.append(reportLink);
+  }
+
   return module;
 }
 
-function replaceRenderedParties(container, parties) {
+function replaceRenderedParties(container, parties, snapshot) {
   if (!container) return;
   container.querySelectorAll('.party-module').forEach((module) => module.remove());
   if (!parties.length) return;
 
   const anchor = container.querySelector('.action-row, .venue-website, .watch-party-contribution, .preview-note');
   const fragment = document.createDocumentFragment();
-  parties.forEach((party, index) => fragment.append(renderParty(party, index, parties.length)));
+  parties.forEach((party, index) => fragment.append(renderParty(party, index, parties.length, snapshot)));
   container.insertBefore(fragment, anchor || null);
 }
 
@@ -76,8 +105,8 @@ export function renderMultipleWatchParties({ app = window.CGBApp, documentObject
     state.selectedVenueId
   );
 
-  replaceRenderedParties(documentObject.querySelector('#tray-selected .selected-card'), parties);
-  if (state.detailMode) replaceRenderedParties(documentObject.querySelector('#venue-detail'), parties);
+  replaceRenderedParties(documentObject.querySelector('#tray-selected .selected-card'), parties, state.snapshot);
+  if (state.detailMode) replaceRenderedParties(documentObject.querySelector('#venue-detail'), parties, state.snapshot);
   return parties;
 }
 
