@@ -1,11 +1,9 @@
 import {
   buildCommittedExternalVenueWatchPartyUrl,
-  observeExternalVenueCommit
+  observeExternalVenueCommit,
+  selectionsAfterExternalCommit
 } from './external-watch-party-cta-core.mjs';
-import {
-  INTENT_SELECTIONS_STORAGE_KEY,
-  withStoredSelection
-} from './fan-intent-core.mjs';
+import { INTENT_SELECTIONS_STORAGE_KEY } from './fan-intent-core.mjs';
 import { initializeExternalSearchStateGuard } from './external-search-state-guard.js';
 
 const CTA_SELECTOR = '[data-external-watch-party-cta]';
@@ -40,7 +38,7 @@ function removeExisting(documentObject = document) {
 
 function persistCommittedFanIntent(state, gameId, venueId) {
   if (!state?.fanIntent) return false;
-  const selections = withStoredSelection(state.fanIntent.selections, gameId, venueId);
+  const selections = selectionsAfterExternalCommit(state.fanIntent.selections, gameId, venueId);
   state.fanIntent.selections = selections;
   try {
     window.localStorage.setItem(INTENT_SELECTIONS_STORAGE_KEY, JSON.stringify(selections));
