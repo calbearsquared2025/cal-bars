@@ -25,6 +25,41 @@ export function resolveCommittedExternalVenueContext({ snapshot, gameId, venueId
   return Object.freeze(context);
 }
 
+export function observeExternalVenueCommit(previousPending, state = {}) {
+  const external = state.externalSearch || {};
+  const pendingAction = state.fanIntent?.pending?.action;
+  const selectedExternal = external.selected || external.retry;
+
+  if (external.pending && pendingAction === 'joinExternalVenue' && selectedExternal?.gameId) {
+    return {
+      pending: Object.freeze({
+        gameId: clean(selectedExternal.gameId),
+        externalPlaceId: clean(selectedExternal.placeId)
+      }),
+      committed: null
+    };
+  }
+
+  const pending = previousPending && clean(previousPending.gameId)
+    ? previousPending
+    : null;
+  const venueId = clean(state.selectedVenueId);
+  const gameId = clean(state.gameId);
+  const successfulLocalCommit = Boolean(
+    pending &&
+    !external.pending &&
+    !external.selected &&
+    !external.retry &&
+    venueId &&
+    gameId === clean(pending.gameId)
+  );
+
+  return {
+    pending: successfulLocalCommit || (!external.pending && external.retry) ? null : pending,
+    committed: successfulLocalCommit ? Object.freeze({ venueId, gameId }) : null
+  };
+}
+
 export function buildCommittedExternalVenueWatchPartyUrl({ config, snapshot, gameId, venueId } = {}) {
   const context = resolveCommittedExternalVenueContext({ snapshot, gameId, venueId });
   return context ? buildWatchPartyPrefillUrl(config, context) : '';
