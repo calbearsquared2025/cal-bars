@@ -17,16 +17,8 @@ export function normalizeCalBarNominationConfig(config = {}) {
   }
   const venueIdEntry = entry(config.venueIdEntry);
   const venueNameEntry = entry(config.venueNameEntry);
-  const addressEntry = entry(config.addressEntry);
-  const cityEntry = entry(config.cityEntry);
-  const regionEntry = entry(config.regionEntry);
-  const postalCodeEntry = entry(config.postalCodeEntry);
-  const entries = [venueIdEntry, venueNameEntry, addressEntry, cityEntry, regionEntry, postalCodeEntry];
-  if (entries.some((value) => !value) || new Set(entries).size !== entries.length) return null;
-  return Object.freeze({
-    formUrl: formUrl.toString(), venueIdEntry, venueNameEntry,
-    addressEntry, cityEntry, regionEntry, postalCodeEntry
-  });
+  if (!venueIdEntry || !venueNameEntry || venueIdEntry === venueNameEntry) return null;
+  return Object.freeze({ formUrl: formUrl.toString(), venueIdEntry, venueNameEntry });
 }
 
 export function resolveCalBarNominationVenue(snapshot, venueId) {
@@ -35,11 +27,7 @@ export function resolveCalBarNominationVenue(snapshot, venueId) {
   if (!venue) return null;
   return Object.freeze({
     venueId: clean(venue.venue_id),
-    venueName: clean(venue.name),
-    address: [venue.address_line_1, venue.address_line_2].filter(Boolean).join(', '),
-    city: clean(venue.city),
-    region: clean(venue.region),
-    postalCode: clean(venue.postal_code)
+    venueName: clean(venue.name)
   });
 }
 
@@ -49,12 +37,8 @@ export function buildCalBarNominationPrefillUrl(config, venueContext = null) {
   const url = new URL(normalized.formUrl);
   if (!url.searchParams.has('usp')) url.searchParams.set('usp', 'pp_url');
   if (venueContext) {
-    url.searchParams.set(normalized.venueIdEntry, clean(venueContext.venueId));
     url.searchParams.set(normalized.venueNameEntry, clean(venueContext.venueName));
-    url.searchParams.set(normalized.addressEntry, clean(venueContext.address));
-    url.searchParams.set(normalized.cityEntry, clean(venueContext.city));
-    url.searchParams.set(normalized.regionEntry, clean(venueContext.region));
-    url.searchParams.set(normalized.postalCodeEntry, clean(venueContext.postalCode));
+    url.searchParams.set(normalized.venueIdEntry, clean(venueContext.venueId));
   }
   return url.toString();
 }
