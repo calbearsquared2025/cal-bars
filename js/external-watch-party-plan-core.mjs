@@ -19,6 +19,10 @@ export function resolveExternalWatchPartyPlan(previousPlan, state = {}) {
   const gameId = clean(state.gameId);
   const venueId = clean(state.selectedVenueId);
 
+  if (gameId && gameId !== clean(plan.gameId)) {
+    return Object.freeze({ pending: null, committed: null, failed: true });
+  }
+
   if (external.pending) {
     return Object.freeze({ pending: plan, committed: null, failed: false });
   }
