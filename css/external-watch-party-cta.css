@@ -1,0 +1,16 @@
+.external-watch-party-cta {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border-color, rgba(0, 38, 118, 0.16));
+}
+
+.external-watch-party-cta p {
+  margin: 0;
+}
+
+.external-watch-party-cta .primary-button {
+  width: 100%;
+  text-align: center;
+}
