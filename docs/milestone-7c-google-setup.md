@@ -1,19 +1,10 @@
-# Milestone 7C — Google setup and verification
+# Milestone 7C — Google Form setup and manual review
 
-The repository implementation stores Cal Bar nominations privately for manual review. A submission never changes a public Venue automatically.
+Milestone 7C uses a focused Google Form and the standard private Form response sheet. There is no Apps Script processor, trigger, duplicate detector, secondary review tab, or automatic Venue update.
 
-## 1. Prepare the private workbook
+A nomination never changes a public Venue automatically. Matthew reviews the raw response and makes any approved canonical Venue change separately.
 
-In the Apps Script project bound to the confirmed private v2 workbook:
-
-1. Add `apps-script/CalBarNomination.gs`.
-2. Run `verifyCalBarNominationWorkbook()`.
-3. Run `prepareCalBarNominationWorkbook()` once.
-4. Run `verifyCalBarNominationWorkbook()` again and confirm `ok: true`.
-
-The helper appends private review fields for alumni-group affiliation, alumni ownership, Cal memorabilia, other Cal context, processing state, duplicate reference, and errors.
-
-## 2. Create the focused Google Form
+## 1. Create the focused Google Form
 
 Title: `Nominate a Cal Bar`
 
@@ -57,22 +48,15 @@ Create these questions in this order:
 
 Form settings:
 
+- Store responses in a private response sheet.
 - Do not publish response summaries.
 - Do not require sign-in.
 - Do not collect email automatically in addition to the explicit email question.
 - Confirmation text: `Your nomination was received for private review. The public listing will not change automatically.`
 
-## 3. Link responses and install the trigger
+No Apps Script trigger is required.
 
-1. Link the Form to the confirmed private v2 workbook.
-2. Confirm the destination is private and is not an archived resource.
-3. In Apps Script, add a trigger:
-   - Function: `processCalBarNominationFormSubmit`
-   - Deployment: `Head`
-   - Event source: `From spreadsheet`
-   - Event type: `On form submit`
-
-## 4. Capture the two prefill identifiers
+## 2. Capture the two prefill identifiers
 
 Use **Get pre-filled link** and enter recognizable values for:
 
@@ -91,15 +75,24 @@ Add them to `index.html` as:
 - `cgb-cal-bar-nomination-venue-name-entry`
 - `cgb-cal-bar-nomination-venue-id-entry`
 
-Do not commit workbook IDs, response-sheet IDs, submitter information, or response data.
+Do not commit response-sheet IDs, submitter information, or response data.
 
-## 5. Verification
+## 3. Verification
 
 1. Open a canonical Venue detail page and select **Nominate as a Cal Bar**.
 2. Confirm Venue name is prefilled at the top and Selected Venue ID is prefilled at the bottom.
 3. Submit once on desktop and once on physical iPhone portrait.
-4. Confirm each private row is `needs_review` unless it is correctly marked as a duplicate.
-5. Run `buildPublicSnapshotForReview()` and confirm no nomination, submitter, contact, reviewer, processing, or error field appears publicly.
-6. Confirm the Venue remains unchanged until Matthew manually approves and separately edits the canonical Venue record.
+4. Confirm both responses appear only in the private Google Form response sheet.
+5. Confirm the public snapshot and canonical Venue remain unchanged.
 
-A future polish milestone may add a reviewed one- or two-sentence `Why this is a Cal Bar` pull quote to the public Venue presentation. That public-copy workflow is not part of 7C.
+## 4. Manual operating procedure
+
+For each nomination:
+
+1. Read the raw Form response.
+2. Follow up with the submitter when necessary.
+3. Decide whether the Venue meets the editorial Cal Bar standard.
+4. If approved, manually update the canonical Venue record through the normal controlled process.
+5. Draft a concise public explanation or pull quote during Milestone 8 polish.
+
+Multiple nominations for one Venue are not treated as an error; they may provide useful corroborating evidence.
