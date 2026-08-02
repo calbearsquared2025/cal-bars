@@ -2,11 +2,32 @@ import {
   buildCommittedExternalVenueWatchPartyUrl,
   observeExternalVenueCommit
 } from './external-watch-party-cta-core.mjs';
-import { readWatchPartyFormConfig } from './watch-party-form.js';
 
 const CTA_SELECTOR = '[data-external-watch-party-cta]';
+const STYLE_HREF = 'css/external-watch-party-cta.css';
 let pendingExternalCommit = null;
 let lastCommittedKey = '';
+
+function metaContent(name, documentObject = document) {
+  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function readConfig(documentObject = document) {
+  return {
+    formUrl: metaContent('cgb-watch-party-form-url', documentObject),
+    venueIdEntry: metaContent('cgb-watch-party-venue-id-entry', documentObject),
+    venueNameEntry: metaContent('cgb-watch-party-venue-name-entry', documentObject),
+    gameIdEntry: metaContent('cgb-watch-party-game-id-entry', documentObject)
+  };
+}
+
+function ensureStylesheet(documentObject = document) {
+  if (documentObject.querySelector(`link[href="${STYLE_HREF}"]`)) return;
+  const link = documentObject.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = STYLE_HREF;
+  documentObject.head?.append(link);
+}
 
 function removeExisting(documentObject = document) {
   documentObject.querySelector(CTA_SELECTOR)?.remove();
@@ -24,7 +45,7 @@ export function renderExternalVenueWatchPartyCta({
   if (!venueId || !gameId || state?.selectedVenueId !== venueId || state?.gameId !== gameId) return '';
 
   const href = buildCommittedExternalVenueWatchPartyUrl({
-    config: readWatchPartyFormConfig(documentObject),
+    config: readConfig(documentObject),
     snapshot: state.snapshot,
     gameId,
     venueId
@@ -54,6 +75,7 @@ export function renderExternalVenueWatchPartyCta({
 }
 
 function initialize() {
+  ensureStylesheet(document);
   const app = window.CGBApp;
   if (!app?.subscribe) return;
 
