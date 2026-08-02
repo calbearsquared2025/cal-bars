@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import {
   buildCommittedExternalVenueWatchPartyUrl,
   observeExternalVenueCommit,
-  resolveCommittedExternalVenueContext
+  resolveCommittedExternalVenueContext,
+  selectionsAfterExternalCommit
 } from '../js/external-watch-party-cta-core.mjs';
 
 const snapshot = {
@@ -93,6 +94,18 @@ test('successful external creation resolves the returned canonical Venue once', 
     fanIntent: { pending: null }
   });
   assert.equal(repeat.committed, null);
+});
+
+test('external creation adopts the returned Venue as this browser selection', () => {
+  const selections = selectionsAfterExternalCommit(
+    { game_old: 'venue_old', game_1: 'venue_previous' },
+    'game_1',
+    'venue_new'
+  );
+  assert.deepEqual(selections, {
+    game_old: 'venue_old',
+    game_1: 'venue_new'
+  });
 });
 
 test('existing canonical Venue match uses the same successful completion path', () => {
