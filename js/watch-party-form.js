@@ -1,3 +1,4 @@
+import './cal-bar-nomination.js';
 import './external-watch-party-cta.js';
 import { getWatchParty } from './core.mjs';
 import {
