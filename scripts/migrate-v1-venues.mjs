@@ -5,12 +5,21 @@ import { basename, extname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { REQUIRED_SOURCE_HEADERS, parseCsv } from './venue-migration-normalize.mjs';
-import { migrateRows } from './venue-migration-core.mjs';
+import {
+  buildPublicSnapshot,
+  canonicalizeMigrationBaseSnapshot,
+  migrateRows
+} from './venue-migration-canonical.mjs';
 import { writeReviewPackage } from './venue-migration-reports.mjs';
 
 export * from './venue-migration-normalize.mjs';
 export * from './venue-migration-core.mjs';
 export * from './venue-migration-reports.mjs';
+export {
+  buildPublicSnapshot,
+  canonicalizeMigrationBaseSnapshot,
+  migrateRows
+} from './venue-migration-canonical.mjs';
 
 function parseArgs(argv) {
   const args = {};
@@ -58,7 +67,9 @@ async function main() {
     const rows = await loadSource(inputPath);
     validateSourceHeaders(rows);
     const overrides = args.overrides ? JSON.parse(await readFile(resolve(args.overrides), 'utf8')) : {};
-    const baseSnapshot = args['base-snapshot'] ? JSON.parse(await readFile(resolve(args['base-snapshot']), 'utf8')) : {};
+    const baseSnapshot = args['base-snapshot']
+      ? canonicalizeMigrationBaseSnapshot(JSON.parse(await readFile(resolve(args['base-snapshot']), 'utf8')))
+      : {};
     const result = migrateRows(rows, {
       migrationTimestamp: args['migration-timestamp'] || '2026-07-26T00:00:00Z',
       overrides
