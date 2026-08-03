@@ -10,7 +10,7 @@ import {
   canonicalizeMigrationBaseSnapshot,
   migrateRows
 } from './venue-migration-canonical.mjs';
-import { writeReviewPackage } from './venue-migration-reports.mjs';
+import { writeReviewPackage } from './venue-migration-canonical-reports.mjs';
 
 export * from './venue-migration-normalize.mjs';
 export * from './venue-migration-core.mjs';
@@ -20,6 +20,7 @@ export {
   canonicalizeMigrationBaseSnapshot,
   migrateRows
 } from './venue-migration-canonical.mjs';
+export { writeReviewPackage } from './venue-migration-canonical-reports.mjs';
 
 function parseArgs(argv) {
   const args = {};
