@@ -157,7 +157,7 @@ function startRefreshController(endpointControl) {
 
   let inFlight = null;
   let lastAttemptAt = 0;
-  let refreshFailed = false;
+  let refreshFailed = !endpointControl.endpoint;
 
   const applyCopy = () => applyDataAvailabilityCopy(refreshFailed);
   app.subscribe?.('rendered', applyCopy);
