@@ -6,6 +6,33 @@ import { readFile } from 'node:fs/promises';
 const code = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
 const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 
+const CGB_HEADERS = Object.freeze({
+  Venues: [
+    'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
+    'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
+    'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
+    'short_description', 'photo_url', 'photo_credit', 'publication_status',
+    'source_submission_id', 'created_at', 'updated_at'
+  ],
+  Games: [
+    'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
+    'game_date', 'kickoff_at', 'kickoff_status', 'game_status', 'updated_at'
+  ],
+  Watch_Parties: [
+    'watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type',
+    'official_event_url', 'source_type', 'event_start_at', 'age_policy', 'sound_status',
+    'restrictions_note', 'game_day_note', 'event_status', 'publication_status',
+    'source_submission_id', 'created_at', 'updated_at'
+  ],
+  Fan_Intent: [
+    'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
+    'created_at', 'updated_at', 'archived_at'
+  ],
+  ID_Aliases: [
+    'entity_type', 'legacy_id', 'canonical_id', 'mapping_version', 'migrated_at'
+  ]
+});
+
 class RangeMock {
   constructor(sheet) { this.sheet = sheet; }
   getValues() { return this.sheet.values.map((row) => row.slice()); }
@@ -116,91 +143,36 @@ function buildHarness() {
     PropertiesService: {
       getScriptProperties: () => ({ getProperty: () => 'private' })
     },
-    SpreadsheetApp: { openById: () => workbook }
-  });
-
-  vm.runInContext(
-    `${code}\n${canonicalIds}\ngetWorkbook_ = function(){ return __workbook; };\n` +
-    `globalThis.__api = { resolveCanonicalId_, buildPublicIdAliases_, ` +
-    `validateCanonicalIdWorkbook, createCanonicalEntityId_ };`,
-    vm.createContext({ ...context, __workbook: workbook })
-  );
-
-  const executionContext = vm.createContext({
-    console,
-    Date,
-    JSON,
-    Math,
-    Number,
-    Object,
-    Array,
-    String,
-    Set,
-    Map,
-    RegExp,
-    Error,
-    Utilities: {
-      getUuid: () => `00000000-0000-4000-8000-${String(++uuid).padStart(12, '0')}`
-    },
-    PropertiesService: {
-      getScriptProperties: () => ({ getProperty: () => 'private' })
-    },
     SpreadsheetApp: { openById: () => workbook },
     __workbook: workbook
   });
+
   vm.runInContext(
     `${code}\n${canonicalIds}\ngetWorkbook_ = function(){ return __workbook; };\n` +
     `globalThis.__api = { resolveCanonicalId_, buildPublicIdAliases_, ` +
     `validateCanonicalIdWorkbook, createCanonicalEntityId_ };`,
-    executionContext
+    context
   );
-  return executionContext.__api;
+  return { api: context.__api, workbook };
 }
 
-const CGB_HEADERS = Object.freeze({
-  Venues: [
-    'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
-    'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
-    'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
-    'short_description', 'photo_url', 'photo_credit', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at'
-  ],
-  Games: [
-    'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
-    'game_date', 'kickoff_at', 'kickoff_status', 'game_status', 'updated_at'
-  ],
-  Watch_Parties: [
-    'watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type',
-    'official_event_url', 'source_type', 'event_start_at', 'age_policy', 'sound_status',
-    'restrictions_note', 'game_day_note', 'event_status', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at'
-  ],
-  Fan_Intent: [
-    'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
-    'created_at', 'updated_at', 'archived_at'
-  ],
-  ID_Aliases: [
-    'entity_type', 'legacy_id', 'canonical_id', 'mapping_version', 'migrated_at'
-  ]
-});
-
 test('Apps Script resolves permanent Venue and Game aliases', () => {
-  const api = buildHarness();
-  assert.equal(api.resolveCanonicalId_(null, 'venue', 'ven_1360954160984546'), canonicalVenueId);
-  assert.equal(api.resolveCanonicalId_(null, 'game', 'game_2026_01'), canonicalGameId);
-  assert.equal(api.resolveCanonicalId_(null, 'venue', canonicalVenueId), canonicalVenueId);
+  const { api, workbook } = buildHarness();
+  assert.equal(api.resolveCanonicalId_(workbook, 'venue', 'ven_1360954160984546'), canonicalVenueId);
+  assert.equal(api.resolveCanonicalId_(workbook, 'game', 'game_2026_01'), canonicalGameId);
+  assert.equal(api.resolveCanonicalId_(workbook, 'venue', canonicalVenueId), canonicalVenueId);
 });
 
 test('public alias builder exposes identifiers only', () => {
-  const api = buildHarness();
-  assert.deepEqual(JSON.parse(JSON.stringify(api.buildPublicIdAliases_(null))), {
+  const { api, workbook } = buildHarness();
+  assert.deepEqual(JSON.parse(JSON.stringify(api.buildPublicIdAliases_(workbook))), {
     venues: { ven_1360954160984546: canonicalVenueId },
     games: { game_2026_01: canonicalGameId }
   });
 });
 
 test('owner-only workbook integrity check reconciles canonical relationships', () => {
-  const api = buildHarness();
+  const { api } = buildHarness();
   assert.deepEqual(JSON.parse(JSON.stringify(api.validateCanonicalIdWorkbook())), {
     ok: true,
     venues: 1,
@@ -212,7 +184,7 @@ test('owner-only workbook integrity check reconciles canonical relationships', (
 });
 
 test('Apps Script generators emit exact entity-prefixed 24-hex IDs', () => {
-  const api = buildHarness();
+  const { api } = buildHarness();
   assert.match(api.createCanonicalEntityId_('venue'), /^venue_[a-f0-9]{24}$/);
   assert.match(api.createCanonicalEntityId_('game'), /^game_[a-f0-9]{24}$/);
   assert.match(api.createCanonicalEntityId_('watch_party'), /^wp_[a-f0-9]{24}$/);
