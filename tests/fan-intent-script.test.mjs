@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 const code = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
+const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 const fanIntent = await readFile(new URL('../apps-script/FanIntent.gs', import.meta.url), 'utf8');
 
 const VENUE_HEADERS = [
@@ -107,7 +108,7 @@ function buildHarness({ fanRows = [], completed = false } = {}) {
     RegExp,
     Error,
     __workbook: workbook,
-    Utilities: { getUuid: () => `uuid-${++uuid}` },
+    Utilities: { getUuid: () => `00000000-0000-4000-8000-${String(++uuid).padStart(12, '0')}` },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     CacheService: { getScriptCache: () => ({
       get: (key) => cache.get(key) || null,
@@ -121,7 +122,7 @@ function buildHarness({ fanRows = [], completed = false } = {}) {
       createTextOutput: (text) => ({ text, setMimeType() { return this; } })
     }
   });
-  vm.runInContext(`${code}\n${fanIntent}\ngetWorkbook_ = function(){ return __workbook; };\nglobalThis.__api = { doPost, buildPublicSnapshot_, archiveCompletedFanIntentRowsUnlocked_ };`, context);
+  vm.runInContext(`${code}\n${canonicalIds}\n${fanIntent}\ngetWorkbook_ = function(){ return __workbook; };\nglobalThis.__api = { doPost, buildPublicSnapshot_, archiveCompletedFanIntentRowsUnlocked_ };`, context);
   return { workbook, api: context.__api };
 }
 
@@ -145,6 +146,7 @@ test('join creates one attending row and returns only aggregate-safe fields', ()
   assert.equal(JSON.stringify(response).includes(browserId), false);
   assert.equal(JSON.stringify(response).includes('fan_intent_id'), false);
   assert.equal(fanObjects(workbook).filter((row) => row.status === 'attending').length, 1);
+  assert.match(fanObjects(workbook)[0].fan_intent_id, /^fi_[a-f0-9]{24}$/);
 });
 
 test('ordinary duplicate joins remain one active selection', () => {
