@@ -4,6 +4,7 @@ import {
   ACTIVE_REFRESH_INTERVAL_MS,
   FOCUS_REFRESH_STALE_MS,
   dataAvailabilityCopy,
+  resolveDirectEntryVenueId,
   shouldRefreshSnapshot
 } from '../js/snapshot-refresh.mjs';
 
@@ -67,4 +68,14 @@ test('live data restores the normal tray description', () => {
     dataAvailabilityCopy({ dataSource: 'live', venueCount: 3 }).trayCopy,
     'Watch Parties first, then Cal Bars and Community Locations.'
   );
+});
+
+test('direct-entry venue is resolved after cached or fallback startup refreshes', () => {
+  const snapshot = { venues: [
+    { venue_id: 'venue_one', slug: 'first-place' },
+    { venue_id: 'venue_two', slug: 'requested-place' }
+  ] };
+  assert.equal(resolveDirectEntryVenueId(snapshot, '?game=game_2026_01&venue=requested-place'), 'venue_two');
+  assert.equal(resolveDirectEntryVenueId(snapshot, '?venue=missing-place'), '');
+  assert.equal(resolveDirectEntryVenueId(snapshot, '?game=game_2026_01'), '');
 });
