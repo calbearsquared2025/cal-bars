@@ -56,21 +56,21 @@ test('deprecated opponent short names are rejected recursively', () => {
   const invalid = structuredClone(fixture);
   invalid.games[0].opponent_short_name = 'UCLA';
   const errors = validateSnapshot(invalid);
-  assert.ok(errors.some((error) => error.includes('opponent_short_name is forbidden'));
+  assert.ok(errors.some((error) => error.includes('opponent_short_name is forbidden')));
 });
 
 test('private browser identifiers are rejected recursively', () => {
   const invalid = structuredClone(fixture);
   invalid.fanCounts[0].browser_id = 'private-browser-id';
   const errors = validateSnapshot(invalid);
-  assert.ok(errors.some((error) => error.includes('browser_id is forbidden'));
+  assert.ok(errors.some((error) => error.includes('browser_id is forbidden')));
 });
 
 test('duplicate venue slugs are rejected', () => {
   const invalid = structuredClone(fixture);
   invalid.venues[1].slug = invalid.venues[0].slug;
   const errors = validateSnapshot(invalid);
-  assert.ok(errors.some((error) => error.includes('.slug duplicates'));
+  assert.ok(errors.some((error) => error.includes('.slug duplicates')));
 });
 
 test('watch parties must reference public venues and games', () => {
@@ -78,8 +78,8 @@ test('watch parties must reference public venues and games', () => {
   invalid.watchParties[0].venue_id = 'venue_ffffffffffffffffffffffff';
   invalid.watchParties[0].game_id = 'game_ffffffffffffffffffffffff';
   const errors = validateSnapshot(invalid);
-  assert.ok(errors.some((error) => error.includes('venue_id does not reference'));
-  assert.ok(errors.some((error) => error.includes('game_id does not reference'));
+  assert.ok(errors.some((error) => error.includes('venue_id does not reference')));
+  assert.ok(errors.some((error) => error.includes('game_id does not reference')));
 });
 
 test('TBD kickoff cannot expose a timestamp', () => {
@@ -88,5 +88,5 @@ test('TBD kickoff cannot expose a timestamp', () => {
   assert.ok(tbdGame);
   tbdGame.kickoff_at = `${tbdGame.game_date}T20:00:00Z`;
   const errors = validateSnapshot(invalid);
-  assert.ok(errors.some((error) => error.includes('must be empty when kickoff_status is tbd'));
+  assert.ok(errors.some((error) => error.includes('must be empty when kickoff_status is tbd')));
 });
