@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
+const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 const automation = await readFile(new URL('../apps-script/WatchPartyAutomation.gs', import.meta.url), 'utf8');
 
 const WATCH_PARTY_HEADERS = [
@@ -53,6 +54,7 @@ class SheetMock {
   getRange(row, column, rows = 1, columns = 1) {
     return new RangeMock(this, row, column, rows, columns);
   }
+  getDataRange() { return this.getRange(1, 1, this.getLastRow(), this.getLastColumn()); }
   setFrozenRows() {}
 }
 
@@ -113,12 +115,13 @@ test('completed games are rejected before canonical publication', () => {
     CGB_TABS: { Watch_Parties: WATCH_PARTY_HEADERS },
     Utilities: { getUuid: () => `00000000-0000-4000-8000-${String(++uuid).padStart(12, '0')}` },
     getWorkbook_: () => workbook,
+    normalizeCellValue_: (value) => value,
     readSheetObjects_: (_book, tabName) => rows[tabName] || [],
     hasValidVenueCoordinates_: (row) => Number.isFinite(Number(row.latitude)) && Number.isFinite(Number(row.longitude)),
     clearPublicSnapshotCache_: () => { cacheClearCount += 1; }
   });
 
-  vm.runInContext(`${automation}\nglobalThis.__process = processMinimalWatchPartyFormSubmission_;`, context);
+  vm.runInContext(`${canonicalIds}\n${automation}\nglobalThis.__process = processMinimalWatchPartyFormSubmission_;`, context);
   const event = {
     range: { getSheet: () => rawSheet, getRow: () => 2 },
     namedValues: Object.fromEntries(Object.entries(rawRow).map(([key, value]) => [key, [value]]))
