@@ -15,19 +15,25 @@ test('test-data helper refuses to mix with non-test canonical rows', () => {
   assert.match(source, /contains non-test rows/);
 });
 
-test('test browser identifiers are generated at runtime', () => {
-  assert.match(source, /browser_id: Utilities\.getUuid\(\)/);
-  assert.doesNotMatch(source, /browser_id:\s*['"][^'"]+['"]/);
+test('synthetic primary and foreign keys use the canonical entity grammar', () => {
+  assert.match(source, /venue_[a-f0-9]{24}/);
+  assert.match(source, /game_[a-f0-9]{24}/);
+  assert.match(source, /wp_[a-f0-9]{24}/);
+  assert.match(source, /fi_[a-f0-9]{24}/);
+  assert.doesNotMatch(source, /['"]ven_\d+['"]/);
+  assert.doesNotMatch(source, /['"]game_\d{4}_\d{2}['"]/);
+  assert.doesNotMatch(source, /['"]wp_\d+['"]/);
+  assert.doesNotMatch(source, /fi_test_/);
 });
 
-test('test cleanup targets only known test identifiers', () => {
-  assert.match(source, /fi_test_/);
+test('test browser identifiers satisfy the anonymous-browser grammar', () => {
+  assert.match(source, /browser_test_/);
+  assert.doesNotMatch(source, /browser_id: Utilities\.getUuid\(\)/);
+});
+
+test('test cleanup targets only explicit known synthetic identifiers', () => {
+  assert.match(source, /CGB_TEST_FAN_INTENT_IDS/);
   assert.match(source, /CGB_TEST_VENUE_IDS/);
   assert.match(source, /CGB_TEST_GAME_IDS/);
   assert.match(source, /CGB_TEST_WATCH_PARTY_IDS/);
-});
-
-test('synthetic historical game ID follows game_YYYY_NN', () => {
-  assert.match(source, /game_2025_99/);
-  assert.doesNotMatch(source, /game_2025_test_00/);
 });
