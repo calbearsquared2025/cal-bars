@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
+const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 const automation = await readFile(new URL('../apps-script/WatchPartyAutomation.gs', import.meta.url), 'utf8');
 
 const WATCH_PARTY_HEADERS = [
@@ -166,6 +167,7 @@ function buildHarness({
     CGB_TABS: { Watch_Parties: WATCH_PARTY_HEADERS },
     Utilities: { getUuid: () => `00000000-0000-4000-8000-${String(++uuid).padStart(12, '0')}` },
     getWorkbook_: () => workbook,
+    normalizeCellValue_: (value) => value,
     readSheetObjects_: (book, tabName) => {
       const sheet = book.getSheetByName(tabName);
       return sheet ? objectsFromSheet(sheet) : [];
@@ -174,7 +176,7 @@ function buildHarness({
     clearPublicSnapshotCache_: () => removedCacheKeys.push('cgb_v2_public_snapshot')
   });
 
-  vm.runInContext(`${automation}\nglobalThis.__api = { process: processMinimalWatchPartyFormSubmission_, prepare: prepareMinimalWatchPartyAutomation };`, context);
+  vm.runInContext(`${canonicalIds}\n${automation}\nglobalThis.__api = { process: processMinimalWatchPartyFormSubmission_, prepare: prepareMinimalWatchPartyAutomation };`, context);
   const event = {
     range: { getSheet: () => rawSheet, getRow: () => 2 },
     namedValues: Object.fromEntries(Object.entries(rawRow).map(([key, value]) => [key, [value]]))
@@ -187,6 +189,7 @@ test('final friendly form labels create one published canonical Watch Party', ()
   const result = api.process(event);
   assert.equal(result.ok, true);
   assert.equal(result.created_watch_party_ids.length, 1);
+  assert.match(result.created_watch_party_ids[0], /^wp_[a-f0-9]{24}$/);
 
   const parties = objectsFromSheet(watchPartySheet);
   assert.equal(parties.length, 1);
@@ -206,6 +209,7 @@ test('final friendly form labels create one published canonical Watch Party', ()
 
   const raw = objectsFromSheet(rawSheet)[0];
   assert.equal(raw['Contact Email'], 'private@example.com');
+  assert.match(raw.submission_id, /^wps_[a-f0-9]{24}$/);
   assert.equal(raw.processing_status, 'processed');
   assert.deepEqual(JSON.parse(raw.created_watch_party_ids), Array.from(result.created_watch_party_ids));
   assert.equal(raw.processing_error, '');
