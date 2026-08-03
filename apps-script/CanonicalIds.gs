@@ -37,10 +37,21 @@ function createCanonicalEntityId_(entityType) {
 
 function readCanonicalIdAliases_(workbook) {
   const sheet = workbook.getSheetByName(CGB_ID_ALIAS_TAB);
-  if (!sheet) return [];
-  const table = readSheetTable_(sheet);
-  requireHeaders_(table.headers, CGB_ID_ALIAS_HEADERS, CGB_ID_ALIAS_TAB);
-  return table.rows.map(function(record) { return record.object; });
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  const values = sheet.getDataRange().getValues();
+  const headers = values[0].map(function(value) { return String(value).trim(); });
+  CGB_ID_ALIAS_HEADERS.forEach(function(header) {
+    if (headers.indexOf(header) < 0) throw new Error('Missing ID_Aliases column: ' + header);
+  });
+  return values.slice(1).filter(function(row) {
+    return row.some(function(value) { return value !== '' && value !== null; });
+  }).map(function(row) {
+    const object = {};
+    headers.forEach(function(header, index) {
+      object[header] = normalizeCellValue_(row[index]);
+    });
+    return object;
+  });
 }
 
 function resolveCanonicalId_(workbook, entityType, value) {
