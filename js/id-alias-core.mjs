@@ -18,7 +18,7 @@ export function resolveSnapshotId(snapshot, entityType, value) {
 export function canonicalizeSnapshotIds(snapshot) {
   if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return snapshot;
 
-  const canonical = structuredClone(snapshot);
+  const canonical = JSON.parse(JSON.stringify(snapshot));
   canonical.idAliases = {
     venues: { ...PUBLIC_ID_ALIASES.venues, ...(canonical.idAliases?.venues || {}) },
     games: { ...PUBLIC_ID_ALIASES.games, ...(canonical.idAliases?.games || {}) }
