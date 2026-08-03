@@ -79,3 +79,82 @@ test('direct-entry venue is resolved after cached or fallback startup refreshes'
   assert.equal(resolveDirectEntryVenueId(snapshot, '?venue=missing-place'), '');
   assert.equal(resolveDirectEntryVenueId(snapshot, '?game=game_2026_01'), '');
 });
+
+test('browser bootstrap renders cache first, restores the endpoint, and starts one live refresh', async () => {
+  const originalWindow = globalThis.window;
+  const originalDocument = globalThis.document;
+  const storage = new Map([['cgb_v2_public_data_url', 'https://example.invalid/live']]);
+  const windowListeners = new Map();
+  const documentListeners = new Map();
+  const meta = { content: 'https://example.invalid/default' };
+  const elements = new Map([
+    ['#tray-summary-copy', { textContent: '' }],
+    ['#watch-party-stat', { textContent: '' }],
+    ['#location-stat', { textContent: '' }],
+    ['#list-heading', { textContent: '' }],
+    ['#location-list', { replaceChildren() {} }]
+  ]);
+  let refreshCalls = 0;
+
+  globalThis.window = {
+    localStorage: {
+      getItem: (key) => storage.has(key) ? storage.get(key) : null,
+      setItem: (key, value) => storage.set(key, String(value)),
+      removeItem: (key) => storage.delete(key)
+    },
+    location: { search: '' },
+    addEventListener: (name, listener) => windowListeners.set(name, listener),
+    setTimeout,
+    setInterval: () => 1,
+    CGBApp: null
+  };
+  globalThis.document = {
+    visibilityState: 'visible',
+    querySelector(selector) {
+      if (selector === 'meta[name="cgb-data-endpoint"]') return meta;
+      return elements.get(selector) || null;
+    },
+    addEventListener: (name, listener) => documentListeners.set(name, listener),
+    createElement: () => ({
+      className: '',
+      textContent: '',
+      append() {}
+    })
+  };
+
+  try {
+    await import(`../js/snapshot-refresh.mjs?browser-bootstrap=${Date.now()}`);
+    assert.equal(meta.content, '');
+    assert.equal(storage.has('cgb_v2_public_data_url'), false);
+
+    const state = {
+      snapshot: { venues: [{ venue_id: 'venue_one', slug: 'one' }] },
+      dataSource: 'last-known-good',
+      detailMode: false,
+      selectedVenueId: null
+    };
+    window.CGBApp = {
+      getSnapshot: () => state.snapshot,
+      getState: () => state,
+      subscribe: () => () => {},
+      render: () => {},
+      refreshSnapshot: async () => {
+        refreshCalls += 1;
+        state.dataSource = 'live';
+        return true;
+      }
+    };
+
+    await windowListeners.get('DOMContentLoaded')();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    assert.equal(meta.content, 'https://example.invalid/default');
+    assert.equal(storage.get('cgb_v2_public_data_url'), 'https://example.invalid/live');
+    assert.equal(refreshCalls, 1);
+  } finally {
+    if (originalWindow === undefined) delete globalThis.window;
+    else globalThis.window = originalWindow;
+    if (originalDocument === undefined) delete globalThis.document;
+    else globalThis.document = originalDocument;
+  }
+});
