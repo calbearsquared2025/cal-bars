@@ -2,6 +2,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { canonicalizeSnapshotIds } from '../js/id-alias-core.mjs';
 
 const REQUIRED_TOP_LEVEL = [
   'schemaVersion', 'venues', 'games', 'watchParties',
@@ -250,10 +251,15 @@ export function validateSnapshot(snapshot) {
 }
 
 export function validateReleaseFallback(snapshot) {
-  const errors = validateSnapshot(snapshot);
-  const venueIds = new Set(Array.isArray(snapshot?.venues) ? snapshot.venues.map((venue) => venue.venue_id) : []);
-  const gameIds = new Set(Array.isArray(snapshot?.games) ? snapshot.games.map((game) => game.game_id) : []);
-  validateIdAliases(snapshot, venueIds, gameIds, errors, { required: true });
+  const canonicalSnapshot = canonicalizeSnapshotIds(snapshot);
+  const errors = validateSnapshot(canonicalSnapshot);
+  const venueIds = new Set(Array.isArray(canonicalSnapshot?.venues)
+    ? canonicalSnapshot.venues.map((venue) => venue.venue_id)
+    : []);
+  const gameIds = new Set(Array.isArray(canonicalSnapshot?.games)
+    ? canonicalSnapshot.games.map((game) => game.game_id)
+    : []);
+  validateIdAliases(canonicalSnapshot, venueIds, gameIds, errors, { required: true });
 
   const serialized = JSON.stringify(snapshot).toLowerCase();
   for (const marker of RELEASE_FIXTURE_MARKERS) {
@@ -289,8 +295,9 @@ async function main() {
     return;
   }
 
+  const canonicalSnapshot = canonicalizeSnapshotIds(snapshot);
   console.log(`Valid CGB v2 public release fallback: ${path}`);
-  console.log(`${snapshot.venues.length} venues, ${snapshot.games.length} games, ${snapshot.watchParties.length} watch parties`);
+  console.log(`${canonicalSnapshot.venues.length} venues, ${canonicalSnapshot.games.length} games, ${canonicalSnapshot.watchParties.length} watch parties`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
