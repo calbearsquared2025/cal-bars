@@ -2,23 +2,23 @@
 
 ## Source of truth
 
-Before changing product behavior, read the relevant documents in the private planning repository in this order:
+Canonical planning and audit documentation is maintained only in the private `calbearsquared2025/cal-golden-bars-planning` repository. Do not copy those documents into this public repository.
+
+Before changing product behavior, read the relevant private planning documents in this order:
 
 1. `CGB_v2_MVP_Product_Specification.md`
-2. `CGB_v2_Data_Dictionary.md`
-3. `CGB_v2_MVP_Implementation_Plan.md`
-4. `CGB_v2_Decision_Log.md`
-5. `CGB_Working_Lists.md`
-6. `CGB_v2_Project_Summary_Report.md`
-7. `CGB_v2_ChatGPT_Development_Workflow.md`
-8. `CGB_v2_Repository_Audit.md`, when available
+2. `CGB_v2_Data_and_Privacy_Specification.md`
+3. `CGB_v2_Implementation_and_Delivery_Plan.md`
+4. `CGB_v2_Project_Control_Log.md`
+
+The former seven-document set is deprecated. `CGB_v2_Repository_Audit.md` and the reports under `audits/` are supporting point-in-time evidence in the private planning repository, not current product authority.
 
 ## Constraints
 
 - Preserve GitHub Pages static hosting.
 - Preserve MapLibre and MapTiler unless explicitly approved otherwise.
 - Use the private Google Spreadsheet only through Apps Script.
-- Never commit credentials, workbook identifiers, raw submissions, contact information, browser IDs, or private exports.
+- Never commit credentials, workbook identifiers, raw submissions, contact information, browser IDs, private exports, internal planning documents, or private audit reports.
 - Treat physical-iPhone usability as the primary design target while retaining responsive desktop behavior.
 - Do not add dependencies or change architecture without material justification and approval.
 - Do not implement deferred or unapproved work.
@@ -28,7 +28,7 @@ Before changing product behavior, read the relevant documents in the private pla
 
 ## Workflow
 
-- Inspect existing code and documentation before making changes.
+- Inspect existing code and the private canonical documentation before making changes.
 - Use a narrow feature branch and draft pull request.
 - Keep changes limited to the approved task.
 - Run the relevant automated checks and browser tests.
