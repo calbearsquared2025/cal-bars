@@ -15,6 +15,12 @@ export function shouldRefreshSnapshot({
   return now - lastAttemptAt >= staleAfterMs;
 }
 
+export function resolveDirectEntryVenueId(snapshot, search = '') {
+  const slug = new URLSearchParams(search).get('venue');
+  if (!slug || !Array.isArray(snapshot?.venues)) return '';
+  return snapshot.venues.find((venue) => venue.slug === slug)?.venue_id || '';
+}
+
 export function dataAvailabilityCopy({ dataSource, venueCount, refreshFailed = false }) {
   if (dataSource === 'fallback' && venueCount === 0) {
     return {
@@ -134,6 +140,17 @@ function waitForSnapshot(timeoutMs = 12000) {
   });
 }
 
+function restoreDirectEntryAfterRefresh(app) {
+  const state = app.getState?.();
+  if (!state?.snapshot || state.detailMode) return false;
+  const venueId = resolveDirectEntryVenueId(state.snapshot, window.location.search);
+  if (!venueId) return false;
+  state.detailMode = true;
+  state.selectedVenueId = venueId;
+  app.render?.();
+  return true;
+}
+
 function startRefreshController(endpointControl) {
   const app = window.CGBApp;
   if (!app) return;
@@ -155,6 +172,7 @@ function startRefreshController(endpointControl) {
     inFlight = app.refreshSnapshot({ restoreSelection: true })
       .then((updated) => {
         refreshFailed = !updated;
+        if (updated) restoreDirectEntryAfterRefresh(app);
         applyCopy();
         return updated;
       })
