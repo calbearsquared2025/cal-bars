@@ -138,7 +138,7 @@ function buildHarness() {
     RegExp,
     Error,
     Utilities: {
-      getUuid: () => `00000000-0000-4000-8000-${String(++uuid).padStart(12, '0')}`
+      getUuid: () => `${String(++uuid).padStart(8, '0')}-0000-4000-8000-000000000000`
     },
     PropertiesService: {
       getScriptProperties: () => ({ getProperty: () => 'private' })
@@ -183,9 +183,13 @@ test('owner-only workbook integrity check reconciles canonical relationships', (
   });
 });
 
-test('Apps Script generators emit exact entity-prefixed 24-hex IDs', () => {
+test('Apps Script generators emit unique exact entity-prefixed 24-hex IDs', () => {
   const { api } = buildHarness();
-  assert.match(api.createCanonicalEntityId_('venue'), /^venue_[a-f0-9]{24}$/);
+  const venueId = api.createCanonicalEntityId_('venue');
+  const secondVenueId = api.createCanonicalEntityId_('venue');
+  assert.match(venueId, /^venue_[a-f0-9]{24}$/);
+  assert.match(secondVenueId, /^venue_[a-f0-9]{24}$/);
+  assert.notEqual(venueId, secondVenueId);
   assert.match(api.createCanonicalEntityId_('game'), /^game_[a-f0-9]{24}$/);
   assert.match(api.createCanonicalEntityId_('watch_party'), /^wp_[a-f0-9]{24}$/);
   assert.match(api.createCanonicalEntityId_('fan_intent'), /^fi_[a-f0-9]{24}$/);
