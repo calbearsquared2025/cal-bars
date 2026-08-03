@@ -82,6 +82,8 @@ function parseFanIntentRequest_(event) {
 
 function processFanIntentRequest_(request) {
   const workbook = getWorkbook_();
+  request.gameId = resolveCanonicalId_(workbook, 'game', request.gameId);
+  if (request.venueId) request.venueId = resolveCanonicalId_(workbook, 'venue', request.venueId);
   const now = new Date().toISOString();
   archiveCompletedFanIntentRowsUnlocked_(workbook, now);
 
@@ -153,7 +155,7 @@ function processFanIntentRequest_(request) {
       });
     } else {
       appendFanIntentRecord_(fanSheet, table.headers, {
-        fan_intent_id: 'fi_' + Utilities.getUuid(),
+        fan_intent_id: createCanonicalEntityId_('fan_intent'),
         browser_id: request.browserId,
         game_id: request.gameId,
         venue_id: request.venueId,
