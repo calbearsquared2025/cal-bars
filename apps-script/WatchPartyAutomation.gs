@@ -231,10 +231,11 @@ function normalizeMinimalWatchPartySubmission_(namedValues, workbook) {
     readMinimalWatchPartyFormField_(namedValues, 'organizer_name'),
     180
   );
-  const venueId = cleanMinimalWatchPartyText_(
+  const submittedVenueId = cleanMinimalWatchPartyText_(
     readMinimalWatchPartyFormField_(namedValues, 'venue_id'),
     80
   );
+  const venueId = resolveCanonicalId_(workbook, 'venue', submittedVenueId);
   const gameIds = resolveMinimalWatchPartyGameIds_(
     workbook,
     readMinimalWatchPartyFormField_(namedValues, 'game_ids')
@@ -417,7 +418,8 @@ function resolveMinimalWatchPartyGameIds_(workbook, value) {
 
   const seen = new Set();
   return selections.map(function(selection) {
-    const directGameId = gameIds.get(selection);
+    const canonicalSelection = resolveCanonicalId_(workbook, 'game', selection);
+    const directGameId = gameIds.get(canonicalSelection);
     const mappedGameId = directGameId || gameLabels.get(normalizeMinimalWatchPartyGameLabel_(selection));
     if (!mappedGameId) throw minimalWatchPartyError_('unknown_game_id');
     return mappedGameId;
@@ -528,11 +530,11 @@ function cleanMinimalWatchPartyText_(value, maxLength) {
 }
 
 function createMinimalWatchPartySubmissionId_() {
-  return 'wps_' + String(Utilities.getUuid()).replace(/-/g, '').slice(0, 24);
+  return createCanonicalEntityId_('watch_party_submission');
 }
 
 function createMinimalWatchPartyId_() {
-  return 'wp_' + String(Utilities.getUuid()).replace(/-/g, '').slice(0, 24);
+  return createCanonicalEntityId_('watch_party');
 }
 
 function minimalWatchPartyError_(code) {
