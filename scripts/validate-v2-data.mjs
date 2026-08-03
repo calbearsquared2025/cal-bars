@@ -16,6 +16,19 @@ const FORBIDDEN_KEYS = new Set([
   'opponent_short_name'
 ]);
 
+const RELEASE_FIXTURE_MARKERS = Object.freeze([
+  'golden bear test pub',
+  'oski test taproom',
+  'bear territory test cafe',
+  'california test grill',
+  'test plaza',
+  'sample street',
+  'fixture avenue',
+  'mockup road',
+  'synthetic test record',
+  'example.com/golden-bear-test-pub'
+]);
+
 const VENUE_TYPES = new Set(['cal_bar', 'community_location']);
 const VERIFICATION_STATUSES = new Set(['cgb_reviewed', 'user_added']);
 const ALUMNI_OWNED = new Set(['yes', 'no', 'unknown']);
@@ -194,6 +207,17 @@ export function validateSnapshot(snapshot) {
   return errors;
 }
 
+export function validateReleaseFallback(snapshot) {
+  const errors = validateSnapshot(snapshot);
+  const serialized = JSON.stringify(snapshot).toLowerCase();
+  for (const marker of RELEASE_FIXTURE_MARKERS) {
+    if (serialized.includes(marker)) {
+      errors.push(`release fallback contains synthetic fixture marker: ${marker}`);
+    }
+  }
+  return errors;
+}
+
 async function main() {
   const path = process.argv[2];
   if (!path) {
@@ -211,7 +235,7 @@ async function main() {
     return;
   }
 
-  const errors = validateSnapshot(snapshot);
+  const errors = validateReleaseFallback(snapshot);
   if (errors.length) {
     console.error(`Validation failed with ${errors.length} error(s):`);
     for (const error of errors) console.error(`- ${error}`);
@@ -219,7 +243,7 @@ async function main() {
     return;
   }
 
-  console.log(`Valid CGB v2 public snapshot: ${path}`);
+  console.log(`Valid CGB v2 public release fallback: ${path}`);
   console.log(`${snapshot.venues.length} venues, ${snapshot.games.length} games, ${snapshot.watchParties.length} watch parties`);
 }
 
