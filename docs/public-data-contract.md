@@ -1,6 +1,6 @@
 # CGB v2 Public Data Contract
 
-**Status:** Milestone 1 read-only contract  
+**Status:** Canonical public read contract  
 **Schema version:** `2.0`
 
 This contract defines the only data shape the public website may receive from the v2 backend. The private Google Spreadsheet remains private and must never be published as CSV or returned row-for-row.
@@ -15,20 +15,29 @@ This contract defines the only data shape the public website may receive from th
   "watchParties": [],
   "fanCounts": [],
   "venueHistoryCounts": [],
-  "generatedAt": "2026-07-26T12:00:00Z"
+  "idAliases": {
+    "venues": {},
+    "games": {}
+  },
+  "generatedAt": "2026-08-03T20:04:00Z"
 }
 ```
 
-Record fields use the canonical snake_case names from the Data Dictionary. Collection names use the camelCase names above.
+Record fields use the canonical snake_case names from the private Data and Privacy Specification. Collection names use the camelCase names above.
 
 ## ID rules
 
-- IDs are opaque, immutable strings created once and never renumbered.
-- Venue IDs use `ven_` followed by digits, for example `ven_000001`.
-- Game IDs use `game_YYYY_NN`, for example `game_2026_01`.
-- Watch Party IDs use `wp_` followed by digits, for example `wp_000001`.
-- Venue names are never identifiers.
-- Venue slugs use lowercase kebab case, are unique, and remain stable after publication unless a collision must be corrected.
+Canonical IDs are opaque, immutable relationship keys. They must not encode dates, sequence numbers, locations, schedule order, or other business meaning.
+
+- Venue: `venue_<24 lowercase hexadecimal characters>`
+- Game: `game_<24 lowercase hexadecimal characters>`
+- Watch Party: `wp_<24 lowercase hexadecimal characters>`
+- Fan Intent, private only: `fi_<24 lowercase hexadecimal characters>`
+- Watch Party submission, private only: `wps_<24 lowercase hexadecimal characters>`
+
+Venue names are never identifiers. Venue slugs use lowercase kebab case, are unique, and remain stable after publication unless a collision must be corrected.
+
+The August 3, 2026 migration reassigned the initial Venue and Game IDs. `idAliases` contains identifier-only permanent compatibility mappings for old Venue and Game IDs. The client and write services resolve an alias before canonical lookup. New records and relationships must store only canonical IDs.
 
 ## Public Venue fields
 
@@ -65,7 +74,6 @@ Only rows with `publication_status = published` enter the public response. `publ
 - `season`
 - `schedule_order`
 - `opponent_name`
-- `opponent_short_name`
 - `home_away`
 - `game_date`
 - `kickoff_at`
@@ -73,7 +81,7 @@ Only rows with `publication_status = published` enter the public response. `publ
 - `game_status`
 - `updated_at`
 
-When `kickoff_status = confirmed`, `kickoff_at` must be an absolute ISO-8601 timestamp. When `kickoff_status = tbd`, `kickoff_at` is empty.
+Do not expose or maintain `opponent_short_name`. When `kickoff_status = confirmed`, `kickoff_at` must be an absolute ISO-8601 timestamp. When `kickoff_status = tbd`, `kickoff_at` is empty.
 
 ## Public Watch Party fields
 
@@ -99,16 +107,40 @@ Only rows with `publication_status = published` and `event_status = active` ente
 `fanCounts` contains one record per active `game_id + venue_id` pair:
 
 ```json
-{ "game_id": "game_2026_01", "venue_id": "ven_000001", "count": 3 }
+{
+  "game_id": "game_9e8f4860c6a256c0fae6007d",
+  "venue_id": "venue_7cbf6f0f2c33a2462d3da467",
+  "count": 3
+}
 ```
 
 `venueHistoryCounts` contains the number of distinct completed games with archived Fan Intent for each venue:
 
 ```json
-{ "venue_id": "ven_000001", "past_game_count": 5 }
+{
+  "venue_id": "venue_7cbf6f0f2c33a2462d3da467",
+  "past_game_count": 5
+}
 ```
 
 No browser-level Fan Intent record may appear in the public response.
+
+## Public alias fields
+
+`idAliases.venues` and `idAliases.games` may expose only legacy-to-canonical identifier pairs. They must not contain names, addresses, contact information, browser identifiers, timestamps, workbook identifiers, raw responses, or administrative state.
+
+Example:
+
+```json
+{
+  "venues": {
+    "ven_1360954160984546": "venue_7cbf6f0f2c33a2462d3da467"
+  },
+  "games": {
+    "game_2026_01": "game_9e8f4860c6a256c0fae6007d"
+  }
+}
+```
 
 ## Forbidden public fields and content
 
@@ -124,4 +156,4 @@ The public response must not include:
 - `publication_status`
 - `created_at`
 
-Validation is performed by `scripts/validate-v2-data.mjs`.
+Validation is performed by `scripts/validate-v2-data.mjs`. The static fallback is canonicalized through the permanent public alias map before release validation and application state initialization.
