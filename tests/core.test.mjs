@@ -20,7 +20,9 @@ import {
   venueBadgeDescriptors
 } from '../js/core.mjs';
 
-const snapshot = JSON.parse(await readFile(new URL('../data/fallback-v2.json', import.meta.url), 'utf8'));
+const snapshot = JSON.parse(
+  await readFile(new URL('./fixtures/public-snapshot.synthetic.json', import.meta.url), 'utf8')
+);
 
 test('next upcoming game is the default', () => {
   assert.equal(selectDefaultGame(snapshot.games, new Date('2026-07-26T12:00:00Z')).game_id, 'game_2026_01');
