@@ -369,7 +369,8 @@ function rollbackCreatedVenue_(sheet, rowNumber) {
 function appendSheetObject_(sheet, headers, object) {
   const rowNumber = sheet.getLastRow() + 1;
   const values = headers.map(function(header) {
-    return Object.prototype.hasOwnProperty.call(object, header) ? object[header] : '';
+    const value = Object.prototype.hasOwnProperty.call(object, header) ? object[header] : '';
+    return typeof value === 'string' && /^[=+\-@]/.test(value) ? "'" + value : value;
   });
   sheet.getRange(rowNumber, 1, 1, headers.length).setValues([values]);
   return rowNumber;

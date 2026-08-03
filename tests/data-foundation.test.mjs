@@ -2,14 +2,26 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-import { validateSnapshot } from '../scripts/validate-v2-data.mjs';
+import { validateReleaseFallback, validateSnapshot } from '../scripts/validate-v2-data.mjs';
 
 const fixture = JSON.parse(
+  await readFile(new URL('./fixtures/public-snapshot.synthetic.json', import.meta.url), 'utf8')
+);
+const releaseFallback = JSON.parse(
   await readFile(new URL('../data/fallback-v2.json', import.meta.url), 'utf8')
 );
 
-test('synthetic fallback satisfies the public contract', () => {
+test('synthetic test fixture satisfies the public contract', () => {
   assert.deepEqual(validateSnapshot(fixture), []);
+});
+
+test('release fallback satisfies the public contract and release checks', () => {
+  assert.deepEqual(validateReleaseFallback(releaseFallback), []);
+});
+
+test('release validation rejects known synthetic fixture markers', () => {
+  const errors = validateReleaseFallback(fixture);
+  assert.ok(errors.some((error) => error.includes('synthetic fixture marker')));
 });
 
 test('deprecated opponent short names are rejected recursively', () => {

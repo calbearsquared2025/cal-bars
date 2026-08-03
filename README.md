@@ -36,11 +36,7 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000/`.
 
-The frontend loads public data in this order:
-
-1. configured Apps Script endpoint
-2. browser last-known-good snapshot
-3. committed `data/fallback-v2.json`
+The frontend renders the browser last-known-good snapshot or committed fallback first, then refreshes from the configured Apps Script endpoint in the background. While the tab remains visible, it refreshes every 15 minutes and refreshes on return when the last attempt is more than 5 minutes old. Hidden tabs do not poll.
 
 ## Operating documentation
 
