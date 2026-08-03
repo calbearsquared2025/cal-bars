@@ -47,14 +47,18 @@ test('active migration output remains deterministic for unchanged source identit
   assert.deepEqual(first.accepted_venues, second.accepted_venues);
 });
 
-test('public snapshot wrapper canonicalizes legacy base-schedule Game IDs', () => {
+test('public snapshot wrapper canonicalizes known and unknown legacy base-schedule Game IDs', () => {
   const result = migrateRows([sourceRow()], { migrationTimestamp: timestamp });
   const snapshot = buildPublicSnapshot(result, {
-    games: [{ game_id: 'game_2026_01', opponent_name: 'UCLA' }]
+    games: [
+      { game_id: 'game_2026_01', opponent_name: 'UCLA' },
+      { game_id: 'game_fixture', opponent_name: 'Fixture Opponent' }
+    ]
   }, timestamp);
 
   assert.match(snapshot.venues[0].venue_id, /^venue_[a-f0-9]{24}$/);
   assert.equal(snapshot.games[0].game_id, 'game_9e8f4860c6a256c0fae6007d');
+  assert.equal(snapshot.games[1].game_id, 'game_a6ff685b3e4f9d1f9b7545ed');
   assert.deepEqual(snapshot.venueHistoryCounts, [{
     venue_id: snapshot.venues[0].venue_id,
     past_game_count: 0
