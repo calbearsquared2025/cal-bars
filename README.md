@@ -1,51 +1,56 @@
-# Cal Golden Bars v2
+# California Golden Bars v2
 
-This repository contains the static GitHub Pages frontend and spreadsheet-bound Apps Script source for California Golden Bars v2.
+This repository contains the deployable static frontend and spreadsheet-bound Google Apps Script source for California Golden Bars v2.
 
-## Local validation
+## Architecture
+
+- GitHub Pages serves the HTML, CSS, JavaScript, and public fallback data.
+- MapLibre renders the map and MapTiler provides map and external place-search data.
+- A private Google Spreadsheet stores canonical and raw records.
+- Google Apps Script exposes only approved public fields and handles supported writes.
+- Google Forms collect Watch Party submissions and manually reviewed contributions or reports.
+
+The private workbook, raw Form responses, submitter contact information, browser identifiers, private exports, and credentials must never be committed.
+
+## Local development
 
 Requirements:
 
 - Node.js 22 or newer
-- Python 3 for a simple static development server
+- Python 3 for a simple static server
 
-Run the complete automated suite:
+Run the repository checks:
 
 ```bash
 npm test
 npm run test:browser
 npm run validate:data
+npm run test:migration
 ```
 
-Run a local static preview:
+Run a local preview:
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then open `http://localhost:8000/`. This local server is for diagnostics and development checks; it is not part of routine live-canary acceptance.
+Then open `http://localhost:8000/`.
 
-## Data, Fan Intent, external venues, and Watch Parties
-
-Milestone 3 adds a separate Fan Intent client and Apps Script service for anonymous join, move, and withdrawal operations. Milestone 4A consolidates the frontend around one canonical application snapshot and state. Milestone 4B adds MapTiler external-place results and the combined `joinExternalVenue` action, which creates or reuses a persistent Community Location only when **I’ll be here** succeeds. Milestone 5A adds the minimal existing-Venue Watch Party Form processor. Milestone 5B adds the contextual venue/game link, readable multi-game Form choices, and final Form-title processing aliases.
-
-The private canonical `Games` tab and the committed fallback both contain the verified 12-game 2026 regular-season schedule with stable IDs `game_2026_01` through `game_2026_12`. The private Sheet is the normal live-data source; `data/fallback-v2.json` is a development and endpoint-failure recovery snapshot. Update the private `Games` tab first, clear the public snapshot cache, validate the Apps Script response, and then update the fallback through a reviewed repository change. Do not maintain a separate Apps Script copy of the schedule.
-
-The Watch Party Form displays readable date-and-matchup choices derived from canonical game data and does not include kickoff times. Apps Script maps those choices back to stable Game IDs, preserves optional Contact Email only in the private raw response, and normalizes optional bare-domain event links before publication.
-
-The approved live canary connects automatically to the public Apps Script web app through the `cgb-data-endpoint` metadata in `index.html`; ordinary live-site use does not require local-storage configuration. External search reuses the public MapTiler browser key already loaded by the map and does not add a second credential.
-
-Routine acceptance consists of successful automated tests and data validation, public-response privacy checks, desktop and mobile previews, and a physical-iPhone core-path check. See:
-
-- `docs/fan-intent-setup.md` for the existing Fan Intent deployment and acceptance process.
-- `docs/external-venue-search.md` for the external-search architecture, missing-location integration point, Apps Script deployment checklist, and Codespaces/iPhone preview procedure.
-- `docs/minimal-watch-party-automation.md` for the Milestone 5A Google Form processor and account-bound setup.
-- `docs/watch-party-form-entry-point.md` for the finalized Milestone 5B Form contract, readable game mapping, configuration, acceptance, and weekly maintenance.
-
-For optional local-preview diagnostics, the frontend uses this public-read sequence:
+The frontend loads public data in this order:
 
 1. configured Apps Script endpoint
 2. browser last-known-good snapshot
 3. committed `data/fallback-v2.json`
 
-The production Pages source remains separate from `main` until v2 acceptance and launch approval.
+## Operating documentation
+
+- `docs/public-data-contract.md` — public/private data boundary
+- `docs/workbook-setup.md` — private workbook and Apps Script setup
+- `docs/fan-intent-setup.md` — anonymous selection service
+- `docs/external-venue-search.md` — external place search and persistent Community Locations
+- `docs/minimal-watch-party-automation.md` — Watch Party Form processing
+- `docs/watch-party-form-entry-point.md` — Watch Party Form prefill and schedule maintenance
+- `docs/contribution-forms.md` — nomination, listing, Watch Party issue, and missing-location Forms
+- `docs/migration/venue-migration.md` — deterministic Venue migration and load validation
+
+The production Pages source remains separate from `main` until v2 release approval. Do not modify `Live-1003` or `v1-production-2026-07-26` through ordinary development work.
