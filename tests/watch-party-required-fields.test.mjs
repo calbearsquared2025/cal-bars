@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
+const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 const automation = await readFile(new URL('../apps-script/WatchPartyAutomation.gs', import.meta.url), 'utf8');
 
 const games = [{
@@ -17,7 +18,7 @@ const games = [{
   game_status: 'upcoming',
   updated_at: '2026-07-31T17:43:00Z'
 }];
-const workbook = {};
+const workbook = { getSheetByName: () => null };
 
 const context = vm.createContext({
   console: { log() {}, warn() {}, error() {} },
@@ -33,10 +34,11 @@ const context = vm.createContext({
   RegExp,
   Error,
   URL,
+  normalizeCellValue_: (value) => value,
   readSheetObjects_: (_workbook, tabName) => tabName === 'Games' ? games : []
 });
 
-vm.runInContext(`${automation}\nglobalThis.__normalize = normalizeMinimalWatchPartySubmission_;`, context);
+vm.runInContext(`${canonicalIds}\n${automation}\nglobalThis.__normalize = normalizeMinimalWatchPartySubmission_;`, context);
 const normalize = (namedValues) => context.__normalize(namedValues, workbook);
 
 function validNamedValues() {
