@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
 
+import { PUBLIC_ID_ALIASES } from '../js/id-aliases.mjs';
 import {
   CANONICAL_ID_PATTERNS,
   canonicalizeSnapshot,
@@ -37,6 +38,11 @@ test('sha256-v1 mappings are deterministic and match the approved migration', ()
   assert.deepEqual(validateAliasManifest(aliasManifest), []);
   assert.equal(Object.keys(aliasManifest.venues).length, 35);
   assert.equal(Object.keys(aliasManifest.games).length, 12);
+});
+
+test('browser alias bundle exactly matches the reviewed JSON ledger', () => {
+  assert.deepEqual(PUBLIC_ID_ALIASES.venues, aliasManifest.venues);
+  assert.deepEqual(PUBLIC_ID_ALIASES.games, aliasManifest.games);
 });
 
 test('snapshot canonicalization updates primary keys and every public foreign key', () => {
