@@ -71,13 +71,13 @@ function plainRow(values) {
   return Array.from(values, (value) => value);
 }
 
-test('external Venue canonical writes literalize formula-leading strings', () => {
+test('external Venue canonical writes literalize every formula-leading string', () => {
   const { append, sheet, writes } = createExternalAppendHarness();
-  append(sheet, ['name', 'address', 'note', 'tag'], {
-    name: '=IMPORTXML("https://example.invalid", "//x")',
-    address: '+SUM(1,1)',
-    note: '-1+1',
-    tag: '@payload'
+  append(sheet, ['equals', 'plus', 'minus', 'at'], {
+    equals: '=IMPORTXML("https://example.invalid", "//x")',
+    plus: '+SUM(1,1)',
+    minus: '-1+1',
+    at: '@payload'
   });
 
   assert.deepEqual(plainRow(writes[0][0]), [
@@ -88,46 +88,74 @@ test('external Venue canonical writes literalize formula-leading strings', () =>
   ]);
 });
 
-test('external Venue canonical writes preserve ordinary strings, numbers, and blanks', () => {
+test('external Venue canonical writes preserve non-formula value types', () => {
+  const headers = [
+    'name', 'website_url', 'venue_id', 'latitude', 'updated_at', 'published',
+    'empty', 'null_value', 'undefined_value', 'missing_value'
+  ];
   const { append, sheet, writes } = createExternalAppendHarness();
-  append(sheet, ['name', 'latitude', 'website_url', 'empty'], {
+  append(sheet, headers, {
     name: 'Ordinary Venue',
-    latitude: 37.8717,
-    website_url: 'https://example.org',
-    empty: ''
+    website_url: 'https://example.org/path?q=1',
+    venue_id: 'venue_8309cdb6-63da-48e0-97de-368631f62b11',
+    latitude: -37.8717,
+    updated_at: '2026-08-03T15:00:00Z',
+    published: true,
+    empty: '',
+    null_value: null,
+    undefined_value: undefined
   });
 
   assert.deepEqual(plainRow(writes[0][0]), [
     'Ordinary Venue',
-    37.8717,
-    'https://example.org',
+    'https://example.org/path?q=1',
+    'venue_8309cdb6-63da-48e0-97de-368631f62b11',
+    -37.8717,
+    '2026-08-03T15:00:00Z',
+    true,
+    '',
+    null,
+    undefined,
     ''
   ]);
 });
 
-test('Watch Party canonical writes literalize formula-leading public text', () => {
+test('Watch Party canonical writes protect every prefix and preserve other values', () => {
   const headers = [
-    'watch_party_id',
-    'organizer_name',
-    'official_event_url',
-    'restrictions_note',
-    'game_day_note'
+    'watch_party_id', 'organizer_name', 'restrictions_note', 'game_day_note',
+    'source_type', 'official_event_url', 'numeric_value', 'created_at',
+    'boolean_value', 'blank_value', 'null_value', 'undefined_value', 'missing_value'
   ];
   const { append, workbook, writes } = createWatchPartyAppendHarness(headers);
   append(workbook, [{
     watch_party_id: 'wp_000001',
     organizer_name: '=IMPORTDATA("https://example.invalid")',
-    official_event_url: 'https://example.org/event',
     restrictions_note: '+SUM(1,1)',
-    game_day_note: '@payload'
+    game_day_note: '-1+1',
+    source_type: '@payload',
+    official_event_url: 'https://example.org/event',
+    numeric_value: -12,
+    created_at: '2026-08-03T15:00:00Z',
+    boolean_value: false,
+    blank_value: '',
+    null_value: null,
+    undefined_value: undefined
   }]);
 
   assert.deepEqual(plainRow(writes[0][0]), [
     'wp_000001',
     "'=IMPORTDATA(\"https://example.invalid\")",
-    'https://example.org/event',
     "'+SUM(1,1)",
-    "'@payload"
+    "'-1+1",
+    "'@payload",
+    'https://example.org/event',
+    -12,
+    '2026-08-03T15:00:00Z',
+    false,
+    '',
+    null,
+    undefined,
+    ''
   ]);
 });
 
