@@ -1,10 +1,17 @@
+import { PUBLIC_ID_ALIASES } from './id-aliases.mjs';
+
 const ENTITY_ALIAS_KEYS = Object.freeze({ venue: 'venues', game: 'games' });
+
+function aliasesFor(snapshot, entityType) {
+  const aliasKey = ENTITY_ALIAS_KEYS[entityType];
+  if (!aliasKey) return null;
+  return snapshot?.idAliases?.[aliasKey] || PUBLIC_ID_ALIASES[aliasKey];
+}
 
 export function resolveSnapshotId(snapshot, entityType, value) {
   const candidate = String(value || '').trim();
   if (!candidate) return '';
-  const aliasKey = ENTITY_ALIAS_KEYS[entityType];
-  const aliases = aliasKey ? snapshot?.idAliases?.[aliasKey] : null;
+  const aliases = aliasesFor(snapshot, entityType);
   return String(aliases?.[candidate] || candidate);
 }
 
@@ -12,6 +19,10 @@ export function canonicalizeSnapshotIds(snapshot) {
   if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return snapshot;
 
   const canonical = structuredClone(snapshot);
+  canonical.idAliases = {
+    venues: { ...PUBLIC_ID_ALIASES.venues, ...(canonical.idAliases?.venues || {}) },
+    games: { ...PUBLIC_ID_ALIASES.games, ...(canonical.idAliases?.games || {}) }
+  };
   const resolveVenue = (value) => resolveSnapshotId(canonical, 'venue', value);
   const resolveGame = (value) => resolveSnapshotId(canonical, 'game', value);
 
