@@ -343,7 +343,8 @@ function appendMinimalWatchPartyRows_(workbook, rows) {
   });
   const values = rows.map(function(row) {
     return headers.map(function(header) {
-      return Object.prototype.hasOwnProperty.call(row, header) ? row[header] : '';
+      const value = Object.prototype.hasOwnProperty.call(row, header) ? row[header] : '';
+      return typeof value === 'string' && /^[=+\-@]/.test(value) ? "'" + value : value;
     });
   });
   sheet.getRange(sheet.getLastRow() + 1, 1, values.length, headers.length).setValues(values);
