@@ -61,6 +61,9 @@ const CGB_TABS = Object.freeze({
     'response_timestamp', 'submission_id', 'venue_name', 'address', 'website_url',
     'selected_game_id', 'note', 'submitter_email', 'review_status',
     'created_venue_id', 'reviewed_at'
+  ],
+  ID_Aliases: [
+    'entity_type', 'legacy_id', 'canonical_id', 'mapping_version', 'migrated_at'
   ]
 });
 
@@ -177,6 +180,7 @@ function buildPublicSnapshot_() {
     watchParties: watchParties,
     fanCounts: buildFanCounts_(intentRaw, publishedVenueIds, gameIds),
     venueHistoryCounts: buildVenueHistoryCounts_(intentRaw, publishedVenueIds, gameIds),
+    idAliases: buildPublicIdAliases_(workbook),
     generatedAt: new Date().toISOString()
   };
 }
