@@ -35,11 +35,11 @@ test('season activity copy is cumulative Bear activity rather than distinct game
   assert.equal(seasonActivityCopy(0), '');
 });
 
-test('migrated history uses only a supported year in watch-party description evidence', () => {
+test('migrated watch-party evidence is standardized to the approved 2025 history', () => {
   assert.equal(legacyActivitySeason(venue), 2025);
   assert.equal(legacyActivityCopy(2025), 'Bears watched Cal games here in 2025.');
   assert.equal(legacyActivitySeason({ short_description: 'Opened in 2025.' }), null);
-  assert.equal(legacyActivitySeason({ short_description: 'Previously hosted a Cal watch party.' }), null);
+  assert.equal(legacyActivitySeason({ short_description: 'Previously hosted a Cal watch party.' }), 2025);
 });
 
 test('upcoming games show current selection copy plus real current-season history', () => {
