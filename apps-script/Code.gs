@@ -180,6 +180,7 @@ function buildPublicSnapshot_() {
     watchParties: watchParties,
     fanCounts: buildFanCounts_(intentRaw, publishedVenueIds, gameIds),
     venueHistoryCounts: buildVenueHistoryCounts_(intentRaw, publishedVenueIds, gameIds),
+    venueSeasonCounts: buildVenueSeasonCounts_(intentRaw, publishedVenueIds, games),
     idAliases: buildPublicIdAliases_(workbook),
     generatedAt: new Date().toISOString()
   };
@@ -210,6 +211,33 @@ function buildVenueHistoryCounts_(rows, venueIds, gameIds) {
   return Array.from(venueIds).sort().map(function(venueId) {
     const games = gamesByVenue[venueId];
     return { venue_id: venueId, past_game_count: games ? games.size : 0 };
+  });
+}
+
+function buildVenueSeasonCounts_(rows, venueIds, games) {
+  const completedGameSeasons = {};
+  games.forEach(function(game) {
+    const season = Number(game.season);
+    if (game.game_status !== 'completed' || !Number.isInteger(season)) return;
+    completedGameSeasons[String(game.game_id)] = season;
+  });
+
+  const counts = {};
+  rows.forEach(function(row) {
+    if (row.status !== 'archived' || !venueIds.has(row.venue_id)) return;
+    const season = completedGameSeasons[String(row.game_id)];
+    if (!season) return;
+    const key = season + '::' + row.venue_id;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+
+  return Object.keys(counts).sort().map(function(key) {
+    const separator = key.indexOf('::');
+    return {
+      season: Number(key.slice(0, separator)),
+      venue_id: key.slice(separator + 2),
+      count: counts[key]
+    };
   });
 }
 

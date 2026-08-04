@@ -9,11 +9,12 @@ const refresh = await readFile(new URL('../js/snapshot-refresh.mjs', import.meta
 const appState = await readFile(new URL('../js/app-state.mjs', import.meta.url), 'utf8');
 const controller = await readFile(new URL('../js/fan-intent-controller.mjs', import.meta.url), 'utf8');
 const core = await readFile(new URL('../js/fan-intent-core.mjs', import.meta.url), 'utf8');
+const activity = await readFile(new URL('../js/venue-activity-core.mjs', import.meta.url), 'utf8');
 const css = await readFile(new URL('../css/fan-intent.css', import.meta.url), 'utf8');
 const script = await readFile(new URL('../apps-script/FanIntent.gs', import.meta.url), 'utf8');
 const readScript = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
 
-const combinedPublicSource = `${html}\n${app}\n${client}\n${refresh}\n${appState}\n${controller}\n${core}\n${css}`;
+const combinedPublicSource = `${html}\n${app}\n${client}\n${refresh}\n${appState}\n${controller}\n${core}\n${activity}\n${css}`;
 
 test('the application and Fan Intent controller share one canonical frontend state module', () => {
   assert.match(app, /appState as state/);
@@ -32,8 +33,9 @@ test('startup loads the public snapshot only through the application data path',
 
 test('Fan Intent integration uses explicit application lifecycle and render functions', () => {
   assert.match(app, /emitAppEvent\('rendered'/);
-  assert.match(client, /subscribeAppEvent\('rendered', renderFanIntentUi\)/);
-  assert.match(client, /selectionChanged[\s\S]*renderApplication\(\)[\s\S]*renderFanIntentUi\(\)/);
+  assert.match(client, /subscribeAppEvent\('rendered', renderVenueActivity\)/);
+  assert.match(client, /subscribeAppEvent\('rendered', renderIntentButtons\)/);
+  assert.match(client, /selectionChanged[\s\S]*renderApplication\(\)[\s\S]*renderIntentButtons\(\)/);
   assert.match(app, /restoreSelection/);
 });
 
@@ -95,14 +97,25 @@ test('refresh, game switching, direct URLs, and cross-tab state use canonical ga
   assert.match(client, /restoreSelection/);
 });
 
-test('write and read services archive completed activity while preserving public aggregates', () => {
+test('completed activity publishes cumulative season counts and standardized copy', () => {
   assert.match(script, /archiveCompletedFanIntentRowsUnlocked_/);
   assert.match(script, /status:'archived'|status: 'archived'/);
   assert.match(readScript, /archiveCompletedFanIntent_\(workbook\)/);
-  assert.match(
-    script,
-    /venueHistoryCounts:buildVenueHistoryCounts_|venueHistoryCounts: buildVenueHistoryCounts_/
-  );
+  assert.match(readScript, /venueSeasonCounts: buildVenueSeasonCounts_/);
+  assert.match(readScript, /function buildVenueSeasonCounts_/);
+  assert.match(activity, /Bears watched Cal games here this season/);
+  assert.match(activity, /MIGRATED_ACTIVITY_SEASON = 2025/);
+});
+
+test('standardized activity presentation covers detail, selected-card, and list surfaces', () => {
+  assert.match(client, /function renderDetailActivity/);
+  assert.match(client, /function renderSelectedCardActivity/);
+  assert.match(client, /function renderLocationCardActivity/);
+  assert.match(client, /\.detail-description/);
+  assert.match(client, /\.venue-description/);
+  assert.match(client, /\.location-card__description/);
+  assert.match(client, /venue-activity-history/);
+  assert.match(client, /location-card__history/);
 });
 
 test('public responses and committed public files exclude private Fan Intent values', () => {

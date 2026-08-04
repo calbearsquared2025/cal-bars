@@ -19,6 +19,7 @@ const snapshot = {
   }],
   fanCounts: [{ venue_id: 'ven_1360954160984546', game_id: 'game_2026_01', count: 1 }],
   venueHistoryCounts: [{ venue_id: 'ven_1360954160984546', past_game_count: 1 }],
+  venueSeasonCounts: [{ season: 2026, venue_id: 'ven_1360954160984546', count: 4 }],
   idAliases: {
     venues: { ven_1360954160984546: 'venue_7cbf6f0f2c33a2462d3da467' },
     games: { game_2026_01: 'game_9e8f4860c6a256c0fae6007d' }
@@ -45,6 +46,11 @@ test('snapshot canonicalization updates primary and foreign keys without mutatin
   assert.equal(canonical.watchParties[0].game_id, canonical.games[0].game_id);
   assert.equal(canonical.fanCounts[0].venue_id, canonical.venues[0].venue_id);
   assert.equal(canonical.venueHistoryCounts[0].venue_id, canonical.venues[0].venue_id);
+  assert.equal(canonical.venueSeasonCounts[0].venue_id, canonical.venues[0].venue_id);
+});
+
+test('malformed optional season aggregates fail safely as empty', () => {
+  assert.deepEqual(canonicalizeSnapshotIds({ ...snapshot, venueSeasonCounts: 'invalid' }).venueSeasonCounts, []);
 });
 
 test('browser selections are migrated to canonical game and venue IDs', () => {

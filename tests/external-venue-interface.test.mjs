@@ -122,11 +122,11 @@ test('mobile confirmation is bottom-sheet first and desktop remains responsive',
   assert.match(css, /@media \(max-width: 430px\) and \(orientation: landscape\)/);
 });
 
-test('existing Fan Intent client remains the authority for join, move, Undo, retry, and refresh', () => {
+test('existing Fan Intent client remains the authority for join, move, Undo, retry, and delegates refresh', () => {
   assert.match(fanClient, /controller\?\.performIntent/);
   assert.match(fanClient, /controller\?\.retryIntent/);
   assert.match(fanClient, /You’ll be here · Undo/);
-  assert.match(fanClient, /refreshSnapshot/);
+  assert.match(fanClient, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.doesNotMatch(client, /createFanIntentController|beginIntentTransaction/);
 });
 
