@@ -4,9 +4,28 @@ import {
   ACTIVE_REFRESH_INTERVAL_MS,
   FOCUS_REFRESH_STALE_MS,
   dataAvailabilityCopy,
+  publicSnapshotsEqual,
   resolveDirectEntryVenueId,
   shouldRefreshSnapshot
 } from '../js/snapshot-refresh.mjs';
+
+function snapshot(overrides = {}) {
+  return {
+    schemaVersion: '2.0',
+    venues: [{
+      venue_id: 'venue_one',
+      slug: 'one',
+      latitude: 37.8,
+      longitude: -122.2
+    }],
+    games: [],
+    watchParties: [],
+    fanCounts: [],
+    venueHistoryCounts: [],
+    idAliases: { venues: {}, games: {} },
+    ...overrides
+  };
+}
 
 test('refresh cadence is fifteen minutes while active and five minutes on return', () => {
   assert.equal(ACTIVE_REFRESH_INTERVAL_MS, 15 * 60 * 1000);
@@ -43,6 +62,17 @@ test('visible tabs refresh after the stale threshold but not before it', () => {
   }), true);
 });
 
+test('snapshot comparison ignores generated timestamps but detects public-data changes', () => {
+  assert.equal(publicSnapshotsEqual(
+    snapshot({ generatedAt: '2026-08-03T00:00:00Z' }),
+    snapshot({ generatedAt: '2026-08-03T00:01:00Z' })
+  ), true);
+  assert.equal(publicSnapshotsEqual(
+    snapshot(),
+    snapshot({ fanCounts: [{ game_id: 'game_one', venue_id: 'venue_one', count: 1 }] })
+  ), false);
+});
+
 test('empty schedule fallback is described as unavailable data, not zero locations', () => {
   const copy = dataAvailabilityCopy({ dataSource: 'fallback', venueCount: 0 });
   assert.equal(copy.unavailable, true);
@@ -71,18 +101,19 @@ test('live data restores the normal tray description', () => {
 });
 
 test('direct-entry venue is resolved after cached or fallback startup refreshes', () => {
-  const snapshot = { venues: [
+  const current = { venues: [
     { venue_id: 'venue_one', slug: 'first-place' },
     { venue_id: 'venue_two', slug: 'requested-place' }
   ] };
-  assert.equal(resolveDirectEntryVenueId(snapshot, '?game=game_2026_01&venue=requested-place'), 'venue_two');
-  assert.equal(resolveDirectEntryVenueId(snapshot, '?venue=missing-place'), '');
-  assert.equal(resolveDirectEntryVenueId(snapshot, '?game=game_2026_01'), '');
+  assert.equal(resolveDirectEntryVenueId(current, '?game=game_one&venue=requested-place'), 'venue_two');
+  assert.equal(resolveDirectEntryVenueId(current, '?venue=missing-place'), '');
+  assert.equal(resolveDirectEntryVenueId(current, '?game=game_one'), '');
 });
 
-test('browser bootstrap renders cache first, restores the endpoint, and starts one live refresh', async () => {
+test('browser bootstrap renders cache first and suppresses an unchanged live rerender', async () => {
   const originalWindow = globalThis.window;
   const originalDocument = globalThis.document;
+  const originalFetch = globalThis.fetch;
   const storage = new Map([['cgb_v2_public_data_url', 'https://example.invalid/live']]);
   const windowListeners = new Map();
   const documentListeners = new Map();
@@ -94,17 +125,25 @@ test('browser bootstrap renders cache first, restores the endpoint, and starts o
     ['#list-heading', { textContent: '' }],
     ['#location-list', { replaceChildren() {} }]
   ]);
-  let refreshCalls = 0;
+  const live = snapshot({ generatedAt: '2026-08-03T01:00:00Z' });
+  let fetchCalls = 0;
+  let renderCalls = 0;
 
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    return { ok: true, json: async () => live };
+  };
   globalThis.window = {
     localStorage: {
       getItem: (key) => storage.has(key) ? storage.get(key) : null,
       setItem: (key, value) => storage.set(key, String(value)),
       removeItem: (key) => storage.delete(key)
     },
-    location: { search: '' },
+    location: { href: 'https://example.invalid/', search: '' },
+    history: { state: null, replaceState() {} },
     addEventListener: (name, listener) => windowListeners.set(name, listener),
     setTimeout,
+    clearTimeout,
     setInterval: () => 1,
     CGBApp: null
   };
@@ -128,7 +167,7 @@ test('browser bootstrap renders cache first, restores the endpoint, and starts o
     assert.equal(storage.has('cgb_v2_public_data_url'), false);
 
     const state = {
-      snapshot: { venues: [{ venue_id: 'venue_one', slug: 'one' }] },
+      snapshot: snapshot({ generatedAt: '2026-08-03T00:00:00Z' }),
       dataSource: 'last-known-good',
       detailMode: false,
       selectedVenueId: null
@@ -137,12 +176,8 @@ test('browser bootstrap renders cache first, restores the endpoint, and starts o
       getSnapshot: () => state.snapshot,
       getState: () => state,
       subscribe: () => () => {},
-      render: () => {},
-      refreshSnapshot: async () => {
-        refreshCalls += 1;
-        state.dataSource = 'live';
-        return true;
-      }
+      restoreSelection: () => false,
+      render: () => { renderCalls += 1; }
     };
 
     await windowListeners.get('DOMContentLoaded')();
@@ -150,11 +185,16 @@ test('browser bootstrap renders cache first, restores the endpoint, and starts o
 
     assert.equal(meta.content, 'https://example.invalid/default');
     assert.equal(storage.get('cgb_v2_public_data_url'), 'https://example.invalid/live');
-    assert.equal(refreshCalls, 1);
+    assert.equal(fetchCalls, 1);
+    assert.equal(renderCalls, 0);
+    assert.equal(state.dataSource, 'live');
+    assert.equal(state.snapshot.generatedAt, '2026-08-03T01:00:00Z');
   } finally {
     if (originalWindow === undefined) delete globalThis.window;
     else globalThis.window = originalWindow;
     if (originalDocument === undefined) delete globalThis.document;
     else globalThis.document = originalDocument;
+    if (originalFetch === undefined) delete globalThis.fetch;
+    else globalThis.fetch = originalFetch;
   }
 });
