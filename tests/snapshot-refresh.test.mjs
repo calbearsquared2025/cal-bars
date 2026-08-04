@@ -22,6 +22,7 @@ function snapshot(overrides = {}) {
     watchParties: [],
     fanCounts: [],
     venueHistoryCounts: [],
+    venueSeasonCounts: [],
     idAliases: { venues: {}, games: {} },
     ...overrides
   };
