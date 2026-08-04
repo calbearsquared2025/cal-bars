@@ -139,7 +139,7 @@ test('browser bootstrap renders cache first and suppresses an unchanged live rer
       setItem: (key, value) => storage.set(key, String(value)),
       removeItem: (key) => storage.delete(key)
     },
-    location: { href: 'https://example.invalid/', search: '' },
+    location: { href: 'http://localhost/', hostname: 'localhost', search: '' },
     history: { state: null, replaceState() {} },
     addEventListener: (name, listener) => windowListeners.set(name, listener),
     setTimeout,
