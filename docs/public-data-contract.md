@@ -1,6 +1,6 @@
 # CGB v2 Public Data Contract
 
-**Status:** Canonical public read contract  
+**Status:** Canonical public read contract
 **Schema version:** `2.0`
 
 This contract defines the only data shape the public website may receive from the v2 backend. The private Google Spreadsheet remains private and must never be published as CSV or returned row-for-row.
