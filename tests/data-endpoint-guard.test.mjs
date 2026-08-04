@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 
 import {
   allowsDataEndpointOverride,
-  clearDisallowedDataEndpointOverride,
-  DATA_ENDPOINT_OVERRIDE_KEY
-} from '../js/data-endpoint-guard.mjs';
+  clearDisallowedDataEndpointOverride
+} from '../js/snapshot-refresh.mjs';
+
+const DATA_ENDPOINT_OVERRIDE_KEY = 'cgb_v2_public_data_url';
 
 function storageWith(value) {
   const values = new Map();
@@ -29,17 +30,33 @@ test('public and unrelated hosts do not allow endpoint overrides', () => {
 
 test('a stale public-host override is removed before application startup', () => {
   const storage = storageWith('https://example.invalid/data');
-  assert.equal(clearDisallowedDataEndpointOverride({ hostname: 'calgoldenbars.com', storage }), true);
+  assert.equal(clearDisallowedDataEndpointOverride({
+    hostname: 'calgoldenbars.com',
+    getStorage: () => storage
+  }), true);
   assert.equal(storage.value(), undefined);
 });
 
 test('an allowed local override is preserved', () => {
   const storage = storageWith('http://localhost:3000/data.json');
-  assert.equal(clearDisallowedDataEndpointOverride({ hostname: 'localhost', storage }), false);
+  assert.equal(clearDisallowedDataEndpointOverride({
+    hostname: 'localhost',
+    getStorage: () => storage
+  }), false);
   assert.equal(storage.value(), 'http://localhost:3000/data.json');
 });
 
-test('storage failures do not block application startup', () => {
+test('storage method failures do not block application startup', () => {
   const storage = { getItem() { throw new Error('blocked'); }, removeItem() {} };
-  assert.doesNotThrow(() => clearDisallowedDataEndpointOverride({ hostname: 'calgoldenbars.com', storage }));
+  assert.doesNotThrow(() => clearDisallowedDataEndpointOverride({
+    hostname: 'calgoldenbars.com',
+    getStorage: () => storage
+  }));
+});
+
+test('storage acquisition failures do not block application startup', () => {
+  assert.doesNotThrow(() => clearDisallowedDataEndpointOverride({
+    hostname: 'calgoldenbars.com',
+    getStorage() { throw new Error('localStorage unavailable'); }
+  }));
 });
