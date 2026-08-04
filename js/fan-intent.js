@@ -9,7 +9,7 @@ import {
 } from './fan-intent-core.mjs';
 import { createFanIntentController } from './fan-intent-controller.mjs';
 import { canonicalizeStoredSelections } from './id-alias-core.mjs';
-import { venueActivityPresentation } from './venue-activity-core.mjs';
+import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const WRITE_TIMEOUT_MS = 10000;
@@ -181,6 +181,10 @@ function renderVenueActivity() {
   const primary = activity.querySelector('strong');
   const secondary = activity.querySelector('p');
   if (!primary || !secondary) return;
+
+  const migratedHistorySeason = legacyActivitySeason(venue);
+  const description = document.querySelector('.detail-description');
+  if (description && migratedHistorySeason) description.hidden = true;
 
   const presentation = venueActivityPresentation({
     snapshot: appState.snapshot,
