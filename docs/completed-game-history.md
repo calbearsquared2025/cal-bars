@@ -12,7 +12,8 @@ The total counts archived browser-level selections across completed games. It is
 
 When no selected-season total exists, a migrated Venue with reviewed Cal-game or watch-party history uses the same standardized fallback, even when its older evidence sentence did not include the year:
 
-> Bears watched Cal games here in 2025.  
+> Bears watched Cal games here in 2025.
+>
 > Be part of the 2026 season.
 
 The frontend suppresses the more precise evidence sentence when it is used to generate this standardized copy. Venues without reviewed Cal-game or watch-party history receive no migrated-history claim.
