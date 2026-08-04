@@ -1,6 +1,6 @@
 # Canonical ID migration
 
-**Status:** Approved contract; private workbook migrated; runtime integration remains under review  
+**Status:** Approved contract; private workbook migrated; runtime integration remains under review
 **Decision date:** August 3, 2026
 
 ## Contract
