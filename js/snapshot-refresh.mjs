@@ -1,3 +1,4 @@
+import './data-endpoint-guard.mjs';
 import { validateSnapshotShape } from './core.mjs';
 import { canonicalizeSnapshotIds, rewriteLegacyGameQuery } from './id-alias-core.mjs';
 
