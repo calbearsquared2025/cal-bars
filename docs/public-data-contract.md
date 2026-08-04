@@ -15,6 +15,7 @@ This contract defines the only data shape the public website may receive from th
   "watchParties": [],
   "fanCounts": [],
   "venueHistoryCounts": [],
+  "venueSeasonCounts": [],
   "idAliases": {
     "venues": {},
     "games": {}
@@ -24,6 +25,8 @@ This contract defines the only data shape the public website may receive from th
 ```
 
 Record fields use the canonical snake_case names from the private Data and Privacy Specification. Collection names use the camelCase names above.
+
+The live endpoint includes `venueSeasonCounts`. Older last-known-good or static fallback snapshots created before this field was introduced may omit it; the client treats an omitted collection as an empty array.
 
 ## ID rules
 
@@ -114,7 +117,7 @@ Only rows with `publication_status = published` and `event_status = active` ente
 }
 ```
 
-`venueHistoryCounts` contains the number of distinct completed games with archived Fan Intent for each venue:
+`venueHistoryCounts` contains the number of distinct completed games with archived Fan Intent for each venue. It remains in the response for compatibility but is not the approved public season-history copy source:
 
 ```json
 {
@@ -122,6 +125,21 @@ Only rows with `publication_status = published` and `event_status = active` ente
   "past_game_count": 5
 }
 ```
+
+`venueSeasonCounts` contains the cumulative number of archived Bear selections at a venue across completed games in one season. This is a directional anonymous activity total, not an attendee list or unique-person count across the full season:
+
+```json
+{
+  "season": 2026,
+  "venue_id": "venue_7cbf6f0f2c33a2462d3da467",
+  "count": 12
+}
+```
+
+The client displays the selected season total as **12 Bears watched Cal games here this season.** Until that aggregate exists, a migrated Venue description that contains supported 2025 watch-party evidence may produce the standardized fallback:
+
+> Bears watched Cal games here in 2025.  
+> Be part of the 2026 season.
 
 No browser-level Fan Intent record may appear in the public response.
 
