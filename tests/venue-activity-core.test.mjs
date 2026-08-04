@@ -38,8 +38,14 @@ test('season activity copy is cumulative Bear activity rather than distinct game
 test('migrated watch-party evidence is standardized to the approved 2025 history', () => {
   assert.equal(legacyActivitySeason(venue), 2025);
   assert.equal(legacyActivityCopy(2025), 'Bears watched Cal games here in 2025.');
-  assert.equal(legacyActivitySeason({ short_description: 'Opened in 2025.' }), null);
   assert.equal(legacyActivitySeason({ short_description: 'Previously hosted a Cal watch party.' }), 2025);
+  assert.equal(legacyActivitySeason({ short_description: 'Rocky Mountain Golden Bears 2025 Big Game watch party.' }), 2025);
+});
+
+test('ordinary current venue descriptions do not become migrated history', () => {
+  assert.equal(legacyActivitySeason({ short_description: 'Opened in 2025.' }), null);
+  assert.equal(legacyActivitySeason({ short_description: 'Shows Cal games every week.' }), null);
+  assert.equal(legacyActivitySeason({ short_description: 'A friendly neighborhood sports bar.' }), null);
 });
 
 test('upcoming games show current selection copy plus real current-season history', () => {
