@@ -1,8 +1,23 @@
+import { validateSnapshotShape } from './core.mjs';
+import { canonicalizeSnapshotIds, rewriteLegacyGameQuery } from './id-alias-core.mjs';
+
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
+const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
+const REFRESH_TIMEOUT_MS = 10000;
 const DEFAULT_TRAY_COPY = 'Watch Parties first, then Cal Bars and Community Locations.';
+const PUBLIC_SNAPSHOT_KEYS = [
+  'venues',
+  'games',
+  'watchParties',
+  'fanCounts',
+  'venueHistoryCounts',
+  'idAliases'
+];
+
+let browserRefreshController = null;
 
 export function shouldRefreshSnapshot({
   visibilityState,
@@ -19,6 +34,19 @@ export function resolveDirectEntryVenueId(snapshot, search = '') {
   const slug = new URLSearchParams(search).get('venue');
   if (!slug || !Array.isArray(snapshot?.venues)) return '';
   return snapshot.venues.find((venue) => venue.slug === slug)?.venue_id || '';
+}
+
+function publicSnapshotValue(snapshot) {
+  if (!snapshot || typeof snapshot !== 'object') return null;
+  return {
+    schemaVersion: snapshot.schemaVersion || '',
+    ...Object.fromEntries(PUBLIC_SNAPSHOT_KEYS.map((key) => [key, snapshot[key] ?? null]))
+  };
+}
+
+export function publicSnapshotsEqual(left, right) {
+  if (!left || !right) return false;
+  return JSON.stringify(publicSnapshotValue(left)) === JSON.stringify(publicSnapshotValue(right));
 }
 
 export function dataAvailabilityCopy({ dataSource, venueCount, refreshFailed = false }) {
@@ -89,6 +117,37 @@ function suspendConfiguredEndpoint() {
   };
 }
 
+async function fetchJson(url, timeoutMs = REFRESH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function applyPublicSnapshot(app, snapshot, dataSource = 'live') {
+  const state = app.getState?.();
+  if (!state?.snapshot) return false;
+
+  const canonical = canonicalizeSnapshotIds(snapshot);
+  const changed = !publicSnapshotsEqual(state.snapshot, canonical);
+  PUBLIC_SNAPSHOT_KEYS.forEach((key) => {
+    state.snapshot[key] = canonical[key];
+  });
+  if ('schemaVersion' in canonical) state.snapshot.schemaVersion = canonical.schemaVersion;
+  if ('generatedAt' in canonical) state.snapshot.generatedAt = canonical.generatedAt;
+  state.dataSource = dataSource;
+
+  if (typeof window !== 'undefined') {
+    rewriteLegacyGameQuery(state.snapshot, window.location, window.history);
+  }
+  return changed;
+}
+
 function replaceUnavailableList(copy) {
   const list = document.querySelector('#location-list');
   if (!list) return;
@@ -147,13 +206,12 @@ function restoreDirectEntryAfterRefresh(app) {
   if (!venueId) return false;
   state.detailMode = true;
   state.selectedVenueId = venueId;
-  app.render?.();
   return true;
 }
 
 function startRefreshController(endpointControl) {
   const app = window.CGBApp;
-  if (!app) return;
+  if (!app) return null;
 
   let inFlight = null;
   let lastAttemptAt = 0;
@@ -169,13 +227,20 @@ function startRefreshController(endpointControl) {
     if (inFlight) return inFlight;
 
     lastAttemptAt = Date.now();
-    inFlight = app.refreshSnapshot({ restoreSelection: true })
-      .then((updated) => {
-        refreshFailed = !updated;
-        if (updated) restoreDirectEntryAfterRefresh(app);
-        applyCopy();
-        return updated;
-      })
+    inFlight = (async () => {
+      const live = await fetchJson(endpointControl.endpoint);
+      if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
+
+      safeStorageSet(LAST_GOOD_KEY, JSON.stringify(live));
+      const changed = applyPublicSnapshot(app, live, 'live');
+      const selectionChanged = app.restoreSelection?.({ preserveCurrentWhenEmpty: true }) === true;
+      const directEntryChanged = changed && restoreDirectEntryAfterRefresh(app);
+
+      if (changed || selectionChanged || directEntryChanged) app.render?.();
+      refreshFailed = false;
+      applyCopy();
+      return true;
+    })()
       .catch((error) => {
         refreshFailed = true;
         console.warn('Live snapshot refresh unavailable; retaining cached or fallback data.', error);
@@ -183,6 +248,7 @@ function startRefreshController(endpointControl) {
         return false;
       })
       .finally(() => { inFlight = null; });
+
     return inFlight;
   }
 
@@ -203,6 +269,8 @@ function startRefreshController(endpointControl) {
     if (document.visibilityState === 'visible') refreshWhenStale();
   });
   window.addEventListener('focus', refreshWhenStale);
+
+  return { refreshLive };
 }
 
 async function initializeBrowserRefresh() {
@@ -211,10 +279,15 @@ async function initializeBrowserRefresh() {
     endpointControl.restore();
     const ready = await waitForSnapshot();
     if (!ready) return;
-    startRefreshController(endpointControl);
+    browserRefreshController = startRefreshController(endpointControl);
   }, { once: true });
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  window.CGBSnapshotRefresh = Object.freeze({
+    refresh() {
+      return browserRefreshController?.refreshLive({ force: true }) || Promise.resolve(false);
+    }
+  });
   initializeBrowserRefresh();
 }
