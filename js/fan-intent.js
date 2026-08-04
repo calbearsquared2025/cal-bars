@@ -65,8 +65,12 @@ function currentGame() {
   return appState.snapshot?.games.find((game) => game.game_id === appState.gameId) || null;
 }
 
+function venueById(venueId) {
+  return appState.snapshot?.venues.find((venue) => venue.venue_id === venueId) || null;
+}
+
 function selectedVenue() {
-  return appState.snapshot?.venues.find((venue) => venue.venue_id === appState.selectedVenueId) || null;
+  return venueById(appState.selectedVenueId);
 }
 
 function gameAllowsIntent() {
@@ -172,33 +176,104 @@ function renderIntentButton(button) {
   createRetryPanel(button, venueId);
 }
 
-function renderVenueActivity() {
+function replaceTextLines(element, lines) {
+  element.replaceChildren();
+  lines.forEach((line, index) => {
+    if (index > 0) element.append(document.createElement('br'));
+    element.append(document.createTextNode(line));
+  });
+}
+
+function activityPresentation(game, venue, currentCopy) {
+  return venueActivityPresentation({
+    snapshot: appState.snapshot,
+    game,
+    venue,
+    currentCopy
+  });
+}
+
+function renderDetailActivity(game) {
   const activity = document.querySelector('.activity-card');
-  const game = currentGame();
   const venue = selectedVenue();
-  if (!activity || !game || !venue) return;
+  if (!activity || !venue) return;
 
   const primary = activity.querySelector('strong');
   const secondary = activity.querySelector('p');
   if (!primary || !secondary) return;
 
-  const migratedHistorySeason = legacyActivitySeason(venue);
+  const migratedHistory = Boolean(legacyActivitySeason(venue));
   const description = document.querySelector('.detail-description');
-  if (description && migratedHistorySeason) description.hidden = true;
+  if (description && migratedHistory) description.hidden = true;
 
-  const presentation = venueActivityPresentation({
-    snapshot: appState.snapshot,
-    game,
-    venue,
-    currentCopy: primary.textContent
-  });
+  const presentation = activityPresentation(game, venue, primary.textContent);
   primary.textContent = presentation.primary;
-  secondary.replaceChildren();
   secondary.hidden = presentation.secondary.length === 0;
-  presentation.secondary.forEach((line, index) => {
-    if (index > 0) secondary.append(document.createElement('br'));
-    secondary.append(document.createTextNode(line));
+  replaceTextLines(secondary, presentation.secondary);
+}
+
+function renderSelectedCardActivity(game) {
+  const card = document.querySelector('.selected-card[data-venue-id]');
+  const venue = venueById(card?.dataset.venueId);
+  const countLine = card?.querySelector('.bear-count');
+  if (!card || !venue || !countLine) return;
+
+  const migratedHistory = Boolean(legacyActivitySeason(venue));
+  const description = card.querySelector('.venue-description');
+  if (description && migratedHistory) description.hidden = true;
+
+  const presentation = activityPresentation(game, venue, countLine.textContent);
+  countLine.textContent = presentation.primary;
+
+  let history = card.querySelector('.venue-activity-history');
+  if (!presentation.secondary.length) {
+    history?.remove();
+    return;
+  }
+  if (!history) {
+    history = document.createElement('p');
+    history.className = 'venue-activity-history';
+    countLine.insertAdjacentElement('afterend', history);
+  }
+  replaceTextLines(history, presentation.secondary);
+}
+
+function renderLocationCardActivity(game) {
+  document.querySelectorAll('.location-card[data-venue-id]').forEach((card) => {
+    const venue = venueById(card.dataset.venueId);
+    const countLine = card.querySelector('.location-card__count');
+    if (!venue || !countLine) return;
+
+    const migratedHistory = Boolean(legacyActivitySeason(venue));
+    const description = card.querySelector('.location-card__description');
+    if (description && migratedHistory) description.hidden = true;
+
+    const presentation = activityPresentation(game, venue, countLine.textContent);
+    if (game.game_status === 'completed') countLine.textContent = presentation.primary;
+
+    const compactHistory = game.game_status === 'completed'
+      ? []
+      : presentation.secondary.slice(0, 1);
+    let history = card.querySelector('.location-card__history');
+    if (!compactHistory.length) {
+      history?.remove();
+      return;
+    }
+    if (!history) {
+      history = document.createElement('span');
+      history.className = 'location-card__history';
+      card.append(history);
+    }
+    replaceTextLines(history, compactHistory);
   });
+}
+
+function renderVenueActivity() {
+  const game = currentGame();
+  if (!game || !appState.snapshot) return;
+  renderDetailActivity(game);
+  renderSelectedCardActivity(game);
+  renderLocationCardActivity(game);
 }
 
 function renderIntentButtons() {
