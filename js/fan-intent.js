@@ -201,10 +201,9 @@ function renderVenueActivity() {
   });
 }
 
-function renderFanIntentUi() {
+function renderIntentButtons() {
   if (!appState.snapshot) return;
   document.querySelectorAll('.intent-button[data-venue-id]').forEach(renderIntentButton);
-  renderVenueActivity();
 }
 
 function renderApplication() {
@@ -245,8 +244,11 @@ function startSynchronization() {
 }
 
 async function bootFanIntent() {
-  initializeIdentity();
   await waitForApplicationReady();
+  subscribeAppEvent('rendered', renderVenueActivity);
+  renderVenueActivity();
+
+  initializeIdentity();
   pruneSelections();
 
   controller = createFanIntentController({
@@ -257,7 +259,7 @@ async function bootFanIntent() {
     showStatus
   });
 
-  subscribeAppEvent('rendered', renderFanIntentUi);
+  subscribeAppEvent('rendered', renderIntentButtons);
   document.addEventListener('click', handleDocumentClick);
   startSynchronization();
 
@@ -265,7 +267,7 @@ async function bootFanIntent() {
     preserveCurrentWhenEmpty: false
   }) === true;
   if (selectionChanged) renderApplication();
-  else renderFanIntentUi();
+  else renderIntentButtons();
 }
 
 window.CGBFanIntent = Object.freeze({
