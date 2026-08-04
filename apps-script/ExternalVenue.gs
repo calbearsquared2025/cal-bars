@@ -111,6 +111,7 @@ function parseJoinExternalVenuePayload_(payload) {
 
 function processJoinExternalVenueRequest_(request) {
   const workbook = getWorkbook_();
+  request.gameId = resolveCanonicalId_(workbook, 'game', request.gameId);
   const now = new Date().toISOString();
   archiveCompletedFanIntentRowsUnlocked_(workbook, now);
 
@@ -194,7 +195,7 @@ function findCanonicalExternalVenue_(rows, place) {
 }
 
 function buildExternalVenueRecord_(existingRows, place, now) {
-  const venueId = 'venue_' + Utilities.getUuid();
+  const venueId = createCanonicalEntityId_('venue');
   const slug = uniqueExternalVenueSlug_(existingRows, place.name, place.city);
   return {
     venue_id: venueId,
@@ -328,7 +329,7 @@ function applyExternalFanIntent_(workbook, request, venueId, now) {
         }, rollback);
       } else {
         rollback.appendedRowNumber = appendSheetObject_(fanSheet, table.headers, {
-          fan_intent_id: 'fi_' + Utilities.getUuid(),
+          fan_intent_id: createCanonicalEntityId_('fan_intent'),
           browser_id: request.browserId,
           game_id: request.gameId,
           venue_id: venueId,

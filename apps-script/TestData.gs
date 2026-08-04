@@ -6,21 +6,33 @@
  */
 
 const CGB_TEST_VENUE_IDS = Object.freeze([
-  'ven_000001',
-  'ven_000002',
-  'ven_000003',
-  'ven_000004'
+  'venue_e33853e8a13e5738466c945d',
+  'venue_a19ab45870505a1cc4ab530f',
+  'venue_2d58f2521610e5f2ed955e2f',
+  'venue_c8aeb998b645cb66f24cfae0'
 ]);
 
 const CGB_TEST_GAME_IDS = Object.freeze([
-  'game_2025_99',
-  'game_2026_01',
-  'game_2026_02'
+  'game_8286efb2555f03ae9c67b301',
+  'game_ebb4f1874746087882bf6321',
+  'game_d7bd4bac97cd622297f7899b'
 ]);
 
 const CGB_TEST_WATCH_PARTY_IDS = Object.freeze([
-  'wp_000001',
-  'wp_000002'
+  'wp_ff03592531670f78a7a05772',
+  'wp_b8ef75f6c2d0f0179f9d8679'
+]);
+
+const CGB_TEST_FAN_INTENT_IDS = Object.freeze([
+  'fi_000000000000000000000001',
+  'fi_000000000000000000000002',
+  'fi_000000000000000000000003',
+  'fi_000000000000000000000004',
+  'fi_000000000000000000000005',
+  'fi_000000000000000000000006',
+  'fi_000000000000000000000007',
+  'fi_000000000000000000000008',
+  'fi_000000000000000000000009'
 ]);
 
 function seedTestData() {
@@ -33,7 +45,7 @@ function seedTestData() {
 
   appendObjects_(workbook, 'Venues', [
     {
-      venue_id: 'ven_000001',
+      venue_id: CGB_TEST_VENUE_IDS[0],
       slug: 'golden-bear-test-pub-berkeley',
       name: 'Golden Bear Test Pub',
       address_line_1: '100 Test Plaza',
@@ -59,7 +71,7 @@ function seedTestData() {
       updated_at: now
     },
     {
-      venue_id: 'ven_000002',
+      venue_id: CGB_TEST_VENUE_IDS[1],
       slug: 'oski-test-taproom-oakland',
       name: 'Oski Test Taproom',
       address_line_1: '200 Sample Street',
@@ -85,7 +97,7 @@ function seedTestData() {
       updated_at: now
     },
     {
-      venue_id: 'ven_000003',
+      venue_id: CGB_TEST_VENUE_IDS[2],
       slug: 'bear-territory-test-cafe-alameda',
       name: 'Bear Territory Test Cafe',
       address_line_1: '300 Fixture Avenue',
@@ -111,7 +123,7 @@ function seedTestData() {
       updated_at: now
     },
     {
-      venue_id: 'ven_000004',
+      venue_id: CGB_TEST_VENUE_IDS[3],
       slug: 'california-test-grill-san-francisco',
       name: 'California Test Grill',
       address_line_1: '400 Mockup Road',
@@ -140,7 +152,7 @@ function seedTestData() {
 
   appendObjects_(workbook, 'Games', [
     {
-      game_id: 'game_2025_99',
+      game_id: CGB_TEST_GAME_IDS[0],
       season: 2025,
       schedule_order: 99,
       opponent_name: 'Historical Test Opponent',
@@ -152,7 +164,7 @@ function seedTestData() {
       updated_at: now
     },
     {
-      game_id: 'game_2026_01',
+      game_id: CGB_TEST_GAME_IDS[1],
       season: 2026,
       schedule_order: 1,
       opponent_name: 'Test State',
@@ -164,7 +176,7 @@ function seedTestData() {
       updated_at: now
     },
     {
-      game_id: 'game_2026_02',
+      game_id: CGB_TEST_GAME_IDS[2],
       season: 2026,
       schedule_order: 2,
       opponent_name: 'Example University',
@@ -179,9 +191,9 @@ function seedTestData() {
 
   appendObjects_(workbook, 'Watch_Parties', [
     {
-      watch_party_id: 'wp_000001',
-      venue_id: 'ven_000001',
-      game_id: 'game_2026_01',
+      watch_party_id: CGB_TEST_WATCH_PARTY_IDS[0],
+      venue_id: CGB_TEST_VENUE_IDS[0],
+      game_id: CGB_TEST_GAME_IDS[1],
       organizer_name: 'Berkeley Test Alumni Group',
       organizer_type: 'alumni_group',
       official_event_url: 'https://example.com/events/wp-000001',
@@ -198,9 +210,9 @@ function seedTestData() {
       updated_at: now
     },
     {
-      watch_party_id: 'wp_000002',
-      venue_id: 'ven_000003',
-      game_id: 'game_2026_02',
+      watch_party_id: CGB_TEST_WATCH_PARTY_IDS[1],
+      venue_id: CGB_TEST_VENUE_IDS[2],
+      game_id: CGB_TEST_GAME_IDS[2],
       organizer_name: 'CGB Test Organizer',
       organizer_type: 'individual',
       official_event_url: '',
@@ -219,12 +231,13 @@ function seedTestData() {
   ]);
 
   const intents = [];
-  addTestIntents_(intents, 'game_2026_01', 'ven_000001', 'attending', 3, now);
-  addTestIntents_(intents, 'game_2026_01', 'ven_000002', 'attending', 1, now);
-  addTestIntents_(intents, 'game_2026_02', 'ven_000003', 'attending', 2, now);
-  addTestIntents_(intents, 'game_2025_99', 'ven_000001', 'archived', 1, now);
-  addTestIntents_(intents, 'game_2025_99', 'ven_000002', 'archived', 1, now);
-  addTestIntents_(intents, 'game_2025_99', 'ven_000003', 'archived', 1, now);
+  let fanIntentIndex = 0;
+  fanIntentIndex = addTestIntents_(intents, CGB_TEST_GAME_IDS[1], CGB_TEST_VENUE_IDS[0], 'attending', 3, now, fanIntentIndex);
+  fanIntentIndex = addTestIntents_(intents, CGB_TEST_GAME_IDS[1], CGB_TEST_VENUE_IDS[1], 'attending', 1, now, fanIntentIndex);
+  fanIntentIndex = addTestIntents_(intents, CGB_TEST_GAME_IDS[2], CGB_TEST_VENUE_IDS[2], 'attending', 2, now, fanIntentIndex);
+  fanIntentIndex = addTestIntents_(intents, CGB_TEST_GAME_IDS[0], CGB_TEST_VENUE_IDS[0], 'archived', 1, now, fanIntentIndex);
+  fanIntentIndex = addTestIntents_(intents, CGB_TEST_GAME_IDS[0], CGB_TEST_VENUE_IDS[1], 'archived', 1, now, fanIntentIndex);
+  addTestIntents_(intents, CGB_TEST_GAME_IDS[0], CGB_TEST_VENUE_IDS[2], 'archived', 1, now, fanIntentIndex);
   appendObjects_(workbook, 'Fan_Intent', intents);
 
   clearPublicSnapshotCache_();
@@ -234,7 +247,7 @@ function seedTestData() {
 function clearTestData() {
   const workbook = getWorkbook_();
   deleteRowsById_(workbook, 'Fan_Intent', 'fan_intent_id', function(value) {
-    return String(value).indexOf('fi_test_') === 0;
+    return CGB_TEST_FAN_INTENT_IDS.indexOf(String(value)) !== -1;
   });
   deleteRowsById_(workbook, 'Watch_Parties', 'watch_party_id', function(value) {
     return CGB_TEST_WATCH_PARTY_IDS.indexOf(String(value)) !== -1;
@@ -254,7 +267,7 @@ function assertOnlyTestOrEmptyRows_() {
     ['Venues', 'venue_id', function(value) { return CGB_TEST_VENUE_IDS.indexOf(String(value)) !== -1; }],
     ['Games', 'game_id', function(value) { return CGB_TEST_GAME_IDS.indexOf(String(value)) !== -1; }],
     ['Watch_Parties', 'watch_party_id', function(value) { return CGB_TEST_WATCH_PARTY_IDS.indexOf(String(value)) !== -1; }],
-    ['Fan_Intent', 'fan_intent_id', function(value) { return String(value).indexOf('fi_test_') === 0; }]
+    ['Fan_Intent', 'fan_intent_id', function(value) { return CGB_TEST_FAN_INTENT_IDS.indexOf(String(value)) !== -1; }]
   ];
 
   checks.forEach(function(check) {
@@ -269,11 +282,15 @@ function assertOnlyTestOrEmptyRows_() {
   });
 }
 
-function addTestIntents_(target, gameId, venueId, status, count, timestamp) {
+function addTestIntents_(target, gameId, venueId, status, count, timestamp, startingIndex) {
+  let nextIndex = startingIndex;
   for (let index = 0; index < count; index += 1) {
+    const fanIntentId = CGB_TEST_FAN_INTENT_IDS[nextIndex];
+    if (!fanIntentId) throw new Error('Insufficient canonical test Fan Intent IDs.');
+    nextIndex += 1;
     target.push({
-      fan_intent_id: 'fi_test_' + Utilities.getUuid(),
-      browser_id: Utilities.getUuid(),
+      fan_intent_id: fanIntentId,
+      browser_id: 'browser_test_' + String(nextIndex).padStart(16, '0'),
       game_id: gameId,
       venue_id: venueId,
       status: status,
@@ -282,6 +299,7 @@ function addTestIntents_(target, gameId, venueId, status, count, timestamp) {
       archived_at: status === 'archived' ? timestamp : ''
     });
   }
+  return nextIndex;
 }
 
 function appendObjects_(workbook, tabName, rows) {

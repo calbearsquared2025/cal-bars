@@ -2,6 +2,7 @@
 
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { canonicalizeSnapshotIds } from '../js/id-alias-core.mjs';
 
 const REQUIRED_TOP_LEVEL = [
   'schemaVersion', 'venues', 'games', 'watchParties',
@@ -29,6 +30,12 @@ const RELEASE_FIXTURE_MARKERS = Object.freeze([
   'example.com/golden-bear-test-pub'
 ]);
 
+const CANONICAL_ID_PATTERNS = Object.freeze({
+  venue: /^venue_[a-f0-9]{24}$/,
+  game: /^game_[a-f0-9]{24}$/,
+  watchParty: /^wp_[a-f0-9]{24}$/
+});
+const SAFE_LEGACY_ID_PATTERN = /^[A-Za-z0-9_-]{3,80}$/;
 const VENUE_TYPES = new Set(['cal_bar', 'community_location']);
 const VERIFICATION_STATUSES = new Set(['cgb_reviewed', 'user_added']);
 const ALUMNI_OWNED = new Set(['yes', 'no', 'unknown']);
@@ -105,7 +112,9 @@ function validateVenue(venue, index, errors) {
   for (const field of ['venue_id', 'slug', 'name', 'address_line_1', 'city', 'region', 'country_code', 'updated_at']) {
     requireString(venue, field, path, errors);
   }
-  if (!/^ven_\d+$/.test(venue.venue_id || '')) errors.push(`${path}.venue_id must match ven_<digits>`);
+  if (!CANONICAL_ID_PATTERNS.venue.test(venue.venue_id || '')) {
+    errors.push(`${path}.venue_id must match venue_<24 lowercase hex>`);
+  }
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(venue.slug || '')) errors.push(`${path}.slug must use lowercase kebab case`);
   if (!/^[A-Z]{2}$/.test(venue.country_code || '')) errors.push(`${path}.country_code must be an uppercase ISO two-letter code`);
   if (typeof venue.latitude !== 'number' || venue.latitude < -90 || venue.latitude > 90) errors.push(`${path}.latitude must be between -90 and 90`);
@@ -124,7 +133,9 @@ function validateGame(game, index, errors) {
   for (const field of ['game_id', 'opponent_name', 'home_away', 'game_date', 'kickoff_status', 'game_status', 'updated_at']) {
     requireString(game, field, path, errors);
   }
-  if (!/^game_\d{4}_\d{2}$/.test(game.game_id || '')) errors.push(`${path}.game_id must match game_YYYY_NN`);
+  if (!CANONICAL_ID_PATTERNS.game.test(game.game_id || '')) {
+    errors.push(`${path}.game_id must match game_<24 lowercase hex>`);
+  }
   if (!Number.isInteger(game.season) || game.season < 2000) errors.push(`${path}.season must be a four-digit integer`);
   if (!Number.isInteger(game.schedule_order) || game.schedule_order < 1) errors.push(`${path}.schedule_order must be a positive integer`);
   requireEnum(game, 'home_away', HOME_AWAY, path, errors);
@@ -142,7 +153,9 @@ function validateWatchParty(party, index, venueIds, gameIds, errors) {
   for (const field of ['watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type', 'source_type', 'age_policy', 'sound_status', 'event_status', 'updated_at']) {
     requireString(party, field, path, errors);
   }
-  if (!/^wp_\d+$/.test(party.watch_party_id || '')) errors.push(`${path}.watch_party_id must match wp_<digits>`);
+  if (!CANONICAL_ID_PATTERNS.watchParty.test(party.watch_party_id || '')) {
+    errors.push(`${path}.watch_party_id must match wp_<24 lowercase hex>`);
+  }
   if (!venueIds.has(party.venue_id)) errors.push(`${path}.venue_id does not reference a public venue`);
   if (!gameIds.has(party.game_id)) errors.push(`${path}.game_id does not reference a public game`);
   requireEnum(party, 'organizer_type', ORGANIZER_TYPES, path, errors);
@@ -153,6 +166,35 @@ function validateWatchParty(party, index, venueIds, gameIds, errors) {
   if (!isOptionalUrl(party.official_event_url)) errors.push(`${path}.official_event_url must be empty or http(s)`);
   if (!["", null, undefined].includes(party.event_start_at) && !isIsoDateTime(party.event_start_at)) errors.push(`${path}.event_start_at must be empty or an ISO-8601 datetime`);
   if (!isIsoDateTime(party.updated_at)) errors.push(`${path}.updated_at must be an ISO-8601 datetime`);
+}
+
+function validateAliasGroup(aliases, entityType, canonicalIds, path, errors) {
+  if (!isObject(aliases)) {
+    errors.push(`${path} must be an object`);
+    return;
+  }
+  const pattern = CANONICAL_ID_PATTERNS[entityType];
+  const targets = new Set();
+  for (const [legacyId, canonicalId] of Object.entries(aliases)) {
+    if (!SAFE_LEGACY_ID_PATTERN.test(legacyId)) errors.push(`${path}.${legacyId} has an unsafe legacy ID`);
+    if (!pattern.test(canonicalId || '')) errors.push(`${path}.${legacyId} has an invalid canonical target`);
+    if (!canonicalIds.has(canonicalId)) errors.push(`${path}.${legacyId} targets an absent public record`);
+    if (targets.has(canonicalId)) errors.push(`${path} duplicates canonical target ${canonicalId}`);
+    targets.add(canonicalId);
+  }
+}
+
+function validateIdAliases(snapshot, venueIds, gameIds, errors, { required = false } = {}) {
+  if (snapshot.idAliases === undefined) {
+    if (required) errors.push('missing top-level key: idAliases');
+    return;
+  }
+  if (!isObject(snapshot.idAliases)) {
+    errors.push('idAliases must be an object');
+    return;
+  }
+  validateAliasGroup(snapshot.idAliases.venues, 'venue', venueIds, 'idAliases.venues', errors);
+  validateAliasGroup(snapshot.idAliases.games, 'game', gameIds, 'idAliases.games', errors);
 }
 
 export function validateSnapshot(snapshot) {
@@ -204,18 +246,28 @@ export function validateSnapshot(snapshot) {
     historyVenues.add(row.venue_id);
   });
 
+  validateIdAliases(snapshot, venueIds, gameIds, errors);
   return errors;
 }
 
 export function validateReleaseFallback(snapshot) {
-  const errors = validateSnapshot(snapshot);
+  const canonicalSnapshot = canonicalizeSnapshotIds(snapshot);
+  const errors = validateSnapshot(canonicalSnapshot);
+  const venueIds = new Set(Array.isArray(canonicalSnapshot?.venues)
+    ? canonicalSnapshot.venues.map((venue) => venue.venue_id)
+    : []);
+  const gameIds = new Set(Array.isArray(canonicalSnapshot?.games)
+    ? canonicalSnapshot.games.map((game) => game.game_id)
+    : []);
+  validateIdAliases(canonicalSnapshot, venueIds, gameIds, errors, { required: true });
+
   const serialized = JSON.stringify(snapshot).toLowerCase();
   for (const marker of RELEASE_FIXTURE_MARKERS) {
     if (serialized.includes(marker)) {
       errors.push(`release fallback contains synthetic fixture marker: ${marker}`);
     }
   }
-  return errors;
+  return [...new Set(errors)];
 }
 
 async function main() {
@@ -243,8 +295,9 @@ async function main() {
     return;
   }
 
+  const canonicalSnapshot = canonicalizeSnapshotIds(snapshot);
   console.log(`Valid CGB v2 public release fallback: ${path}`);
-  console.log(`${snapshot.venues.length} venues, ${snapshot.games.length} games, ${snapshot.watchParties.length} watch parties`);
+  console.log(`${canonicalSnapshot.venues.length} venues, ${canonicalSnapshot.games.length} games, ${canonicalSnapshot.watchParties.length} watch parties`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {

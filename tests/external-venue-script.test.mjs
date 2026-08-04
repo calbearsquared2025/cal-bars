@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
 const code = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
+const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 const fanIntent = await readFile(new URL('../apps-script/FanIntent.gs', import.meta.url), 'utf8');
 const externalVenue = await readFile(new URL('../apps-script/ExternalVenue.gs', import.meta.url), 'utf8');
 
@@ -155,7 +156,7 @@ function buildHarness({ venues = [baseVenue()], fanRows = [], gameStatus = 'upco
     RegExp,
     Error,
     __workbook: workbook,
-    Utilities: { getUuid: () => `uuid-${++uuid}` },
+    Utilities: { getUuid: () => `${String(++uuid).padStart(8, '0')}-0000-4000-8000-000000000000` },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     CacheService: { getScriptCache: () => ({
       get: (key) => cache.get(key) || null,
@@ -170,7 +171,7 @@ function buildHarness({ venues = [baseVenue()], fanRows = [], gameStatus = 'upco
     }
   });
   vm.runInContext(
-    `${code}\n${externalVenue}\n${fanIntent}\n` +
+    `${code}\n${canonicalIds}\n${externalVenue}\n${fanIntent}\n` +
     `getWorkbook_ = function(){ return __workbook; };\n` +
     `globalThis.__api = { doPost, processJoinExternalVenueRequest_, parseJoinExternalVenuePayload_ };`,
     context
@@ -208,10 +209,11 @@ test('new external place creates one persistent Community Location and Fan Inten
   assert.equal(created.verification_status, 'user_added');
   assert.equal(created.publication_status, 'published');
   assert.equal(created.external_source, 'maptiler');
-  assert.match(created.venue_id, /^venue_uuid-/);
+  assert.match(created.venue_id, /^venue_[a-f0-9]{24}$/);
   assert.equal(created.slug, 'mcnally-s-irish-pub-oakland');
   assert.equal(activeFanRows(fanSheet).length, 1);
   assert.equal(activeFanRows(fanSheet)[0].venue_id, created.venue_id);
+  assert.match(activeFanRows(fanSheet)[0].fan_intent_id, /^fi_[a-f0-9]{24}$/);
   assert.deepEqual(response.fanCounts, [{ game_id: 'game_1', venue_id: created.venue_id, count: 1 }]);
 });
 
