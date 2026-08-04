@@ -9,6 +9,7 @@ import {
 } from './fan-intent-core.mjs';
 import { createFanIntentController } from './fan-intent-controller.mjs';
 import { canonicalizeStoredSelections } from './id-alias-core.mjs';
+import { venueActivityPresentation } from './venue-activity-core.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const WRITE_TIMEOUT_MS = 10000;
@@ -62,6 +63,10 @@ function pruneSelections() {
 
 function currentGame() {
   return appState.snapshot?.games.find((game) => game.game_id === appState.gameId) || null;
+}
+
+function selectedVenue() {
+  return appState.snapshot?.venues.find((venue) => venue.venue_id === appState.selectedVenueId) || null;
 }
 
 function gameAllowsIntent() {
@@ -167,9 +172,35 @@ function renderIntentButton(button) {
   createRetryPanel(button, venueId);
 }
 
+function renderVenueActivity() {
+  const activity = document.querySelector('.activity-card');
+  const game = currentGame();
+  const venue = selectedVenue();
+  if (!activity || !game || !venue) return;
+
+  const primary = activity.querySelector('strong');
+  const secondary = activity.querySelector('p');
+  if (!primary || !secondary) return;
+
+  const presentation = venueActivityPresentation({
+    snapshot: appState.snapshot,
+    game,
+    venue,
+    currentCopy: primary.textContent
+  });
+  primary.textContent = presentation.primary;
+  secondary.replaceChildren();
+  secondary.hidden = presentation.secondary.length === 0;
+  presentation.secondary.forEach((line, index) => {
+    if (index > 0) secondary.append(document.createElement('br'));
+    secondary.append(document.createTextNode(line));
+  });
+}
+
 function renderFanIntentUi() {
   if (!appState.snapshot) return;
   document.querySelectorAll('.intent-button[data-venue-id]').forEach(renderIntentButton);
+  renderVenueActivity();
 }
 
 function renderApplication() {
