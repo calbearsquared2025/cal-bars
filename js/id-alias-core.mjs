@@ -48,6 +48,10 @@ export function canonicalizeSnapshotIds(snapshot) {
     ...row,
     venue_id: resolveVenue(row.venue_id)
   }));
+  canonical.venueSeasonCounts = (canonical.venueSeasonCounts || []).map((row) => ({
+    ...row,
+    venue_id: resolveVenue(row.venue_id)
+  }));
 
   return canonical;
 }
