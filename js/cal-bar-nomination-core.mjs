@@ -40,7 +40,7 @@ export function normalizeCalBarNominationConfig(config = {}) {
 export function resolveCalBarNominationVenue(snapshot, venueId) {
   if (!snapshot || !Array.isArray(snapshot.venues)) return null;
   const venue = snapshot.venues.find((item) => clean(item?.venue_id) === clean(venueId));
-  if (!venue) return null;
+  if (!venue || clean(venue.venue_type) !== 'community_location') return null;
   return Object.freeze({
     venueId: clean(venue.venue_id),
     venueName: clean(venue.name)
