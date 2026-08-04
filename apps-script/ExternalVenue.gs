@@ -7,7 +7,7 @@
  */
 
 const CGB_EXTERNAL_SOURCE = 'maptiler';
-const CGB_EXTERNAL_PLACE_ID_PATTERN = /^[A-Za-z_][A-Za-z0-9_-]*\.[0-9]+$/;
+const CGB_EXTERNAL_PLACE_ID_PATTERN = /^\S+\.[0-9]+$/;
 const CGB_MAPTILER_API_KEY_PROPERTY = 'CGB_MAPTILER_API_KEY';
 const CGB_MAPTILER_GEOCODING_URL = 'https://api.maptiler.com/geocoding/';
 const CGB_MAPTILER_FETCH_TIMEOUT_SECONDS = 5;
@@ -22,7 +22,7 @@ const CGB_US_REGION_CODES = Object.freeze({
   colorado: 'co', connecticut: 'ct', delaware: 'de', florida: 'fl', georgia: 'ga',
   hawaii: 'hi', idaho: 'id', illinois: 'il', indiana: 'in', iowa: 'ia', kansas: 'ks',
   kentucky: 'ky', louisiana: 'la', maine: 'me', maryland: 'md', massachusetts: 'ma',
-  michigan: 'mi', minnesota: 'mn', missouri: 'mo', montana: 'mt',
+  michigan: 'mi', minnesota: 'mn', mississippi: 'ms', missouri: 'mo', montana: 'mt',
   nebraska: 'ne', nevada: 'nv', 'new hampshire': 'nh', 'new jersey': 'nj',
   'new mexico': 'nm', 'new york': 'ny', 'north carolina': 'nc', 'north dakota': 'nd',
   ohio: 'oh', oklahoma: 'ok', oregon: 'or', pennsylvania: 'pa', 'rhode island': 'ri',
