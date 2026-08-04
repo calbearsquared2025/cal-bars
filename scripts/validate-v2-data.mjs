@@ -208,6 +208,9 @@ export function validateSnapshot(snapshot) {
   for (const key of ['venues', 'games', 'watchParties', 'fanCounts', 'venueHistoryCounts']) {
     if (!Array.isArray(snapshot[key])) errors.push(`${key} must be an array`);
   }
+  if (snapshot.venueSeasonCounts !== undefined && !Array.isArray(snapshot.venueSeasonCounts)) {
+    errors.push('venueSeasonCounts must be an array');
+  }
   if (!isIsoDateTime(snapshot.generatedAt)) errors.push('generatedAt must be an ISO-8601 datetime');
 
   checkForbiddenKeys(snapshot, '$', errors);
@@ -244,6 +247,20 @@ export function validateSnapshot(snapshot) {
     if (!Number.isInteger(row.past_game_count) || row.past_game_count < 0) errors.push(`${path}.past_game_count must be a non-negative integer`);
     if (historyVenues.has(row.venue_id)) errors.push(`${path} duplicates venue_id ${row.venue_id}`);
     historyVenues.add(row.venue_id);
+  });
+
+  const seasonPairs = new Set();
+  (snapshot.venueSeasonCounts || []).forEach((row, index) => {
+    const path = `venueSeasonCounts[${index}]`;
+    if (!isObject(row)) return errors.push(`${path} must be an object`);
+    if (!Number.isInteger(row.season) || row.season < 2000 || row.season > 2100) {
+      errors.push(`${path}.season must be a four-digit integer`);
+    }
+    if (!venueIds.has(row.venue_id)) errors.push(`${path}.venue_id does not reference a public venue`);
+    if (!Number.isInteger(row.count) || row.count < 0) errors.push(`${path}.count must be a non-negative integer`);
+    const pair = `${row.season}::${row.venue_id}`;
+    if (seasonPairs.has(pair)) errors.push(`${path} duplicates season/venue pair ${pair}`);
+    seasonPairs.add(pair);
   });
 
   validateIdAliases(snapshot, venueIds, gameIds, errors);
