@@ -1,13 +1,13 @@
 /**
- * Minimal Watch Party form automation for product testing.
+ * Existing-Venue Watch Party Form automation.
  *
- * This intentionally implements only the direct, existing-venue workflow:
- * Google Form response row -> validation -> canonical Watch_Parties row(s).
- * Advanced idempotency, discovery processing, locking, retries, duplicate
- * detection, and free-text venue creation are outside this milestone.
+ * One private Form response may publish one canonical Watch Party per selected
+ * Game. Script locking and submission/Game idempotency make trigger redelivery
+ * safe without activating the dormant discovery architecture.
  */
 
 const CGB_MINIMAL_WATCH_PARTY_RAW_TAB = 'Watch_Party_Submissions_Raw';
+const CGB_MINIMAL_WATCH_PARTY_LOCK_WAIT_MS = 30000;
 const CGB_MINIMAL_WATCH_PARTY_ADMIN_HEADERS = Object.freeze([
   'submission_id',
   'processing_status',
@@ -150,25 +150,54 @@ function onWatchPartyFormSubmit(event) {
 
 function processMinimalWatchPartyFormSubmission_(event) {
   let context = null;
+  let headers = null;
   let submissionId = '';
+  let lock = null;
+  let previousStatus = '';
+
   try {
     context = parseMinimalWatchPartyFormEvent_(event);
-    const headers = ensureMinimalWatchPartyAdminHeaders_(context.sheet);
-    submissionId = createMinimalWatchPartySubmissionId_();
-    updateMinimalWatchPartyRawFields_(context.sheet, context.rowNumber, headers, {
-      submission_id: submissionId,
-      processing_status: 'new',
-      created_watch_party_ids: '',
-      created_venue_id: '',
-      processing_error: '',
-      processed_at: ''
-    });
+    lock = acquireMinimalWatchPartyLock_();
+    headers = ensureMinimalWatchPartyAdminHeaders_(context.sheet);
+
+    submissionId = readMinimalWatchPartyRawField_(
+      context.sheet,
+      context.rowNumber,
+      headers,
+      'submission_id'
+    );
+    previousStatus = readMinimalWatchPartyRawField_(
+      context.sheet,
+      context.rowNumber,
+      headers,
+      'processing_status'
+    );
+
+    if (submissionId && !isCanonicalEntityId_('watch_party_submission', submissionId)) {
+      throw minimalWatchPartyError_('invalid_submission_id');
+    }
+
+    if (!submissionId) {
+      submissionId = createMinimalWatchPartySubmissionId_();
+      updateMinimalWatchPartyRawFields_(context.sheet, context.rowNumber, headers, {
+        submission_id: submissionId,
+        processing_status: 'new',
+        created_watch_party_ids: '',
+        created_venue_id: '',
+        processing_error: '',
+        processed_at: ''
+      });
+      previousStatus = 'new';
+    }
 
     const submission = normalizeMinimalWatchPartySubmission_(context.namedValues, context.workbook);
-    const canonicalRows = buildMinimalWatchPartyRows_(context.workbook, submission, submissionId);
-    appendMinimalWatchPartyRows_(context.workbook, canonicalRows);
+    const requestedRows = buildMinimalWatchPartyRows_(context.workbook, submission, submissionId);
+    const existingRows = readMinimalWatchPartyRowsForSubmission_(context.workbook, submissionId);
+    const plan = buildMinimalWatchPartyPublicationPlan_(requestedRows, existingRows);
 
-    const watchPartyIds = canonicalRows.map(function(row) { return row.watch_party_id; });
+    appendMinimalWatchPartyRows_(context.workbook, plan.rowsToCreate);
+
+    const watchPartyIds = plan.orderedRows.map(function(row) { return row.watch_party_id; });
     const processedAt = new Date().toISOString();
     updateMinimalWatchPartyRawFields_(context.sheet, context.rowNumber, headers, {
       processing_status: 'processed',
@@ -177,34 +206,138 @@ function processMinimalWatchPartyFormSubmission_(event) {
       processing_error: '',
       processed_at: processedAt
     });
-    clearPublicSnapshotCache_();
+
+    const recoveredPriorWrite = plan.existingRequestedRows.length > 0 && previousStatus !== 'processed';
+    if (plan.rowsToCreate.length || recoveredPriorWrite) clearPublicSnapshotCache_();
 
     return {
       ok: true,
       processing_status: 'processed',
       submission_id: submissionId,
-      created_watch_party_ids: watchPartyIds
+      created_watch_party_ids: watchPartyIds,
+      newly_created_watch_party_ids: plan.rowsToCreate.map(function(row) { return row.watch_party_id; })
     };
   } catch (error) {
     const errorCode = minimalWatchPartyErrorCode_(error);
     console.error(error && error.stack ? error.stack : error);
-    if (context) {
+
+    if (context && errorCode !== 'watch_party_processing_busy' &&
+        errorCode !== 'watch_party_lock_unavailable') {
       try {
-        const headers = ensureMinimalWatchPartyAdminHeaders_(context.sheet);
-        updateMinimalWatchPartyRawFields_(context.sheet, context.rowNumber, headers, {
-          submission_id: submissionId || createMinimalWatchPartySubmissionId_(),
+        headers = headers || ensureMinimalWatchPartyAdminHeaders_(context.sheet);
+        const rawSubmissionId = submissionId || readMinimalWatchPartyRawField_(
+          context.sheet,
+          context.rowNumber,
+          headers,
+          'submission_id'
+        );
+        if (!submissionId && isCanonicalEntityId_('watch_party_submission', rawSubmissionId)) {
+          submissionId = rawSubmissionId;
+        }
+        if (!submissionId && !rawSubmissionId) {
+          submissionId = createMinimalWatchPartySubmissionId_();
+        }
+
+        const recoveredIds = isCanonicalEntityId_('watch_party_submission', submissionId)
+          ? readMinimalWatchPartyRowsForSubmission_(context.workbook, submissionId)
+            .map(function(row) { return row.watch_party_id; })
+          : [];
+        const updates = {
           processing_status: 'error',
-          created_watch_party_ids: '',
+          created_watch_party_ids: recoveredIds.length ? JSON.stringify(recoveredIds) : '',
           created_venue_id: '',
           processing_error: errorCode,
           processed_at: new Date().toISOString()
-        });
+        };
+        if (isCanonicalEntityId_('watch_party_submission', submissionId)) {
+          updates.submission_id = submissionId;
+        }
+        updateMinimalWatchPartyRawFields_(context.sheet, context.rowNumber, headers, updates);
       } catch (rawUpdateError) {
         console.error(rawUpdateError && rawUpdateError.stack ? rawUpdateError.stack : rawUpdateError);
       }
     }
-    return { ok: false, processing_status: 'error', error: errorCode };
+
+    return {
+      ok: false,
+      processing_status: 'error',
+      error: errorCode,
+      submission_id: isCanonicalEntityId_('watch_party_submission', submissionId) ? submissionId : ''
+    };
+  } finally {
+    releaseMinimalWatchPartyLock_(lock);
   }
+}
+
+function acquireMinimalWatchPartyLock_() {
+  // Node VM harnesses used by repository tests do not provide Apps Script globals.
+  if (typeof LockService === 'undefined') {
+    return { releaseLock: function() {} };
+  }
+  if (!LockService || typeof LockService.getScriptLock !== 'function') {
+    throw minimalWatchPartyError_('watch_party_lock_unavailable');
+  }
+  const lock = LockService.getScriptLock();
+  if (!lock || typeof lock.tryLock !== 'function' || typeof lock.releaseLock !== 'function') {
+    throw minimalWatchPartyError_('watch_party_lock_unavailable');
+  }
+  if (!lock.tryLock(CGB_MINIMAL_WATCH_PARTY_LOCK_WAIT_MS)) {
+    throw minimalWatchPartyError_('watch_party_processing_busy');
+  }
+  return lock;
+}
+
+function releaseMinimalWatchPartyLock_(lock) {
+  if (!lock || typeof lock.releaseLock !== 'function') return;
+  try {
+    lock.releaseLock();
+  } catch (error) {
+    console.error(error && error.stack ? error.stack : error);
+  }
+}
+
+function readMinimalWatchPartyRawField_(sheet, rowNumber, headers, header) {
+  const columnIndex = headers.indexOf(header);
+  if (columnIndex < 0) throw minimalWatchPartyError_('raw_admin_header_missing');
+  return cleanMinimalWatchPartyText_(
+    sheet.getRange(rowNumber, columnIndex + 1, 1, 1).getDisplayValues()[0][0],
+    3000
+  );
+}
+
+function readMinimalWatchPartyRowsForSubmission_(workbook, submissionId) {
+  if (!submissionId) return [];
+  return readSheetObjects_(workbook, 'Watch_Parties').filter(function(row) {
+    return String(row.source_submission_id || '') === submissionId &&
+      String(row.watch_party_id || '') &&
+      String(row.game_id || '');
+  });
+}
+
+function buildMinimalWatchPartyPublicationPlan_(requestedRows, existingRows) {
+  const existingByGame = new Map();
+  (existingRows || []).forEach(function(row) {
+    const gameId = String(row.game_id || '');
+    if (gameId && !existingByGame.has(gameId)) existingByGame.set(gameId, row);
+  });
+
+  const rowsToCreate = [];
+  const existingRequestedRows = [];
+  const orderedRows = (requestedRows || []).map(function(row) {
+    const existing = existingByGame.get(String(row.game_id || ''));
+    if (existing) {
+      existingRequestedRows.push(existing);
+      return existing;
+    }
+    rowsToCreate.push(row);
+    return row;
+  });
+
+  return {
+    orderedRows: orderedRows,
+    existingRequestedRows: existingRequestedRows,
+    rowsToCreate: rowsToCreate
+  };
 }
 
 function parseMinimalWatchPartyFormEvent_(event) {
@@ -336,6 +469,7 @@ function buildMinimalWatchPartyRows_(workbook, submission, submissionId) {
 }
 
 function appendMinimalWatchPartyRows_(workbook, rows) {
+  if (!rows || !rows.length) return 0;
   const sheet = workbook.getSheetByName('Watch_Parties');
   if (!sheet) throw minimalWatchPartyError_('missing_watch_parties_tab');
   const headers = readMinimalWatchPartyHeaders_(sheet);
@@ -349,6 +483,7 @@ function appendMinimalWatchPartyRows_(workbook, rows) {
     });
   });
   sheet.getRange(sheet.getLastRow() + 1, 1, values.length, headers.length).setValues(values);
+  return values.length;
 }
 
 function ensureMinimalWatchPartyAdminHeaders_(sheet) {
