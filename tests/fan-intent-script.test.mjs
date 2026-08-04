@@ -136,6 +136,7 @@ function fanObjects(workbook) {
 }
 
 const browserId = `browser_${randomUUID()}`;
+const otherBrowserId = `browser_${randomUUID()}`;
 
 test('join creates one attending row and returns only aggregate-safe fields', () => {
   const { api, workbook } = buildHarness();
@@ -179,20 +180,28 @@ test('withdraw is idempotent and removes the current count', () => {
   assert.equal(fanObjects(workbook).filter((row) => row.status === 'attending').length, 0);
 });
 
-test('completed-game attending rows become archived historical activity', () => {
-  const existing = [{
-    fan_intent_id: 'fi_existing', browser_id: browserId, game_id: 'game_1', venue_id: 'ven_1', status: 'attending',
-    created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z', archived_at: ''
-  }];
+test('completed-game rows archive and season history counts Bears rather than distinct games', () => {
+  const existing = [
+    {
+      fan_intent_id: 'fi_existing_1', browser_id: browserId, game_id: 'game_1', venue_id: 'ven_1', status: 'attending',
+      created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z', archived_at: ''
+    },
+    {
+      fan_intent_id: 'fi_existing_2', browser_id: otherBrowserId, game_id: 'game_1', venue_id: 'ven_1', status: 'attending',
+      created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z', archived_at: ''
+    }
+  ];
   const { api, workbook } = buildHarness({ fanRows: existing, completed: true });
   const snapshot = api.buildPublicSnapshot_();
-  const row = fanObjects(workbook)[0];
-  assert.equal(row.status, 'archived');
-  assert.ok(row.archived_at);
+  const rows = fanObjects(workbook);
+  assert.ok(rows.every((row) => row.status === 'archived' && row.archived_at));
   assert.deepEqual(snapshot.fanCounts, []);
   assert.deepEqual(JSON.parse(JSON.stringify(snapshot.venueHistoryCounts.find((item) => item.venue_id === 'ven_1'))), {
     venue_id: 'ven_1', past_game_count: 1
   });
+  assert.deepEqual(JSON.parse(JSON.stringify(snapshot.venueSeasonCounts)), [
+    { season: 2026, venue_id: 'ven_1', count: 2 }
+  ]);
 });
 
 test('malformed identifiers and closed games return generic public errors', () => {
