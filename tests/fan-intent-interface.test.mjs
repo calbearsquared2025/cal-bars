@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
 const client = await readFile(new URL('../js/fan-intent.js', import.meta.url), 'utf8');
+const refresh = await readFile(new URL('../js/snapshot-refresh.mjs', import.meta.url), 'utf8');
 const appState = await readFile(new URL('../js/app-state.mjs', import.meta.url), 'utf8');
 const controller = await readFile(new URL('../js/fan-intent-controller.mjs', import.meta.url), 'utf8');
 const core = await readFile(new URL('../js/fan-intent-core.mjs', import.meta.url), 'utf8');
@@ -12,7 +13,7 @@ const css = await readFile(new URL('../css/fan-intent.css', import.meta.url), 'u
 const script = await readFile(new URL('../apps-script/FanIntent.gs', import.meta.url), 'utf8');
 const readScript = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
 
-const combinedPublicSource = `${html}\n${app}\n${client}\n${appState}\n${controller}\n${core}\n${css}`;
+const combinedPublicSource = `${html}\n${app}\n${client}\n${refresh}\n${appState}\n${controller}\n${core}\n${css}`;
 
 test('the application and Fan Intent controller share one canonical frontend state module', () => {
   assert.match(app, /appState as state/);
@@ -26,14 +27,13 @@ test('startup loads the public snapshot only through the application data path',
   assert.match(app, /async function loadSnapshot\(\)/);
   assert.match(app, /data\/fallback-v2\.json/);
   assert.doesNotMatch(client, /function loadSnapshot|data\/fallback-v2\.json|LAST_GOOD_KEY/);
-  assert.match(html, /js\/app\.js[\s\S]*js\/fan-intent\.js/);
+  assert.match(html, /js\/snapshot-refresh\.mjs[\s\S]*js\/app\.js[\s\S]*js\/fan-intent\.js/);
 });
 
 test('Fan Intent integration uses explicit application lifecycle and render functions', () => {
   assert.match(app, /emitAppEvent\('rendered'/);
   assert.match(client, /subscribeAppEvent\('rendered', renderFanIntentUi\)/);
-  assert.match(client, /window\.CGBApp\?\.render\(\)/);
-  assert.match(app, /refreshSnapshot/);
+  assert.match(client, /selectionChanged[\s\S]*renderApplication\(\)[\s\S]*renderFanIntentUi\(\)/);
   assert.match(app, /restoreSelection/);
 });
 
@@ -76,11 +76,12 @@ test('write requests retain the public Apps Script API contract', () => {
   assert.match(script, /CGB_FAN_INTENT_ACTIONS/);
 });
 
-test('aggregate synchronization uses the shared application refresh path', () => {
-  assert.match(client, /AGGREGATE_REFRESH_MS = 30000/);
-  assert.match(client, /window\.CGBApp\?\.refreshSnapshot/);
-  assert.match(client, /visibilitychange/);
-  assert.match(client, /window\.addEventListener\('focus'/);
+test('aggregate synchronization delegates to the single snapshot refresh controller', () => {
+  assert.match(client, /window\.CGBSnapshotRefresh\?\.refresh/);
+  assert.doesNotMatch(client, /AGGREGATE_REFRESH_MS|setInterval\(|visibilitychange|addEventListener\('focus'/);
+  assert.match(refresh, /let inFlight = null/);
+  assert.match(refresh, /if \(inFlight\) return inFlight/);
+  assert.match(refresh, /ACTIVE_REFRESH_INTERVAL_MS = 15 \* 60 \* 1000/);
   assert.doesNotMatch(client, /applyAggregateResponse/);
 });
 
