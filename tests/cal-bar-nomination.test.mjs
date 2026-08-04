@@ -14,7 +14,22 @@ const config = {
 };
 
 const snapshot = {
-  venues: [{ venue_id: 'venue_1', name: 'Example Pub' }]
+  venues: [
+    {
+      venue_id: 'venue_1',
+      name: 'Example Pub',
+      venue_type: 'community_location'
+    },
+    {
+      venue_id: 'venue_2',
+      name: 'Established Cal Bar',
+      venue_type: 'cal_bar'
+    },
+    {
+      venue_id: 'venue_3',
+      name: 'Unclassified Venue'
+    }
+  ]
 };
 
 test('normalizes a safe Google Form configuration and degrades to a base link without valid prefill IDs', () => {
@@ -30,13 +45,21 @@ test('normalizes a safe Google Form configuration and degrades to a base link wi
   assert.equal(duplicateEntries.venueNameEntry, '');
 });
 
-test('prefills only selected Venue name and stable Venue ID', () => {
+test('prefills only selected Community Location name and stable Venue ID', () => {
   const venue = resolveCalBarNominationVenue(snapshot, 'venue_1');
   assert.deepEqual(venue, { venueId: 'venue_1', venueName: 'Example Pub' });
   const url = new URL(buildCalBarNominationPrefillUrl(config, venue));
   assert.equal(url.searchParams.get('entry.1'), 'venue_1');
   assert.equal(url.searchParams.get('entry.2'), 'Example Pub');
   assert.equal([...url.searchParams.keys()].filter((key) => key.startsWith('entry.')).length, 2);
+});
+
+test('existing Cal Bars are not eligible for nomination', () => {
+  assert.equal(resolveCalBarNominationVenue(snapshot, 'venue_2'), null);
+});
+
+test('Venues without an explicit Community Location type are not eligible for nomination', () => {
+  assert.equal(resolveCalBarNominationVenue(snapshot, 'venue_3'), null);
 });
 
 test('base nomination Form remains available without canonical Venue context', () => {
