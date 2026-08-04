@@ -28,8 +28,15 @@ export function seasonActivityCopy(count) {
 
 export function legacyActivitySeason(venue) {
   const description = String(venue?.short_description || '').trim();
-  if (!description || !/(?:watch\s+part(?:y|ies)|cal\s+games?)/i.test(description)) return null;
-  return MIGRATED_ACTIVITY_SEASON;
+  if (!description) return null;
+  const activity = '(?:watch\\s+part(?:y|ies)|cal\\s+games?)';
+  const historicalEvidence = new RegExp(
+    `(?:\\b(?:hosted|previously|prior|past|historical)\\b[\\s\\S]{0,160}\\b${activity}\\b|` +
+    `\\b20\\d{2}\\b[\\s\\S]{0,100}\\b${activity}\\b|` +
+    `\\b${activity}\\b[\\s\\S]{0,100}\\b20\\d{2}\\b)`,
+    'i'
+  );
+  return historicalEvidence.test(description) ? MIGRATED_ACTIVITY_SEASON : null;
 }
 
 export function legacyActivityCopy(season) {
