@@ -11,10 +11,8 @@ import { createFanIntentController } from './fan-intent-controller.mjs';
 import { canonicalizeStoredSelections } from './id-alias-core.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
-const AGGREGATE_REFRESH_MS = 30000;
 const WRITE_TIMEOUT_MS = 10000;
 
-let refreshTimer = null;
 let controller = null;
 
 function storageGet(key) {
@@ -179,12 +177,8 @@ function renderApplication() {
 }
 
 async function refreshAggregates() {
-  if (appState.fanIntent.pending || document.visibilityState === 'hidden') return;
-  try {
-    await window.CGBApp?.refreshSnapshot({ restoreSelection: false });
-  } catch (error) {
-    console.warn('Fan Intent aggregate refresh failed.', error);
-  }
+  if (appState.fanIntent.pending || document.visibilityState === 'hidden') return false;
+  return window.CGBSnapshotRefresh?.refresh?.() || false;
 }
 
 function handleDocumentClick(event) {
@@ -202,11 +196,6 @@ function handleDocumentClick(event) {
 }
 
 function startSynchronization() {
-  refreshTimer = window.setInterval(refreshAggregates, AGGREGATE_REFRESH_MS);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') refreshAggregates();
-  });
-  window.addEventListener('focus', refreshAggregates);
   window.addEventListener('storage', (event) => {
     if (event.key === INTENT_SELECTIONS_STORAGE_KEY) {
       appState.fanIntent.selections = parseStoredSelections(event.newValue);
@@ -236,8 +225,12 @@ async function bootFanIntent() {
   subscribeAppEvent('rendered', renderFanIntentUi);
   document.addEventListener('click', handleDocumentClick);
   startSynchronization();
-  window.CGBApp?.restoreSelection({ preserveCurrentWhenEmpty: false });
-  renderApplication();
+
+  const selectionChanged = window.CGBApp?.restoreSelection({
+    preserveCurrentWhenEmpty: false
+  }) === true;
+  if (selectionChanged) renderApplication();
+  else renderFanIntentUi();
 }
 
 window.CGBFanIntent = Object.freeze({
