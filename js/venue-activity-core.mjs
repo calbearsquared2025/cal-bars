@@ -1,3 +1,5 @@
+const MIGRATED_ACTIVITY_SEASON = 2025;
+
 function normalizedCount(value) {
   const count = Math.trunc(Number(value) || 0);
   return count > 0 ? count : 0;
@@ -27,10 +29,7 @@ export function seasonActivityCopy(count) {
 export function legacyActivitySeason(venue) {
   const description = String(venue?.short_description || '').trim();
   if (!description || !/(?:watch\s+part(?:y|ies)|cal\s+games?)/i.test(description)) return null;
-  const years = [...description.matchAll(/\b(20\d{2})\b/g)]
-    .map((match) => normalizedSeason(match[1]))
-    .filter(Boolean);
-  return years.at(-1) || null;
+  return MIGRATED_ACTIVITY_SEASON;
 }
 
 export function legacyActivityCopy(season) {
