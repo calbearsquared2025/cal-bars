@@ -156,7 +156,7 @@ function buildHarness({ venues = [baseVenue()], fanRows = [], gameStatus = 'upco
     RegExp,
     Error,
     __workbook: workbook,
-    Utilities: { getUuid: () => `00000000-0000-4000-8000-${String(++uuid).padStart(12, '0')}` },
+    Utilities: { getUuid: () => `${String(++uuid).padStart(8, '0')}-0000-4000-8000-000000000000` },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     CacheService: { getScriptCache: () => ({
       get: (key) => cache.get(key) || null,
