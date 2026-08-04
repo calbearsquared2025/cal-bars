@@ -1,4 +1,3 @@
-import './data-endpoint-guard.mjs';
 import { validateSnapshotShape } from './core.mjs';
 import { canonicalizeSnapshotIds, rewriteLegacyGameQuery } from './id-alias-core.mjs';
 
@@ -19,6 +18,38 @@ const PUBLIC_SNAPSHOT_KEYS = [
 ];
 
 let browserRefreshController = null;
+
+function cleanHostname(hostname) {
+  return String(hostname ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/^\[|\]$/g, '');
+}
+
+export function allowsDataEndpointOverride(hostname) {
+  const value = cleanHostname(hostname);
+  return value === 'localhost' ||
+    value === '127.0.0.1' ||
+    value === '::1' ||
+    value.endsWith('.app.github.dev') ||
+    value.endsWith('.githubpreview.dev');
+}
+
+export function clearDisallowedDataEndpointOverride({
+  hostname,
+  getStorage = () => window.localStorage,
+  key = DATA_URL_KEY
+} = {}) {
+  if (allowsDataEndpointOverride(hostname) || typeof getStorage !== 'function') return false;
+  try {
+    const storage = getStorage();
+    if (!storage || storage.getItem(key) === null) return false;
+    storage.removeItem(key);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 export function shouldRefreshSnapshot({
   visibilityState,
@@ -285,6 +316,7 @@ async function initializeBrowserRefresh() {
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  clearDisallowedDataEndpointOverride({ hostname: window.location?.hostname });
   window.CGBSnapshotRefresh = Object.freeze({
     refresh() {
       return browserRefreshController?.refreshLive({ force: true }) || Promise.resolve(false);
