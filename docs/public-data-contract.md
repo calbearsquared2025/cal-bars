@@ -138,7 +138,8 @@ Only rows with `publication_status = published` and `event_status = active` ente
 
 The client displays the selected season total as **12 Bears watched Cal games here this season.** Until that aggregate exists, any migrated Venue description with reviewed Cal-game or watch-party history is standardized to the approved fallback, even when the older sentence omitted the year:
 
-> Bears watched Cal games here in 2025.  
+> Bears watched Cal games here in 2025.
+>
 > Be part of the 2026 season.
 
 No browser-level Fan Intent record may appear in the public response.
