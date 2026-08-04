@@ -8,6 +8,7 @@ import {
   resolveDirectEntryVenueId,
   shouldRefreshSnapshot
 } from '../js/snapshot-refresh.mjs';
+import { canonicalizeSnapshotIds } from '../js/id-alias-core.mjs';
 
 function snapshot(overrides = {}) {
   return {
@@ -22,6 +23,7 @@ function snapshot(overrides = {}) {
     watchParties: [],
     fanCounts: [],
     venueHistoryCounts: [],
+    venueSeasonCounts: [],
     idAliases: { venues: {}, games: {} },
     ...overrides
   };
@@ -139,7 +141,7 @@ test('browser bootstrap renders cache first and suppresses an unchanged live rer
       setItem: (key, value) => storage.set(key, String(value)),
       removeItem: (key) => storage.delete(key)
     },
-    location: { href: 'https://example.invalid/', search: '' },
+    location: { href: 'http://localhost/', hostname: 'localhost', search: '' },
     history: { state: null, replaceState() {} },
     addEventListener: (name, listener) => windowListeners.set(name, listener),
     setTimeout,
@@ -167,7 +169,7 @@ test('browser bootstrap renders cache first and suppresses an unchanged live rer
     assert.equal(storage.has('cgb_v2_public_data_url'), false);
 
     const state = {
-      snapshot: snapshot({ generatedAt: '2026-08-03T00:00:00Z' }),
+      snapshot: canonicalizeSnapshotIds(snapshot({ generatedAt: '2026-08-03T00:00:00Z' })),
       dataSource: 'last-known-good',
       detailMode: false,
       selectedVenueId: null
