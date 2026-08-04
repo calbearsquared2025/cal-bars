@@ -49,6 +49,10 @@ test('snapshot canonicalization updates primary and foreign keys without mutatin
   assert.equal(canonical.venueSeasonCounts[0].venue_id, canonical.venues[0].venue_id);
 });
 
+test('malformed optional season aggregates fail safely as empty', () => {
+  assert.deepEqual(canonicalizeSnapshotIds({ ...snapshot, venueSeasonCounts: 'invalid' }).venueSeasonCounts, []);
+});
+
 test('browser selections are migrated to canonical game and venue IDs', () => {
   assert.deepEqual(
     canonicalizeStoredSelections(snapshot, {
