@@ -56,6 +56,17 @@ function syncFullscreenIcon() {
   setIcon(icon, button.getAttribute('aria-pressed') === 'true' ? 'compress' : 'fullscreen');
 }
 
+function syncListLocationLabel() {
+  const button = document.querySelector('#clear-search-button');
+  if (!button) return;
+  const usingLocation = Boolean(window.CGBApp?.getState?.()?.origin);
+  button.hidden = false;
+  button.textContent = usingLocation ? 'All locations' : 'Near me';
+  button.setAttribute('aria-label', usingLocation
+    ? 'Show all mapped locations'
+    : 'Use my location to show nearby locations');
+}
+
 function scheduleUpgrade() {
   requestAnimationFrame(() => upgradeRenderedIcons());
 }
@@ -66,6 +77,9 @@ function initialize() {
 
   const fullscreen = document.querySelector('#fullscreen-button');
   fullscreen?.addEventListener('click', () => requestAnimationFrame(syncFullscreenIcon));
+  document.querySelector('#mobile-list-button')?.addEventListener('click', () => {
+    requestAnimationFrame(syncListLocationLabel);
+  });
 
   window.CGBApp?.subscribe?.('rendered', scheduleUpgrade);
   window.CGBApp?.subscribe?.('ready', scheduleUpgrade);
