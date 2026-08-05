@@ -173,15 +173,22 @@
     line-height: 1.22;
   }
 
-  /* Keep the menu optically against the safe right edge. */
-  .site-header__brand-row {
-    width: 100%;
+  /* Pin the menu to the viewport safe edge instead of the padded header content box. */
+  .site-header {
+    position: relative;
   }
 
-  .header-menu-button {
-    flex: 0 0 auto;
-    margin-left: auto;
-    margin-right: 0;
+  .site-header__brand-row {
+    width: 100%;
+    padding-right: 44px;
+  }
+
+  .site-header > .site-header__brand-row > #header-about-button {
+    position: absolute !important;
+    top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+    right: max(6px, env(safe-area-inset-right, 0px)) !important;
+    left: auto !important;
+    margin: 0 !important;
   }
 
   /* Large numerals and small supporting labels match the board. */
@@ -468,26 +475,38 @@
     width: 16px;
   }
 
-  /* Selected Venue is a true bottom sheet, not a floating card. */
-  .venue-tray.tray--selected {
-    left: 0;
-    right: 0;
-    bottom: var(--footer-height);
-    max-height: min(56dvh, 520px);
-    border-right: 0;
-    border-bottom: 0;
-    border-left: 0;
-    border-radius: 22px 22px 0 0;
+  /* Selected Venue is a viewport-anchored bottom sheet, not an inset map card. */
+  #map-view > #venue-tray.venue-tray.tray--selected {
+    position: fixed !important;
+    z-index: 47;
+    inset: auto 0 var(--footer-height) 0 !important;
+    width: 100vw !important;
+    max-width: none !important;
+    max-height: min(58dvh, 520px);
+    margin: 0 !important;
+    transform: none !important;
+    background: var(--cgb-white) !important;
+    border: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
     box-shadow: 0 -16px 38px rgba(1,1,51,.22);
+    overflow: hidden;
   }
 
-  .venue-tray.tray--selected .tray-handle {
-    height: 22px;
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
+    height: 24px;
+    background: var(--cgb-white);
   }
 
-  .venue-tray.tray--selected .tray-handle span {
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
     width: 42px;
     height: 4px;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-selected,
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
+    background: var(--cgb-white);
+    border-radius: 0;
+    box-shadow: none;
   }
 
   /* Fullscreen preserves navigation, controls, and the selected Venue sheet. */
@@ -500,12 +519,12 @@
     display: grid;
   }
 
-  .map-fullscreen .venue-tray.tray--selected {
+  .map-fullscreen #map-view > #venue-tray.venue-tray.tray--selected {
     display: block !important;
-    top: auto;
-    left: 0;
-    right: 0;
-    bottom: var(--footer-height);
+    position: fixed !important;
+    inset: auto 0 var(--footer-height) 0 !important;
+    width: 100vw !important;
+    max-width: none !important;
     max-height: min(52dvh, 500px);
   }
 
