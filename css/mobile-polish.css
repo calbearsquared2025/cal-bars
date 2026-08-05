@@ -1,5 +1,119 @@
-/* Milestone 8A — focused mobile refinement after Map / Search / Add / List review. */
+/* Milestone 8A — authoritative mobile interaction and visual correction layer. */
+
+/* MapLibre owns the outer marker transform. Never animate it or pins lag behind the map. */
+.maplibregl-marker.cgb-marker,
+.cgb-marker {
+  width: 48px;
+  height: 54px;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  transition: none !important;
+}
+
+.cgb-marker .marker-pin,
+.cgb-marker .marker-star {
+  position: absolute;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  transition: filter var(--motion-fast) ease, scale var(--motion-fast) ease !important;
+}
+
+.cgb-marker .marker-pin {
+  left: 8px;
+  top: 6px;
+  width: 32px;
+  height: 32px;
+  background: var(--cgb-navy-900);
+  border: 3px solid var(--cgb-navy-900);
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
+}
+
+.cgb-marker .marker-pin::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  background: var(--cgb-white);
+  border-radius: 50%;
+}
+
+.cgb-marker.marker--cal-bar .marker-pin {
+  background: var(--cgb-navy-900);
+  border-color: var(--cgb-navy-900);
+}
+
+.cgb-marker.marker--cal-bar .marker-pin::after {
+  background: var(--cgb-white);
+}
+
+.cgb-marker.marker--community-location .marker-pin {
+  background: var(--cgb-white);
+  border-color: var(--cgb-navy-950);
+}
+
+.cgb-marker.marker--community-location .marker-pin::after {
+  background: var(--cgb-navy-950);
+}
+
+.cgb-marker .marker-star {
+  left: 5px;
+  top: 2px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--cgb-white);
+  background: var(--cgb-gold-400);
+  border: 3px solid var(--cgb-gold-400);
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 7px 16px rgba(1,1,51,.3);
+  font-size: 0;
+}
+
+.cgb-marker .marker-star::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  background: var(--cgb-navy-950);
+  border-radius: 50%;
+}
+
+.cgb-marker .marker-star__icon {
+  position: relative;
+  z-index: 1;
+  width: 17px;
+  height: 17px;
+  color: var(--cgb-white);
+  fill: currentColor;
+  stroke: currentColor;
+  transform: rotate(45deg);
+}
+
+.cgb-marker:hover .marker-pin,
+.cgb-marker:hover .marker-star,
+.cgb-marker.is-selected .marker-pin,
+.cgb-marker.is-selected .marker-star {
+  scale: 1.1;
+}
+
+.cgb-marker.is-selected .marker-pin,
+.cgb-marker.is-selected .marker-star {
+  filter: drop-shadow(0 0 6px rgba(253,181,21,.9));
+}
+
+.cgb-marker .marker-count {
+  top: -6px;
+  right: -27px;
+  z-index: 3;
+}
+
 @media (max-width: 899px) {
+  /* Secondary destinations keep game context while reclaiming vertical space. */
   body[data-command-surface="search"],
   body[data-command-surface="add"],
   body[data-command-surface="list"] {
@@ -12,7 +126,7 @@
     height: var(--header-height);
     min-height: var(--header-height);
     display: block;
-    padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px));
   }
 
   body[data-command-surface="search"] .site-header__brand-row,
@@ -51,13 +165,75 @@
     font-size: .72rem;
   }
 
+  /* Preserve descenders such as the g in Wagner. */
+  .game-button strong,
+  #header-game-label {
+    overflow: hidden;
+    padding-bottom: .16em;
+    line-height: 1.22;
+  }
+
+  /* Keep the menu optically against the safe right edge. */
+  .site-header__brand-row {
+    width: 100%;
+  }
+
+  .header-menu-button {
+    flex: 0 0 auto;
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  /* Large numerals and small supporting labels match the board. */
+  .opening-stat {
+    bottom: -31px;
+    height: 62px;
+  }
+
+  .opening-stat__item {
+    padding: 6px 10px;
+  }
+
+  .opening-stat strong {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    text-align: left;
+  }
+
+  .opening-stat__number {
+    color: var(--cgb-navy-950);
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -.045em;
+    line-height: .9;
+  }
+
+  .opening-stat__copy {
+    display: grid;
+    gap: 1px;
+    color: var(--cgb-navy-950);
+    font-family: var(--font-condensed);
+    font-size: .64rem;
+    font-weight: 900;
+    letter-spacing: .065em;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+
+  .opening-stat__copy small {
+    color: var(--cgb-ink-500);
+    font-size: .55rem;
+    font-weight: 750;
+    letter-spacing: .035em;
+  }
+
   body[data-command-surface="search"] .command-surface:not([hidden]),
   body[data-command-surface="add"] .command-surface:not([hidden]) {
-    inset:
-      var(--header-height)
-      0
-      calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px))
-      0;
+    inset: var(--header-height) 0 calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px)) 0;
   }
 
   .command-surface:not([hidden]) {
@@ -155,6 +331,37 @@
     font-size: 1.12rem;
   }
 
+  /* Active state comes from one authoritative view value. */
+  .mobile-command[aria-current="page"] {
+    color: var(--cgb-navy-950);
+  }
+
+  .mobile-command:not([aria-current="page"])::after {
+    display: none;
+  }
+
+  /* Fixed viewport controls do not jump when fullscreen changes shell visibility. */
+  .map-actions {
+    position: fixed;
+    z-index: 80;
+    top: 46dvh;
+    right: max(12px, env(safe-area-inset-right, 0px));
+    left: auto;
+    display: grid;
+    gap: 8px;
+    pointer-events: auto;
+  }
+
+  .map-actions #near-me-button .ui-icon {
+    transform: translate(-1px, 1px);
+  }
+
+  .map-actions #fullscreen-button,
+  .map-actions #near-me-button {
+    position: static;
+  }
+
+  /* Map has a compact preview; the full list is a distinct List destination. */
   .tray--peek {
     height: 116px;
   }
@@ -203,10 +410,10 @@
   .tray-summary__marker {
     position: relative;
     width: 22px;
-    height: 28px;
+    height: 22px;
     display: block;
     margin-left: 3px;
-    transform: rotate(45deg);
+    transform: rotate(-45deg);
     background: var(--cgb-white);
     border: 2px solid var(--cgb-navy-950);
     border-radius: 50% 50% 50% 0;
@@ -215,7 +422,7 @@
   .tray-summary__marker::after {
     content: '';
     position: absolute;
-    inset: 6px;
+    inset: 5px;
     background: var(--cgb-navy-950);
     border-radius: 50%;
   }
@@ -229,6 +436,8 @@
   }
 
   .tray-summary__marker[data-kind="watch-party"] {
+    width: 26px;
+    height: 26px;
     background: var(--cgb-gold-400);
     border-color: var(--cgb-gold-400);
   }
@@ -248,6 +457,59 @@
 
   .tray-summary__chevron {
     width: 16px;
+  }
+
+  /* Selected Venue is a true bottom sheet, not a floating card. */
+  .venue-tray.tray--selected {
+    left: 0;
+    right: 0;
+    bottom: var(--footer-height);
+    max-height: min(56dvh, 520px);
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 22px 22px 0 0;
+    box-shadow: 0 -16px 38px rgba(1,1,51,.22);
+  }
+
+  .venue-tray.tray--selected .tray-handle {
+    height: 22px;
+  }
+
+  .venue-tray.tray--selected .tray-handle span {
+    width: 42px;
+    height: 4px;
+  }
+
+  /* Fullscreen preserves navigation, controls, and the selected Venue sheet. */
+  .map-fullscreen .site-header,
+  .map-fullscreen .site-footer {
+    display: none;
+  }
+
+  .map-fullscreen .mobile-command-bar {
+    display: grid;
+  }
+
+  .map-fullscreen .venue-tray.tray--selected {
+    display: block !important;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: var(--footer-height);
+    max-height: min(52dvh, 500px);
+  }
+
+  .map-fullscreen .venue-tray.tray--peek,
+  .map-fullscreen .venue-tray.tray--full {
+    display: none;
+  }
+
+  .map-fullscreen #app,
+  .map-fullscreen .map-view,
+  .map-fullscreen .map {
+    min-height: calc(100dvh - var(--footer-height));
+    height: calc(100dvh - var(--footer-height));
   }
 
   body[data-command-surface="list"] .tray-list__header {
