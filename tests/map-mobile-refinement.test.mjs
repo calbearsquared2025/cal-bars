@@ -16,37 +16,30 @@ test('zoom controls are removed and hidden', () => {
   assert.match(source, /button\.remove\(\)/);
 });
 
-test('Nearby is a shorter edge-anchored guidance sheet', () => {
-  assert.match(source, /tray--peek[\s\S]*inset: auto 0 0 0 !important/);
-  assert.match(source, /height: 92px !important/);
-  assert.match(source, /border-radius: 22px 22px 0 0 !important/);
+test('preview follows the selected Venue before the ranked nearby fallback', () => {
+  assert.match(source, /function previewCandidate/);
+  assert.match(source, /rankedVenue\(state, state\?\.selectedVenueId\)/);
+  assert.match(source, /rankNearbyVenues/);
+  assert.match(source, /NEARBY_RADIUS_MILES/);
+  assert.match(source, /mode: 'selected'/);
+  assert.match(source, /mode: 'nearby'/);
 });
 
-test('Nearby begins as guidance and only opens a Venue after Locate Me', () => {
-  assert.match(source, /if \(!state\?\.origin\)/);
-  assert.match(source, /Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party/);
-  assert.match(source, /button\.dataset\.previewMode = 'guidance'/);
-  assert.match(source, /button\.dataset\.previewMode = 'venue'/);
-  assert.match(source, /button\.removeAttribute\('data-direct-venue-id'\)/);
+test('Nearby venue opens the selected tray directly instead of routing through List', () => {
+  assert.match(source, /function openPreviewVenue/);
+  assert.match(source, /data-direct-venue-id/);
   assert.match(source, /event\.stopImmediatePropagation\(\)/);
-  assert.match(source, /if \(!button\.dataset\.directVenueId\) return/);
+  assert.match(source, /card\.click\(\)/);
 });
 
-test('selected tray top toggles expanded and compact views without opening List', () => {
-  assert.match(source, /data-selected-density="compact"/);
-  assert.match(source, /height: 170px !important/);
-  assert.match(source, /function handleTrayTopTap/);
-  assert.match(source, /setSelectedTrayDensity\(!selectedTrayExpanded\)/);
-  assert.match(source, /Collapse selected location/);
-  assert.match(source, /Expand selected location/);
+test('Search forces selected Venue compact while Map retains tray-top toggling', () => {
+  assert.match(source, /dataset\.commandSurface === 'search'/);
+  assert.match(source, /setSelectedTrayDensity\(false\)/);
+  assert.match(source, /dataset\.commandSurface !== 'map'/);
 });
 
-test('selected card collapse icon is removed in favor of the tray-top interaction', () => {
-  assert.match(source, /selected-card__header > \.icon-button/);
-  assert.match(source, /display: none !important/);
-});
-
-test('attribution follows the visible tray instead of creating layout space', () => {
-  assert.match(source, /function positionAttribution/);
-  assert.match(source, /attribution\.style\.bottom/);
+test('attribution is placed left of the right-side map controls', () => {
+  assert.match(source, /maplibregl-ctrl-bottom-right[\s\S]*left: 8px !important/);
+  assert.match(source, /attribution\.style\.left = '8px'/);
+  assert.match(source, /attribution\.style\.right = 'auto'/);
 });
