@@ -1,6 +1,7 @@
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
-const COMPACT_TRAY_HEIGHT = 116;
+const COMPACT_TRAY_HEIGHT = 104;
+const HEADER_OVERHANG = 31;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -16,13 +17,11 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      /* Every primary tab keeps the exact same branded game header. */
-      body[data-command-surface="search"],
-      body[data-command-surface="add"],
-      body[data-command-surface="list"] {
-        --header-height: calc(164px + env(safe-area-inset-top, 0px)) !important;
+      :root {
+        --header-height: calc(176px + env(safe-area-inset-top, 0px)) !important;
       }
 
+      .site-header,
       body[data-command-surface="search"] .site-header,
       body[data-command-surface="add"] .site-header,
       body[data-command-surface="list"] .site-header {
@@ -32,7 +31,7 @@ function installStyles() {
         grid-template-rows: auto 1fr !important;
         align-content: start !important;
         gap: 12px !important;
-        padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right, 0px)) 19px max(16px, env(safe-area-inset-left, 0px)) !important;
+        padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right, 0px)) 25px max(16px, env(safe-area-inset-left, 0px)) !important;
       }
 
       body[data-command-surface="search"] .site-header__brand-row,
@@ -78,15 +77,33 @@ function installStyles() {
 
       body[data-command-surface="search"] .command-surface:not([hidden]),
       body[data-command-surface="add"] .command-surface:not([hidden]) {
-        inset: calc(var(--header-height) + 31px) 0 var(--footer-height) 0 !important;
+        inset: calc(var(--header-height) + ${HEADER_OVERHANG}px) 0 var(--footer-height) 0 !important;
       }
 
       body[data-command-surface="search"].has-selected-venue .command-surface:not([hidden]) {
         bottom: calc(var(--footer-height) + ${COMPACT_TRAY_HEIGHT}px) !important;
       }
 
-      /* The guidance tray is not an expandable card. */
+      .command-surface .search-field {
+        border-color: var(--cgb-neutral-300) !important;
+        box-shadow: var(--shadow-xs) !important;
+      }
+
+      .command-surface .search-field:focus-within {
+        border-color: var(--cgb-gold-400) !important;
+        box-shadow: 0 0 0 2px rgba(253, 181, 21, .34), var(--shadow-sm) !important;
+      }
+
+      .command-surface .search-field input,
+      .command-surface .search-field input:focus,
+      .command-surface .search-field input:focus-visible {
+        outline: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+      }
+
       #map-view > #venue-tray.venue-tray::before {
+        content: none !important;
         display: none !important;
       }
 
@@ -114,12 +131,11 @@ function installStyles() {
         display: none !important;
       }
 
-      /* Selected Venue profile: compact, linear, and action-led. */
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
         width: 100% !important;
         display: grid !important;
         grid-template-columns: minmax(0, 1fr) !important;
-        gap: 8px !important;
+        gap: 9px !important;
         padding: 0 14px 14px !important;
         box-sizing: border-box !important;
       }
@@ -131,6 +147,11 @@ function installStyles() {
 
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header {
         display: block !important;
+        margin: 0 -14px 1px !important;
+        padding: 10px 14px 11px 18px !important;
+        background: linear-gradient(90deg, var(--cgb-navy-50), var(--cgb-white) 78%) !important;
+        border-left: 4px solid var(--cgb-navy-900) !important;
+        border-bottom: 1px solid var(--cgb-neutral-200) !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div {
@@ -141,8 +162,8 @@ function installStyles() {
         display: -webkit-box !important;
         margin: 4px 0 3px !important;
         overflow: hidden !important;
-        font-size: clamp(1.18rem, 5.2vw, 1.45rem) !important;
-        line-height: 1.03 !important;
+        font-size: clamp(1.2rem, 5.2vw, 1.48rem) !important;
+        line-height: 1.04 !important;
         -webkit-box-orient: vertical !important;
         -webkit-line-clamp: 2 !important;
       }
@@ -156,6 +177,7 @@ function installStyles() {
         display: grid !important;
         gap: 1px !important;
         margin: 0 !important;
+        padding: 1px 2px !important;
         color: var(--cgb-navy-950) !important;
         font-family: var(--font-ui) !important;
         font-size: .78rem !important;
@@ -172,16 +194,16 @@ function installStyles() {
 
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
         width: 100% !important;
-        min-height: 42px !important;
+        min-height: 40px !important;
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
-        padding: 8px 12px !important;
+        padding: 7px 12px !important;
         color: var(--cgb-navy-950) !important;
         background: var(--cgb-gold-50) !important;
         border: 1px solid var(--cgb-gold-500) !important;
         border-radius: var(--radius-md) !important;
-        font-size: .78rem !important;
+        font-size: .76rem !important;
         font-weight: 850 !important;
         box-shadow: none !important;
       }
@@ -229,7 +251,6 @@ function installStyles() {
         height: 16px !important;
       }
 
-      /* Compact selected mode keeps identity only. */
       #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
         height: ${COMPACT_TRAY_HEIGHT}px !important;
         max-height: ${COMPACT_TRAY_HEIGHT}px !important;
@@ -240,13 +261,20 @@ function installStyles() {
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
-        max-height: 98px !important;
+        max-height: 86px !important;
         overflow: hidden !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card {
-        gap: 3px !important;
-        padding: 0 14px 9px !important;
+        gap: 2px !important;
+        padding: 0 14px 7px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__header {
+        margin-bottom: 0 !important;
+        padding-top: 7px !important;
+        padding-bottom: 8px !important;
+        border-bottom: 0 !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card h2 {
@@ -270,11 +298,18 @@ function installStyles() {
         z-index: 47 !important;
       }
 
-      /* List is a true tab surface, not a floating map card. */
+      body[data-command-surface="list"] #map {
+        visibility: hidden !important;
+      }
+
+      body[data-command-surface="list"] #map-view {
+        background: var(--cgb-warm-50) !important;
+      }
+
       body[data-command-surface="list"] #map-view > #venue-tray.venue-tray.tray--full {
         position: fixed !important;
         z-index: 47 !important;
-        inset: calc(var(--header-height) + 31px) 0 var(--footer-height) 0 !important;
+        inset: calc(var(--header-height) + ${HEADER_OVERHANG}px) 0 var(--footer-height) 0 !important;
         width: 100vw !important;
         height: auto !important;
         max-width: none !important;
