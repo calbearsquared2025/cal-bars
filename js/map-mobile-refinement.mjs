@@ -1,3 +1,11 @@
+import {
+  bearCountCopy,
+  markerKind,
+  NEARBY_RADIUS_MILES,
+  rankNearbyVenues,
+  rankVenues
+} from './core.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
 const STYLE_ID = 'cgb-map-mobile-refinement';
@@ -27,6 +35,17 @@ function installStyles() {
     @media (max-width: 899px) {
       .maplibregl-ctrl-top-right {
         display: none !important;
+      }
+
+      .maplibregl-ctrl-bottom-right {
+        right: auto !important;
+        left: 8px !important;
+        max-width: calc(100vw - 86px) !important;
+      }
+
+      .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib {
+        max-width: calc(100vw - 86px) !important;
+        font-size: 10px !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek {
@@ -119,9 +138,35 @@ function selectedVenue(venueId, state = appState()) {
   return state?.snapshot?.venues?.find((venue) => venue.venue_id === venueId) || null;
 }
 
+function rankedVenue(state, venueId) {
+  if (!state?.snapshot || !state.gameId || !venueId) return null;
+  return rankVenues(state.snapshot, state.gameId, state.origin)
+    .find(({ venue }) => venue.venue_id === venueId) || null;
+}
+
+function previewCandidate(state = appState()) {
+  const selected = rankedVenue(state, state?.selectedVenueId);
+  if (selected) return { ...selected, mode: 'selected' };
+  if (!state?.origin || !state?.snapshot || !state.gameId) return null;
+  const nearest = rankNearbyVenues(
+    state.snapshot,
+    state.gameId,
+    state.origin,
+    NEARBY_RADIUS_MILES
+  )[0] || null;
+  return nearest ? { ...nearest, mode: 'nearby' } : null;
+}
+
 function previewVenueCard(venueId = '') {
   const cards = Array.from(document.querySelectorAll('#location-list .location-card[data-venue-id]'));
-  return cards.find((card) => card.dataset.venueId === venueId) || cards[0] || null;
+  return cards.find((card) => card.dataset.venueId === venueId) || null;
+}
+
+function formatDistance(distance) {
+  const value = Number(distance);
+  if (!Number.isFinite(value)) return '';
+  if (value < 0.1) return '<0.1 mi';
+  return `${value < 10 ? value.toFixed(1) : Math.round(value)} mi`;
 }
 
 function updatePreviewIntent() {
@@ -133,7 +178,8 @@ function updatePreviewIntent() {
   const marker = document.querySelector('#tray-summary-marker');
   if (!button || !title || !copy || !count || !marker) return;
 
-  if (!state?.origin) {
+  const candidate = previewCandidate(state);
+  if (!candidate) {
     title.textContent = 'Find your Cal crowd';
     copy.textContent = 'Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party.';
     count.textContent = '';
@@ -144,15 +190,20 @@ function updatePreviewIntent() {
     return;
   }
 
-  const card = previewVenueCard();
-  if (!card) {
-    button.removeAttribute('data-direct-venue-id');
-    return;
-  }
-
-  button.dataset.previewMode = 'venue';
-  button.dataset.directVenueId = card.dataset.venueId;
-  button.setAttribute('aria-label', `Open ${title.textContent}`);
+  const { venue, party, fanCount, distance, mode } = candidate;
+  const type = party
+    ? 'Watch Party'
+    : venue.venue_type === 'cal_bar'
+      ? 'Cal Bar'
+      : 'Community Location';
+  const context = mode === 'selected' ? 'Selected' : 'Nearby';
+  title.textContent = venue.name;
+  copy.textContent = [context, type, formatDistance(distance)].filter(Boolean).join(' · ');
+  count.textContent = Number(fanCount) > 0 ? bearCountCopy(fanCount) : '';
+  marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
+  button.dataset.previewMode = mode;
+  button.dataset.directVenueId = venue.venue_id;
+  button.setAttribute('aria-label', `Open ${venue.name}`);
 }
 
 function openPreviewVenue(event) {
@@ -192,6 +243,11 @@ function syncSelectedTrayDensity() {
     return;
   }
 
+  if (document.body.dataset.commandSurface === 'search') {
+    setSelectedTrayDensity(false);
+    return;
+  }
+
   if (state.selectedVenueId !== lastSelectedVenueId) {
     lastSelectedVenueId = state.selectedVenueId;
     selectedTrayExpanded = true;
@@ -201,16 +257,13 @@ function syncSelectedTrayDensity() {
 
 function handleTrayTopTap(event) {
   const handle = event.target.closest?.('#tray-handle');
-  if (!handle || !isMobile()) return;
+  if (!handle || !isMobile() || document.body.dataset.commandSurface !== 'map') return;
   const tray = document.querySelector('#venue-tray');
-  if (!tray || !['peek', 'selected'].includes(tray.dataset.state)) return;
+  if (!tray || tray.dataset.state !== 'selected') return;
 
   event.preventDefault();
   event.stopImmediatePropagation();
-
-  if (tray.dataset.state === 'selected') {
-    setSelectedTrayDensity(!selectedTrayExpanded);
-  }
+  setSelectedTrayDensity(!selectedTrayExpanded);
 }
 
 function focusVenue(venueId, { force = false } = {}) {
@@ -247,11 +300,19 @@ function positionAttribution() {
   const attribution = document.querySelector('.maplibregl-ctrl-bottom-right');
   if (!map || !tray || !attribution) return;
 
+  if (document.body.dataset.commandSurface !== 'map') {
+    attribution.style.display = 'none';
+    return;
+  }
+  attribution.style.display = '';
+
   const mapRect = map.getBoundingClientRect();
   const trayRect = tray.getBoundingClientRect();
   const trayVisible = getComputedStyle(tray).display !== 'none' && trayRect.top < mapRect.bottom;
   const overlap = trayVisible ? Math.max(0, mapRect.bottom - trayRect.top) : 0;
   attribution.style.bottom = `${Math.round(overlap + 6)}px`;
+  attribution.style.left = '8px';
+  attribution.style.right = 'auto';
 }
 
 function observeTray() {
@@ -272,7 +333,8 @@ function sync() {
 
   const state = appState();
   const tray = document.querySelector('#venue-tray');
-  if (!isMobile() || !state?.selectedVenueId || tray?.dataset.state !== 'selected') return;
+  if (!isMobile() || document.body.dataset.commandSurface !== 'map' ||
+      !state?.selectedVenueId || tray?.dataset.state !== 'selected') return;
   focusVenue(state.selectedVenueId);
 }
 
