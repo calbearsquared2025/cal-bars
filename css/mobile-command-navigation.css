@@ -21,7 +21,7 @@
     position: fixed;
     z-index: 44;
     inset:
-      var(--header-height)
+      calc(var(--header-height) + 27px)
       0
       calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px))
       0;
