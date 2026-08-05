@@ -8,6 +8,15 @@ import {
 } from './core.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
+const CORRECTION_STYLESHEET = 'css/mobile-corrections.css';
+
+function ensureCorrectionStylesheet() {
+  if (document.querySelector(`link[href="${CORRECTION_STYLESHEET}"]`)) return;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = CORRECTION_STYLESHEET;
+  document.head?.append(link);
+}
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
@@ -91,6 +100,11 @@ function setCommandSurface(value) {
   document.body.dataset.commandSurface = value;
 }
 
+function collapseListBeforeMapCommand() {
+  const tray = document.querySelector('#venue-tray');
+  if (tray?.dataset.state === 'full') document.querySelector('#close-list-button')?.click();
+}
+
 function sync() {
   updatePeek();
   updateListHeading();
@@ -99,7 +113,10 @@ function sync() {
 }
 
 function initialize() {
-  document.querySelector('#mobile-map-button')?.addEventListener('click', () => setCommandSurface('map'));
+  ensureCorrectionStylesheet();
+  const mapButton = document.querySelector('#mobile-map-button');
+  mapButton?.addEventListener('click', collapseListBeforeMapCommand, { capture: true });
+  mapButton?.addEventListener('click', () => setCommandSurface('map'));
   document.querySelector('#mobile-search-button')?.addEventListener('click', () => setCommandSurface('search'));
   document.querySelector('#mobile-add-button')?.addEventListener('click', () => setCommandSurface('add'));
   document.querySelector('#mobile-list-button')?.addEventListener('click', () => requestAnimationFrame(() => setCommandSurface('list')));
