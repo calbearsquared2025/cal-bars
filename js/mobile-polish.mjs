@@ -151,6 +151,7 @@ function visibleSurface() {
 function inferActiveView() {
   const surface = visibleSurface();
   if (surface) return surface;
+  if (document.body.classList.contains('map-fullscreen')) return 'map';
   return document.querySelector('#venue-tray')?.dataset.state === 'full' ? 'list' : 'map';
 }
 
