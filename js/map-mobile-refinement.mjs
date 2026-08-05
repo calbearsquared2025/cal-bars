@@ -3,6 +3,8 @@ const FOCUS_ZOOM = 11;
 const STYLE_ID = 'cgb-map-mobile-refinement';
 
 let lastAutoFocusedVenueId = '';
+let lastSelectedVenueId = '';
+let selectedTrayExpanded = true;
 let trayObserver = null;
 
 function isMobile() {
@@ -75,6 +77,31 @@ function installStyles() {
       #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__copy small {
         font-size: .64rem !important;
       }
+
+      #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > .icon-button {
+        display: none !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
+        height: 170px !important;
+        max-height: 170px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
+        max-height: 146px !important;
+        overflow: hidden !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card {
+        gap: 7px !important;
+        padding-bottom: 12px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-description,
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
+        display: none !important;
+      }
     }
   `;
   document.head.append(style);
@@ -98,29 +125,92 @@ function previewVenueCard(venueId = '') {
 }
 
 function updatePreviewIntent() {
+  const state = appState();
   const button = document.querySelector('#browse-locations-button');
-  const copy = document.querySelector('#tray-summary-copy');
   const title = document.querySelector('#tray-summary-title');
-  const card = previewVenueCard();
-  if (!button || !copy || !title || !card) {
-    button?.removeAttribute('data-direct-venue-id');
+  const copy = document.querySelector('#tray-summary-copy');
+  const count = document.querySelector('#tray-summary-count');
+  const marker = document.querySelector('#tray-summary-marker');
+  if (!button || !title || !copy || !count || !marker) return;
+
+  if (!state?.origin) {
+    title.textContent = 'Find your Cal crowd';
+    copy.textContent = 'Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party.';
+    count.textContent = '';
+    marker.dataset.kind = 'community-location';
+    button.dataset.previewMode = 'guidance';
+    button.removeAttribute('data-direct-venue-id');
+    button.setAttribute('aria-label', 'Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party');
     return;
   }
 
+  const card = previewVenueCard();
+  if (!card) {
+    button.removeAttribute('data-direct-venue-id');
+    return;
+  }
+
+  button.dataset.previewMode = 'venue';
   button.dataset.directVenueId = card.dataset.venueId;
-  copy.textContent = copy.textContent.replace(/\s*·\s*View list\s*$/i, '');
   button.setAttribute('aria-label', `Open ${title.textContent}`);
 }
 
 function openPreviewVenue(event) {
-  const button = event.target.closest?.('#browse-locations-button[data-direct-venue-id]');
+  const button = event.target.closest?.('#browse-locations-button');
   if (!button || !isMobile()) return;
-  const card = previewVenueCard(button.dataset.directVenueId);
-  if (!card) return;
 
   event.preventDefault();
   event.stopImmediatePropagation();
+
+  if (!button.dataset.directVenueId) return;
+  const card = previewVenueCard(button.dataset.directVenueId);
+  if (!card) return;
+
+  selectedTrayExpanded = true;
+  lastSelectedVenueId = '';
   card.click();
+}
+
+function setSelectedTrayDensity(expanded) {
+  const tray = document.querySelector('#venue-tray.tray--selected');
+  if (!tray) return;
+  selectedTrayExpanded = expanded;
+  tray.dataset.selectedDensity = expanded ? 'expanded' : 'compact';
+  const handle = document.querySelector('#tray-handle');
+  handle?.setAttribute('aria-expanded', String(expanded));
+  handle?.setAttribute('aria-label', expanded
+    ? 'Collapse selected location'
+    : 'Expand selected location');
+  requestAnimationFrame(positionAttribution);
+}
+
+function syncSelectedTrayDensity() {
+  const state = appState();
+  const tray = document.querySelector('#venue-tray');
+  if (!isMobile() || tray?.dataset.state !== 'selected' || !state?.selectedVenueId) {
+    tray?.removeAttribute('data-selected-density');
+    return;
+  }
+
+  if (state.selectedVenueId !== lastSelectedVenueId) {
+    lastSelectedVenueId = state.selectedVenueId;
+    selectedTrayExpanded = true;
+  }
+  setSelectedTrayDensity(selectedTrayExpanded);
+}
+
+function handleTrayTopTap(event) {
+  const handle = event.target.closest?.('#tray-handle');
+  if (!handle || !isMobile()) return;
+  const tray = document.querySelector('#venue-tray');
+  if (!tray || !['peek', 'selected'].includes(tray.dataset.state)) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  if (tray.dataset.state === 'selected') {
+    setSelectedTrayDensity(!selectedTrayExpanded);
+  }
 }
 
 function focusVenue(venueId, { force = false } = {}) {
@@ -176,6 +266,8 @@ function sync() {
   installStyles();
   removeZoomControls();
   updatePreviewIntent();
+  requestAnimationFrame(updatePreviewIntent);
+  syncSelectedTrayDensity();
   positionAttribution();
 
   const state = appState();
@@ -189,9 +281,13 @@ function initialize() {
   observeTray();
 
   document.addEventListener('click', openPreviewVenue, { capture: true });
+  document.addEventListener('click', handleTrayTopTap, { capture: true });
+
   document.addEventListener('click', (event) => {
     const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
     if (!marker) return;
+    selectedTrayExpanded = true;
+    lastSelectedVenueId = '';
     lastAutoFocusedVenueId = '';
     requestAnimationFrame(() => focusVenue(marker.dataset.venueId, { force: true }));
   });
