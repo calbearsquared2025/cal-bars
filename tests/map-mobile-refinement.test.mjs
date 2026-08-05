@@ -16,18 +16,34 @@ test('zoom controls are removed and hidden', () => {
   assert.match(source, /button\.remove\(\)/);
 });
 
-test('Nearby is a shorter edge-anchored sheet', () => {
+test('Nearby is a shorter edge-anchored guidance sheet', () => {
   assert.match(source, /tray--peek[\s\S]*inset: auto 0 0 0 !important/);
   assert.match(source, /height: 92px !important/);
   assert.match(source, /border-radius: 22px 22px 0 0 !important/);
 });
 
-test('Nearby venue opens the selected tray directly instead of routing through List', () => {
-  assert.match(source, /function openPreviewVenue/);
-  assert.match(source, /data-direct-venue-id/);
+test('Nearby begins as guidance and only opens a Venue after Locate Me', () => {
+  assert.match(source, /if \(!state\?\.origin\)/);
+  assert.match(source, /Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party/);
+  assert.match(source, /button\.dataset\.previewMode = 'guidance'/);
+  assert.match(source, /button\.dataset\.previewMode = 'venue'/);
+  assert.match(source, /button\.removeAttribute\('data-direct-venue-id'\)/);
   assert.match(source, /event\.stopImmediatePropagation\(\)/);
-  assert.match(source, /card\.click\(\)/);
-  assert.match(source, /document\.addEventListener\('click', openPreviewVenue, \{ capture: true \}\)/);
+  assert.match(source, /if \(!button\.dataset\.directVenueId\) return/);
+});
+
+test('selected tray top toggles expanded and compact views without opening List', () => {
+  assert.match(source, /data-selected-density="compact"/);
+  assert.match(source, /height: 170px !important/);
+  assert.match(source, /function handleTrayTopTap/);
+  assert.match(source, /setSelectedTrayDensity\(!selectedTrayExpanded\)/);
+  assert.match(source, /Collapse selected location/);
+  assert.match(source, /Expand selected location/);
+});
+
+test('selected card collapse icon is removed in favor of the tray-top interaction', () => {
+  assert.match(source, /selected-card__header > \.icon-button/);
+  assert.match(source, /display: none !important/);
 });
 
 test('attribution follows the visible tray instead of creating layout space', () => {
