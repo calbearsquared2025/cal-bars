@@ -1,0 +1,568 @@
+
+.watch-party-contribution__prompt,
+.external-watch-party-cta p {
+  color: var(--cgb-navy-950);
+}
+
+.intent-feedback,
+.external-venue-error {
+  color: var(--cgb-danger);
+  background: #fff5f3;
+  border-color: #e3b0aa;
+  border-radius: var(--radius-sm);
+}
+
+body[data-view="detail"] .site-header,
+body[data-view="detail"] .mobile-command-bar,
+body[data-view="detail"] .site-footer {
+  display: none;
+}
+
+body[data-view="detail"] #app {
+  min-height: 100dvh;
+}
+
+/* ---------- Dialogs, feedback, and supporting flows ---------- */
+.status-toast {
+  min-height: 40px;
+  padding: 10px 14px;
+  color: var(--cgb-white);
+  background: rgba(1, 1, 51, .96);
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  backdrop-filter: blur(12px);
+}
+
+.manual-copy-panel {
+  padding: 18px;
+  border-color: var(--cgb-neutral-200);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+
+.manual-copy-panel input {
+  border-color: var(--cgb-neutral-300);
+  border-radius: var(--radius-sm);
+}
+
+.game-dialog,
+.about-dialog,
+.external-venue-dialog {
+  color: var(--cgb-ink-900);
+  background: var(--cgb-white);
+  border: 1px solid rgba(1, 1, 51, .12);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.game-dialog::backdrop,
+.about-dialog::backdrop,
+.external-venue-dialog::backdrop {
+  background: rgba(1, 1, 51, .62);
+  backdrop-filter: blur(5px);
+}
+
+.dialog-shell {
+  background: var(--cgb-white);
+}
+
+.dialog-header h2,
+.external-venue-header h2 {
+  color: var(--cgb-navy-950);
+  font-family: var(--font-display);
+  font-weight: 750;
+  letter-spacing: -.02em;
+}
+
+.game-list {
+  border-top: 1px solid var(--cgb-neutral-200);
+}
+
+.game-option {
+  min-height: 60px;
+  background: var(--cgb-white);
+  border: 0;
+  border-bottom: 1px solid var(--cgb-neutral-200);
+  border-radius: 0;
+}
+
+.game-option:hover,
+.game-option:focus-visible {
+  background: var(--cgb-navy-50);
+}
+
+.game-option[data-selected="true"] {
+  background: var(--cgb-gold-50);
+  box-shadow: inset 4px 0 0 var(--cgb-gold-400);
+}
+
+.game-option strong {
+  color: var(--cgb-navy-950);
+}
+
+.external-venue-shell {
+  background: var(--cgb-white);
+}
+
+.external-venue-disclosure {
+  color: var(--cgb-ink-500);
+  background: var(--cgb-neutral-50);
+  border: 0;
+  border-left: 3px solid var(--cgb-gold-400);
+  border-radius: 0;
+}
+
+.site-footer {
+  display: none;
+  color: var(--cgb-ink-500);
+  background: var(--cgb-white);
+  border-top-color: var(--cgb-neutral-200);
+  font-size: var(--text-2xs);
+}
+
+.site-footer a,
+.site-footer .text-button {
+  color: var(--cgb-navy-900);
+}
+
+/* ---------- Small phones ---------- */
+@media (max-width: 390px) {
+  :root {
+    --header-height: calc(158px + env(safe-area-inset-top, 0px));
+  }
+
+  .site-header {
+    gap: 9px;
+    padding-inline: max(12px, env(safe-area-inset-left));
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .brand-name {
+    font-size: .88rem;
+  }
+
+  .game-button {
+    min-height: 60px;
+  }
+
+  .game-button strong {
+    font-size: 1.14rem;
+  }
+
+  .opening-stat {
+    left: 10px;
+    right: 10px;
+  }
+
+  .opening-stat strong {
+    font-size: .66rem;
+  }
+
+  .map-toolbar {
+    left: 10px;
+    right: 10px;
+  }
+
+  .location-search {
+    width: calc(100% - 51px);
+  }
+
+  .map-actions .secondary-button,
+  .map-actions .icon-button {
+    width: 43px;
+    min-width: 43px;
+    height: 43px;
+    min-height: 43px;
+  }
+
+  .selected-card {
+    gap: 8px 10px;
+    padding-inline: 12px;
+  }
+
+  .selected-card > .party-module {
+    display: none;
+  }
+
+  .action-row {
+    margin-inline: 4px;
+  }
+
+  .detail-hero {
+    padding-inline: 25px;
+  }
+}
+
+/* ---------- Short iPhone landscape ---------- */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --header-height: calc(62px + env(safe-area-inset-top, 0px));
+    --mobile-command-height: 52px;
+    --footer-height: calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px));
+    --selected-tray-max-height: calc(100% - 16px);
+  }
+
+  .site-header {
+    grid-template-columns: minmax(190px, .75fr) minmax(250px, 1fr);
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: calc(env(safe-area-inset-top, 0px) + 5px) max(12px, env(safe-area-inset-right)) 5px max(12px, env(safe-area-inset-left));
+  }
+
+  .site-header__brand-row {
+    min-height: 42px;
+  }
+
+  .header-menu-button {
+    display: none;
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand-name {
+    font-size: .86rem;
+  }
+
+  .game-button {
+    min-height: 48px;
+    padding-block: 4px;
+    border-bottom: 0;
+  }
+
+  .game-button__eyebrow {
+    display: none;
+  }
+
+  .game-button strong {
+    font-size: 1rem;
+  }
+
+  .opening-stat {
+    display: none;
+  }
+
+  .map-toolbar {
+    top: 8px;
+    left: max(8px, env(safe-area-inset-left));
+    right: auto;
+    width: min(49vw, 430px);
+  }
+
+  .location-search {
+    width: calc(100% - 50px);
+  }
+
+  .search-field {
+    min-height: 42px;
+  }
+
+  .search-submit {
+    min-height: 33px;
+  }
+
+  .map-actions .secondary-button,
+  .map-actions .icon-button {
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    min-height: 42px;
+  }
+
+  .maplibregl-ctrl-top-right {
+    top: 98px;
+  }
+
+  .venue-tray {
+    top: 8px;
+    right: max(8px, env(safe-area-inset-right));
+    bottom: calc(var(--footer-height) + 8px);
+    left: auto;
+    width: min(46vw, 430px);
+    max-height: none;
+    border-radius: var(--radius-lg);
+  }
+
+  .tray--peek {
+    height: 100px;
+    top: auto;
+  }
+
+  .tray--selected,
+  .tray--full {
+    height: auto;
+    max-height: none;
+  }
+
+  .tray-handle {
+    height: 18px;
+  }
+
+  .selected-card {
+    gap: 7px 10px;
+    padding: 2px 12px 10px;
+  }
+
+  .selected-card h2 {
+    font-size: 1.2rem;
+  }
+
+  .selected-card > .party-module {
+    display: none;
+  }
+
+  .venue-description {
+    font-size: .75rem;
+  }
+
+  .action-row {
+    grid-template-columns: minmax(0, 1fr) repeat(3, 40px);
+    gap: 5px;
+    margin-inline: 0;
+  }
+
+  .action-row > .secondary-button {
+    width: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .mobile-command-bar {
+    padding-top: 3px;
+  }
+
+  .mobile-command {
+    min-height: 43px;
+  }
+
+  body[data-view="detail"] .detail-shell {
+    max-width: none;
+  }
+
+  body[data-view="detail"] .venue-detail {
+    display: grid;
+    grid-template-columns: 48% 52%;
+    min-height: 100dvh;
+    padding: 0;
+  }
+
+  body[data-view="detail"] .detail-hero {
+    grid-column: 1;
+    grid-row: 1 / span 20;
+    min-height: 100dvh;
+  }
+
+  body[data-view="detail"] .venue-detail > :not(.detail-hero) {
+    grid-column: 2;
+  }
+
+  body[data-view="detail"] .venue-detail > .action-row {
+    align-self: end;
+  }
+}
+
+/* ---------- Desktop: map remains dominant, tray floats as a separate plane ---------- */
+@media (min-width: 900px) {
+  :root {
+    --header-height: 104px;
+    --footer-height: 30px;
+    --selected-tray-max-height: calc(100% - 48px);
+  }
+
+  .site-header {
+    grid-template-columns: minmax(230px, auto) minmax(310px, 430px) minmax(270px, 360px);
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: clamp(20px, 4vw, 60px);
+    padding: 12px 28px;
+  }
+
+  .site-header__brand-row {
+    min-height: auto;
+  }
+
+  .header-menu-button {
+    display: none;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .brand-name {
+    font-size: 1.02rem;
+  }
+
+  .game-button {
+    min-height: 64px;
+    border: 0;
+    border-left: 1px solid rgba(255, 255, 255, .2);
+    padding: 5px 34px 5px 20px;
+  }
+
+  .game-button strong {
+    font-size: 1.35rem;
+  }
+
+  .opening-stat {
+    position: static;
+    width: 100%;
+    height: 58px;
+    box-shadow: none;
+  }
+
+  .opening-stat strong {
+    font-size: .68rem;
+  }
+
+  .map-toolbar {
+    top: 22px;
+    left: 24px;
+    right: auto;
+    width: min(620px, calc(100vw - 500px));
+  }
+
+  .location-search {
+    width: calc(100% - 54px);
+  }
+
+  .maplibregl-ctrl-top-right {
+    top: 92px;
+    right: 28px;
+  }
+
+  .venue-tray {
+    top: 22px;
+    right: 24px;
+    bottom: 22px;
+    left: auto;
+    width: min(390px, 34vw);
+    max-height: none;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 18px 48px rgba(1, 1, 51, .22);
+  }
+
+  .tray--peek {
+    top: auto;
+    height: 112px;
+  }
+
+  .tray--selected {
+    top: auto;
+    height: auto;
+    max-height: calc(100% - 44px);
+  }
+
+  .tray--full {
+    height: auto;
+  }
+
+  .selected-card {
+    padding: 4px 18px 18px;
+  }
+
+  .selected-card h2 {
+    font-size: 1.65rem;
+  }
+
+  .location-card {
+    padding: 15px 16px;
+  }
+
+  .mobile-command-bar {
+    display: none;
+  }
+
+  .site-footer {
+    display: flex;
+  }
+
+  body[data-view="detail"] .detail-shell {
+    width: min(100%, 1180px);
+    max-width: 1180px;
+    padding: 20px;
+  }
+
+  body[data-view="detail"] .venue-detail {
+    min-height: calc(100dvh - 40px);
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
+    align-content: start;
+    padding: 0 0 0;
+    background: var(--cgb-white);
+    box-shadow: var(--shadow-lg);
+  }
+
+  body[data-view="detail"] .detail-hero {
+    grid-column: 1;
+    grid-row: 1 / span 20;
+    min-height: calc(100dvh - 40px);
+    padding: 56vh 44px 42px;
+  }
+
+  body[data-view="detail"] .detail-hero::after {
+    left: 22px;
+    right: 22px;
+    height: 190px;
+  }
+
+  body[data-view="detail"] .detail-hero .venue-badges {
+    top: auto;
+    bottom: 174px;
+    left: 38px;
+  }
+
+  body[data-view="detail"] .venue-detail > :not(.detail-hero) {
+    grid-column: 2;
+  }
+
+  body[data-view="detail"] .detail-game-context {
+    margin: 24px 24px 0;
+  }
+
+  body[data-view="detail"] .activity-card {
+    margin: 14px 38px 0;
+  }
+
+  body[data-view="detail"] .venue-detail > .action-row {
+    position: sticky;
+    bottom: 0;
+    align-self: end;
+  }
+
+  body[data-view="detail"] .back-link {
+    position: fixed;
+    top: 34px;
+    left: max(34px, calc(50vw - 570px));
+  }
+}
+
+@supports not (height: 100dvh) {
+  .detail-view,
+  .detail-shell,
+  .venue-detail {
+    min-height: 100vh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
