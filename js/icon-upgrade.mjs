@@ -1,0 +1,71 @@
+import { createIcon, setIcon } from './icons.mjs';
+
+function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
+  if (!element || element.querySelector('.ui-icon')) return;
+  element.replaceChildren(createIcon(iconName, { className }));
+}
+
+function prependIcon(element, iconName) {
+  if (!element || element.querySelector('.ui-icon')) return;
+  element.prepend(createIcon(iconName));
+}
+
+function appendIcon(element, iconName) {
+  if (!element || element.querySelector('.ui-icon')) return;
+  element.append(createIcon(iconName));
+}
+
+function actionIconName(element) {
+  const label = element.textContent.trim().toLowerCase();
+  if (label === 'directions') return 'directions';
+  if (label === 'view details') return 'details';
+  if (label === 'share') return 'share';
+  return null;
+}
+
+export function upgradeRenderedIcons(root = document) {
+  root.querySelectorAll('.marker-star').forEach((star) => {
+    replaceTextWithIcon(star, 'star', 'ui-icon marker-star__icon');
+  });
+
+  root.querySelectorAll('.party-module__title > span').forEach((star) => {
+    replaceTextWithIcon(star, 'star');
+  });
+
+  root.querySelectorAll('.selected-card__header > .icon-button').forEach((button) => {
+    replaceTextWithIcon(button, 'chevron-down');
+  });
+
+  root.querySelectorAll('.action-row > a, .action-row > button').forEach((action) => {
+    const iconName = actionIconName(action);
+    if (iconName) prependIcon(action, iconName);
+  });
+
+  root.querySelectorAll('.venue-website').forEach((link) => prependIcon(link, 'external'));
+  root.querySelectorAll('.party-module a[target="_blank"]:not(.party-module__report)')
+    .forEach((link) => appendIcon(link, 'external'));
+}
+
+function syncFullscreenIcon() {
+  const button = document.querySelector('#fullscreen-button');
+  const icon = button?.querySelector('.ui-icon');
+  if (!button || !icon) return;
+  setIcon(icon, button.getAttribute('aria-pressed') === 'true' ? 'compress' : 'fullscreen');
+}
+
+function initialize() {
+  upgradeRenderedIcons();
+  syncFullscreenIcon();
+
+  const fullscreen = document.querySelector('#fullscreen-button');
+  fullscreen?.addEventListener('click', () => requestAnimationFrame(syncFullscreenIcon));
+
+  window.CGBApp?.subscribe?.('rendered', () => upgradeRenderedIcons());
+  window.CGBApp?.subscribe?.('ready', () => upgradeRenderedIcons());
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initialize, { once: true });
+} else {
+  initialize();
+}
