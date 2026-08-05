@@ -57,6 +57,7 @@
   <link rel="stylesheet" href="css/design-board-3.css">
   <link rel="stylesheet" href="css/design-board-4.css">
   <link rel="stylesheet" href="css/mobile-command-navigation.css">
+  <link rel="stylesheet" href="css/mobile-polish.css">
   <style>
     .map-view,
     .map {
@@ -137,11 +138,14 @@
         </button>
         <div id="tray-peek" class="tray-peek">
           <button id="browse-locations-button" class="tray-summary" type="button">
-            <span>
-              <strong>Find your Cal crowd</strong>
-              <small id="tray-summary-copy">Tap a pin, search for a place, or browse the list.</small>
+            <span id="tray-summary-marker" class="tray-summary__marker" aria-hidden="true"></span>
+            <span class="tray-summary__copy">
+              <span class="eyebrow">Nearby</span>
+              <strong id="tray-summary-title">Find your Cal crowd</strong>
+              <small id="tray-summary-copy">Tap a pin or open List to browse locations.</small>
             </span>
-            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-up"></use></svg>
+            <span id="tray-summary-count" class="tray-summary__count" aria-hidden="true"></span>
+            <svg class="ui-icon tray-summary__chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-up"></use></svg>
           </button>
         </div>
         <div id="tray-selected" class="tray-selected" hidden></div>
@@ -177,16 +181,6 @@
         <p class="command-surface__intro">Search Cal Golden Bars or find another place to add to the map.</p>
         <div id="search-surface-intent" class="command-intent" role="status" hidden></div>
         <div id="search-surface-form-slot" class="search-surface__form-slot"></div>
-        <div class="search-surface__legend" aria-label="Search result types">
-          <div>
-            <span class="search-surface__marker search-surface__marker--cgb" aria-hidden="true"></span>
-            <span><strong>CGB locations</strong><small>Existing Watch Parties, Cal Bars, and Community Locations.</small></span>
-          </div>
-          <div>
-            <span class="search-surface__marker search-surface__marker--place" aria-hidden="true"></span>
-            <span><strong>Places</strong><small>External results that are not yet listed in Cal Golden Bars.</small></span>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -201,26 +195,26 @@
             <h2 id="add-surface-title">Add to the map</h2>
           </div>
         </header>
-        <p class="command-surface__intro">Plan a Watch Party, nominate a Cal Bar, or correct an existing listing.</p>
-        <section class="add-context" aria-live="polite">
+        <p class="command-surface__intro">Choose what you would like to add or correct.</p>
+        <section class="add-context" aria-live="polite" hidden>
           <span class="eyebrow">Current place</span>
-          <strong id="add-context-name">No place selected</strong>
-          <p id="add-context-copy">Choose an action and Search will help you find the right place.</p>
+          <strong id="add-context-name">Selected place</strong>
+          <p id="add-context-copy"></p>
         </section>
         <div class="add-actions">
           <button id="add-watch-party-button" class="add-action add-action--primary" type="button">
             <span class="add-action__icon" aria-hidden="true">★</span>
-            <span><strong>Plan a Watch Party</strong><small>Find a venue and submit the game-specific gathering.</small></span>
+            <span><strong>Plan a Watch Party</strong><small>Create a gathering for the selected game.</small></span>
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
           </button>
           <button id="add-cal-bar-button" class="add-action" type="button">
             <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-location"></use></svg>
-            <span><strong>Nominate a Cal Bar</strong><small>Recommend a Community Location that regularly welcomes Cal fans.</small></span>
+            <span><strong>Nominate a Cal Bar</strong><small>Recommend a regular Cal-friendly location.</small></span>
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
           </button>
           <button id="add-report-button" class="add-action" type="button" aria-expanded="false" aria-controls="add-report-options">
             <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-info"></use></svg>
-            <span><strong>Report a problem</strong><small>Correct an existing Venue or Watch Party listing.</small></span>
+            <span><strong>Report a problem</strong><small>Correct a Venue or Watch Party listing.</small></span>
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
           </button>
           <div id="add-report-options" class="add-report-options" hidden>
@@ -323,6 +317,7 @@
   <script type="module" src="js/app.js"></script>
   <script type="module" src="js/icon-upgrade.mjs"></script>
   <script type="module" src="js/shell-controls.mjs"></script>
+  <script type="module" src="js/mobile-polish.mjs"></script>
   <script type="module" src="js/map-failure.mjs"></script>
   <script type="module" src="js/watch-party-display.js"></script>
   <script type="module" src="js/fan-intent.js"></script>
