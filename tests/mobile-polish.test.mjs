@@ -47,21 +47,25 @@ test('markers are compact teardrops and outer marker transforms never transition
 test('fullscreen keeps controls stable and exposes the selected Venue tray', async () => {
   const css = await source('css/mobile-polish.css');
   assert.match(css, /\.map-actions[\s\S]*position: fixed[\s\S]*top: 46dvh/);
-  assert.match(css, /\.map-fullscreen \.venue-tray\.tray--selected[\s\S]*display: block !important/);
+  assert.match(css, /\.map-fullscreen #map-view > #venue-tray\.venue-tray\.tray--selected[\s\S]*display: block !important/);
   assert.match(css, /\.map-fullscreen \.mobile-command-bar[\s\S]*display: grid/);
-  assert.match(css, /body\[data-command-surface=\"list\"\] \.map-actions #near-me-button[\s\S]*display: none/);
+  assert.match(css, /body\[data-command-surface="list"\] \.map-actions #near-me-button[\s\S]*display: none/);
 });
 
-test('selected Venue uses an edge-anchored rounded bottom sheet', async () => {
+test('selected Venue uses a viewport-anchored rounded bottom sheet', async () => {
   const css = await source('css/mobile-polish.css');
-  assert.match(css, /\.venue-tray\.tray--selected[\s\S]*left: 0[\s\S]*right: 0[\s\S]*bottom: var\(--footer-height\)/);
-  assert.match(css, /border-radius: 22px 22px 0 0/);
+  assert.match(css, /#map-view > #venue-tray\.venue-tray\.tray--selected[\s\S]*position: fixed !important/);
+  assert.match(css, /inset: auto 0 var\(--footer-height\) 0 !important/);
+  assert.match(css, /width: 100vw !important/);
+  assert.match(css, /border-radius: 24px 24px 0 0 !important/);
+  assert.match(css, /overflow: hidden/);
 });
 
-test('header corrections preserve game-title descenders and align the menu to the right', async () => {
+test('header corrections preserve game-title descenders and pin the menu to the viewport edge', async () => {
   const css = await source('css/mobile-polish.css');
   assert.match(css, /#header-game-label[\s\S]*overflow: hidden[\s\S]*padding-bottom: \.16em[\s\S]*line-height: 1\.22/);
-  assert.match(css, /\.header-menu-button[\s\S]*margin-left: auto/);
+  assert.match(css, /\.site-header > \.site-header__brand-row > #header-about-button[\s\S]*position: absolute !important/);
+  assert.match(css, /right: max\(6px, env\(safe-area-inset-right, 0px\)\) !important/);
   assert.match(css, /#near-me-button \.ui-icon[\s\S]*translate\(-1px, 1px\)/);
 });
 
