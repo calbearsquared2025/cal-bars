@@ -1,8 +1,13 @@
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
+const COMPACT_TRAY_HEIGHT = 116;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
+}
+
+function appState() {
+  return window.CGBApp?.getState?.() || null;
 }
 
 function installStyles() {
@@ -11,7 +16,7 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      /* Search, Add, and List keep the same brand/game header as Map. */
+      /* Every primary tab keeps the exact same branded game header. */
       body[data-command-surface="search"],
       body[data-command-surface="add"],
       body[data-command-surface="list"] {
@@ -40,7 +45,7 @@ function installStyles() {
       body[data-command-surface="search"] .opening-stat,
       body[data-command-surface="add"] .opening-stat,
       body[data-command-surface="list"] .opening-stat {
-        display: none !important;
+        display: grid !important;
       }
 
       body[data-command-surface="search"] .game-button,
@@ -71,12 +76,57 @@ function installStyles() {
         font-size: .78rem !important;
       }
 
-      /* The expanded map profile is the primary decision-and-action surface. */
+      body[data-command-surface="search"] .command-surface:not([hidden]),
+      body[data-command-surface="add"] .command-surface:not([hidden]) {
+        inset: calc(var(--header-height) + 31px) 0 var(--footer-height) 0 !important;
+      }
+
+      body[data-command-surface="search"].has-selected-venue .command-surface:not([hidden]) {
+        bottom: calc(var(--footer-height) + ${COMPACT_TRAY_HEIGHT}px) !important;
+      }
+
+      /* The guidance tray is not an expandable card. */
+      #map-view > #venue-tray.venue-tray::before {
+        display: none !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--peek .tray-handle,
+      #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__chevron {
+        display: none !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--peek {
+        height: 78px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--peek .tray-peek {
+        padding: 5px 10px 7px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--peek .tray-summary {
+        min-height: 66px !important;
+        grid-template-columns: 24px minmax(0, 1fr) auto !important;
+        padding: 4px 12px !important;
+      }
+
+      body[data-command-surface="search"] #map-view > #venue-tray.venue-tray.tray--peek,
+      body[data-command-surface="add"] #map-view > #venue-tray.venue-tray {
+        display: none !important;
+      }
+
+      /* Selected Venue profile: compact, linear, and action-led. */
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
+        width: 100% !important;
         display: grid !important;
         grid-template-columns: minmax(0, 1fr) !important;
-        gap: 11px !important;
-        padding: 0 16px 16px !important;
+        gap: 8px !important;
+        padding: 0 14px 14px !important;
+        box-sizing: border-box !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected .selected-card > * {
+        grid-column: 1 / -1 !important;
+        min-width: 0 !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header {
@@ -84,107 +134,251 @@ function installStyles() {
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div {
-        min-width: 0;
+        min-width: 0 !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card h2 {
-        margin: 5px 0 3px !important;
+        display: -webkit-box !important;
+        margin: 4px 0 3px !important;
+        overflow: hidden !important;
+        font-size: clamp(1.18rem, 5.2vw, 1.45rem) !important;
+        line-height: 1.03 !important;
+        -webkit-box-orient: vertical !important;
+        -webkit-line-clamp: 2 !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected .venue-description {
+        display: none !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .bear-count {
+        max-width: none !important;
         display: grid !important;
         gap: 1px !important;
         margin: 0 !important;
         color: var(--cgb-navy-950) !important;
         font-family: var(--font-ui) !important;
-        font-size: .82rem !important;
+        font-size: .78rem !important;
         font-weight: 700 !important;
-        line-height: 1.25 !important;
+        line-height: 1.23 !important;
         text-align: left !important;
         text-transform: none !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty strong {
-        font-size: .86rem !important;
+        font-size: .82rem !important;
         font-weight: 850 !important;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected .selected-card__party-empty {
-        display: grid;
-        gap: 8px;
-        padding: 11px 12px 12px;
-        background: var(--cgb-gold-50);
-        border-left: 4px solid var(--cgb-gold-400);
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected .selected-card__party-empty span {
-        color: var(--cgb-navy-950);
-        font-family: var(--font-condensed);
-        font-size: .68rem;
-        font-weight: 850;
-        letter-spacing: .075em;
-        text-transform: uppercase;
-      }
-
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
-        width: 100%;
-        min-height: 44px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 9px 12px;
-        color: var(--cgb-navy-950);
-        background: var(--cgb-gold-400);
-        border: 0;
-        border-radius: var(--radius-md);
-        font-size: .82rem;
-        font-weight: 850;
+        width: 100% !important;
+        min-height: 42px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 8px 12px !important;
+        color: var(--cgb-navy-950) !important;
+        background: var(--cgb-gold-50) !important;
+        border: 1px solid var(--cgb-gold-500) !important;
+        border-radius: var(--radius-md) !important;
+        font-size: .78rem !important;
+        font-weight: 850 !important;
+        box-shadow: none !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .action-row {
+        width: 100% !important;
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         gap: 7px !important;
         margin: 1px 0 0 !important;
+        justify-self: stretch !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .action-row > .intent-button {
         grid-column: 1 / -1 !important;
-        min-height: 46px !important;
+        width: 100% !important;
+        min-height: 44px !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .action-row > .secondary-button {
-        width: auto !important;
+        width: 100% !important;
         min-width: 0 !important;
-        min-height: 48px !important;
+        min-height: 46px !important;
         display: inline-flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 3px !important;
-        padding: 6px 3px !important;
+        gap: 2px !important;
+        padding: 5px 2px !important;
         color: var(--cgb-navy-950) !important;
         background: var(--cgb-white) !important;
         border: 1px solid var(--cgb-neutral-300) !important;
         border-radius: var(--radius-md) !important;
+        clip-path: none !important;
         font-family: var(--font-condensed) !important;
-        font-size: .66rem !important;
+        font-size: .64rem !important;
         font-weight: 800 !important;
         line-height: 1 !important;
         text-align: center !important;
         text-decoration: none !important;
+        box-sizing: border-box !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .action-row > .secondary-button .ui-icon {
-        width: 17px !important;
-        height: 17px !important;
+        width: 16px !important;
+        height: 16px !important;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__party-empty {
+      /* Compact selected mode keeps identity only. */
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
+        height: ${COMPACT_TRAY_HEIGHT}px !important;
+        max-height: ${COMPACT_TRAY_HEIGHT}px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-handle {
+        height: 18px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
+        max-height: 98px !important;
+        overflow: hidden !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card {
+        gap: 3px !important;
+        padding: 0 14px 9px !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card h2 {
+        display: block !important;
+        overflow: hidden !important;
+        font-size: 1.03rem !important;
+        line-height: 1.05 !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .bear-count,
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__plan-party,
+      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
         display: none !important;
+      }
+
+      body[data-command-surface="search"] #map-view > #venue-tray.venue-tray.tray--selected {
+        display: block !important;
+        z-index: 47 !important;
+      }
+
+      /* List is a true tab surface, not a floating map card. */
+      body[data-command-surface="list"] #map-view > #venue-tray.venue-tray.tray--full {
+        position: fixed !important;
+        z-index: 47 !important;
+        inset: calc(var(--header-height) + 31px) 0 var(--footer-height) 0 !important;
+        width: 100vw !important;
+        height: auto !important;
+        max-width: none !important;
+        max-height: none !important;
+        margin: 0 !important;
+        background: var(--cgb-warm-50) !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+
+      body[data-command-surface="list"] #map-view > #venue-tray.venue-tray.tray--full .tray-handle {
+        display: none !important;
+      }
+
+      body[data-command-surface="list"] #tray-list {
+        height: 100% !important;
+        max-height: none !important;
+        display: block !important;
+        overflow-y: auto !important;
+        background: var(--cgb-warm-50) !important;
+      }
+
+      body[data-command-surface="list"] .tray-list__header {
+        min-height: 74px !important;
+        padding: 15px 16px 13px !important;
+        background: var(--cgb-warm-50) !important;
+        border-bottom: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      body[data-command-surface="list"] .tray-list__header h2 {
+        font-size: clamp(1.45rem, 6.4vw, 1.9rem) !important;
       }
     }
   `;
   document.head.append(style);
+}
+
+function setTrayState(next) {
+  const state = appState();
+  const tray = document.querySelector('#venue-tray');
+  if (!state || !tray) return false;
+
+  state.trayState = next;
+  tray.dataset.state = next;
+  tray.className = `venue-tray tray--${next}`;
+
+  const handle = document.querySelector('#tray-handle');
+  const peek = document.querySelector('#tray-peek');
+  const selected = document.querySelector('#tray-selected');
+  const list = document.querySelector('#tray-list');
+
+  handle?.setAttribute('aria-expanded', String(next !== 'peek'));
+  if (peek) peek.hidden = next !== 'peek';
+  if (selected) selected.hidden = next !== 'selected';
+  if (list) list.hidden = next !== 'full';
+  requestAnimationFrame(() => state.map?.resize?.());
+  return true;
+}
+
+function setCommandActive(command) {
+  document.body.dataset.commandSurface = command;
+  document.querySelectorAll('.mobile-command').forEach((button) => {
+    const active = button.dataset.command === command ||
+      (button.id === `mobile-${command}-button`);
+    button.classList.toggle('mobile-command--active', active);
+    if (active) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
+}
+
+function openListSurface(event) {
+  if (!isMobile()) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  document.querySelector('#search-surface')?.setAttribute('hidden', '');
+  document.querySelector('#add-surface')?.setAttribute('hidden', '');
+  setTrayState('full');
+  setCommandActive('list');
+}
+
+function prepareSearchSurface() {
+  if (!isMobile()) return;
+  const state = appState();
+  const selected = Boolean(state?.selectedVenueId);
+  document.body.classList.toggle('has-selected-venue', selected);
+
+  if (selected) {
+    setTrayState('selected');
+    const tray = document.querySelector('#venue-tray');
+    if (tray) tray.dataset.selectedDensity = 'compact';
+    const handle = document.querySelector('#tray-handle');
+    handle?.setAttribute('aria-expanded', 'false');
+    handle?.setAttribute('aria-label', 'Expand selected location');
+  } else {
+    setTrayState('peek');
+  }
+}
+
+function setSearchLanguage() {
+  const intro = document.querySelector('#search-surface .command-surface__intro');
+  if (intro) intro.textContent = 'Search Cal Golden Bars or add another location to the map.';
 }
 
 function formatEmptyAttendance(card) {
@@ -203,18 +397,14 @@ function formatEmptyAttendance(card) {
 }
 
 function addPlanWatchPartyAction(card) {
-  const existing = card.querySelector('.selected-card__party-empty');
+  card.querySelector('.selected-card__party-empty')?.remove();
+  const existing = card.querySelector('.selected-card__plan-party');
   if (card.querySelector('.party-module')) {
     existing?.remove();
     return;
   }
   if (existing) return;
 
-  const panel = document.createElement('section');
-  panel.className = 'selected-card__party-empty';
-  panel.setAttribute('aria-label', 'No Watch Party listed');
-  const label = document.createElement('span');
-  label.textContent = 'No Watch Party listed';
   const button = document.createElement('button');
   button.type = 'button';
   button.className = 'selected-card__plan-party';
@@ -224,37 +414,45 @@ function addPlanWatchPartyAction(card) {
     event.stopPropagation();
     document.querySelector('#add-watch-party-button')?.click();
   });
-  panel.append(label, button);
 
   const attendance = card.querySelector('.bear-count');
-  if (attendance) attendance.before(panel);
-  else card.append(panel);
+  if (attendance) attendance.after(button);
+  else card.append(button);
 }
 
 function normalizeActionLabels(card) {
   const detail = Array.from(card.querySelectorAll('.action-row .secondary-button'))
-    .find((action) => /view details/i.test(action.textContent));
-  if (detail) {
-    Array.from(detail.childNodes).forEach((node) => {
-      if (node.nodeType === Node.TEXT_NODE && /view details/i.test(node.textContent || '')) {
-        node.textContent = 'Details';
-      }
-    });
-    detail.setAttribute('aria-label', 'Details');
-  }
+    .find((action) => /view details|details/i.test(action.textContent));
+  if (!detail) return;
+
+  Array.from(detail.childNodes).forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE && /view details|details/i.test(node.textContent || '')) {
+      node.textContent = 'Details';
+    }
+  });
+  detail.setAttribute('aria-label', 'Details');
 }
 
 function enhanceSelectedCard() {
   if (!isMobile()) return;
+  const state = appState();
+  document.body.classList.toggle('has-selected-venue', Boolean(state?.selectedVenueId));
+
   const card = document.querySelector('#map-view > #venue-tray.venue-tray.tray--selected .selected-card');
   if (!card) return;
   formatEmptyAttendance(card);
   addPlanWatchPartyAction(card);
   normalizeActionLabels(card);
+
+  if (document.body.dataset.commandSurface === 'search') {
+    const tray = document.querySelector('#venue-tray');
+    if (tray) tray.dataset.selectedDensity = 'compact';
+  }
 }
 
 function scheduleEnhancement() {
   requestAnimationFrame(() => {
+    setSearchLanguage();
     enhanceSelectedCard();
     requestAnimationFrame(enhanceSelectedCard);
   });
@@ -262,6 +460,13 @@ function scheduleEnhancement() {
 
 function initialize() {
   installStyles();
+  setSearchLanguage();
+
+  document.querySelector('#mobile-list-button')?.addEventListener('click', openListSurface, { capture: true });
+  document.querySelector('#mobile-search-button')?.addEventListener('click', () => {
+    requestAnimationFrame(prepareSearchSurface);
+  }, { capture: true });
+
   scheduleEnhancement();
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleEnhancement);
   window.CGBApp?.subscribe?.('rendered', scheduleEnhancement);
