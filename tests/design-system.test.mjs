@@ -6,24 +6,27 @@ const [html, baseCss, ...rest] = await Promise.all([
   readFile(new URL('../index.html', import.meta.url), 'utf8'),
   readFile(new URL('../css/design-system.css', import.meta.url), 'utf8'),
   ...[1, 2, 3, 4].map((part) => readFile(new URL(`../css/design-board-${part}.css`, import.meta.url), 'utf8')),
+  readFile(new URL('../css/mobile-command-navigation.css', import.meta.url), 'utf8'),
   readFile(new URL('../assets/cgb-mark.svg', import.meta.url), 'utf8'),
   readFile(new URL('../assets/icons.svg', import.meta.url), 'utf8'),
   readFile(new URL('../js/icon-upgrade.mjs', import.meta.url), 'utf8'),
   readFile(new URL('../js/shell-controls.mjs', import.meta.url), 'utf8')
 ]);
 
-const [boardCss1, boardCss2, boardCss3, boardCss4, mark, icons, iconUpgrade, shellControls] = rest;
-const css = [baseCss, boardCss1, boardCss2, boardCss3, boardCss4].join('\n');
+const [boardCss1, boardCss2, boardCss3, boardCss4, mobileCss, mark, icons, iconUpgrade, shellControls] = rest;
+const css = [baseCss, boardCss1, boardCss2, boardCss3, boardCss4, mobileCss].join('\n');
 
 test('design-board layer loads last while preserving application contracts', () => {
   const baseIndex = html.indexOf('css/styles.css');
   const designIndex = html.indexOf('css/design-system.css');
+  const mobileIndex = html.indexOf('css/mobile-command-navigation.css');
   const appIndex = html.indexOf('js/app.js');
   const iconUpgradeIndex = html.indexOf('js/icon-upgrade.mjs');
   const shellControlsIndex = html.indexOf('js/shell-controls.mjs');
 
   assert.ok(baseIndex >= 0);
   assert.ok(designIndex > baseIndex);
+  assert.ok(mobileIndex > designIndex);
   assert.ok(iconUpgradeIndex > appIndex);
   assert.ok(shellControlsIndex > appIndex);
   assert.match(html, /id="game-button"/);
@@ -52,7 +55,7 @@ test('visual tokens follow the supplied design-board palette, typography, and re
   assert.match(css, /:focus-visible[\s\S]*--cgb-gold-400/);
 });
 
-test('mobile shell follows the board hierarchy with overlapping statistics and a compact command bar', () => {
+test('mobile shell uses Map, Search, Add, List with dedicated contribution surfaces', () => {
   const headerEnd = html.indexOf('</header>');
   const openingStat = html.indexOf('class="opening-stat"');
   const mainStart = html.indexOf('<main');
@@ -61,16 +64,22 @@ test('mobile shell follows the board hierarchy with overlapping statistics and a
   assert.match(html, /class="site-header__brand-row"/);
   assert.match(html, /game-button__chevron/);
   assert.match(html, /class="mobile-command-bar"/);
-  for (const id of ['mobile-map-button', 'mobile-search-button', 'mobile-list-button', 'mobile-game-button']) {
+  for (const id of ['mobile-map-button', 'mobile-search-button', 'mobile-add-button', 'mobile-list-button']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
+  assert.doesNotMatch(html, /id="mobile-game-button"/);
+  assert.match(html, /id="search-surface"/);
+  assert.match(html, /id="add-surface"/);
 
   assert.match(css, /\.opening-stat\s*\{[\s\S]*position:\s*absolute[\s\S]*bottom:\s*-27px/);
-  assert.match(css, /\.mobile-command-bar\s*\{[\s\S]*grid-template-columns:\s*repeat\(4, 1fr\)/);
+  assert.match(mobileCss, /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(mobileCss, /\.map-toolbar \.location-search\s*\{\s*display:\s*none/);
   assert.match(shellControls, /mobile-map-button/);
-  assert.match(shellControls, /location-query/);
-  assert.match(shellControls, /tray-handle/);
-  assert.match(shellControls, /game-button/);
+  assert.match(shellControls, /mobile-search-button/);
+  assert.match(shellControls, /mobile-add-button/);
+  assert.match(shellControls, /mobile-list-button/);
+  assert.match(shellControls, /buildWatchPartyPrefillUrl/);
+  assert.match(shellControls, /buildCalBarNominationPrefillUrl/);
   assert.doesNotMatch(shellControls, /MutationObserver/);
 });
 
@@ -83,7 +92,7 @@ test('layered map and venue surfaces use different widths instead of repeated ro
   assert.match(css, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\s*\{[\s\S]*right:\s*24px[\s\S]*width:\s*min\(390px, 34vw\)/);
 });
 
-test('venue detail uses a full-bleed visual plane, inset information planes, and sticky primary action', () => {
+test('venue detail remains unchanged in this navigation pass', () => {
   assert.match(css, /\.detail-hero\s*\{[\s\S]*min-height:\s*336px[\s\S]*padding:\s*198px 30px 24px/);
   assert.match(css, /\.detail-hero::after\s*\{[\s\S]*left:\s*10px[\s\S]*right:\s*10px[\s\S]*clip-path:/);
   assert.match(css, /\.detail-game-context\s*\{[\s\S]*margin:\s*-2px 16px 0[\s\S]*clip-path:/);
@@ -103,10 +112,9 @@ test('marker selectors preserve locked Watch Party, Cal Bar, and Community Locat
   assert.match(css, /\.marker-count/);
 });
 
-test('responsive design covers portrait, compact landscape, and map-first desktop without an orientation blocker', () => {
+test('existing landscape and desktop rules remain available for later refinement', () => {
   assert.match(css, /@media \(max-width: 899px\) and \(orientation: landscape\) and \(max-height: 500px\)/);
   assert.match(css, /--selected-tray-max-height:\s*calc\(100% - 16px\)/);
-  assert.match(css, /grid-template-columns:\s*minmax\(0, 1fr\) repeat\(3, 40px\)/);
   assert.match(css, /@media \(min-width: 900px\)/);
   assert.match(css, /body\[data-view="detail"\] \.venue-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1\.15fr\) minmax\(360px, \.85fr\)/);
   assert.doesNotMatch(`${html}\n${css}`, /rotate to portrait|portrait only|orientation blocker/i);
