@@ -74,6 +74,7 @@ test('mobile shell uses Map, Search, Add, List with dedicated contribution surfa
   assert.match(css, /\.opening-stat\s*\{[\s\S]*position:\s*absolute[\s\S]*bottom:\s*-27px/);
   assert.match(mobileCss, /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
   assert.match(mobileCss, /\.map-toolbar \.location-search\s*\{\s*display:\s*none/);
+  assert.match(mobileCss, /calc\(var\(--header-height\) \+ 27px\)/);
   assert.match(shellControls, /mobile-map-button/);
   assert.match(shellControls, /mobile-search-button/);
   assert.match(shellControls, /mobile-add-button/);
