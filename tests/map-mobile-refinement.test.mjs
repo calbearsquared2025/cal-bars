@@ -22,6 +22,14 @@ test('Nearby is a shorter edge-anchored sheet', () => {
   assert.match(source, /border-radius: 22px 22px 0 0 !important/);
 });
 
+test('Nearby venue opens the selected tray directly instead of routing through List', () => {
+  assert.match(source, /function openPreviewVenue/);
+  assert.match(source, /data-direct-venue-id/);
+  assert.match(source, /event\.stopImmediatePropagation\(\)/);
+  assert.match(source, /card\.click\(\)/);
+  assert.match(source, /document\.addEventListener\('click', openPreviewVenue, \{ capture: true \}\)/);
+});
+
 test('attribution follows the visible tray instead of creating layout space', () => {
   assert.match(source, /function positionAttribution/);
   assert.match(source, /attribution\.style\.bottom/);
