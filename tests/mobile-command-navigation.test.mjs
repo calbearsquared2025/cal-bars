@@ -33,6 +33,7 @@ test('mobile styling removes the permanent map search and presents full command 
   const css = await source('css/mobile-command-navigation.css');
   assert.match(css, /\.map-toolbar \.location-search\s*\{\s*display: none;/);
   assert.match(css, /\.command-surface:not\(\[hidden\]\)[\s\S]*position: fixed;/);
+  assert.match(css, /calc\(var\(--header-height\) \+ 27px\)/);
   assert.match(css, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
   assert.match(css, /\.mobile-command__add-mark/);
 });
