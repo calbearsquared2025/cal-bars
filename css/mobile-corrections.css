@@ -1,26 +1,26 @@
+/* Visually center the asymmetric navigation arrow inside its circular control. */
+.map-actions #near-me-button .ui-icon {
+  transform: translate(-1px, 1px);
+}
+
+/* Use compact board-style teardrops instead of the inherited elongated marker. */
+.marker-pin {
+  left: 7px;
+  top: 5px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+}
+
+.marker-pin::after {
+  left: 9px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
+}
+
 @media (max-width: 899px) {
-  /* Visually center the asymmetric navigation arrow inside its circular control. */
-  .map-actions #near-me-button .ui-icon {
-    transform: translate(-1px, 1px);
-  }
-
-  /* Use compact board-style teardrops instead of the inherited elongated marker. */
-  .marker-pin {
-    left: 7px;
-    top: 5px;
-    width: 34px;
-    height: 34px;
-    border-radius: 50% 50% 50% 0;
-    transform: rotate(-45deg);
-  }
-
-  .marker-pin::after {
-    left: 9px;
-    top: 9px;
-    width: 10px;
-    height: 10px;
-  }
-
   /* A selected pin must expose its Venue card even while the map is full screen. */
   .map-fullscreen .venue-tray.tray--selected {
     display: block;
