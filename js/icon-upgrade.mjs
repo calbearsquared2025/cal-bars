@@ -53,6 +53,10 @@ function syncFullscreenIcon() {
   setIcon(icon, button.getAttribute('aria-pressed') === 'true' ? 'compress' : 'fullscreen');
 }
 
+function scheduleUpgrade() {
+  requestAnimationFrame(() => upgradeRenderedIcons());
+}
+
 function initialize() {
   upgradeRenderedIcons();
   syncFullscreenIcon();
@@ -60,8 +64,8 @@ function initialize() {
   const fullscreen = document.querySelector('#fullscreen-button');
   fullscreen?.addEventListener('click', () => requestAnimationFrame(syncFullscreenIcon));
 
-  window.CGBApp?.subscribe?.('rendered', () => upgradeRenderedIcons());
-  window.CGBApp?.subscribe?.('ready', () => upgradeRenderedIcons());
+  window.CGBApp?.subscribe?.('rendered', scheduleUpgrade);
+  window.CGBApp?.subscribe?.('ready', scheduleUpgrade);
 }
 
 if (document.readyState === 'loading') {
