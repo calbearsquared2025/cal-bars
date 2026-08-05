@@ -55,6 +55,21 @@ function installStyles() {
         grid-column: 1 / -1 !important;
       }
 
+      /* Watch Party details remain decision-critical on small phones. */
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module {
+        display: grid !important;
+        gap: 5px !important;
+        margin: 1px 0 0 !important;
+        padding: 10px 12px !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module p,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module a,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module .party-module__report {
+        font-size: .72rem !important;
+        line-height: 1.3 !important;
+      }
+
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
         min-height: 54px !important;
         display: grid !important;
