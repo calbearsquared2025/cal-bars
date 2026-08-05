@@ -361,6 +361,15 @@
     position: static;
   }
 
+  body[data-command-surface="search"] .map-actions,
+  body[data-command-surface="add"] .map-actions {
+    display: none;
+  }
+
+  body[data-command-surface="list"] .map-actions #near-me-button {
+    display: none;
+  }
+
   /* Map has a compact preview; the full list is a distinct List destination. */
   .tray--peek {
     height: 116px;
