@@ -1,6 +1,7 @@
 import './map-mobile-refinement.mjs';
 import './map-profile-first-pass.mjs';
 import './mobile-tab-location-refinement.mjs';
+import './map-profile-aesthetic-refinement.mjs';
 import { createIcon, setIcon } from './icons.mjs';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
