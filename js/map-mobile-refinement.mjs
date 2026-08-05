@@ -92,6 +92,37 @@ function selectedVenue(venueId, state = appState()) {
   return state?.snapshot?.venues?.find((venue) => venue.venue_id === venueId) || null;
 }
 
+function previewVenueCard(venueId = '') {
+  const cards = Array.from(document.querySelectorAll('#location-list .location-card[data-venue-id]'));
+  return cards.find((card) => card.dataset.venueId === venueId) || cards[0] || null;
+}
+
+function updatePreviewIntent() {
+  const button = document.querySelector('#browse-locations-button');
+  const copy = document.querySelector('#tray-summary-copy');
+  const title = document.querySelector('#tray-summary-title');
+  const card = previewVenueCard();
+  if (!button || !copy || !title || !card) {
+    button?.removeAttribute('data-direct-venue-id');
+    return;
+  }
+
+  button.dataset.directVenueId = card.dataset.venueId;
+  copy.textContent = copy.textContent.replace(/\s*·\s*View list\s*$/i, '');
+  button.setAttribute('aria-label', `Open ${title.textContent}`);
+}
+
+function openPreviewVenue(event) {
+  const button = event.target.closest?.('#browse-locations-button[data-direct-venue-id]');
+  if (!button || !isMobile()) return;
+  const card = previewVenueCard(button.dataset.directVenueId);
+  if (!card) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  card.click();
+}
+
 function focusVenue(venueId, { force = false } = {}) {
   if (!isMobile()) return;
   const state = appState();
@@ -144,6 +175,7 @@ function observeTray() {
 function sync() {
   installStyles();
   removeZoomControls();
+  updatePreviewIntent();
   positionAttribution();
 
   const state = appState();
@@ -156,6 +188,7 @@ function initialize() {
   installStyles();
   observeTray();
 
+  document.addEventListener('click', openPreviewVenue, { capture: true });
   document.addEventListener('click', (event) => {
     const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
     if (!marker) return;
