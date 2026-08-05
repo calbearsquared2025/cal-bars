@@ -24,6 +24,44 @@
   text-underline-offset: 0.15em;
 }
 
+/*
+ * Approved map-marker semantics:
+ * Watch Party = gold outer / blue inner.
+ * Cal Bar = blue outer / white inner.
+ * Community Location = white outer / blue outline.
+ *
+ * These rules intentionally override the base marker colors in styles.css
+ * without changing marker geometry, selection, counts, or MapLibre behavior.
+ */
+.marker--watch-party .marker-star {
+  color: var(--cal-blue);
+  -webkit-text-stroke: 3px var(--cal-gold);
+  paint-order: stroke fill;
+  text-shadow:
+    1px 0 var(--cal-gold),
+    -1px 0 var(--cal-gold),
+    0 1px var(--cal-gold),
+    0 -1px var(--cal-gold);
+}
+
+.marker--cal-bar .marker-pin {
+  background: var(--cal-blue);
+  border-color: white;
+}
+
+.marker--cal-bar .marker-pin::after {
+  background: white;
+}
+
+.marker--community-location .marker-pin {
+  background: white;
+  border-color: var(--cal-blue);
+}
+
+.marker--community-location .marker-pin::after {
+  background: var(--cal-blue);
+}
+
 @media (min-width: 900px) {
   .party-module--multiple {
     max-height: 24rem;
