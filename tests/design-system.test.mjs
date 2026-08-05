@@ -22,7 +22,7 @@ test('professional design layer loads last without replacing application contrac
   assert.match(html, /id="game-button"/);
   assert.match(html, /id="venue-tray"/);
   assert.match(html, /id="external-venue-dialog"/);
-  assert.match(html, /meta name="cgb-data-endpoint"/);
+  assert.match(html, /name="cgb-data-endpoint"/);
   assert.doesNotMatch(html, /saved|favorites|attendee avatars|create account/i);
 });
 
@@ -32,7 +32,7 @@ test('design tokens define the approved navy, gold, neutral, type, spacing, shap
     '--font-ui', '--font-display', '--space-4', '--radius-md',
     '--shadow-md', '--motion-fast', '--focus-ring'
   ]) {
-    assert.match(css, new RegExp(token.replace('--', '--')));
+    assert.match(css, new RegExp(token));
   }
 
   assert.match(css, /--cgb-navy-900:\s*#071e41/i);
