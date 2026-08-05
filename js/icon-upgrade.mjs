@@ -1,4 +1,5 @@
 import './map-mobile-refinement.mjs';
+import './map-profile-first-pass.mjs';
 import { createIcon, setIcon } from './icons.mjs';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
@@ -19,7 +20,7 @@ function appendIcon(element, iconName) {
 function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
-  if (label === 'view details') return 'details';
+  if (label === 'view details' || label === 'details') return 'details';
   if (label === 'share') return 'share';
   return null;
 }
