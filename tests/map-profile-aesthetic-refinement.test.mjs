@@ -13,6 +13,13 @@ test('expanded profile restores an asymmetric identity and attendance layout', (
   assert.match(source, /padding: 30px 2px 0 0 !important/);
 });
 
+test('planned Watch Party details remain visible in expanded small-phone profiles', () => {
+  assert.match(source, /Watch Party details remain decision-critical on small phones/);
+  assert.match(source, /tray--selected:not\(\[data-selected-density="compact"\]\)[\s\S]*selected-card > \.party-module[\s\S]*display: grid !important/);
+  assert.match(source, /selected-card > \.party-module p[\s\S]*font-size: \.72rem !important/);
+  assert.match(source, /selected-card > \.party-module \.party-module__report/);
+});
+
 test('empty Watch Party prompt includes the approved period and secondary action', () => {
   assert.match(source, /No Watch Party for this game\./);
   assert.match(source, /\+ Plan a Watch Party/);
