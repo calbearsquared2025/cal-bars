@@ -7,7 +7,10 @@
  */
 
 const CGB_EXTERNAL_SOURCE = 'maptiler';
-const CGB_EXTERNAL_PLACE_ID_PATTERN = /^[A-Za-z0-9._:-]{1,200}$/;
+const CGB_EXTERNAL_PLACE_ID_PATTERN = /^\S+\.[0-9]+$/;
+const CGB_MAPTILER_API_KEY_PROPERTY = 'CGB_MAPTILER_API_KEY';
+const CGB_MAPTILER_GEOCODING_URL = 'https://api.maptiler.com/geocoding/';
+const CGB_MAPTILER_FETCH_TIMEOUT_SECONDS = 5;
 const CGB_EXTERNAL_MAX_NAME_LENGTH = 180;
 const CGB_EXTERNAL_MAX_ADDRESS_LENGTH = 600;
 const CGB_EXTERNAL_FAN_HEADERS = Object.freeze([
@@ -130,15 +133,19 @@ function processJoinExternalVenueRequest_(request) {
 
   try {
     if (!venueRecord) {
-      const venue = buildExternalVenueRecord_(venueTable.rows, request.externalPlace, now);
-      createdVenueRowNumber = appendSheetObject_(venueSheet, venueTable.headers, venue);
-      venueRecord = {
-        rowNumber: createdVenueRowNumber,
-        values: venueTable.headers.map(function(header) {
-          return Object.prototype.hasOwnProperty.call(venue, header) ? venue[header] : '';
-        }),
-        object: venue
-      };
+      const verifiedPlace = verifyExternalPlaceWithMapTiler_(request.externalPlace);
+      venueRecord = findCanonicalExternalVenue_(venueTable.rows, verifiedPlace);
+      if (!venueRecord) {
+        const venue = buildExternalVenueRecord_(venueTable.rows, verifiedPlace, now);
+        createdVenueRowNumber = appendSheetObject_(venueSheet, venueTable.headers, venue);
+        venueRecord = {
+          rowNumber: createdVenueRowNumber,
+          values: venueTable.headers.map(function(header) {
+            return Object.prototype.hasOwnProperty.call(venue, header) ? venue[header] : '';
+          }),
+          object: venue
+        };
+      }
     }
 
     if (venueRecord.object.publication_status !== 'published' || !hasValidVenueCoordinates_(venueRecord.object)) {
@@ -180,6 +187,213 @@ function processJoinExternalVenueRequest_(request) {
     clearPublicSnapshotCache_();
     throw error;
   }
+}
+
+function authorizeMapTilerVerification() {
+  const key = mapTilerVerificationKey_();
+  if (!key) {
+    throw new Error('Missing private Script Property: ' + CGB_MAPTILER_API_KEY_PROPERTY);
+  }
+  UrlFetchApp.getRequest(CGB_MAPTILER_GEOCODING_URL + 'country.1.json', {
+    method: 'get'
+  });
+  return { ok: true, configured: true };
+}
+
+function mapTilerVerificationKey_() {
+  return cleanExternalText_(
+    PropertiesService.getScriptProperties().getProperty(CGB_MAPTILER_API_KEY_PROPERTY),
+    500
+  );
+}
+
+function verifyExternalPlaceWithMapTiler_(clientPlace) {
+  const key = mapTilerVerificationKey_();
+  if (!key) throw externalVenueError_('external_venue_unavailable');
+
+  const url = CGB_MAPTILER_GEOCODING_URL +
+    encodeURIComponent(clientPlace.placeId) +
+    '.json?key=' + encodeURIComponent(key) +
+    '&language=en';
+
+  let response;
+  try {
+    response = UrlFetchApp.fetch(url, {
+      method: 'get',
+      headers: { Accept: 'application/json' },
+      followRedirects: false,
+      muteHttpExceptions: true,
+      validateHttpsCertificates: true,
+      timeoutSeconds: CGB_MAPTILER_FETCH_TIMEOUT_SECONDS
+    });
+  } catch (error) {
+    throw externalVenueError_('external_venue_unavailable');
+  }
+  if (Number(response.getResponseCode()) !== 200) {
+    throw externalVenueError_('external_venue_unavailable');
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(response.getContentText('UTF-8'));
+  } catch (error) {
+    throw externalVenueError_('external_venue_unavailable');
+  }
+  const features = payload && Array.isArray(payload.features) ? payload.features : [];
+  const feature = features.find(function(candidate) {
+    return cleanExternalText_(candidate && candidate.id, 200) === clientPlace.placeId;
+  });
+  const verified = normalizeMapTilerFeatureForPublication_(feature);
+  if (!verified) throw externalVenueError_('external_venue_unavailable');
+  return verified;
+}
+
+function normalizeMapTilerFeatureForPublication_(feature) {
+  if (!feature || typeof feature !== 'object') return null;
+  const types = (Array.isArray(feature.place_type) ? feature.place_type : [feature.place_type])
+    .filter(Boolean)
+    .map(function(value) { return cleanExternalText_(value, 40).toLowerCase(); });
+  if (types.indexOf('poi') < 0 && types.indexOf('address') < 0) return null;
+
+  const placeId = cleanExternalText_(feature.id, 200);
+  const coordinates = Array.isArray(feature.center)
+    ? feature.center
+    : feature.geometry && feature.geometry.type === 'Point' && Array.isArray(feature.geometry.coordinates)
+      ? feature.geometry.coordinates
+      : null;
+  const longitude = coordinates && Number(coordinates[0]);
+  const latitude = coordinates && Number(coordinates[1]);
+  if (!CGB_EXTERNAL_PLACE_ID_PATTERN.test(placeId) ||
+      !Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
+      !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    return null;
+  }
+
+  const hierarchy = [feature].concat(Array.isArray(feature.context) ? feature.context : []);
+  const matches = function(item, prefix) {
+    const idPrefix = cleanExternalText_(item && item.id, 120).split('.')[0].toLowerCase();
+    const values = [];
+    if (item && Array.isArray(item.place_type)) values.push.apply(values, item.place_type);
+    else if (item && item.place_type) values.push(item.place_type);
+    if (item && item.type) values.push(item.type);
+    return idPrefix === prefix || values.some(function(value) {
+      return cleanExternalText_(value, 40).toLowerCase() === prefix;
+    });
+  };
+  const find = function(prefixes) {
+    for (let index = 0; index < prefixes.length; index += 1) {
+      const item = hierarchy.find(function(candidate) { return matches(candidate, prefixes[index]); });
+      if (item) return item;
+    }
+    return null;
+  };
+  const text = function(item, maximum) {
+    return cleanExternalText_(item && (item.text || item.place_name || item.name), maximum || 160);
+  };
+
+  const country = find(['country']);
+  const rawCountryCode = cleanExternalText_(
+    country && (country.short_code || country.properties && country.properties.short_code || country.country_code) ||
+    feature.properties && (feature.properties.country_code || feature.properties.country) ||
+    '',
+    20
+  );
+  const countryCode = rawCountryCode.split('-').pop()
+    .replace(/[^A-Za-z]/g, '')
+    .slice(0, 2)
+    .toUpperCase();
+  if (!/^[A-Z]{2}$/.test(countryCode)) return null;
+
+  const cityTypes = countryCode === 'US'
+    ? ['municipality', 'joint_municipality', 'place', 'locality']
+    : ['place', 'municipality', 'joint_municipality', 'locality'];
+  const designatedCity = hierarchy.find(function(item) {
+    const designation = cleanExternalText_(
+      item && (item.place_designation || item.properties && item.properties.place_designation),
+      40
+    ).toLowerCase();
+    return ['city', 'town', 'village'].indexOf(designation) >= 0 &&
+      cityTypes.some(function(prefix) { return matches(item, prefix); });
+  });
+  const city = text(designatedCity || find(cityTypes), 140);
+
+  const regionItem = find(['region', 'subregion', 'county']);
+  let region = text(regionItem, 140);
+  if (countryCode === 'US') {
+    const rawRegionCode = cleanExternalText_(
+      regionItem && (
+        regionItem.short_code ||
+        regionItem.properties && regionItem.properties.short_code ||
+        regionItem.country_code
+      ),
+      20
+    );
+    const abbreviation = rawRegionCode.split('-').pop().replace(/[^A-Za-z]/g, '').toUpperCase();
+    region = /^[A-Z]{2}$/.test(abbreviation)
+      ? abbreviation
+      : (CGB_US_REGION_CODES[normalizeExternalComparableText_(region)] || region).toUpperCase();
+  }
+  const postalCode = text(find(['postal_code', 'postcode']), 32);
+
+  const placeName = cleanExternalText_(
+    feature.place_name || feature.matching_place_name,
+    CGB_EXTERNAL_MAX_ADDRESS_LENGTH
+  );
+  const placeNameParts = placeName.split(',').map(function(part) {
+    return cleanExternalText_(part, 240);
+  }).filter(Boolean);
+  const rawText = cleanExternalText_(feature.text || feature.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
+  const name = types.indexOf('address') >= 0
+    ? cleanExternalText_([feature.address, rawText].filter(Boolean).join(' '), CGB_EXTERNAL_MAX_NAME_LENGTH)
+    : rawText || placeNameParts[0];
+
+  let addressLine1 = cleanExternalText_(
+    feature.properties && (feature.properties.address_line_1 || feature.properties.street_address),
+    220
+  );
+  if (!addressLine1 && types.indexOf('address') >= 0) {
+    addressLine1 = cleanExternalText_([feature.address, rawText].filter(Boolean).join(' '), 220);
+  }
+  if (!addressLine1) {
+    const comparableName = normalizeExternalComparableText_(name);
+    addressLine1 = cleanExternalText_(placeNameParts.find(function(part) {
+      return normalizeExternalComparableText_(part) !== comparableName;
+    }), 220);
+  }
+  if (!name || !addressLine1 || !city || !region) return null;
+
+  const countryName = text(country, 140) || countryCode;
+  const address = cleanExternalText_([
+    addressLine1,
+    city,
+    [region, postalCode].filter(Boolean).join(' '),
+    countryName
+  ].filter(Boolean).join(', '), CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
+  const normalizedAddress = normalizeExternalAddressParts_({
+    address_line_1: addressLine1,
+    address_line_2: '',
+    city: city,
+    region: region,
+    postal_code: postalCode,
+    country_code: countryCode
+  });
+  if (!address || !normalizedAddress) return null;
+
+  return {
+    source: CGB_EXTERNAL_SOURCE,
+    placeId: placeId,
+    name: name,
+    address: address,
+    addressLine1: addressLine1,
+    addressLine2: '',
+    city: city,
+    region: region,
+    postalCode: postalCode,
+    countryCode: countryCode,
+    latitude: latitude,
+    longitude: longitude,
+    normalizedAddress: normalizedAddress
+  };
 }
 
 function findCanonicalExternalVenue_(rows, place) {
