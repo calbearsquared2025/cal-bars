@@ -1,0 +1,41 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+const root = new URL('../', import.meta.url);
+const source = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
+
+test('Search Add and List hide the map and Search does not show a selected tray', () => {
+  assert.match(source, /data-command-surface="search"[\s\S]*#map[\s\S]*visibility: hidden !important/);
+  assert.match(source, /data-command-surface="add"[\s\S]*#map[\s\S]*visibility: hidden !important/);
+  assert.match(source, /data-command-surface="list"[\s\S]*#map[\s\S]*visibility: hidden !important/);
+  assert.match(source, /data-command-surface="search"[\s\S]*#venue-tray[\s\S]*display: none !important/);
+});
+
+test('Add shows the current selected game as a context card', () => {
+  assert.match(source, /Current game/);
+  assert.match(source, /gameTitle\(game\)/);
+  assert.match(source, /formatKickoff\(game\)/);
+  assert.match(source, /add-game-context/);
+});
+
+test('Locate Me stays on Map and restores Nearby preview', () => {
+  assert.match(source, /handleLocateClick/);
+  assert.match(source, /requestLocation\('map'\)/);
+  assert.match(source, /setTrayState\('peek'\)/);
+  assert.match(source, /setCommandActive\('map'\)/);
+  assert.match(source, /rankNearbyVenues/);
+  assert.match(source, /fitBounds/);
+});
+
+test('List toggles between Near me and All locations', () => {
+  assert.match(source, /button\.textContent = usingLocation \? 'All locations' : 'Near me'/);
+  assert.match(source, /requestLocation\('list'\)/);
+  assert.match(source, /showAllLocations\(\)/);
+});
+
+test('Nearby sheet restores its handle without allowing it to open List', () => {
+  assert.match(source, /tray--peek \.tray-handle[\s\S]*display: grid !important/);
+  assert.match(source, /disablePeekHandleNavigation/);
+  assert.match(source, /event\.stopImmediatePropagation\(\)/);
+});
