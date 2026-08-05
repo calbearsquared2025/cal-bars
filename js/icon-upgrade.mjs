@@ -1,3 +1,4 @@
+import './map-mobile-refinement.mjs';
 import { createIcon, setIcon } from './icons.mjs';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
