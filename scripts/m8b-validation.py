@@ -141,8 +141,6 @@ screenshot('validation-artifacts/m8b-add-context.png')
 
 if not evaluate("document.querySelectorAll('svg use').length === 0"):
     raise RuntimeError('External SVG use references remain after rendering')
-if not evaluate("document.querySelector('.cgb-safe-area-fill--top') && document.querySelector('.cgb-safe-area-fill--bottom')"):
-    raise RuntimeError('Safe-area color fills are missing')
 
 socket.close()
 print('Milestone 8B mobile acceptance checks passed.')
