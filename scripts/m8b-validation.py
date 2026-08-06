@@ -58,8 +58,8 @@ def wait_for(expression, seconds=15):
 
 def screenshot(path):
     data = command('Page.captureScreenshot', {
-        'format': 'jpeg',
-        'quality': 72,
+        'format': 'webp',
+        'quality': 42,
         'captureBeyondViewport': False,
         'fromSurface': True
     })['data']
@@ -71,7 +71,7 @@ command('Runtime.enable')
 command('Emulation.setDeviceMetricsOverride', {
     'width': 390,
     'height': 844,
-    'deviceScaleFactor': 2,
+    'deviceScaleFactor': 1,
     'mobile': True,
     'screenWidth': 390,
     'screenHeight': 844
@@ -110,7 +110,7 @@ command('Emulation.setGeolocationOverride', {
 evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'All locations'")
 wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
-screenshot('validation-artifacts/m8b-list-nearby.jpg')
+screenshot('validation-artifacts/m8b-list-nearby.webp')
 
 evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("window.CGBApp.getState().origin === null")
@@ -139,7 +139,7 @@ if not evaluate("document.querySelector('#add-context-name')?.textContent.trim()
     raise RuntimeError('Add did not preserve Venue context')
 if not evaluate("document.querySelector('#add-location-button')?.textContent.includes('Add a new location')"):
     raise RuntimeError('Add a new location option is missing')
-screenshot('validation-artifacts/m8b-add-context.jpg')
+screenshot('validation-artifacts/m8b-add-context.webp')
 
 if not evaluate("document.querySelectorAll('svg use').length === 0"):
     raise RuntimeError('External SVG use references remain after rendering')
