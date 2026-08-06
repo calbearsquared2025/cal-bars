@@ -13,11 +13,12 @@ test('expanded profile restores an asymmetric identity and attendance layout', (
   assert.match(source, /padding: 30px 2px 0 0 !important/);
 });
 
-test('planned Watch Party details remain visible in expanded small-phone profiles', () => {
-  assert.match(source, /Watch Party details remain decision-critical on small phones/);
-  assert.match(source, /tray--selected:not\(\[data-selected-density="compact"\]\)[\s\S]*selected-card > \.party-module[\s\S]*display: grid !important/);
-  assert.match(source, /selected-card > \.party-module p[\s\S]*font-size: \.72rem !important/);
-  assert.match(source, /selected-card > \.party-module \.party-module__report/);
+test('planned Watch Party details remain visible in a compact light treatment', () => {
+  assert.match(source, /dark navy is reserved for the primary RSVP action/);
+  assert.match(source, /selected-card > \.party-module[\s\S]*display: grid !important/);
+  assert.match(source, /background: linear-gradient\(135deg, var\(--cgb-gold-50\), var\(--cgb-white\) 78%\)/);
+  assert.match(source, /border-left: 4px solid var\(--cgb-gold-400\)/);
+  assert.match(source, /party-module__report[\s\S]*color: var\(--cgb-ink-500\)/);
 });
 
 test('empty Watch Party prompt includes the approved period and secondary action', () => {
@@ -27,10 +28,18 @@ test('empty Watch Party prompt includes the approved period and secondary action
   assert.match(source, /selected-card__plan-party-action/);
 });
 
-test('utility actions become text-only touch targets with dividers', () => {
+test('utility actions are text-only and presented as one segmented control', () => {
   assert.match(source, /secondary-button \.ui-icon[\s\S]*display: none !important/);
-  assert.match(source, /secondary-button \+ \.secondary-button[\s\S]*border-left/);
-  assert.match(source, /min-height: 44px !important/);
+  assert.match(source, /intent-button \+ \.secondary-button[\s\S]*border-radius: 10px 0 0 10px/);
+  assert.match(source, /secondary-button:last-child[\s\S]*border-radius: 0 10px 10px 0/);
+  assert.match(source, /min-height: 46px !important/);
+});
+
+test('fullscreen control includes an explicit dynamic label', () => {
+  assert.match(source, /#fullscreen-button[\s\S]*min-width: 88px !important/);
+  assert.match(source, /fullscreen-button__label/);
+  assert.match(icons, /label\.textContent = active \? 'Exit' : 'Full screen'/);
+  assert.match(icons, /Exit full-screen map/);
 });
 
 test('bottom navigation uses a pale navy treatment', () => {
@@ -41,4 +50,5 @@ test('bottom navigation uses a pale navy treatment', () => {
 
 test('aesthetic refinement is loaded after the functional mobile refinements', () => {
   assert.match(icons, /import '\.\/mobile-tab-location-refinement\.mjs';[\s\S]*import '\.\/map-profile-aesthetic-refinement\.mjs';/);
+  assert.match(icons, /import '\.\/search-map-refinement\.mjs';/);
 });
