@@ -1,6 +1,6 @@
 Traceback (most recent call last):
-  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 101, in <module>
-    wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
+  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 116, in <module>
+    wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'Near me'")
   File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 57, in wait_for
     raise RuntimeError(f'Timed out waiting for: {expression}')
-RuntimeError: Timed out waiting for: document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'
+RuntimeError: Timed out waiting for: document.querySelector('#clear-search-button')?.textContent.trim() === 'Near me'
