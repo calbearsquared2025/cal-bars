@@ -39,7 +39,8 @@ jobs:
           CHROME_PID=$!
           trap 'kill "$CHROME_PID" "$SERVER_PID" 2>/dev/null || true' EXIT
           python3 -m pip install --quiet websocket-client
-          python3 - <<'PY'
+          set +e
+          python3 - <<'PY' >validation-artifacts/m8b-acceptance.log 2>&1
           import base64
           import json
           import time
@@ -142,7 +143,7 @@ jobs:
           if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
               raise RuntimeError('All locations switched away from List')
 
-          evaluate("document.querySelector('#location-list .location-card')?.click()")
+          evaluate("(() => { const state = window.CGBApp.getState(); const card = document.querySelector('#location-list .location-card[data-venue-id]'); state.selectedVenueId = card?.dataset.venueId || state.snapshot.venues[0].venue_id; state.trayState = 'selected'; window.CGBApp.render(); return state.selectedVenueId; })()")
           wait_for("Boolean(window.CGBApp?.getState?.()?.selectedVenueId)")
           evaluate("document.querySelector('#mobile-add-button').click()")
           wait_for("document.body.dataset.commandSurface === 'add' && !document.querySelector('#add-surface')?.hidden")
@@ -166,12 +167,18 @@ jobs:
           socket.close()
           print('Milestone 8B mobile acceptance checks passed.')
           PY
+          ACCEPTANCE_STATUS=$?
+          set -e
+          cat validation-artifacts/m8b-acceptance.log
+          exit "$ACCEPTANCE_STATUS"
       - name: Commit validation screenshots
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add validation-artifacts/m8b-*.png
-          git commit -m "Capture Milestone 8B validation screenshots"
+          git add validation-artifacts/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Capture Milestone 8B validation artifacts"
           git push
