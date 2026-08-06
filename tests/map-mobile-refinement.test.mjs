@@ -11,12 +11,14 @@ test('selected venues focus the map with a tray-aware offset', () => {
   assert.match(source, /offset: \[0, verticalOffset\]/);
 });
 
-test('the statistics strip is moved into the Map composition only', () => {
+test('the statistics strip is a Map-only floating composition', () => {
   assert.match(source, /function syncStatisticsPlacement/);
   assert.match(source, /mapView\.prepend\(statistics\)/);
   assert.match(source, /dataset\.commandSurface !== 'map'/);
+  assert.match(source, /dataset\.view === 'detail'/);
   assert.match(source, /opening-stat[\s\S]*position: absolute/);
-  assert.match(source, /opening-stat__number[\s\S]*font-size: clamp\(2\.25rem/);
+  assert.match(source, /opening-stat__number[\s\S]*font-size: clamp\(2\.5rem, 11vw, 3rem\)/);
+  assert.match(source, /statistics\.hidden = document\.body\.dataset\.commandSurface !== 'map' \|\|[\s\S]*dataset\.view === 'detail'/);
 });
 
 test('preview follows the selected Venue before the nearby fallback', () => {
@@ -29,6 +31,7 @@ test('preview follows the selected Venue before the nearby fallback', () => {
 
 test('compact and expanded are the only selected tray densities', () => {
   assert.match(source, /dataset\.selectedDensity = expanded \? 'expanded' : 'compact'/);
+  assert.match(source, /dataset\.mapTrayDensity = expanded \? 'expanded' : 'compact'/);
   assert.match(source, /if \(delta < 0 && !selectedTrayExpanded\) setSelectedTrayDensity\(true\)/);
   assert.match(source, /if \(delta > 0 && selectedTrayExpanded\) setSelectedTrayDensity\(false\)/);
   assert.doesNotMatch(source, /setTrayState\('full'\)|applyTrayAction\('up'\)|applyTrayAction\('down'\)/);
@@ -41,8 +44,11 @@ test('compact tray body and handle expand without direct Detail navigation', () 
   assert.doesNotMatch(source, /location\.href|location\.assign|buildVenueUrl/);
 });
 
-test('map controls share one 44 point visual family', () => {
+test('map controls share one size and stay below or away from the tray', () => {
+  assert.match(source, /\.map-actions \{[\s\S]*z-index: 45/);
+  assert.match(source, /data-map-tray-density="expanded"[\s\S]*\.map-actions[\s\S]*display: none/);
   assert.match(source, /map-actions #near-me-button,[\s\S]*maplibregl-ctrl button[\s\S]*min-height: 44px/);
+  assert.match(source, /width: 104px[\s\S]*min-width: 104px[\s\S]*height: 44px/);
   assert.match(source, /border-radius: 12px/);
   assert.match(source, /box-shadow: 0 6px 18px/);
   assert.match(source, /removeZoomControls/);
