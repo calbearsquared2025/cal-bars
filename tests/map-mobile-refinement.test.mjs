@@ -14,11 +14,10 @@ test('selected venues focus the map with a tray-aware offset', () => {
 test('the statistics strip is a Map-only floating composition', () => {
   assert.match(source, /function syncStatisticsPlacement/);
   assert.match(source, /mapView\.prepend\(statistics\)/);
-  assert.match(source, /dataset\.commandSurface !== 'map'/);
-  assert.match(source, /dataset\.view === 'detail'/);
-  assert.match(source, /opening-stat[\s\S]*position: absolute/);
+  assert.match(source, /#map-view > \.opening-stat[\s\S]*position: absolute/);
   assert.match(source, /opening-stat__number[\s\S]*font-size: clamp\(2\.5rem, 11vw, 3rem\)/);
-  assert.match(source, /statistics\.hidden = document\.body\.dataset\.commandSurface !== 'map' \|\|[\s\S]*dataset\.view === 'detail'/);
+  assert.match(source, /statistics\.hidden = document\.body\.dataset\.view === 'detail' \|\|[\s\S]*isMobile\(\)[\s\S]*dataset\.commandSurface !== 'map'/);
+  assert.doesNotMatch(source, /statisticsHome/);
 });
 
 test('preview follows the selected Venue before the nearby fallback', () => {
