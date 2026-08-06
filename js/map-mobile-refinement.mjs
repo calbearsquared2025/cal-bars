@@ -15,7 +15,6 @@ let lastAutoFocusedVenueId = '';
 let lastSelectedVenueId = '';
 let selectedTrayExpanded = false;
 let trayObserver = null;
-let statisticsHome = null;
 let selectedTrayGesture = null;
 let suppressSelectedTrayClick = false;
 
@@ -38,75 +37,83 @@ function installStyles() {
     style.id = STYLE_ID;
   }
   style.textContent = `
+    #map-view > .opening-stat {
+      position: absolute;
+      z-index: 44;
+      top: 16px;
+      left: 20px;
+      width: min(360px, calc(100% - 40px));
+      height: 58px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      overflow: hidden;
+      background: rgba(255, 255, 255, .94);
+      border: 1px solid rgba(1, 1, 51, .1);
+      border-radius: 14px;
+      box-shadow: 0 8px 22px rgba(1, 1, 51, .13);
+      backdrop-filter: blur(10px);
+      pointer-events: none;
+    }
+
+    body[data-view="detail"] #map-view > .opening-stat {
+      display: none;
+    }
+
+    #map-view > .opening-stat .opening-stat__item {
+      min-width: 0;
+      padding: 6px 10px;
+    }
+
+    #map-view > .opening-stat .opening-stat__item + .opening-stat__item {
+      border-left: 1px solid rgba(1, 1, 51, .1);
+    }
+
+    #map-view > .opening-stat strong {
+      height: 100%;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+
+    #map-view > .opening-stat .opening-stat__number {
+      font-family: var(--font-condensed);
+      font-size: clamp(2.5rem, 11vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -.035em;
+      line-height: .85;
+    }
+
+    #map-view > .opening-stat .opening-stat__copy {
+      font-family: var(--font-condensed);
+      font-size: .6875rem;
+      font-weight: 800;
+      letter-spacing: .055em;
+      line-height: 1.04;
+      text-transform: uppercase;
+    }
+
+    #map-view > .opening-stat .opening-stat__copy small {
+      font-size: .625rem;
+      font-weight: 650;
+      letter-spacing: .025em;
+    }
+
     @media (max-width: 899px) {
       body[data-command-surface="map"] #map-view {
         position: relative;
       }
 
       body[data-command-surface="map"] #map-view > .opening-stat {
-        position: absolute;
-        z-index: 44;
         top: 12px;
         right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
-        bottom: auto;
         left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
         width: auto;
-        height: 58px;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        overflow: hidden;
-        background: rgba(255, 255, 255, .94);
-        border: 1px solid rgba(1, 1, 51, .1);
-        border-radius: 14px;
-        box-shadow: 0 8px 22px rgba(1, 1, 51, .13);
-        backdrop-filter: blur(10px);
-        pointer-events: none;
       }
 
-      body:not([data-command-surface="map"]) #map-view > .opening-stat,
-      body[data-view="detail"] #map-view > .opening-stat {
+      body:not([data-command-surface="map"]) #map-view > .opening-stat {
         display: none;
-      }
-
-      #map-view > .opening-stat .opening-stat__item {
-        min-width: 0;
-        padding: 6px 10px;
-      }
-
-      #map-view > .opening-stat .opening-stat__item + .opening-stat__item {
-        border-left: 1px solid rgba(1, 1, 51, .1);
-      }
-
-      #map-view > .opening-stat strong {
-        height: 100%;
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr);
-        align-items: center;
-        gap: 8px;
-        text-align: left;
-      }
-
-      #map-view > .opening-stat .opening-stat__number {
-        font-family: var(--font-condensed);
-        font-size: clamp(2.5rem, 11vw, 3rem);
-        font-weight: 800;
-        letter-spacing: -.035em;
-        line-height: .85;
-      }
-
-      #map-view > .opening-stat .opening-stat__copy {
-        font-family: var(--font-condensed);
-        font-size: .6875rem;
-        font-weight: 800;
-        letter-spacing: .055em;
-        line-height: 1.04;
-        text-transform: uppercase;
-      }
-
-      #map-view > .opening-stat .opening-stat__copy small {
-        font-size: .625rem;
-        font-weight: 650;
-        letter-spacing: .025em;
       }
 
       .map-actions {
@@ -447,25 +454,9 @@ function syncStatisticsPlacement() {
   const mapView = document.querySelector('#map-view');
   if (!statistics || !mapView) return;
 
-  if (!statisticsHome) {
-    statisticsHome = {
-      parent: statistics.parentElement,
-      nextSibling: statistics.nextSibling
-    };
-  }
-
-  if (isMobile()) {
-    if (statistics.parentElement !== mapView) mapView.prepend(statistics);
-    statistics.hidden = document.body.dataset.commandSurface !== 'map' ||
-      document.body.dataset.view === 'detail';
-    return;
-  }
-
-  if (statisticsHome.parent && statistics.parentElement !== statisticsHome.parent) {
-    statisticsHome.parent.insertBefore(statistics, statisticsHome.nextSibling);
-  }
-  statistics.hidden = document.body.dataset.commandSurface !== 'map' ||
-    document.body.dataset.view === 'detail';
+  if (statistics.parentElement !== mapView) mapView.prepend(statistics);
+  statistics.hidden = document.body.dataset.view === 'detail' ||
+    (isMobile() && document.body.dataset.commandSurface !== 'map');
 }
 
 function focusVenue(venueId, { force = false } = {}) {
