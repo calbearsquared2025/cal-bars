@@ -1,0 +1,196 @@
+/* Visual Compliance Work Package A — shared visual foundations only. */
+:root {
+  --font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-condensed: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --mobile-content-gutter: clamp(20px, 5.5vw, 24px);
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-ui);
+}
+
+/* Source Serif 4 is limited to venue identity, major titles, and prominent game names. */
+.command-surface__header h2,
+.tray-list__header h2,
+.dialog-header h2,
+.external-venue-header h2,
+.detail-hero h1,
+.detail-hero h2,
+.venue-detail > h1,
+.venue-detail > h2,
+.selected-card h2,
+.selected-card h3,
+.location-card h2,
+.location-card h3,
+.game-button strong,
+#header-game-label {
+  font-family: var(--font-display);
+}
+
+/* Barlow Condensed is limited to compact labels, classifications, schedule labels, and statistics. */
+.eyebrow,
+[class*="badge"],
+.game-button__eyebrow,
+.game-button > span:last-child,
+.opening-stat__number,
+.opening-stat__copy,
+.tray-summary__count,
+.command-intent strong,
+.search-result-group__heading {
+  font-family: var(--font-condensed);
+}
+
+/* Navigation, controls, body copy, metadata, and contribution labels use Inter. */
+.brand-name,
+.mobile-command,
+.mobile-command span,
+.primary-button,
+.secondary-button,
+.icon-button,
+.text-button,
+.search-submit,
+.command-surface__back,
+.add-action,
+.add-action strong,
+.add-action small,
+.back-link,
+.missing-location-link,
+.add-missing-location {
+  font-family: var(--font-ui);
+}
+
+/* Interactive geometry: preserve quiet visuals while guaranteeing a 44-point target. */
+button,
+input,
+select,
+textarea,
+[role="button"] {
+  min-height: 44px;
+}
+
+button,
+[role="button"] {
+  min-width: 44px;
+}
+
+.brand,
+.back-link,
+.missing-location-link,
+.add-missing-location,
+.site-footer a,
+.action-row a,
+.selected-card a,
+.location-card a,
+.venue-detail a,
+.party-module a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tray-handle {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+@media (max-width: 899px) {
+  /* One horizontal content grid across all mobile destinations and venue surfaces. */
+  .site-header {
+    padding-left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
+  }
+
+  .map-toolbar {
+    left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
+    right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
+  }
+
+  .command-surface__shell,
+  .detail-shell {
+    padding-left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
+  }
+
+  .tray-summary,
+  .tray-list__header,
+  .selected-card,
+  .location-card {
+    padding-left: var(--mobile-content-gutter);
+    padding-right: var(--mobile-content-gutter);
+  }
+
+  /* All four destinations share the same Inter hierarchy and active-state pattern. */
+  .mobile-command {
+    min-height: 44px;
+    color: var(--cgb-ink-500);
+    font-family: var(--font-ui);
+    font-size: .8125rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .mobile-command > span:last-child {
+    font-family: var(--font-ui);
+    font-size: .8125rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.2;
+    text-transform: none;
+  }
+
+  .mobile-command::after {
+    display: none;
+  }
+
+  .mobile-command:is([aria-current="page"], .mobile-command--active) {
+    color: var(--cgb-navy-950);
+  }
+
+  .mobile-command:is([aria-current="page"], .mobile-command--active)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 24px;
+    height: 3px;
+    display: block;
+    transform: translateX(-50%);
+    background: var(--cgb-gold-400);
+  }
+
+  /* Add remains in the same control family; gold appears only when Add is active. */
+  .mobile-command__add-mark {
+    color: var(--cgb-ink-500);
+    background: var(--cgb-neutral-100);
+    border-color: var(--cgb-neutral-300);
+    box-shadow: none;
+  }
+
+  .mobile-command--add:is([aria-current="page"], .mobile-command--active) .mobile-command__add-mark {
+    color: var(--cgb-navy-950);
+    background: var(--cgb-gold-400);
+    border-color: var(--cgb-gold-400);
+  }
+
+  .mobile-command--add:is([aria-current="page"], .mobile-command--active)::after {
+    display: block;
+  }
+
+  .command-surface__back,
+  .header-menu-button,
+  .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .add-report-options button,
+  .command-surface .search-submit {
+    min-height: 44px;
+  }
+}
