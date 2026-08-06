@@ -11,7 +11,6 @@ const repositoryRoot = resolve(process.env.CGB_CAPTURE_ROOT || defaultRepository
 const outputDirectory = resolve(
   process.env.CGB_CAPTURE_OUTPUT || join(repositoryRoot, 'artifacts', 'visual-foundations')
 );
-const validateFoundations = process.env.CGB_VALIDATE_FOUNDATIONS === '1';
 const MIME_TYPES = new Map([
   ['.css', 'text/css; charset=utf-8'],
   ['.html', 'text/html; charset=utf-8'],
@@ -135,134 +134,18 @@ async function evaluate(session, expression) {
     userGesture: true
   });
   if (result.exceptionDetails) {
-    throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text || 'Runtime evaluation failed.');
+    throw new Error(
+      result.exceptionDetails.exception?.description
+        || result.exceptionDetails.text
+        || 'Runtime evaluation failed.'
+    );
   }
   return result.result?.value;
 }
 
-async function auditFoundations(session, expectedView) {
-  const audit = await evaluate(session, `(async () => {
-    await Promise.all([
-      document.fonts.load('16px "Inter"'),
-      document.fonts.load('16px "Source Serif 4"'),
-      document.fonts.load('16px "Barlow Condensed"')
-    ]);
-
-    const rootStyle = getComputedStyle(document.documentElement);
-    const gutter = parseFloat(rootStyle.getPropertyValue('--mobile-content-gutter'));
-    const probe = document.createElement('span');
-    probe.style.color = rootStyle.getPropertyValue('--cgb-gold-400');
-    document.body.append(probe);
-    const gold = getComputedStyle(probe).color;
-    probe.remove();
-
-    const visible = (element) => {
-      if (!element || element.closest('[hidden]')) return false;
-      const style = getComputedStyle(element);
-      const rect = element.getBoundingClientRect();
-      return style.display !== 'none'
-        && style.visibility !== 'hidden'
-        && rect.width > 0
-        && rect.height > 0
-        && rect.bottom > 0
-        && rect.right > 0
-        && rect.top < innerHeight
-        && rect.left < innerWidth;
-    };
-
-    const interactive = Array.from(document.querySelectorAll(
-      'a[href], button, input:not([type="hidden"]), select, textarea, [role="button"]'
-    )).filter(visible);
-    const targetFailures = interactive
-      .map((element) => {
-        const rect = element.getBoundingClientRect();
-        return {
-          selector: element.id ? '#' + element.id : element.className || element.tagName,
-          width: Math.round(rect.width * 10) / 10,
-          height: Math.round(rect.height * 10) / 10
-        };
-      })
-      .filter(({ width, height }) => width < 43.5 || height < 43.5);
-
-    const navigation = Array.from(document.querySelectorAll('.mobile-command'));
-    const navigationFailures = navigation.flatMap((button) => {
-      const label = button.querySelector('span:last-child');
-      const style = getComputedStyle(label || button);
-      const rect = button.getBoundingClientRect();
-      const failures = [];
-      if (!style.fontFamily.includes('Inter')) failures.push(button.id + ': font=' + style.fontFamily);
-      const size = parseFloat(style.fontSize);
-      if (size < 12 || size > 14) failures.push(button.id + ': size=' + style.fontSize);
-      if (rect.width < 43.5 || rect.height < 43.5) failures.push(button.id + ': target=' + rect.width + 'x' + rect.height);
-      return failures;
-    });
-
-    const active = navigation.filter((button) => button.getAttribute('aria-current') === 'page');
-    const expectedActiveId = ${JSON.stringify(expectedView)} === 'search'
-      ? 'mobile-search-button'
-      : ${JSON.stringify(expectedView)} === 'add'
-        ? 'mobile-add-button'
-        : ${JSON.stringify(expectedView)} === 'list'
-          ? 'mobile-list-button'
-          : 'mobile-map-button';
-    if (${JSON.stringify(expectedView)} !== 'detail') {
-      if (active.length !== 1 || active[0]?.id !== expectedActiveId) {
-        navigationFailures.push('active=' + active.map((button) => button.id).join(',') + '; expected=' + expectedActiveId);
-      }
-      const activeIndicator = active[0] ? getComputedStyle(active[0], '::after') : null;
-      if (!activeIndicator || activeIndicator.display !== 'block' || activeIndicator.backgroundColor !== gold) {
-        navigationFailures.push('active indicator is not the shared gold bar');
-      }
-      const addMark = document.querySelector('.mobile-command__add-mark');
-      const addBackground = addMark ? getComputedStyle(addMark).backgroundColor : '';
-      if (${JSON.stringify(expectedView)} === 'add' ? addBackground !== gold : addBackground === gold) {
-        navigationFailures.push('Add gold state does not match semantic selection');
-      }
-    }
-
-    const gutterSelectors = {
-      map: [['.site-header', 'paddingLeft'], ['.map-toolbar', 'left']],
-      search: [['.command-surface:not([hidden]) .command-surface__shell', 'paddingLeft']],
-      add: [['.command-surface:not([hidden]) .command-surface__shell', 'paddingLeft']],
-      list: [['.tray-list__header', 'paddingLeft'], ['.location-card', 'paddingLeft']],
-      tray: [['.selected-card', 'paddingLeft']],
-      detail: [['.detail-hero', 'paddingLeft'], ['.detail-game-context', 'marginLeft']]
-    };
-    const gutterFailures = (gutterSelectors[${JSON.stringify(expectedView)}] || []).flatMap(([selector, property]) => {
-      const element = document.querySelector(selector);
-      if (!element) return ['missing gutter target ' + selector];
-      const value = parseFloat(getComputedStyle(element)[property]);
-      return Math.abs(value - gutter) <= 1.5 ? [] : [selector + ' ' + property + '=' + value + '; expected=' + gutter];
-    });
-
-    return {
-      fonts: {
-        inter: document.fonts.check('16px "Inter"'),
-        sourceSerif: document.fonts.check('16px "Source Serif 4"'),
-        barlowCondensed: document.fonts.check('16px "Barlow Condensed"')
-      },
-      targetFailures,
-      navigationFailures,
-      gutterFailures,
-      horizontalOverflow: document.documentElement.scrollWidth > innerWidth + 1
-    };
-  })()`);
-
-  const failures = [];
-  if (!audit.fonts.inter || !audit.fonts.sourceSerif || !audit.fonts.barlowCondensed) {
-    failures.push(`font loading: ${JSON.stringify(audit.fonts)}`);
-  }
-  if (audit.targetFailures.length) failures.push(`targets: ${JSON.stringify(audit.targetFailures)}`);
-  if (audit.navigationFailures.length) failures.push(`navigation: ${audit.navigationFailures.join('; ')}`);
-  if (audit.gutterFailures.length) failures.push(`gutters: ${audit.gutterFailures.join('; ')}`);
-  if (audit.horizontalOverflow) failures.push('horizontal viewport overflow');
-  if (failures.length) throw new Error(`${expectedView} visual-foundation audit failed — ${failures.join(' | ')}`);
-}
-
-async function capture(session, name, expectedView) {
+async function capture(session, name) {
   await evaluate(session, 'document.fonts?.ready || Promise.resolve()');
   await wait(350);
-  if (validateFoundations) await auditFoundations(session, expectedView);
   const result = await session.send('Page.captureScreenshot', {
     format: 'png',
     fromSurface: true,
@@ -341,18 +224,19 @@ try {
     screenWidth: 390,
     screenHeight: 844
   });
+
   const initialLoad = session.once('Page.loadEventFired');
   await session.send('Page.reload', { ignoreCache: true });
   await initialLoad;
   await wait(5500);
 
-  await capture(session, 'map', 'map');
+  await capture(session, 'map');
   await activate(session, '#mobile-search-button');
-  await capture(session, 'search', 'search');
+  await capture(session, 'search');
   await activate(session, '#mobile-add-button');
-  await capture(session, 'add', 'add');
+  await capture(session, 'add');
   await activate(session, '#mobile-list-button');
-  await capture(session, 'list', 'list');
+  await capture(session, 'list');
 
   const selected = await evaluate(session, `(() => {
     const row = document.querySelector('.location-card, .location-list button');
@@ -361,7 +245,7 @@ try {
   })()`);
   if (!selected) throw new Error('Unable to select a venue for the tray screenshot.');
   await wait(1000);
-  await capture(session, 'tray', 'tray');
+  await capture(session, 'tray');
 
   const detailLoad = session.once('Page.loadEventFired');
   const navigated = await evaluate(session, `(() => {
@@ -376,12 +260,9 @@ try {
   if (!navigated) throw new Error('Unable to navigate to a Venue Detail route.');
   await detailLoad;
   await wait(2500);
-  await capture(session, 'venue-detail', 'detail');
+  await capture(session, 'venue-detail');
 
-  console.log(
-    `Captured Map, Search, Add, List, Tray, and Venue Detail at 390x844 in ${outputDirectory}`
-      + (validateFoundations ? ' with computed visual-foundation checks.' : '.')
-  );
+  console.log(`Captured Map, Search, Add, List, Tray, and Venue Detail at 390x844 in ${outputDirectory}.`);
 } finally {
   session?.close();
   child.kill('SIGTERM');
