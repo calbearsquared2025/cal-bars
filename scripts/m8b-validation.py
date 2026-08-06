@@ -58,11 +58,13 @@ def wait_for(expression, seconds=15):
 
 def screenshot(path):
     data = command('Page.captureScreenshot', {
-        'format': 'png',
+        'format': 'jpeg',
+        'quality': 72,
         'captureBeyondViewport': False,
         'fromSurface': True
     })['data']
     Path(path).write_bytes(base64.b64decode(data))
+    Path(f'{path}.b64').write_text(data, encoding='ascii')
 
 command('Page.enable')
 command('Runtime.enable')
@@ -108,7 +110,7 @@ command('Emulation.setGeolocationOverride', {
 evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'All locations'")
 wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
-screenshot('validation-artifacts/m8b-list-nearby.png')
+screenshot('validation-artifacts/m8b-list-nearby.jpg')
 
 evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("window.CGBApp.getState().origin === null")
@@ -137,7 +139,7 @@ if not evaluate("document.querySelector('#add-context-name')?.textContent.trim()
     raise RuntimeError('Add did not preserve Venue context')
 if not evaluate("document.querySelector('#add-location-button')?.textContent.includes('Add a new location')"):
     raise RuntimeError('Add a new location option is missing')
-screenshot('validation-artifacts/m8b-add-context.png')
+screenshot('validation-artifacts/m8b-add-context.jpg')
 
 if not evaluate("document.querySelectorAll('svg use').length === 0"):
     raise RuntimeError('External SVG use references remain after rendering')
