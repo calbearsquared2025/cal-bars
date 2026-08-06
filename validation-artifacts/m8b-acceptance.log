@@ -1,6 +1,6 @@
 Traceback (most recent call last):
-  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 155, in <module>
-    wait_for("document.body.dataset.commandSurface === 'map' && Boolean(document.querySelector('.selected-card'))")
+  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 153, in <module>
+    wait_for("Boolean(document.querySelector('.selected-card__directions-inline'))")
   File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 57, in wait_for
     raise RuntimeError(f'Timed out waiting for: {expression}')
-RuntimeError: Timed out waiting for: document.body.dataset.commandSurface === 'map' && Boolean(document.querySelector('.selected-card'))
+RuntimeError: Timed out waiting for: Boolean(document.querySelector('.selected-card__directions-inline'))
