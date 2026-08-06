@@ -48,19 +48,21 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-badges {
-        min-height: 20px;
+        min-height: 24px;
         gap: 6px;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-badge {
-        min-height: 20px;
-        padding: 3px 7px 2px;
-        border-radius: 999px;
+        min-height: 24px;
+        padding: 4px 9px 3px;
+        border-radius: 2px;
+        clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
         font-family: var(--font-condensed);
-        font-size: .61rem;
+        font-size: .75rem;
         font-weight: 750;
         letter-spacing: .055em;
         line-height: 1.15;
+        text-transform: uppercase;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__title-link {
@@ -78,14 +80,14 @@ function installStyles() {
         padding: .02em 0 .08em;
         color: inherit;
         font-family: var(--font-display);
-        font-size: clamp(1.36rem, 6vw, 1.72rem);
+        font-size: clamp(1.6875rem, 7.5vw, 2rem);
         font-weight: 700;
         line-height: 1.12;
         overflow-wrap: anywhere;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-location {
-        min-height: 30px;
+        min-height: 32px;
         display: flex;
         flex-wrap: wrap;
         align-items: center;
@@ -93,7 +95,7 @@ function installStyles() {
         margin: 0;
         color: var(--cgb-ink-600);
         font-family: var(--font-ui);
-        font-size: .78rem;
+        font-size: .875rem;
         line-height: 1.35;
       }
 
@@ -109,11 +111,11 @@ function installStyles() {
         min-height: 44px;
         display: inline-flex;
         align-items: center;
-        margin: -7px -8px;
-        padding: 7px 8px;
+        margin: -6px -8px;
+        padding: 6px 8px;
         color: var(--cgb-navy-900);
         font-family: var(--font-ui);
-        font-size: .78rem;
+        font-size: .875rem;
         font-weight: 750;
         text-decoration: underline;
         text-decoration-thickness: 1px;
@@ -133,8 +135,8 @@ function installStyles() {
         border: 0;
         border-radius: 0;
         font-family: var(--font-ui);
-        font-size: .82rem;
-        font-weight: 650;
+        font-size: .875rem;
+        font-weight: 600;
         letter-spacing: 0;
         line-height: 1.35;
         text-align: left;
@@ -148,15 +150,19 @@ function installStyles() {
         -webkit-line-clamp: 2;
       }
 
+      .bear-count__compact {
+        display: none;
+      }
+
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
         color: var(--cgb-ink-600);
-        font-weight: 550;
+        font-weight: 500;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-activity-history {
         margin-top: -5px;
         color: var(--cgb-ink-500);
-        font-size: .72rem;
+        font-size: .8125rem;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module {
@@ -181,7 +187,7 @@ function installStyles() {
         margin: 0;
         color: var(--cgb-ink-700);
         font-family: var(--font-ui);
-        font-size: .75rem;
+        font-size: .875rem;
         line-height: 1.3;
       }
 
@@ -215,8 +221,8 @@ function installStyles() {
         border-radius: 12px;
         box-shadow: none;
         font-family: var(--font-ui);
-        font-size: 1rem;
-        font-weight: 800;
+        font-size: 1.125rem;
+        font-weight: 650;
         line-height: 1.2;
       }
 
@@ -247,8 +253,8 @@ function installStyles() {
         border: 0;
         border-radius: 10px;
         font-family: var(--font-ui);
-        font-size: .72rem;
-        font-weight: 650;
+        font-size: .8125rem;
+        font-weight: 600;
         text-decoration: underline;
         text-underline-offset: 3px;
       }
@@ -265,8 +271,8 @@ function installStyles() {
         border: 1px solid var(--cgb-neutral-300);
         border-radius: 11px;
         font-family: var(--font-ui);
-        font-size: .76rem;
-        font-weight: 750;
+        font-size: .875rem;
+        font-weight: 650;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon {
@@ -287,8 +293,8 @@ function installStyles() {
         border-radius: 0;
         box-shadow: none;
         font-family: var(--font-ui);
-        font-size: .72rem;
-        font-weight: 650;
+        font-size: .8125rem;
+        font-weight: 600;
         text-decoration: underline;
         text-underline-offset: 3px;
       }
@@ -312,7 +318,7 @@ function installStyles() {
         display: block;
         overflow: hidden;
         padding-bottom: .08em;
-        font-size: 1.08rem;
+        font-size: 1.125rem;
         line-height: 1.12;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -321,7 +327,7 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-location {
         min-height: 22px;
         overflow: hidden;
-        font-size: .72rem;
+        font-size: .75rem;
         line-height: 1.25;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -342,10 +348,18 @@ function installStyles() {
         display: block;
         overflow: hidden;
         color: var(--cgb-ink-600);
-        font-size: .72rem;
+        font-size: .75rem;
         line-height: 1.25;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .bear-count__expanded {
+        display: none;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .bear-count__compact {
+        display: inline;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="expanded"] .selected-card__title-link:focus-visible,
@@ -378,12 +392,31 @@ function refinePartyModules(card) {
   card.querySelectorAll(':scope > .party-module').forEach(classifyPartyLines);
 }
 
+function compactAttendanceCopy(copy) {
+  if (/^(?:No Bears\b|0 Bears?\b)/i.test(copy)) return 'Be the first.';
+  const match = copy.match(/^(\d+)\s+Bears?\b/i);
+  if (!match) return copy;
+  const count = Number(match[1]);
+  return count === 1 ? '1 Bear' : `${count} Bears`;
+}
+
 function refineAttendance(card) {
   const count = card.querySelector('.bear-count');
   if (!count) return;
-  const copy = count.textContent.replace(/\s+/g, ' ').trim();
-  count.classList.toggle('bear-count--empty', /^No Bears\b/i.test(copy) || /^0 Bears?\b/i.test(copy));
-  if (copy) count.setAttribute('aria-label', copy);
+  const existingExpanded = count.querySelector('.bear-count__expanded');
+  const copy = (existingExpanded?.textContent || count.textContent).replace(/\s+/g, ' ').trim();
+  if (!copy) return;
+
+  count.classList.toggle('bear-count--empty', /^(?:No Bears\b|0 Bears?\b)/i.test(copy));
+  count.setAttribute('aria-label', copy);
+
+  const expanded = document.createElement('span');
+  expanded.className = 'bear-count__expanded';
+  expanded.textContent = copy;
+  const compact = document.createElement('span');
+  compact.className = 'bear-count__compact';
+  compact.textContent = compactAttendanceCopy(copy);
+  count.replaceChildren(expanded, compact);
 }
 
 function ensureDirections(location, directions) {
@@ -413,6 +446,17 @@ function ensureTitleLink(card, details) {
   }
   link.href = details.href;
   link.setAttribute('aria-label', `Open details for ${title.textContent.trim()}`);
+}
+
+function ensureIdentityOrder(card) {
+  const heading = card.querySelector('.selected-card__header > div');
+  const link = heading?.querySelector('.selected-card__title-link');
+  const badges = heading?.querySelector('.venue-badges');
+  const location = heading?.querySelector('.venue-location');
+  if (!heading || !link) return;
+  heading.append(link);
+  if (badges) heading.append(badges);
+  if (location) heading.append(location);
 }
 
 function refineIntent(intent, row) {
@@ -474,6 +518,7 @@ function refineActions(card) {
 
   if (intent) refineIntent(intent, row);
   ensureTitleLink(card, details);
+  ensureIdentityOrder(card);
 }
 
 function refineSelectedCard(root = document) {
