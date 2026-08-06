@@ -1,10 +1,11 @@
+import './final-functional-stabilization.mjs';
 import './map-mobile-refinement.mjs';
 import './map-profile-first-pass.mjs';
 import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
-import { createIcon, setIcon } from './icons.mjs';
+import { createIcon, inlineSpriteIcons, setIcon } from './icons.mjs';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
@@ -30,6 +31,8 @@ function actionIconName(element) {
 }
 
 export function upgradeRenderedIcons(root = document) {
+  inlineSpriteIcons(root);
+
   root.querySelectorAll('.marker-star').forEach((star) => {
     replaceTextWithIcon(star, 'star', 'ui-icon marker-star__icon');
   });

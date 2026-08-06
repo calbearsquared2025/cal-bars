@@ -36,10 +36,9 @@
     <path d="M9 15v-3h6m0 0-2.5-2.5M15 12l-2.5 2.5"/>
   </symbol>
   <symbol id="icon-share" viewBox="0 0 24 24">
-    <circle cx="18" cy="5" r="2.5"/>
-    <circle cx="6" cy="12" r="2.5"/>
-    <circle cx="18" cy="19" r="2.5"/>
-    <path d="m8.2 10.8 7.6-4.5m-7.6 6.9 7.6 4.5"/>
+    <path d="M12 16V3"/>
+    <path d="m7 8 5-5 5 5"/>
+    <path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/>
   </symbol>
   <symbol id="icon-details" viewBox="0 0 24 24">
     <rect x="4" y="4" width="16" height="16" rx="3"/>
