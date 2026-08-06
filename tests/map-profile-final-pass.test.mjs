@@ -13,29 +13,49 @@ test('final profile remains the governing selected-venue hierarchy', () => {
   assert.doesNotMatch(source, /98px|minmax\(112px, 34%\)/);
 });
 
-test('expanded venue identity supports two lines and title navigation', () => {
+test('venue identity leads, supports two lines, and opens Detail', () => {
+  assert.match(source, /selected-card h2[\s\S]*font-size: clamp\(1\.6875rem, 7\.5vw, 2rem\)/);
   assert.match(source, /selected-card h2[\s\S]*overflow-wrap: anywhere/);
   assert.match(source, /line-height: 1\.12/);
   assert.match(source, /function ensureTitleLink/);
   assert.match(source, /selected-card__title-link/);
+  assert.match(source, /function ensureIdentityOrder/);
+  assert.match(source, /heading\.append\(link\)[\s\S]*heading\.append\(badges\)[\s\S]*heading\.append\(location\)/);
 });
 
-test('attendance is full-width Inter sentence copy rather than a side card', () => {
+test('classification uses one clipped uppercase badge family', () => {
+  assert.match(source, /\.venue-badge[\s\S]*min-height: 24px/);
+  assert.match(source, /font-size: \.75rem/);
+  assert.match(source, /text-transform: uppercase/);
+  assert.match(source, /clip-path: polygon/);
+  assert.doesNotMatch(source, /\.venue-badge[\s\S]*border-radius: 999px/);
+});
+
+test('attendance is full-width Inter sentence copy with compact browse language', () => {
   assert.match(source, /\.bear-count,[\s\S]*font-family: var\(--font-ui\)/);
+  assert.match(source, /\.bear-count,[\s\S]*font-size: \.875rem/);
   assert.match(source, /-webkit-line-clamp: 2/);
   assert.match(source, /text-transform: none/);
+  assert.match(source, /function compactAttendanceCopy/);
+  assert.match(source, /return 'Be the first\.'/);
+  assert.match(source, /count === 1 \? '1 Bear' : `\$\{count\} Bears`/);
+  assert.match(source, /bear-count__expanded/);
+  assert.match(source, /bear-count__compact/);
   assert.doesNotMatch(source, /bear-count__number|createIcon\('users'/);
 });
 
 test('compact tray keeps identity metadata and activity while hiding expanded content', () => {
   assert.match(source, /data-selected-density="compact"[\s\S]*selected-card h2[\s\S]*white-space: nowrap/);
   assert.match(source, /data-selected-density="compact"[\s\S]*\.bear-count[\s\S]*display: block/);
+  assert.match(source, /data-selected-density="compact"[\s\S]*bear-count__expanded[\s\S]*display: none/);
+  assert.match(source, /data-selected-density="compact"[\s\S]*bear-count__compact[\s\S]*display: inline/);
   assert.match(source, /data-selected-density="compact"[\s\S]*\.party-module,[\s\S]*\.action-row[\s\S]*display: none/);
 });
 
 test('expanded Watch Party content is limited to host and critical restriction', () => {
   assert.match(source, /party-module__host/);
   assert.match(source, /party-module__critical/);
+  assert.match(source, /font-size: \.875rem/);
   assert.match(source, /:not\(\.party-module__host\):not\(\.party-module__critical\)/);
   assert.match(source, /restriction\|reservation\|required\|ticket\|cover/);
 });
@@ -43,15 +63,16 @@ test('expanded Watch Party content is limited to host and critical restriction',
 test('participation is the sole primary action with separate tertiary Undo', () => {
   assert.match(source, /background: var\(--cgb-gold-400\)/);
   assert.match(source, /min-height: 50px/);
+  assert.match(source, /font-size: 1\.125rem/);
   assert.match(source, /You’ll be here/);
   assert.match(source, /className = 'intent-undo'/);
   assert.match(source, /dataset\.undoProxy = 'true'/);
 });
 
 test('Directions and Share are secondary while Details remains tertiary', () => {
-  assert.match(source, /selected-card__directions-inline/);
-  assert.match(source, /selected-card__share/);
-  assert.match(source, /selected-card__details/);
+  assert.match(source, /selected-card__directions-inline[\s\S]*font-size: \.875rem/);
+  assert.match(source, /selected-card__share[\s\S]*font-size: \.875rem/);
+  assert.match(source, /selected-card__details[\s\S]*background: transparent[\s\S]*border: 0/);
   assert.match(source, /details\.textContent = 'Details'/);
   assert.doesNotMatch(source, /details\?\.remove\(\)/);
 });
