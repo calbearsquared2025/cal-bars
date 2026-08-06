@@ -36,22 +36,12 @@ function installStyles() {
     style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      .selected-card__directions-inline::before {
-        content: none !important;
-      }
-
       .selected-card__location-separator {
         flex: 0 0 auto;
         margin: 0 6px 0 2px;
         color: var(--cgb-ink-500, #657083);
         text-decoration: none;
         pointer-events: none;
-      }
-
-      .selected-card__directions-inline {
-        min-height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
       }
 
       .cgb-safe-area-fill {
