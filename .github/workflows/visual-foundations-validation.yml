@@ -1,0 +1,44 @@
+name: Visual foundations validation
+
+on:
+  push:
+    branches:
+      - agent/m8a-visual-foundation
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Automated tests
+        run: npm test
+      - name: Data validation
+        run: npm run validate:data
+      - name: Browser validation
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: npm run test:browser
+      - name: Migration validation
+        run: npm run test:migration
+      - name: Diff check
+        run: git diff --check origin/main...HEAD
+      - name: Capture iPhone screenshots
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node scripts/capture-visual-foundations.mjs
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-foundations-${{ github.sha }}
+          path: artifacts/visual-foundations/*.png
+          if-no-files-found: error
+          retention-days: 30
