@@ -110,7 +110,8 @@ button,
   align-items: center;
 }
 
-.tray-handle {
+.tray-handle,
+.maplibregl-ctrl button {
   min-width: 44px;
   min-height: 44px;
 }
