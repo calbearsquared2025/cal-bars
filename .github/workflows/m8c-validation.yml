@@ -37,6 +37,38 @@ jobs:
           else
             echo 'M8C_PHASE=before' >> "$GITHUB_ENV"
           fi
+      - name: Prepare deterministic screenshot fixture
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('data/fallback-v2.json')
+          snapshot = json.loads(path.read_text())
+          game = next((item for item in snapshot['games'] if item.get('game_status') == 'upcoming'), snapshot['games'][0])
+          venue = next((item for item in snapshot['venues'] if item.get('venue_type') == 'cal_bar'), snapshot['venues'][0])
+          snapshot['watchParties'] = [{
+              'watch_party_id': 'wp_8c8c8c8c8c8c8c8c8c8c8c8c',
+              'venue_id': venue['venue_id'],
+              'game_id': game['game_id'],
+              'organizer_name': 'Cal Alumni Association',
+              'organizer_type': 'alumni_group',
+              'source_type': 'cgb_added',
+              'age_policy': 'unknown',
+              'sound_status': 'confirmed_on',
+              'event_status': 'active',
+              'event_start_at': game.get('kickoff_at') or '',
+              'official_event_url': 'https://alumni.berkeley.edu/',
+              'updated_at': '2026-08-05T12:00:00Z'
+          }]
+          pair = next((row for row in snapshot['fanCounts'] if row['game_id'] == game['game_id'] and row['venue_id'] == venue['venue_id']), None)
+          if pair:
+              pair['count'] = 12
+          else:
+              snapshot['fanCounts'].append({'game_id': game['game_id'], 'venue_id': venue['venue_id'], 'count': 12})
+          path.write_text(json.dumps(snapshot, indent=2) + '\n')
+          PY
       - name: Capture mobile screenshots
         shell: bash
         run: |
@@ -55,6 +87,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          git checkout -- data/fallback-v2.json
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add "docs/validation/m8c/${M8C_PHASE}/"
