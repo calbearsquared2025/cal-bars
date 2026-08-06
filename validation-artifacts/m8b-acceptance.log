@@ -1,6 +1,4 @@
 Traceback (most recent call last):
-  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 153, in <module>
-    wait_for("Boolean(document.querySelector('.selected-card__directions-inline'))")
-  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 57, in wait_for
-    raise RuntimeError(f'Timed out waiting for: {expression}')
-RuntimeError: Timed out waiting for: Boolean(document.querySelector('.selected-card__directions-inline'))
+  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 145, in <module>
+    raise RuntimeError('Safe-area color fills are missing')
+RuntimeError: Safe-area color fills are missing
