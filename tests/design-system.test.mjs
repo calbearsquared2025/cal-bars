@@ -128,13 +128,12 @@ test('placeholder mark and shared icon system remain temporary-compatible and de
 
   for (const symbol of [
     'icon-search', 'icon-location', 'icon-map', 'icon-calendar', 'icon-near-me',
-    'icon-fullscreen', 'icon-directions', 'icon-share', 'icon-star'
+    'icon-fullscreen', 'icon-directions', 'icon-share', 'icon-star', 'icon-details'
   ]) {
     assert.match(icons, new RegExp(`id="${symbol}"`));
   }
 
-  assert.doesNotMatch(icons, /id="icon-details"/);
-
+  assert.doesNotMatch(iconUpgrade, /(?:createIcon|setIcon)\([^)]*['"]details['"]/);
   assert.match(iconUpgrade, /upgradeRenderedIcons/);
   assert.match(iconUpgrade, /CGBApp\?\.subscribe/);
   assert.doesNotMatch(`${iconUpgrade}\n${shellControls}`, /MutationObserver/);
