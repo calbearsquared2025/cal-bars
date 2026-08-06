@@ -1,10 +1,4 @@
-import {
-  bearCountCopy,
-  markerKind,
-  NEARBY_RADIUS_MILES,
-  rankVenues,
-  venueTypeLabel
-} from './core.mjs';
+import { NEARBY_RADIUS_MILES } from './core.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const VALID_VIEWS = new Set(['map', 'search', 'add', 'list']);
@@ -17,47 +11,6 @@ function isMobile() {
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
-}
-
-function formatDistance(distance) {
-  const value = Number(distance);
-  if (!Number.isFinite(value)) return '';
-  if (value < 0.1) return '<0.1 mi';
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)} mi`;
-}
-
-function rankedLead(state = appState()) {
-  if (!state?.snapshot || !state.gameId) return null;
-  return rankVenues(state.snapshot, state.gameId, state.origin)?.[0] || null;
-}
-
-function updatePeek() {
-  const state = appState();
-  const lead = rankedLead(state);
-  const title = document.querySelector('#tray-summary-title');
-  const copy = document.querySelector('#tray-summary-copy');
-  const count = document.querySelector('#tray-summary-count');
-  const marker = document.querySelector('#tray-summary-marker');
-  const button = document.querySelector('#browse-locations-button');
-  if (!title || !copy || !count || !marker || !button) return;
-
-  if (!lead) {
-    title.textContent = 'Find your Cal crowd';
-    copy.textContent = 'Tap a pin or open List to browse locations.';
-    count.textContent = '';
-    marker.dataset.kind = 'community-location';
-    button.setAttribute('aria-label', 'Open the location list');
-    return;
-  }
-
-  const { venue, party, fanCount, distance } = lead;
-  const type = party ? 'Watch Party' : venueTypeLabel(venue);
-  const meta = [type, formatDistance(distance), 'View list'].filter(Boolean).join(' · ');
-  title.textContent = venue.name;
-  copy.textContent = meta;
-  count.textContent = bearCountCopy(fanCount);
-  marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
-  button.setAttribute('aria-label', `Open the location list. First result: ${venue.name}, ${meta}`);
 }
 
 function numericText(element) {
@@ -183,7 +136,6 @@ function scheduleSync() {
 }
 
 function sync() {
-  updatePeek();
   updateStatistics();
   updateListHeading();
   updateAddContext();
