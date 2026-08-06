@@ -104,6 +104,7 @@ button,
 .location-card a,
 .venue-detail a,
 .party-module a {
+  min-width: 44px;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
