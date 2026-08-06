@@ -1,4 +1,6 @@
 Traceback (most recent call last):
-  File "<stdin>", line 82, in <module>
-  File "<stdin>", line 57, in wait_for
+  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 101, in <module>
+    wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
+  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 57, in wait_for
+    raise RuntimeError(f'Timed out waiting for: {expression}')
 RuntimeError: Timed out waiting for: document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'
