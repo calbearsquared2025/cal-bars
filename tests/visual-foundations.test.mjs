@@ -2,18 +2,18 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const [css, loader, mobilePolish] = await Promise.all([
+const [css, html] = await Promise.all([
   readFile(new URL('../css/visual-foundations.css', import.meta.url), 'utf8'),
-  readFile(new URL('../js/visual-foundations.mjs', import.meta.url), 'utf8'),
-  readFile(new URL('../js/mobile-polish.mjs', import.meta.url), 'utf8')
+  readFile(new URL('../index.html', import.meta.url), 'utf8')
 ]);
 
-test('approved typefaces are loaded and assigned through shared font roles', () => {
-  assert.match(loader, /family=Barlow\+Condensed/);
-  assert.match(loader, /family=Inter/);
-  assert.match(loader, /family=Source\+Serif\+4/);
-  assert.match(loader, /css\/visual-foundations\.css/);
-  assert.match(mobilePolish, /import '\.\/visual-foundations\.mjs';/);
+test('approved typefaces load from the document head and use shared font roles', () => {
+  assert.match(html, /rel="preconnect" href="https:\/\/fonts\.googleapis\.com"/);
+  assert.match(html, /rel="preconnect" href="https:\/\/fonts\.gstatic\.com" crossorigin/);
+  assert.match(html, /family=Barlow\+Condensed:wght@600\.\.900/);
+  assert.match(html, /family=Inter:wght@400\.\.900/);
+  assert.match(html, /family=Source\+Serif\+4:opsz,wght@8\.\.60,400\.\.800/);
+  assert.match(html, /css\/mobile-polish\.css[\s\S]*css\/visual-foundations\.css/);
 
   assert.match(css, /--font-ui:\s*"Inter"/);
   assert.match(css, /--font-display:\s*"Source Serif 4"/);
@@ -65,5 +65,4 @@ test('bottom navigation uses Inter and one active-state pattern for all destinat
 
 test('the work package adds no important override', () => {
   assert.doesNotMatch(css, /!important/);
-  assert.doesNotMatch(loader, /!important/);
 });
