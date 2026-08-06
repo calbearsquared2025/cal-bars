@@ -1,4 +1,6 @@
 Traceback (most recent call last):
-  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 112, in <module>
-    raise RuntimeError('Nearby switched away from List')
-RuntimeError: Nearby switched away from List
+  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 155, in <module>
+    wait_for("document.body.dataset.commandSurface === 'map' && Boolean(document.querySelector('.selected-card'))")
+  File "/home/runner/work/cal-bars/cal-bars/scripts/m8b-validation.py", line 57, in wait_for
+    raise RuntimeError(f'Timed out waiting for: {expression}')
+RuntimeError: Timed out waiting for: document.body.dataset.commandSurface === 'map' && Boolean(document.querySelector('.selected-card'))
