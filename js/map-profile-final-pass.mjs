@@ -8,334 +8,448 @@ function isMobile() {
 }
 
 function installStyles() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
+  let style = document.getElementById(STYLE_ID);
+  if (!style) {
+    style = document.createElement('style');
+    style.id = STYLE_ID;
+  }
   style.textContent = `
     @media (max-width: 899px) {
-      #map-view .selected-card .badge--community,
-      #location-list .location-card .badge--community {
-        display: none !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 10px;
+        padding: 0 var(--mobile-content-gutter) 16px;
+        background: var(--cgb-white);
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
-        grid-template-columns: minmax(0, 1fr) 98px !important;
-        gap: 9px 14px !important;
-        padding: 0 14px 12px !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > * {
+        min-width: 0;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        margin: 0 !important;
-        padding: 8px 0 9px 12px !important;
-        background: transparent !important;
-        border-left: 3px solid var(--cgb-navy-900) !important;
-        border-bottom: 0 !important;
+        display: block;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        border: 0;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div {
+        min-width: 0;
+        display: grid;
+        gap: 4px;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > .icon-button {
+        display: none;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-badges {
+        min-height: 20px;
+        gap: 6px;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-badge {
+        min-height: 20px;
+        padding: 3px 7px 2px;
+        border-radius: 999px;
+        font-family: var(--font-condensed);
+        font-size: .61rem;
+        font-weight: 750;
+        letter-spacing: .055em;
+        line-height: 1.15;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__title-link {
+        min-width: 0;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        color: var(--cgb-navy-950);
+        text-decoration: none;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card h2 {
-        margin: 4px 0 3px !important;
-        font-size: clamp(1.3rem, 6vw, 1.72rem) !important;
-        line-height: 1.01 !important;
+        width: 100%;
+        margin: 0;
+        padding: .02em 0 .08em;
+        color: inherit;
+        font-family: var(--font-display);
+        font-size: clamp(1.36rem, 6vw, 1.72rem);
+        font-weight: 700;
+        line-height: 1.12;
+        overflow-wrap: anywhere;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-location {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        align-items: center !important;
-        gap: 0 !important;
-        font-size: .78rem !important;
+        min-height: 30px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0;
+        margin: 0;
+        color: var(--cgb-ink-600);
+        font-family: var(--font-ui);
+        font-size: .78rem;
+        line-height: 1.35;
+      }
+
+      .selected-card__location-separator,
+      .selected-card__directions-separator {
+        flex: 0 0 auto;
+        margin: 0 6px;
+        color: var(--cgb-neutral-400);
       }
 
       .selected-card__directions-inline {
-        min-height: 36px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        margin: -8px -8px -8px 2px !important;
-        padding: 8px !important;
-        color: var(--cgb-navy-900) !important;
-        font-weight: 800 !important;
-        text-decoration: underline !important;
-        text-decoration-thickness: 1px !important;
-        text-underline-offset: 3px !important;
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        margin: -7px -8px;
+        padding: 7px 8px;
+        color: var(--cgb-navy-900);
+        font-family: var(--font-ui);
+        font-size: .78rem;
+        font-weight: 750;
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
       }
 
-      .selected-card__directions-inline::before {
-        content: '·' !important;
-        margin-right: 6px !important;
-        color: var(--cgb-ink-500) !important;
-        text-decoration: none !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-description {
+        display: none;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-activity-history {
+        max-width: none;
+        margin: 0;
+        color: var(--cgb-ink-700);
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        font-family: var(--font-ui);
+        font-size: .82rem;
+        font-weight: 650;
+        letter-spacing: 0;
+        line-height: 1.35;
+        text-align: left;
+        text-transform: none;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        align-self: center !important;
-        justify-self: stretch !important;
-        min-height: 94px !important;
-        display: grid !important;
-        place-content: center !important;
-        justify-items: center !important;
-        gap: 1px !important;
-        margin: 2px 0 0 !important;
-        padding: 8px 7px !important;
-        color: var(--cgb-navy-950) !important;
-        background: linear-gradient(180deg, var(--cgb-gold-50), var(--cgb-white)) !important;
-        border: 1px solid var(--cgb-gold-300, #f2cc67) !important;
-        border-radius: 14px !important;
-        line-height: 1.08 !important;
-        text-align: center !important;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
       }
 
-      .bear-count__icon {
-        width: 18px !important;
-        height: 18px !important;
-        color: var(--cgb-gold-500) !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
+        color: var(--cgb-ink-600);
+        font-weight: 550;
       }
 
-      .bear-count__number {
-        color: var(--cgb-navy-950) !important;
-        font-family: var(--font-display) !important;
-        font-size: 2rem !important;
-        font-weight: 700 !important;
-        line-height: .9 !important;
-      }
-
-      .bear-count__label,
-      .bear-count__prompt {
-        display: block !important;
-        max-width: 78px !important;
-        font-family: var(--font-ui) !important;
-        font-size: .65rem !important;
-        font-weight: 750 !important;
-        line-height: 1.12 !important;
-        text-transform: none !important;
-      }
-
-      .bear-count__prompt {
-        margin-top: 2px !important;
-        font-weight: 850 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .party-module,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {
-        grid-column: 1 / -1 !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-activity-history {
+        margin-top: -5px;
+        color: var(--cgb-ink-500);
+        font-size: .72rem;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module {
-        display: grid !important;
-        gap: 4px !important;
-        margin: 0 !important;
-        padding: 10px 12px 9px !important;
-        color: var(--cgb-navy-950) !important;
-        background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 78%) !important;
-        border: 1px solid var(--cgb-gold-300, #f2cc67) !important;
-        border-left: 4px solid var(--cgb-gold-400) !important;
-        border-radius: 14px !important;
-        clip-path: none !important;
-        box-shadow: none !important;
+        display: grid;
+        gap: 3px;
+        margin: 0;
+        padding: 0;
+        color: var(--cgb-ink-700);
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title {
-        display: none !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module > :not(.party-module__host):not(.party-module__critical) {
+        display: none;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p {
-        margin: 0 !important;
-        color: var(--cgb-ink-700) !important;
-        font-size: .74rem !important;
-        line-height: 1.27 !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__host,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__critical {
+        margin: 0;
+        color: var(--cgb-ink-700);
+        font-family: var(--font-ui);
+        font-size: .75rem;
+        line-height: 1.3;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta {
-        color: var(--cgb-navy-900) !important;
-        font-weight: 850 !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__critical {
+        color: var(--cgb-navy-900);
+        font-weight: 700;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module a:not(.party-module__report) {
-        width: fit-content !important;
-        color: var(--cgb-navy-900) !important;
-        font-size: .73rem !important;
-        font-weight: 800 !important;
-        line-height: 1.25 !important;
-        text-decoration-thickness: 1px !important;
-        text-underline-offset: 3px !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module a:not(.party-module__report) .ui-icon {
-        display: none !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__report {
-        justify-self: end !important;
-        margin-top: 1px !important;
-        padding-top: 2px !important;
-        color: var(--cgb-ink-500) !important;
-        border: 0 !important;
-        font-size: .64rem !important;
-        font-weight: 650 !important;
-        line-height: 1.2 !important;
-        text-decoration-thickness: 1px !important;
-        text-underline-offset: 3px !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
+        display: none;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {
-        display: grid !important;
-        grid-template-columns: minmax(0, 2fr) minmax(96px, 1fr) !important;
-        gap: 8px !important;
-        margin-top: 0 !important;
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 10px;
+        margin: 0;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .intent-button {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        min-height: 50px !important;
-        margin: 0 !important;
-        color: var(--cgb-navy-950) !important;
-        background: linear-gradient(135deg, var(--cgb-gold-400), var(--cgb-gold-300, #ffd15a)) !important;
-        border-color: var(--cgb-gold-500) !important;
-        font-size: 1rem !important;
+        grid-column: 1 / -1;
+        grid-row: 1;
+        width: 100%;
+        min-height: 50px;
+        margin: 0;
+        padding: 0 16px;
+        color: var(--cgb-navy-950);
+        background: var(--cgb-gold-400);
+        border: 1px solid var(--cgb-gold-500);
+        border-radius: 12px;
+        box-shadow: none;
+        font-family: var(--font-ui);
+        font-size: 1rem;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .intent-button[data-intent-state="selected"] {
+        grid-column: 1;
       }
 
       .intent-button__main {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
 
       .intent-button__main .ui-icon {
-        width: 18px !important;
-        height: 18px !important;
+        width: 18px;
+        height: 18px;
       }
 
-      .intent-button__undo {
-        margin-left: 6px !important;
-        font-size: .68rem !important;
-        font-weight: 700 !important;
+      .intent-undo {
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 44px;
+        min-height: 50px;
+        padding: 0 10px;
+        color: var(--cgb-ink-600);
+        background: transparent;
+        border: 0;
+        border-radius: 10px;
+        font-family: var(--font-ui);
+        font-size: .72rem;
+        font-weight: 650;
+        text-decoration: underline;
+        text-underline-offset: 3px;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        min-height: 50px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 7px !important;
-        color: var(--cgb-navy-900) !important;
-        background: var(--cgb-white) !important;
-        border: 1px solid var(--cgb-neutral-300) !important;
-        border-radius: 11px !important;
-        font-size: .78rem !important;
-        font-weight: 800 !important;
+        grid-column: 1;
+        grid-row: 2;
+        justify-self: start;
+        min-width: 88px;
+        min-height: 44px;
+        padding: 0 10px;
+        color: var(--cgb-navy-900);
+        background: var(--cgb-white);
+        border: 1px solid var(--cgb-neutral-300);
+        border-radius: 11px;
+        font-family: var(--font-ui);
+        font-size: .76rem;
+        font-weight: 750;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon {
-        width: 17px !important;
-        height: 17px !important;
-        display: inline-block !important;
+        width: 17px;
+        height: 17px;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
-        height: auto !important;
-        max-height: min(54dvh, 420px) !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__details {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: end;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0 4px;
+        color: var(--cgb-ink-600);
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+        font-family: var(--font-ui);
+        font-size: .72rem;
+        font-weight: 650;
+        text-decoration: underline;
+        text-underline-offset: 3px;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
-        max-height: none !important;
-        overflow-y: auto !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card {
+        gap: 4px;
+        padding-top: 0;
+        padding-bottom: 10px;
       }
 
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__header > div {
+        gap: 2px;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-badges {
+        flex-wrap: nowrap;
+        overflow: hidden;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card h2 {
+        display: block;
+        overflow: hidden;
+        padding-bottom: .08em;
+        font-size: 1.08rem;
+        line-height: 1.12;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-location {
+        min-height: 22px;
+        overflow: hidden;
+        font-size: .72rem;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__directions-inline,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__location-separator,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__directions-separator,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-description,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-activity-history,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__plan-party,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
-        display: grid !important;
+        display: none;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__note,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__event,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__report {
-        display: none !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .bear-count {
+        display: block;
+        overflow: hidden;
+        color: var(--cgb-ink-600);
+        font-size: .72rem;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
-      @media (max-width: 359px) {
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
-          grid-template-columns: minmax(0, 1fr) 82px !important;
-          gap: 7px 9px !important;
-          padding-inline: 10px !important;
-        }
-
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count {
-          min-height: 82px !important;
-          padding-inline: 4px !important;
-        }
-
-        .bear-count__number {
-          font-size: 1.7rem !important;
-        }
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="expanded"] .selected-card__title-link:focus-visible,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="expanded"] .selected-card__details:focus-visible,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="expanded"] .intent-undo:focus-visible {
+        outline: 2px solid var(--cgb-gold-400);
+        outline-offset: 2px;
       }
     }
   `;
   document.head.append(style);
 }
 
-function refineAttendance(root = document) {
-  const count = root.querySelector('#map-view .tray--selected .selected-card .bear-count');
-  if (!count) return;
-  const raw = count.dataset.originalCopy || count.textContent.trim();
-  count.dataset.originalCopy = raw;
-  const match = raw.match(/^(\d+)\s+Bear(?:s)?\s+watching here/i);
-  const number = match ? Number(match[1]) : 0;
-  const empty = number === 0;
-
-  count.classList.toggle('bear-count--empty', empty);
-  count.setAttribute('aria-label', raw || 'No Bears watching here yet. Be the first.');
-
-  const icon = createIcon('users', { className: 'ui-icon bear-count__icon' });
-  const numeral = document.createElement('span');
-  numeral.className = 'bear-count__number';
-  numeral.textContent = String(number);
-  const label = document.createElement('span');
-  label.className = 'bear-count__label';
-  label.textContent = number === 1 ? 'Bear watching here' : 'Bears watching here';
-  count.replaceChildren(icon, numeral, label);
-
-  if (empty) {
-    const prompt = document.createElement('strong');
-    prompt.className = 'bear-count__prompt';
-    prompt.textContent = 'Be the first.';
-    count.append(prompt);
-  }
-}
-
-function refinePartyModules(root = document) {
-  root.querySelectorAll('#map-view .tray--selected .selected-card > .party-module').forEach((module) => {
-    const paragraphs = Array.from(module.querySelectorAll(':scope > p'));
-    paragraphs.forEach((paragraph, index) => {
-      paragraph.classList.remove('party-module__host', 'party-module__time', 'party-module__note');
-      const copy = paragraph.textContent.trim();
-      if (index === 0 || copy.startsWith('Hosted by ')) paragraph.classList.add('party-module__host');
-      else if (copy.startsWith('Arrive ')) paragraph.classList.add('party-module__time');
-      else if (!paragraph.classList.contains('party-meta')) paragraph.classList.add('party-module__note');
-    });
-
-    module.querySelectorAll('a:not(.party-module__report)').forEach((link) => {
-      link.classList.add('party-module__event');
-      link.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
-      if (/open event information/i.test(link.textContent)) link.textContent = 'Event information';
-    });
-
-    module.querySelectorAll('.party-module__report').forEach((link) => {
-      link.textContent = 'Report an Issue';
-    });
+function classifyPartyLines(module) {
+  Array.from(module.querySelectorAll(':scope > p')).forEach((paragraph, index) => {
+    paragraph.classList.remove('party-module__host', 'party-module__critical');
+    const copy = paragraph.textContent.trim();
+    if (index === 0 || copy.startsWith('Hosted by ')) {
+      paragraph.classList.add('party-module__host');
+      return;
+    }
+    if (paragraph.classList.contains('party-meta') ||
+        /\b(21\+|all ages|audio|restriction|reservation|required|ticket|cover)\b/i.test(copy)) {
+      paragraph.classList.add('party-module__critical');
+    }
   });
 }
 
-function refineActions(root = document) {
-  const row = root.querySelector('#map-view .tray--selected .selected-card .action-row');
-  const location = root.querySelector('#map-view .tray--selected .selected-card .venue-location');
+function refinePartyModules(card) {
+  card.querySelectorAll(':scope > .party-module').forEach(classifyPartyLines);
+}
+
+function refineAttendance(card) {
+  const count = card.querySelector('.bear-count');
+  if (!count) return;
+  const copy = count.textContent.replace(/\s+/g, ' ').trim();
+  count.classList.toggle('bear-count--empty', /^No Bears\b/i.test(copy) || /^0 Bears?\b/i.test(copy));
+  if (copy) count.setAttribute('aria-label', copy);
+}
+
+function ensureDirections(location, directions) {
+  if (!location || !directions) return;
+  directions.className = 'selected-card__directions-inline';
+  directions.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
+  directions.textContent = 'Directions';
+
+  if (directions.parentElement !== location) {
+    const separator = document.createElement('span');
+    separator.className = 'selected-card__location-separator';
+    separator.setAttribute('aria-hidden', 'true');
+    separator.textContent = '·';
+    location.append(separator, directions);
+  }
+}
+
+function ensureTitleLink(card, details) {
+  const title = card.querySelector('.selected-card__header h2');
+  if (!title || !details) return;
+  let link = title.closest('.selected-card__title-link');
+  if (!link) {
+    link = document.createElement('a');
+    link.className = 'selected-card__title-link';
+    title.replaceWith(link);
+    link.append(title);
+  }
+  link.href = details.href;
+  link.setAttribute('aria-label', `Open details for ${title.textContent.trim()}`);
+}
+
+function refineIntent(intent, row) {
+  const raw = intent.textContent.replace(/\s+/g, ' ').trim();
+  const selected = intent.dataset.intentState === 'selected' || /you[’']ll be here/i.test(raw);
+  const pending = /saving/i.test(raw);
+  const closed = /selections closed/i.test(raw);
+
+  row.querySelector('.intent-undo')?.remove();
+
+  const main = document.createElement('span');
+  main.className = 'intent-button__main';
+  if (pending) {
+    main.textContent = 'Saving…';
+  } else if (selected) {
+    main.append(createIcon('check'), document.createTextNode('You’ll be here'));
+  } else if (closed) {
+    main.textContent = 'Selections closed';
+  } else {
+    main.textContent = 'I’ll be here';
+  }
+  intent.replaceChildren(main);
+  intent.setAttribute('aria-label', selected ? 'You’ll be here' : main.textContent);
+
+  if (!selected || pending || closed) return;
+  const undo = document.createElement('button');
+  undo.type = 'button';
+  undo.className = 'intent-undo';
+  undo.dataset.venueId = intent.dataset.venueId || '';
+  undo.textContent = 'Undo';
+  undo.setAttribute('aria-label', 'Undo attendance selection');
+  intent.after(undo);
+}
+
+function refineActions(card) {
+  const row = card.querySelector('.action-row');
+  const location = card.querySelector('.venue-location');
   if (!row || !location) return;
 
   const actions = Array.from(row.querySelectorAll(':scope > a, :scope > button'));
@@ -344,56 +458,63 @@ function refineActions(root = document) {
   const details = actions.find((action) => /details/i.test(action.textContent.trim()));
   const share = actions.find((action) => /^Share$/i.test(action.textContent.trim()));
 
-  if (directions) {
-    directions.className = 'selected-card__directions-inline';
-    directions.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
-    directions.textContent = 'Directions';
-    location.append(directions);
+  ensureDirections(location, directions);
+
+  if (details) {
+    details.className = 'selected-card__details';
+    details.textContent = 'Details';
+    details.setAttribute('aria-label', 'Open venue details');
   }
 
-  details?.remove();
-
   if (share) {
-    share.classList.add('selected-card__share');
+    share.className = 'secondary-button selected-card__share';
     const icon = share.querySelector('.ui-icon') || createIcon('share');
     share.replaceChildren(icon, document.createTextNode('Share'));
   }
 
-  if (intent) {
-    const raw = intent.textContent.trim();
-    const selected = /you[’']ll be here/i.test(raw);
-    const main = document.createElement('span');
-    main.className = 'intent-button__main';
-    if (selected) main.append(createIcon('check'), document.createTextNode('You’ll be here'));
-    else main.textContent = 'I’ll be here';
-    intent.replaceChildren(main);
-
-    if (selected) {
-      const undo = document.createElement('span');
-      undo.className = 'intent-button__undo';
-      undo.textContent = 'Undo';
-      intent.append(undo);
-    }
-    intent.setAttribute('aria-label', selected ? 'You’ll be here. Undo selection' : 'I’ll be here');
-  }
+  if (intent) refineIntent(intent, row);
+  ensureTitleLink(card, details);
 }
 
-function refine() {
+function refineSelectedCard(root = document) {
   if (!isMobile()) return;
-  refineAttendance();
-  refinePartyModules();
-  refineActions();
+  const card = root.querySelector('#map-view > #venue-tray.venue-tray.tray--selected .selected-card');
+  if (!card) return;
+  refineAttendance(card);
+  refinePartyModules(card);
+  refineActions(card);
+}
+
+function handleIntentControls(event) {
+  const undo = event.target.closest?.('.intent-undo');
+  if (undo) {
+    const row = undo.closest('.action-row');
+    const intent = row?.querySelector('.intent-button[data-venue-id]');
+    if (!intent) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    intent.dataset.undoProxy = 'true';
+    intent.click();
+    delete intent.dataset.undoProxy;
+    return;
+  }
+
+  const selectedIntent = event.target.closest?.('.intent-button[data-intent-state="selected"]');
+  if (!selectedIntent || selectedIntent.dataset.undoProxy === 'true') return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
 }
 
 function scheduleRefinement() {
   requestAnimationFrame(() => {
-    refine();
-    requestAnimationFrame(refine);
+    refineSelectedCard();
+    requestAnimationFrame(refineSelectedCard);
   });
 }
 
 function initialize() {
   installStyles();
+  document.addEventListener('click', handleIntentControls, { capture: true });
   scheduleRefinement();
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleRefinement);
   window.CGBApp?.subscribe?.('rendered', scheduleRefinement);
