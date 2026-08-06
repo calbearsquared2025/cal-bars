@@ -58,9 +58,9 @@ test('bottom navigation uses Inter and one active-state pattern for all destinat
   assert.match(css, /\.mobile-command\s*\{[\s\S]*font-size:\s*\.8125rem[\s\S]*font-weight:\s*500/);
   assert.match(css, /\.mobile-command \.ui-icon,[\s\S]*fill:\s*none/);
   assert.match(css, /\.mobile-command:is\(\[aria-current="page"\], \.mobile-command--active\)::after/);
-  assert.match(css, /\.mobile-command--add:is\(\[aria-current="page"\], \.mobile-command--active\)::after\s*\{[\s\S]*display:\s*block/);
-  assert.match(css, /\.mobile-command__add-mark\s*\{[\s\S]*background:\s*var\(--cgb-neutral-100\)/);
-  assert.match(css, /\.mobile-command--add:is\(\[aria-current="page"\], \.mobile-command--active\) \.mobile-command__add-mark\s*\{[\s\S]*background:\s*var\(--cgb-gold-400\)/);
+  assert.match(css, /\.mobile-command__add-mark\s*\{[\s\S]*width:\s*24px[\s\S]*margin-top:\s*0[\s\S]*background:\s*var\(--cgb-neutral-100\)/);
+  assert.doesNotMatch(css, /\.mobile-command--add:is\([^}]+\.mobile-command__add-mark/);
+  assert.doesNotMatch(css, /\.mobile-command--add:is\([^}]+::after/);
 });
 
 test('the work package adds no important override', () => {
