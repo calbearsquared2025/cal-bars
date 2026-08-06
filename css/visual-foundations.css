@@ -223,22 +223,16 @@ button,
     background: var(--cgb-gold-400);
   }
 
-  /* Add remains in the same control family; gold appears only when Add is active. */
+  /* Add remains a quiet peer of Map, Search, and List; the shared bar is its only active cue. */
   .mobile-command__add-mark {
-    color: var(--cgb-ink-500);
+    width: 24px;
+    height: 24px;
+    margin-top: 0;
+    color: currentColor;
     background: var(--cgb-neutral-100);
-    border-color: var(--cgb-neutral-300);
+    border: 1px solid var(--cgb-neutral-300);
     box-shadow: none;
-  }
-
-  .mobile-command--add:is([aria-current="page"], .mobile-command--active) .mobile-command__add-mark {
-    color: var(--cgb-navy-950);
-    background: var(--cgb-gold-400);
-    border-color: var(--cgb-gold-400);
-  }
-
-  .mobile-command--add:is([aria-current="page"], .mobile-command--active)::after {
-    display: block;
+    font-size: 1rem;
   }
 
   .command-surface__back,
