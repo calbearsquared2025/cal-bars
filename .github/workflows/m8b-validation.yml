@@ -1,0 +1,177 @@
+name: Milestone 8B validation
+
+on:
+  push:
+    branches:
+      - agent/m8a-visual-foundation
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run repository tests
+        run: npm test
+      - name: Validate fallback data
+        run: npm run validate:data
+      - name: Run browser harness
+        run: npm run test:browser
+      - name: Run migration tests
+        run: npm run test:migration
+      - name: Capture mobile acceptance screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p validation-artifacts
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/cgb-http.log 2>&1 &
+          SERVER_PID=$!
+          google-chrome --headless=new --no-sandbox --disable-dev-shm-usage \
+            --remote-debugging-port=9222 --remote-allow-origins='*' \
+            --user-data-dir=/tmp/cgb-chrome --window-size=390,844 \
+            http://127.0.0.1:4173/ >/tmp/cgb-chrome.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" "$SERVER_PID" 2>/dev/null || true' EXIT
+          python3 -m pip install --quiet websocket-client
+          python3 - <<'PY'
+          import base64
+          import json
+          import time
+          import urllib.request
+          from pathlib import Path
+          import websocket
+
+          def targets():
+              with urllib.request.urlopen('http://127.0.0.1:9222/json', timeout=3) as response:
+                  return json.load(response)
+
+          deadline = time.time() + 20
+          page = None
+          while time.time() < deadline:
+              try:
+                  page = next((item for item in targets() if item.get('type') == 'page'), None)
+                  if page:
+                      break
+              except Exception:
+                  pass
+              time.sleep(0.25)
+          if not page:
+              raise RuntimeError('Chrome DevTools page target was not available')
+
+          socket = websocket.create_connection(page['webSocketDebuggerUrl'], timeout=15)
+          sequence = 0
+
+          def command(method, params=None):
+              global sequence
+              sequence += 1
+              message_id = sequence
+              socket.send(json.dumps({'id': message_id, 'method': method, 'params': params or {}}))
+              while True:
+                  response = json.loads(socket.recv())
+                  if response.get('id') == message_id:
+                      if 'error' in response:
+                          raise RuntimeError(f"{method}: {response['error']}")
+                      return response.get('result', {})
+
+          def evaluate(expression):
+              result = command('Runtime.evaluate', {
+                  'expression': expression,
+                  'returnByValue': True,
+                  'awaitPromise': True
+              })
+              details = result.get('exceptionDetails')
+              if details:
+                  raise RuntimeError(details)
+              return result.get('result', {}).get('value')
+
+          def wait_for(expression, seconds=15):
+              end = time.time() + seconds
+              while time.time() < end:
+                  if evaluate(expression):
+                      return
+                  time.sleep(0.25)
+              raise RuntimeError(f'Timed out waiting for: {expression}')
+
+          def screenshot(path):
+              data = command('Page.captureScreenshot', {
+                  'format': 'png',
+                  'captureBeyondViewport': False,
+                  'fromSurface': True
+              })['data']
+              Path(path).write_bytes(base64.b64decode(data))
+
+          command('Page.enable')
+          command('Runtime.enable')
+          command('Emulation.setDeviceMetricsOverride', {
+              'width': 390,
+              'height': 844,
+              'deviceScaleFactor': 2,
+              'mobile': True,
+              'screenWidth': 390,
+              'screenHeight': 844
+          })
+          command('Emulation.setTouchEmulationEnabled', {'enabled': True, 'maxTouchPoints': 5})
+          wait_for("document.readyState === 'complete' && (window.CGBApp?.getState?.()?.snapshot?.venues?.length || 0) > 0", 20)
+          time.sleep(1)
+
+          evaluate("document.querySelector('#mobile-list-button').click()")
+          wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
+          command('Browser.grantPermissions', {
+              'origin': 'http://127.0.0.1:4173',
+              'permissions': ['geolocation']
+          })
+          command('Emulation.setGeolocationOverride', {
+              'latitude': 37.8044,
+              'longitude': -122.2712,
+              'accuracy': 20
+          })
+          evaluate("document.querySelector('#clear-search-button').click()")
+          wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'All locations'")
+          if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
+              raise RuntimeError('Nearby switched away from List')
+          screenshot('validation-artifacts/m8b-list-nearby.png')
+
+          evaluate("document.querySelector('#clear-search-button').click()")
+          wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'Near me'")
+          if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
+              raise RuntimeError('All locations switched away from List')
+
+          evaluate("document.querySelector('#location-list .location-card')?.click()")
+          wait_for("Boolean(window.CGBApp?.getState?.()?.selectedVenueId)")
+          evaluate("document.querySelector('#mobile-add-button').click()")
+          wait_for("document.body.dataset.commandSurface === 'add' && !document.querySelector('#add-surface')?.hidden")
+          if not evaluate("document.querySelector('#add-context-name')?.textContent.trim() === window.CGBApp.getState().snapshot.venues.find(v => v.venue_id === window.CGBApp.getState().selectedVenueId)?.name"):
+              raise RuntimeError('Add did not preserve Venue context')
+          if not evaluate("document.querySelector('#add-location-button')?.textContent.includes('Add a new location')"):
+              raise RuntimeError('Add a new location option is missing')
+          screenshot('validation-artifacts/m8b-add-context.png')
+
+          evaluate("document.querySelector('#mobile-map-button').click()")
+          wait_for("document.body.dataset.commandSurface === 'map'")
+          if not evaluate("document.querySelector('.selected-card__directions-inline')?.previousElementSibling?.classList.contains('selected-card__location-separator')"):
+              raise RuntimeError('Directions separator remains inside the anchor')
+          if not evaluate("document.querySelector('.selected-card__share svg')?.dataset.iconName === 'share' && !document.querySelector('.selected-card__share use')"):
+              raise RuntimeError('Share icon was not inlined or corrected')
+          if not evaluate("document.querySelectorAll('svg use').length === 0"):
+              raise RuntimeError('External SVG use references remain after rendering')
+          if not evaluate("document.querySelector('.cgb-safe-area-fill--top') && document.querySelector('.cgb-safe-area-fill--bottom')"):
+              raise RuntimeError('Safe-area color fills are missing')
+
+          socket.close()
+          print('Milestone 8B mobile acceptance checks passed.')
+          PY
+      - name: Commit validation screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add validation-artifacts/m8b-*.png
+          git commit -m "Capture Milestone 8B validation screenshots"
+          git push
