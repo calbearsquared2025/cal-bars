@@ -154,22 +154,6 @@ function restoreListSurface() {
   syncListLocationControl();
 }
 
-function installListRenderGuard() {
-  const app = window.CGBApp;
-  if (!app?.render || app.render.cgbListGuard === true) return;
-  const render = app.render.bind(app);
-  const guardedRender = (...args) => {
-    const preserveList = isMobile() && (
-      listSurfaceLocked || document.body.dataset.commandSurface === 'list'
-    );
-    const result = render(...args);
-    if (preserveList) restoreListSurface();
-    return result;
-  };
-  guardedRender.cgbListGuard = true;
-  app.render = guardedRender;
-}
-
 function captureAddContext() {
   addContextVenueId = appState()?.selectedVenueId || '';
 }
@@ -269,7 +253,6 @@ function schedulePostRender() {
     ensureSafeAreaFills();
     ensureAddLocationOption();
     fixDirectionsSeparator();
-    installListRenderGuard();
 
     if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
     if (listSurfaceLocked) restoreListSurface();
@@ -296,7 +279,7 @@ function handleNavigationContext(event) {
 function connectApp() {
   if (appConnected) return;
   const app = window.CGBApp;
-  if (!app?.render || !app?.subscribe) {
+  if (!app?.subscribe) {
     appConnectAttempts += 1;
     if (appConnectAttempts <= APP_CONNECT_MAX_ATTEMPTS) {
       window.setTimeout(connectApp, 25);
@@ -305,7 +288,6 @@ function connectApp() {
   }
 
   appConnected = true;
-  installListRenderGuard();
   app.subscribe('rendered', schedulePostRender);
   app.subscribe('ready', schedulePostRender);
   schedulePostRender();
