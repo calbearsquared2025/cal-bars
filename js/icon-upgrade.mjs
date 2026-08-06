@@ -3,6 +3,7 @@ import './map-profile-first-pass.mjs';
 import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
+import './map-profile-final-pass.mjs';
 import { createIcon, setIcon } from './icons.mjs';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
