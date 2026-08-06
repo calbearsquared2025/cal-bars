@@ -29,22 +29,29 @@ test('removes unreferenced launch assets and orphan stylesheets', async () => {
   }
 });
 
-test('removes the obsolete Details icon path', async () => {
-  const [icons, sprite, upgrade] = await Promise.all([
+test('keeps the List navigation sprite without restoring an obsolete Details action icon path', async () => {
+  const [icons, sprite, upgrade, html] = await Promise.all([
     readFile(new URL('js/icons.mjs', root), 'utf8'),
     readFile(new URL('assets/icons.svg', root), 'utf8'),
-    readFile(new URL('js/icon-upgrade.mjs', root), 'utf8')
+    readFile(new URL('js/icon-upgrade.mjs', root), 'utf8'),
+    readFile(new URL('index.html', root), 'utf8')
   ]);
   assert.doesNotMatch(icons, /\bdetails:\s*\[/);
-  assert.doesNotMatch(sprite, /icon-details/);
+  assert.match(sprite, /<symbol id="icon-details"/);
+  assert.match(html, /mobile-list-button[\s\S]*assets\/icons\.svg#icon-details/);
   assert.doesNotMatch(upgrade, /label === 'view details'|return 'details'/);
 });
 
 test('selected tray density is owned by map-mobile refinement only', async () => {
-  const [mobile, finalPass] = await Promise.all([
+  const [mobile, finalPass, firstPass, aesthetic, polish] = await Promise.all([
     readFile(new URL('js/map-mobile-refinement.mjs', root), 'utf8'),
-    readFile(new URL('js/map-profile-final-pass.mjs', root), 'utf8')
+    readFile(new URL('js/map-profile-final-pass.mjs', root), 'utf8'),
+    readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8'),
+    readFile(new URL('js/map-profile-aesthetic-refinement.mjs', root), 'utf8'),
+    readFile(new URL('js/final-ui-polish.mjs', root), 'utf8')
   ]);
   assert.match(mobile, /let selectedTrayExpanded = false/);
-  assert.doesNotMatch(finalPass, /collapsedVenueId|defaultSelectedTrayToCompact|#tray-handle'\)\?\.click/);
+  for (const source of [finalPass, firstPass, aesthetic, polish]) {
+    assert.doesNotMatch(source, /selectedTrayExpanded|setSelectedTrayDensity/);
+  }
 });
