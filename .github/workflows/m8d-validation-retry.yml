@@ -1,0 +1,56 @@
+name: Milestone 8D launch cleanup retry
+
+on:
+  push:
+    branches:
+      - agent/m8a-visual-foundation
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Apply behavior-neutral cleanup
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/m8d-validation.yml')
+          text = path.read_text()
+          text = text.replace('from pathlib import Path\n          import re', 'from pathlib import Path\n          import re\n          import textwrap')
+          text = text.replace("Path('tests/launch-cleanup.test.mjs').write_text(r'''import assert", "Path('tests/launch-cleanup.test.mjs').write_text(textwrap.dedent(r'''import assert")
+          text = text.replace("          '''.replace(/^          /gm, ''))", "          '''))")
+          path.write_text(text)
+          PY
+          sed -n "/python3 - <<'PY'/,/^          PY$/p" .github/workflows/m8d-validation.yml \
+            | tail -n +2 | head -n -1 | sed 's/^          //' > /tmp/m8d-cleanup.py
+          python3 /tmp/m8d-cleanup.py
+          git checkout -- .github/workflows/m8d-validation.yml
+      - name: Review refactor diff
+        run: |
+          git diff --check
+          git diff --stat
+          git diff -- js css assets tests
+      - name: Run complete validation suite
+        run: |
+          npm test
+          npm run validate:data
+          npm run test:browser
+          npm run test:migration
+      - name: Commit validated cleanup
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Complete Milestone 8D launch cleanup"
+          git push
