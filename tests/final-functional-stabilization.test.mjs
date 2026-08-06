@@ -56,11 +56,11 @@ test('Share and all rendered interface icons use inline SVG geometry', () => {
   assert.doesNotMatch(sprite.match(/<symbol id="icon-share"[\s\S]*?<\/symbol>/)?.[0] || '', /<circle/);
 });
 
-test('Directions separator is outside the link and iOS safe areas receive explicit surface colors', () => {
-  assert.match(stabilization, /selected-card__directions-inline::before[\s\S]*content: none !important/);
+test('Directions separator remains outside the link without overriding its interaction target', () => {
   assert.match(stabilization, /selected-card__location-separator/);
   assert.match(stabilization, /separator\.textContent = '·'/);
   assert.match(stabilization, /link\.before\(separator\)/);
+  assert.doesNotMatch(stabilization, /selected-card__directions-inline[\s\S]*min-height: auto !important/);
   assert.match(stabilization, /safe-area-inset-top/);
   assert.match(stabilization, /safe-area-inset-bottom/);
   assert.match(stabilization, /cgb-safe-area-fill--top/);
