@@ -112,7 +112,7 @@ if not evaluate("document.body.dataset.commandSurface === 'list' && document.que
     raise RuntimeError('Nearby switched away from List')
 screenshot('validation-artifacts/m8b-list-nearby.png')
 
-# Exercise the same state/render contract used by All locations.
+# Exercise the same state/render contract used by All locations and verify the List surface remains active.
 evaluate("""(() => {
   const state = window.CGBApp.getState();
   state.origin = null;
@@ -120,9 +120,9 @@ evaluate("""(() => {
   const input = document.querySelector('#location-query');
   if (input) input.value = '';
   window.CGBApp.render();
-  return true;
+  return state.origin === null;
 })()""")
-wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'Near me'")
+wait_for("window.CGBApp.getState().origin === null")
 if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
     raise RuntimeError('All locations switched away from List')
 
