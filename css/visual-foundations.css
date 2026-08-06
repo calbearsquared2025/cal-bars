@@ -26,8 +26,9 @@ textarea {
 .venue-detail > h2,
 .selected-card h2,
 .selected-card h3,
-.location-card h2,
-.location-card h3,
+.location-card strong,
+.search-suggestions button strong,
+.external-place-result strong,
 .game-button strong,
 #header-game-label {
   font-family: var(--font-display);
@@ -42,11 +43,12 @@ textarea {
 .opening-stat__copy,
 .tray-summary__count,
 .command-intent strong,
-.search-result-group__heading {
+.search-result-group__heading,
+.party-module__title {
   font-family: var(--font-condensed);
 }
 
-/* Navigation, controls, body copy, metadata, and contribution labels use Inter. */
+/* Navigation, controls, attendance, body copy, metadata, and contribution labels use Inter. */
 .brand-name,
 .mobile-command,
 .mobile-command span,
@@ -61,8 +63,21 @@ textarea {
 .add-action small,
 .back-link,
 .missing-location-link,
-.add-missing-location {
+.add-missing-location,
+.bear-count,
+.location-card__count,
+.activity-card strong,
+.activity-card p,
+.party-module p,
+.party-module a,
+.party-module__report {
   font-family: var(--font-ui);
+}
+
+.bear-count,
+.location-card__count {
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /* Interactive geometry: preserve quiet visuals while guaranteeing a 44-point target. */
@@ -142,6 +157,12 @@ button,
     letter-spacing: 0;
     line-height: 1.2;
     text-transform: none;
+  }
+
+  .mobile-command .ui-icon,
+  .mobile-command--active .ui-icon {
+    color: currentColor;
+    fill: none;
   }
 
   .mobile-command::after {
