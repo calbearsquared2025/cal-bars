@@ -9,11 +9,15 @@ import {
 const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
 const STYLE_ID = 'cgb-map-mobile-refinement';
+const TRAY_GESTURE_THRESHOLD = 48;
 
 let lastAutoFocusedVenueId = '';
 let lastSelectedVenueId = '';
 let selectedTrayExpanded = false;
 let trayObserver = null;
+let statisticsHome = null;
+let selectedTrayGesture = null;
+let suppressSelectedTrayClick = false;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -28,98 +32,200 @@ function reducedMotion() {
 }
 
 function installStyles() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
+  let style = document.getElementById(STYLE_ID);
+  if (!style) {
+    style = document.createElement('style');
+    style.id = STYLE_ID;
+  }
   style.textContent = `
     @media (max-width: 899px) {
+      body[data-command-surface="map"] #map-view {
+        position: relative;
+      }
+
+      body[data-command-surface="map"] #map-view > .opening-stat {
+        position: absolute;
+        z-index: 44;
+        top: 12px;
+        right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
+        bottom: auto;
+        left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
+        width: auto;
+        height: 58px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: hidden;
+        background: rgba(255, 255, 255, .94);
+        border: 1px solid rgba(1, 1, 51, .1);
+        border-radius: 14px;
+        box-shadow: 0 8px 22px rgba(1, 1, 51, .13);
+        backdrop-filter: blur(10px);
+        pointer-events: none;
+      }
+
+      body:not([data-command-surface="map"]) #map-view > .opening-stat,
+      body[data-view="detail"] #map-view > .opening-stat {
+        display: none;
+      }
+
+      #map-view > .opening-stat .opening-stat__item {
+        min-width: 0;
+        padding: 6px 10px;
+      }
+
+      #map-view > .opening-stat .opening-stat__item + .opening-stat__item {
+        border-left: 1px solid rgba(1, 1, 51, .1);
+      }
+
+      #map-view > .opening-stat strong {
+        height: 100%;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
+        text-align: left;
+      }
+
+      #map-view > .opening-stat .opening-stat__number {
+        font-family: var(--font-condensed);
+        font-size: clamp(2.25rem, 10vw, 2.75rem);
+        font-weight: 800;
+        letter-spacing: -.035em;
+        line-height: .85;
+      }
+
+      #map-view > .opening-stat .opening-stat__copy {
+        font-family: var(--font-condensed);
+        font-size: .64rem;
+        font-weight: 800;
+        letter-spacing: .055em;
+        line-height: 1.04;
+        text-transform: uppercase;
+      }
+
+      #map-view > .opening-stat .opening-stat__copy small {
+        font-size: .54rem;
+        font-weight: 650;
+        letter-spacing: .025em;
+      }
+
+      .map-actions {
+        top: calc(50% - 22px);
+        right: max(12px, env(safe-area-inset-right, 0px));
+        gap: 8px;
+      }
+
+      .map-actions #near-me-button,
+      .map-actions #fullscreen-button,
+      .maplibregl-ctrl button {
+        min-height: 44px;
+        min-width: 44px;
+        color: var(--cgb-navy-950);
+        background: rgba(255, 255, 255, .96);
+        border: 1px solid var(--cgb-neutral-300);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(1, 1, 51, .14);
+      }
+
+      .map-actions #near-me-button,
+      .map-actions #fullscreen-button {
+        padding: 0 11px;
+      }
+
       .maplibregl-ctrl-top-right {
-        display: none !important;
+        display: none;
       }
 
       .maplibregl-ctrl-bottom-right {
-        right: auto !important;
-        left: 8px !important;
-        max-width: calc(100vw - 86px) !important;
+        right: auto;
+        left: 12px;
+        max-width: calc(100vw - 96px);
       }
 
       .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib {
-        max-width: calc(100vw - 86px) !important;
-        font-size: 10px !important;
+        max-width: calc(100vw - 96px);
+        font-size: 10px;
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek {
-        position: absolute !important;
-        z-index: 46 !important;
-        inset: auto 0 0 0 !important;
-        width: 100% !important;
-        max-width: none !important;
-        height: 92px !important;
-        margin: 0 !important;
-        background: var(--cgb-white, #fff) !important;
-        border: 0 !important;
-        border-radius: 22px 22px 0 0 !important;
-        box-shadow: 0 -12px 30px rgba(1, 1, 51, .2) !important;
-        overflow: hidden !important;
+        position: absolute;
+        z-index: 46;
+        inset: auto 0 0 0;
+        width: 100%;
+        max-width: none;
+        height: 88px;
+        margin: 0;
+        background: var(--cgb-white);
+        border: 0;
+        border-radius: 18px 18px 0 0;
+        box-shadow: 0 -8px 24px rgba(1, 1, 51, .14);
+        overflow: hidden;
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek .tray-handle {
-        height: 18px !important;
-        background: var(--cgb-white, #fff) !important;
+        height: 18px;
+        display: grid;
+        background: var(--cgb-white);
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek .tray-handle span {
-        width: 34px !important;
-        height: 4px !important;
+        width: 34px;
+        height: 3px;
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek .tray-peek {
-        padding: 0 10px 7px !important;
+        padding: 0;
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek .tray-summary {
-        min-height: 66px !important;
-        grid-template-columns: 26px minmax(0, 1fr) auto 16px !important;
-        gap: 9px !important;
-        padding: 2px 12px 7px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__marker {
-        width: 20px !important;
-        height: 20px !important;
+        min-height: 70px;
+        grid-template-columns: 24px minmax(0, 1fr) auto 16px;
+        gap: 9px;
+        padding: 2px var(--mobile-content-gutter) 8px;
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__copy strong {
-        font-size: .96rem !important;
+        font-size: 1rem;
       }
 
       #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__copy small {
-        font-size: .64rem !important;
+        font-size: .68rem;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > .icon-button {
-        display: none !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected {
+        max-height: min(58dvh, 486px);
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
-        height: 170px !important;
-        max-height: 170px !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
+        height: 24px;
+        cursor: ns-resize;
+        touch-action: none;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
-        max-height: 146px !important;
-        overflow: hidden !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
+        width: 40px;
+        height: 4px;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card {
-        gap: 7px !important;
-        padding-bottom: 12px !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
+        height: 148px;
+        max-height: 148px;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-description,
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
-        display: none !important;
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
+        max-height: 124px;
+        overflow: hidden;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="expanded"] {
+        height: auto;
+        max-height: min(58dvh, 486px);
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="expanded"] .tray-selected {
+        max-height: calc(min(58dvh, 486px) - 24px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
       }
     }
   `;
@@ -181,12 +287,12 @@ function updatePreviewIntent() {
   const candidate = previewCandidate(state);
   if (!candidate) {
     title.textContent = 'Find your Cal crowd';
-    copy.textContent = 'Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party.';
+    copy.textContent = 'Tap a map pin or use Locate Me to find the nearest Cal gathering.';
     count.textContent = '';
     marker.dataset.kind = 'community-location';
     button.dataset.previewMode = 'guidance';
     button.removeAttribute('data-direct-venue-id');
-    button.setAttribute('aria-label', 'Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party');
+    button.setAttribute('aria-label', 'Tap a map pin or use Locate Me to find the nearest Cal gathering');
     return;
   }
 
@@ -206,23 +312,31 @@ function updatePreviewIntent() {
   button.setAttribute('aria-label', `Open ${venue.name}`);
 }
 
+function schedulePreviewUpdate() {
+  updatePreviewIntent();
+  requestAnimationFrame(() => {
+    updatePreviewIntent();
+    requestAnimationFrame(updatePreviewIntent);
+  });
+}
+
 function openPreviewVenue(event) {
   const button = event.target.closest?.('#browse-locations-button');
-  if (!button || !isMobile()) return;
+  if (!button || !isMobile()) return false;
+  if (!button.dataset.directVenueId) return false;
+
+  const card = previewVenueCard(button.dataset.directVenueId);
+  if (!card) return false;
 
   event.preventDefault();
   event.stopImmediatePropagation();
-
-  if (!button.dataset.directVenueId) return;
-  const card = previewVenueCard(button.dataset.directVenueId);
-  if (!card) return;
-
   selectedTrayExpanded = false;
   lastSelectedVenueId = '';
   card.click();
+  return true;
 }
 
-function setSelectedTrayDensity(expanded) {
+function setSelectedTrayDensity(expanded, { refocus = true } = {}) {
   const tray = document.querySelector('#venue-tray.tray--selected');
   if (!tray) return;
   selectedTrayExpanded = expanded;
@@ -232,7 +346,10 @@ function setSelectedTrayDensity(expanded) {
   handle?.setAttribute('aria-label', expanded
     ? 'Collapse selected location'
     : 'Expand selected location');
-  requestAnimationFrame(positionAttribution);
+  requestAnimationFrame(() => {
+    positionAttribution();
+    if (refocus) focusVenue(appState()?.selectedVenueId || '', { force: true });
+  });
 }
 
 function syncSelectedTrayDensity() {
@@ -243,27 +360,99 @@ function syncSelectedTrayDensity() {
     return;
   }
 
-  if (document.body.dataset.commandSurface === 'search') {
-    setSelectedTrayDensity(false);
-    return;
-  }
-
   if (state.selectedVenueId !== lastSelectedVenueId) {
     lastSelectedVenueId = state.selectedVenueId;
     selectedTrayExpanded = false;
   }
-  setSelectedTrayDensity(selectedTrayExpanded);
+  setSelectedTrayDensity(selectedTrayExpanded, { refocus: false });
 }
 
-function handleTrayTopTap(event) {
-  const handle = event.target.closest?.('#tray-handle');
-  if (!handle || !isMobile() || document.body.dataset.commandSurface !== 'map') return;
+function selectedTray() {
   const tray = document.querySelector('#venue-tray');
-  if (!tray || tray.dataset.state !== 'selected') return;
+  if (!isMobile() || document.body.dataset.commandSurface !== 'map' || tray?.dataset.state !== 'selected') {
+    return null;
+  }
+  return tray;
+}
+
+function beginSelectedTrayGesture(event) {
+  const handle = event.target.closest?.('#tray-handle');
+  if (!handle || !selectedTray()) return;
+  selectedTrayGesture = { pointerId: event.pointerId, startY: event.clientY, handle };
+  handle.setPointerCapture?.(event.pointerId);
+  event.stopImmediatePropagation();
+}
+
+function finishSelectedTrayGesture(event) {
+  if (!selectedTrayGesture || event.pointerId !== selectedTrayGesture.pointerId) return;
+  const { startY, handle } = selectedTrayGesture;
+  selectedTrayGesture = null;
+  handle.releasePointerCapture?.(event.pointerId);
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  const delta = event.clientY - startY;
+  if (Math.abs(delta) < TRAY_GESTURE_THRESHOLD) return;
+  suppressSelectedTrayClick = true;
+  window.setTimeout(() => { suppressSelectedTrayClick = false; }, 0);
+  if (delta < 0 && !selectedTrayExpanded) setSelectedTrayDensity(true);
+  if (delta > 0 && selectedTrayExpanded) setSelectedTrayDensity(false);
+}
+
+function cancelSelectedTrayGesture(event) {
+  if (!selectedTrayGesture || event.pointerId !== selectedTrayGesture.pointerId) return;
+  selectedTrayGesture = null;
+  event.stopImmediatePropagation();
+}
+
+function handleSelectedTrayClick(event) {
+  const tray = selectedTray();
+  if (!tray) return false;
+
+  const handle = event.target.closest?.('#tray-handle');
+  if (handle) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (suppressSelectedTrayClick) {
+      suppressSelectedTrayClick = false;
+      return true;
+    }
+    setSelectedTrayDensity(!selectedTrayExpanded);
+    return true;
+  }
+
+  const card = event.target.closest?.('.selected-card');
+  if (!card || selectedTrayExpanded) return false;
 
   event.preventDefault();
   event.stopImmediatePropagation();
-  setSelectedTrayDensity(!selectedTrayExpanded);
+  setSelectedTrayDensity(true);
+  return true;
+}
+
+function syncStatisticsPlacement() {
+  const statistics = document.querySelector('.opening-stat');
+  const mapView = document.querySelector('#map-view');
+  if (!statistics || !mapView) return;
+
+  if (!statisticsHome) {
+    statisticsHome = {
+      parent: statistics.parentElement,
+      nextSibling: statistics.nextSibling
+    };
+  }
+
+  if (isMobile()) {
+    if (statistics.parentElement !== mapView) mapView.prepend(statistics);
+    statistics.hidden = document.body.dataset.commandSurface !== 'map' ||
+      document.body.dataset.view === 'detail';
+    return;
+  }
+
+  if (statisticsHome.parent && statistics.parentElement !== statisticsHome.parent) {
+    statisticsHome.parent.insertBefore(statistics, statisticsHome.nextSibling);
+  }
+  statistics.hidden = false;
 }
 
 function focusVenue(venueId, { force = false } = {}) {
@@ -280,7 +469,7 @@ function focusVenue(venueId, { force = false } = {}) {
       const trayHeight = tray && getComputedStyle(tray).display !== 'none'
         ? tray.getBoundingClientRect().height
         : 0;
-      const verticalOffset = -Math.min(170, Math.max(82, trayHeight * .34));
+      const verticalOffset = -Math.min(208, Math.max(82, trayHeight * .46));
       const currentZoom = Number(state.map.getZoom?.()) || 0;
       state.map.easeTo({
         center: [Number(venue.longitude), Number(venue.latitude)],
@@ -311,7 +500,7 @@ function positionAttribution() {
   const trayVisible = getComputedStyle(tray).display !== 'none' && trayRect.top < mapRect.bottom;
   const overlap = trayVisible ? Math.max(0, mapRect.bottom - trayRect.top) : 0;
   attribution.style.bottom = `${Math.round(overlap + 6)}px`;
-  attribution.style.left = '8px';
+  attribution.style.left = '12px';
   attribution.style.right = 'auto';
 }
 
@@ -324,14 +513,8 @@ function observeTray() {
 }
 
 function handleDocumentClick(event) {
-  if (event.target.closest?.('#browse-locations-button')) {
-    openPreviewVenue(event);
-    return;
-  }
-  if (event.target.closest?.('#tray-handle')) {
-    handleTrayTopTap(event);
-    return;
-  }
+  if (handleSelectedTrayClick(event)) return;
+  if (event.target.closest?.('#browse-locations-button') && openPreviewVenue(event)) return;
 
   const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
   if (!marker) return;
@@ -344,8 +527,8 @@ function handleDocumentClick(event) {
 function sync() {
   installStyles();
   removeZoomControls();
-  updatePreviewIntent();
-  requestAnimationFrame(updatePreviewIntent);
+  syncStatisticsPlacement();
+  schedulePreviewUpdate();
   syncSelectedTrayDensity();
   positionAttribution();
 
@@ -360,8 +543,11 @@ function initialize() {
   installStyles();
   observeTray();
 
+  document.addEventListener('pointerdown', beginSelectedTrayGesture, { capture: true });
+  document.addEventListener('pointerup', finishSelectedTrayGesture, { capture: true });
+  document.addEventListener('pointercancel', cancelSelectedTrayGesture, { capture: true });
   document.addEventListener('click', handleDocumentClick, { capture: true });
-  window.addEventListener('resize', () => requestAnimationFrame(positionAttribution));
+  window.addEventListener('resize', () => requestAnimationFrame(sync));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
   window.CGBApp?.subscribe?.('ready', sync);
