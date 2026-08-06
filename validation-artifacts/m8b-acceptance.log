@@ -1,0 +1,3 @@
+Traceback (most recent call last):
+  File "<stdin>", line 95, in <module>
+RuntimeError: Nearby switched away from List
