@@ -41,7 +41,7 @@ test('Share and all rendered interface icons use inline SVG geometry', () => {
   assert.match(icons, /inlineSpriteIcons/);
   assert.match(iconUpgrade, /inlineSpriteIcons\(root\)/);
   assert.match(iconUpgrade, /function connectApp\(\)/);
-  assert.match(iconUpgrade, /app\.subscribe\('rendered', scheduleUpgrade\)/);
+  assert.match(iconUpgrade, /CGBApp\?\.subscribe/);
   assert.match(iconUpgrade, /import '\.\/final-functional-stabilization\.mjs'/);
   assert.match(sprite, /id="icon-share"[\s\S]*M12 16V3/);
   assert.doesNotMatch(sprite.match(/<symbol id="icon-share"[\s\S]*?<\/symbol>/)?.[0] || '', /<circle/);
