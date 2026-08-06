@@ -108,8 +108,8 @@ function connectApp() {
   }
 
   appConnected = true;
-  app.subscribe('rendered', scheduleUpgrade);
-  app.subscribe('ready', scheduleUpgrade);
+  window.CGBApp?.subscribe?.('rendered', scheduleUpgrade);
+  window.CGBApp?.subscribe?.('ready', scheduleUpgrade);
   scheduleUpgrade();
 }
 
