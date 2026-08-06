@@ -1,3 +1,4 @@
 Traceback (most recent call last):
-  File "<stdin>", line 95, in <module>
-RuntimeError: Nearby switched away from List
+  File "<stdin>", line 82, in <module>
+  File "<stdin>", line 57, in wait_for
+RuntimeError: Timed out waiting for: document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'
