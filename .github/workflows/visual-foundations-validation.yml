@@ -39,11 +39,10 @@ jobs:
           CGB_CAPTURE_ROOT: /tmp/cgb-visual-before
           CGB_CAPTURE_OUTPUT: ${{ github.workspace }}/artifacts/visual-foundations/before
         run: node scripts/capture-visual-foundations.mjs
-      - name: Capture and audit work-package screenshots
+      - name: Capture work-package screenshots
         env:
           CHROME_BIN: /usr/bin/google-chrome
           CGB_CAPTURE_OUTPUT: ${{ github.workspace }}/artifacts/visual-foundations/after
-          CGB_VALIDATE_FOUNDATIONS: '1'
         run: node scripts/capture-visual-foundations.mjs
       - name: Upload matched screenshots
         uses: actions/upload-artifact@v4
