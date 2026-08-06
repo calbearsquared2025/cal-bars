@@ -5,6 +5,7 @@ import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
+import './final-ui-polish.mjs';
 import { createIcon, inlineSpriteIcons, setIcon } from './icons.mjs';
 
 let appConnected = false;
