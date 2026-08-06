@@ -1,0 +1,63 @@
+name: Milestone 8C validation
+
+on:
+  push:
+    branches:
+      - agent/m8a-visual-foundation
+    paths-ignore:
+      - 'docs/validation/m8c/**'
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run repository tests
+        run: npm test
+      - name: Validate fallback data
+        run: npm run validate:data
+      - name: Run browser harness
+        run: npm run test:browser
+      - name: Run migration tests
+        run: npm run test:migration
+      - name: Determine screenshot phase
+        shell: bash
+        run: |
+          if [[ -f docs/validation/m8c/before/map.webp ]]; then
+            echo 'M8C_PHASE=after' >> "$GITHUB_ENV"
+          else
+            echo 'M8C_PHASE=before' >> "$GITHUB_ENV"
+          fi
+      - name: Capture mobile screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/cgb-http.log 2>&1 &
+          SERVER_PID=$!
+          google-chrome --headless=new --no-sandbox --disable-dev-shm-usage \
+            --remote-debugging-port=9222 --remote-allow-origins='*' \
+            --user-data-dir=/tmp/cgb-chrome --window-size=390,844 \
+            about:blank >/tmp/cgb-chrome.log 2>&1 &
+          CHROME_PID=$!
+          trap 'kill "$CHROME_PID" "$SERVER_PID" 2>/dev/null || true' EXIT
+          python3 -m pip install --quiet websocket-client
+          python3 scripts/m8c-capture.py
+      - name: Commit screenshots
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "docs/validation/m8c/${M8C_PHASE}/"
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Capture Milestone 8C ${M8C_PHASE} screenshots"
+          git push
