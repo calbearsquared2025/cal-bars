@@ -17,9 +17,11 @@ test('Nearby and All locations preserve the List surface through application rer
   assert.match(stabilization, /setTrayState\('full'\)/);
   assert.match(stabilization, /setCommandActive\('list'\)/);
   assert.match(stabilization, /installListRenderGuard/);
+  assert.match(stabilization, /function connectApp\(\)/);
+  assert.match(stabilization, /window\.setTimeout\(connectApp, 25\)/);
+  assert.match(stabilization, /app\.subscribe\('rendered', schedulePostRender\)/);
   assert.match(stabilization, /const result = render\(\.\.\.args\)/);
   assert.match(stabilization, /if \(preserveList\) restoreListSurface\(\)/);
-  assert.match(stabilization, /CGBApp\?\.subscribe\?\.\('rendered', schedulePostRender\)/);
 });
 
 test('Add preserves an existing Venue context and exposes the existing new-location search path', () => {
@@ -38,6 +40,8 @@ test('Share and all rendered interface icons use inline SVG geometry', () => {
   assert.doesNotMatch(icons, /assets\/icons\.svg/);
   assert.match(icons, /inlineSpriteIcons/);
   assert.match(iconUpgrade, /inlineSpriteIcons\(root\)/);
+  assert.match(iconUpgrade, /function connectApp\(\)/);
+  assert.match(iconUpgrade, /app\.subscribe\('rendered', scheduleUpgrade\)/);
   assert.match(iconUpgrade, /import '\.\/final-functional-stabilization\.mjs'/);
   assert.match(sprite, /id="icon-share"[\s\S]*M12 16V3/);
   assert.doesNotMatch(sprite.match(/<symbol id="icon-share"[\s\S]*?<\/symbol>/)?.[0] || '', /<circle/);
