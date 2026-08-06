@@ -31,14 +31,24 @@ jobs:
         run: npm run test:migration
       - name: Diff check
         run: git diff --check origin/main...HEAD
-      - name: Capture iPhone screenshots
+      - name: Prepare original PR baseline
+        run: git worktree add --detach /tmp/cgb-visual-before 25a6d0722547dde9814ee39fcb314fb1ec50da8f
+      - name: Capture original PR-head screenshots
         env:
           CHROME_BIN: /usr/bin/google-chrome
+          CGB_CAPTURE_ROOT: /tmp/cgb-visual-before
+          CGB_CAPTURE_OUTPUT: ${{ github.workspace }}/artifacts/visual-foundations/before
         run: node scripts/capture-visual-foundations.mjs
-      - name: Upload screenshots
+      - name: Capture and audit work-package screenshots
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          CGB_CAPTURE_OUTPUT: ${{ github.workspace }}/artifacts/visual-foundations/after
+          CGB_VALIDATE_FOUNDATIONS: '1'
+        run: node scripts/capture-visual-foundations.mjs
+      - name: Upload matched screenshots
         uses: actions/upload-artifact@v4
         with:
           name: visual-foundations-${{ github.sha }}
-          path: artifacts/visual-foundations/*.png
+          path: artifacts/visual-foundations/**/*.png
           if-no-files-found: error
           retention-days: 30
