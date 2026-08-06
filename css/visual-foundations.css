@@ -126,10 +126,14 @@ button,
     right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
   }
 
-  .command-surface__shell,
-  .detail-shell {
+  .command-surface__shell {
     padding-left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
     padding-right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
+  }
+
+  .tray-peek {
+    padding-left: 0;
+    padding-right: 0;
   }
 
   .tray-summary,
@@ -138,6 +142,38 @@ button,
   .location-card {
     padding-left: var(--mobile-content-gutter);
     padding-right: var(--mobile-content-gutter);
+  }
+
+  .back-link {
+    left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
+  }
+
+  .detail-hero {
+    padding-left: var(--mobile-content-gutter);
+    padding-right: var(--mobile-content-gutter);
+  }
+
+  .detail-hero .venue-badges {
+    left: var(--mobile-content-gutter);
+  }
+
+  .detail-game-context,
+  .activity-card,
+  .venue-detail > .party-module {
+    margin-left: var(--mobile-content-gutter);
+    margin-right: var(--mobile-content-gutter);
+  }
+
+  .detail-description,
+  .venue-website,
+  .preview-note {
+    margin-left: var(--mobile-content-gutter);
+    margin-right: var(--mobile-content-gutter);
+  }
+
+  .venue-detail > .action-row {
+    padding-left: max(var(--mobile-content-gutter), env(safe-area-inset-left, 0px));
+    padding-right: max(var(--mobile-content-gutter), env(safe-area-inset-right, 0px));
   }
 
   /* All four destinations share the same Inter hierarchy and active-state pattern. */
