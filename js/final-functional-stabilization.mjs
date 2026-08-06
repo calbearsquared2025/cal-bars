@@ -151,6 +151,22 @@ function restoreListSurface() {
   syncListLocationControl();
 }
 
+function installListRenderGuard() {
+  const app = window.CGBApp;
+  if (!app?.render || app.render.cgbListGuard === true) return;
+  const render = app.render.bind(app);
+  const guardedRender = (...args) => {
+    const preserveList = isMobile() && (
+      listSurfaceLocked || document.body.dataset.commandSurface === 'list'
+    );
+    const result = render(...args);
+    if (preserveList) restoreListSurface();
+    return result;
+  };
+  guardedRender.cgbListGuard = true;
+  app.render = guardedRender;
+}
+
 function captureAddContext() {
   addContextVenueId = appState()?.selectedVenueId || '';
 }
@@ -250,6 +266,7 @@ function schedulePostRender() {
     ensureSafeAreaFills();
     ensureAddLocationOption();
     fixDirectionsSeparator();
+    installListRenderGuard();
 
     if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
     if (listSurfaceLocked) restoreListSurface();
@@ -294,6 +311,7 @@ function initialize() {
   document.addEventListener('click', restoreContextForAddAction, { capture: true });
   document.addEventListener('click', routeSelectedVenuePlanThroughAdd, { capture: true });
 
+  installListRenderGuard();
   if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', schedulePostRender);
   window.CGBApp?.subscribe?.('rendered', schedulePostRender);

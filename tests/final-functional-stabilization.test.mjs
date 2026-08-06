@@ -16,6 +16,9 @@ test('Nearby and All locations preserve the List surface through application rer
   assert.match(stabilization, /state\.trayState = next/);
   assert.match(stabilization, /setTrayState\('full'\)/);
   assert.match(stabilization, /setCommandActive\('list'\)/);
+  assert.match(stabilization, /installListRenderGuard/);
+  assert.match(stabilization, /const result = render\(\.\.\.args\)/);
+  assert.match(stabilization, /if \(preserveList\) restoreListSurface\(\)/);
   assert.match(stabilization, /CGBApp\?\.subscribe\?\.\('rendered', schedulePostRender\)/);
 });
 
