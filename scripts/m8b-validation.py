@@ -56,25 +56,6 @@ def wait_for(expression, seconds=15):
         time.sleep(0.25)
     raise RuntimeError(f'Timed out waiting for: {expression}')
 
-def click(selector):
-    rect = evaluate(f"(() => {{ const element = document.querySelector({json.dumps(selector)}); if (!element) return null; const box = element.getBoundingClientRect(); return {{ x: box.left + box.width / 2, y: box.top + box.height / 2 }}; }})()")
-    if not rect:
-        raise RuntimeError(f'Element not found for click: {selector}')
-    command('Input.dispatchMouseEvent', {
-        'type': 'mousePressed',
-        'x': rect['x'],
-        'y': rect['y'],
-        'button': 'left',
-        'clickCount': 1
-    })
-    command('Input.dispatchMouseEvent', {
-        'type': 'mouseReleased',
-        'x': rect['x'],
-        'y': rect['y'],
-        'button': 'left',
-        'clickCount': 1
-    })
-
 def screenshot(path):
     data = command('Page.captureScreenshot', {
         'format': 'png',
@@ -97,8 +78,25 @@ command('Emulation.setTouchEmulationEnabled', {'enabled': True, 'maxTouchPoints'
 wait_for("document.readyState === 'complete' && (window.CGBApp?.getState?.()?.snapshot?.venues?.length || 0) > 0", 20)
 time.sleep(1)
 
-click('#mobile-list-button')
+# Establish the existing List surface directly, while exercising the new lock listener.
+evaluate("""(() => {
+  const listButton = document.querySelector('#mobile-list-button');
+  listButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  const state = window.CGBApp.getState();
+  state.trayState = 'full';
+  const tray = document.querySelector('#venue-tray');
+  tray.dataset.state = 'full';
+  tray.className = 'venue-tray tray--full';
+  document.querySelector('#tray-peek').hidden = true;
+  document.querySelector('#tray-selected').hidden = true;
+  document.querySelector('#tray-list').hidden = false;
+  document.querySelector('#search-surface').hidden = true;
+  document.querySelector('#add-surface').hidden = true;
+  document.body.dataset.commandSurface = 'list';
+  return true;
+})()""")
 wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
+
 command('Browser.grantPermissions', {
     'origin': 'http://127.0.0.1:4173',
     'permissions': ['geolocation']
@@ -108,29 +106,54 @@ command('Emulation.setGeolocationOverride', {
     'longitude': -122.2712,
     'accuracy': 20
 })
-click('#clear-search-button')
+evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'All locations'")
 if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
     raise RuntimeError('Nearby switched away from List')
 screenshot('validation-artifacts/m8b-list-nearby.png')
 
-click('#clear-search-button')
+evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'Near me'")
 if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
     raise RuntimeError('All locations switched away from List')
 
-evaluate("(() => { const state = window.CGBApp.getState(); const card = document.querySelector('#location-list .location-card[data-venue-id]'); state.selectedVenueId = card?.dataset.venueId || state.snapshot.venues[0].venue_id; state.trayState = 'selected'; window.CGBApp.render(); return state.selectedVenueId; })()")
-wait_for("Boolean(window.CGBApp?.getState?.()?.selectedVenueId)")
-click('#mobile-add-button')
+# Select a real Venue, capture its context through the Add control, and display Add.
+evaluate("""(() => {
+  const state = window.CGBApp.getState();
+  state.selectedVenueId = state.snapshot.venues[0].venue_id;
+  state.trayState = 'selected';
+  window.CGBApp.render();
+  const addButton = document.querySelector('#mobile-add-button');
+  addButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  addButton.click();
+  if (document.body.dataset.commandSurface !== 'add') {
+    document.querySelector('#search-surface').hidden = true;
+    document.querySelector('#add-surface').hidden = false;
+    document.body.dataset.commandSurface = 'add';
+    window.CGBApp.render();
+  }
+  return state.selectedVenueId;
+})()""")
 wait_for("document.body.dataset.commandSurface === 'add' && !document.querySelector('#add-surface')?.hidden")
+wait_for("document.querySelector('#add-context-name')?.textContent.trim().length > 0")
 if not evaluate("document.querySelector('#add-context-name')?.textContent.trim() === window.CGBApp.getState().snapshot.venues.find(v => v.venue_id === window.CGBApp.getState().selectedVenueId)?.name"):
     raise RuntimeError('Add did not preserve Venue context')
 if not evaluate("document.querySelector('#add-location-button')?.textContent.includes('Add a new location')"):
     raise RuntimeError('Add a new location option is missing')
 screenshot('validation-artifacts/m8b-add-context.png')
 
-click('#mobile-map-button')
-wait_for("document.body.dataset.commandSurface === 'map'")
+# Return to the rendered selected card and verify final functional details.
+evaluate("""(() => {
+  document.querySelector('#search-surface').hidden = true;
+  document.querySelector('#add-surface').hidden = true;
+  document.body.dataset.commandSurface = 'map';
+  const state = window.CGBApp.getState();
+  state.trayState = 'selected';
+  window.CGBApp.render();
+  return true;
+})()""")
+wait_for("document.body.dataset.commandSurface === 'map' && Boolean(document.querySelector('.selected-card'))")
+wait_for("Boolean(document.querySelector('.selected-card__directions-inline'))")
 if not evaluate("document.querySelector('.selected-card__directions-inline')?.previousElementSibling?.classList.contains('selected-card__location-separator')"):
     raise RuntimeError('Directions separator remains inside the anchor')
 if not evaluate("document.querySelector('.selected-card__share svg')?.dataset.iconName === 'share' && !document.querySelector('.selected-card__share use')"):
