@@ -24,6 +24,6 @@ appendPreconnect('https://fonts.googleapis.com');
 appendPreconnect('https://fonts.gstatic.com', 'anonymous');
 appendStylesheet({
   id: FONT_STYLESHEET_ID,
-  href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap'
+  href: 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600..900&family=Inter:wght@400..900&family=Source+Serif+4:opsz,wght@8..60,400..800&display=swap'
 });
 appendStylesheet({ id: FOUNDATION_STYLESHEET_ID, href: 'css/visual-foundations.css' });
