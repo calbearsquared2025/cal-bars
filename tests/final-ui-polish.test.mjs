@@ -2,10 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const polishSource = await readFile(new URL('../js/final-ui-polish.mjs', import.meta.url), 'utf8');
-const iconUpgradeSource = await readFile(new URL('../js/icon-upgrade.mjs', import.meta.url), 'utf8');
+const root = new URL('../', import.meta.url);
+const polishSource = await readFile(new URL('js/final-ui-polish.mjs', root), 'utf8');
+const finalPassSource = await readFile(new URL('js/map-profile-final-pass.mjs', root), 'utf8');
+const iconUpgradeSource = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('Milestone 8C loads as the final presentation layer', () => {
+test('Milestone 8C remains the final presentation layer', () => {
   const polishImport = iconUpgradeSource.indexOf("import './final-ui-polish.mjs';");
   const previousVisualImport = iconUpgradeSource.indexOf("import './map-profile-final-pass.mjs';");
   const iconImport = iconUpgradeSource.indexOf("import { createIcon");
@@ -13,8 +15,9 @@ test('Milestone 8C loads as the final presentation layer', () => {
   assert.ok(polishImport < iconImport);
 });
 
-test('removes the oversized Details CTA without changing the underlying route', () => {
-  assert.match(polishSource, /\.selected-card__details\s*\{[\s\S]*?display:\s*none\s*!important;/);
+test('oversized Details CTA remains absent without changing the route', () => {
+  assert.match(finalPassSource, /details\?\.remove\(\)/);
+  assert.doesNotMatch(finalPassSource, /createIcon\('details'/);
   assert.doesNotMatch(polishSource, /history\.|location\.assign|pushState|replaceState/);
 });
 

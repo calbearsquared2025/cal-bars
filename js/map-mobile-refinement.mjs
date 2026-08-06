@@ -12,7 +12,7 @@ const STYLE_ID = 'cgb-map-mobile-refinement';
 
 let lastAutoFocusedVenueId = '';
 let lastSelectedVenueId = '';
-let selectedTrayExpanded = true;
+let selectedTrayExpanded = false;
 let trayObserver = null;
 
 function isMobile() {
@@ -217,7 +217,7 @@ function openPreviewVenue(event) {
   const card = previewVenueCard(button.dataset.directVenueId);
   if (!card) return;
 
-  selectedTrayExpanded = true;
+  selectedTrayExpanded = false;
   lastSelectedVenueId = '';
   card.click();
 }
@@ -250,7 +250,7 @@ function syncSelectedTrayDensity() {
 
   if (state.selectedVenueId !== lastSelectedVenueId) {
     lastSelectedVenueId = state.selectedVenueId;
-    selectedTrayExpanded = true;
+    selectedTrayExpanded = false;
   }
   setSelectedTrayDensity(selectedTrayExpanded);
 }
@@ -323,6 +323,24 @@ function observeTray() {
   trayObserver.observe(tray);
 }
 
+function handleDocumentClick(event) {
+  if (event.target.closest?.('#browse-locations-button')) {
+    openPreviewVenue(event);
+    return;
+  }
+  if (event.target.closest?.('#tray-handle')) {
+    handleTrayTopTap(event);
+    return;
+  }
+
+  const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
+  if (!marker) return;
+  selectedTrayExpanded = false;
+  lastSelectedVenueId = '';
+  lastAutoFocusedVenueId = '';
+  requestAnimationFrame(() => focusVenue(marker.dataset.venueId, { force: true }));
+}
+
 function sync() {
   installStyles();
   removeZoomControls();
@@ -342,18 +360,7 @@ function initialize() {
   installStyles();
   observeTray();
 
-  document.addEventListener('click', openPreviewVenue, { capture: true });
-  document.addEventListener('click', handleTrayTopTap, { capture: true });
-
-  document.addEventListener('click', (event) => {
-    const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
-    if (!marker) return;
-    selectedTrayExpanded = true;
-    lastSelectedVenueId = '';
-    lastAutoFocusedVenueId = '';
-    requestAnimationFrame(() => focusVenue(marker.dataset.venueId, { force: true }));
-  });
-
+  document.addEventListener('click', handleDocumentClick, { capture: true });
   window.addEventListener('resize', () => requestAnimationFrame(positionAttribution));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);

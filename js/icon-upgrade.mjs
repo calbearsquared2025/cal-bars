@@ -30,7 +30,6 @@ function appendIcon(element, iconName) {
 function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
-  if (label === 'view details' || label === 'details') return 'details';
   if (label === 'share') return 'share';
   return null;
 }

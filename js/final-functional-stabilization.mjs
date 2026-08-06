@@ -189,6 +189,17 @@ function restoreContextForAddAction(event) {
   if (state && venueById(addContextVenueId, state)) state.selectedVenueId = addContextVenueId;
 }
 
+function routeAddLocationSearch(event) {
+  if (!event.target.closest?.('#add-location-button')) return;
+  clearAddContext();
+  const input = document.querySelector('#location-query');
+  if (input) {
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  document.querySelector('#mobile-search-button')?.click();
+}
+
 function ensureAddLocationOption() {
   if (document.querySelector('#add-location-button')) return;
   const watchParty = document.querySelector('#add-watch-party-button');
@@ -210,16 +221,6 @@ function ensureAddLocationOption() {
   const chevron = createIcon('chevron-right');
   button.append(icon, copy, chevron);
   watchParty.after(button);
-
-  button.addEventListener('click', () => {
-    clearAddContext();
-    const input = document.querySelector('#location-query');
-    if (input) {
-      input.value = '';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    document.querySelector('#mobile-search-button')?.click();
-  });
 }
 
 function routeSelectedVenuePlanThroughAdd(event) {
@@ -276,6 +277,20 @@ function handleNavigationContext(event) {
   if (event.target.closest?.('#mobile-map-button, #mobile-list-button, [data-command-close]')) clearAddContext();
 }
 
+function isActivationEvent(event) {
+  return event.type !== 'keydown' || event.key === 'Enter' || event.key === ' ';
+}
+
+function handleInteraction(event) {
+  if (!isActivationEvent(event)) return;
+  setListLockFromEvent(event);
+  handleNavigationContext(event);
+  if (event.type !== 'click') return;
+  restoreContextForAddAction(event);
+  routeAddLocationSearch(event);
+  routeSelectedVenuePlanThroughAdd(event);
+}
+
 function connectApp() {
   if (appConnected) return;
   const app = window.CGBApp;
@@ -301,18 +316,9 @@ function initialize() {
     fixDirectionsSeparator();
   });
 
-  document.addEventListener('pointerdown', setListLockFromEvent, { capture: true });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') setListLockFromEvent(event);
-  }, { capture: true });
-  document.addEventListener('click', setListLockFromEvent, { capture: true });
-  document.addEventListener('pointerdown', handleNavigationContext, { capture: true });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') handleNavigationContext(event);
-  }, { capture: true });
-  document.addEventListener('click', handleNavigationContext, { capture: true });
-  document.addEventListener('click', restoreContextForAddAction, { capture: true });
-  document.addEventListener('click', routeSelectedVenuePlanThroughAdd, { capture: true });
+  document.addEventListener('pointerdown', handleInteraction, { capture: true });
+  document.addEventListener('keydown', handleInteraction, { capture: true });
+  document.addEventListener('click', handleInteraction, { capture: true });
 
   if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', schedulePostRender);

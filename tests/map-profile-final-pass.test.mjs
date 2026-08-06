@@ -27,7 +27,13 @@ test('Directions moves beside the location and Share sits beside RSVP', () => {
   assert.match(source, /location\.append\(directions\)/);
   assert.match(source, /grid-template-columns: minmax\(0, 2fr\) minmax\(96px, 1fr\)/);
   assert.match(source, /selected-card__share/);
-  assert.match(source, /selected-card__details/);
+});
+
+test('obsolete hidden Details action is removed rather than restyled', () => {
+  assert.match(source, /const details = actions\.find/);
+  assert.match(source, /details\?\.remove\(\)/);
+  assert.doesNotMatch(source, /createIcon\('details'/);
+  assert.doesNotMatch(source, /selected-card__details\s*\{/);
 });
 
 test('Watch Party content is compact and reporting is subordinate', () => {
@@ -37,12 +43,11 @@ test('Watch Party content is compact and reporting is subordinate', () => {
   assert.match(source, /party-module__report[\s\S]*font-size: \.64rem/);
 });
 
-test('newly selected venues default to compact while retaining the summary and RSVP', () => {
-  assert.match(source, /defaultSelectedTrayToCompact/);
-  assert.match(source, /tray\.dataset\.selectedDensity === 'expanded'/);
-  assert.match(source, /#tray-handle'\)\?\.click/);
+test('tray density has one owner and no click-driven compact workaround', () => {
+  assert.doesNotMatch(source, /collapsedVenueId/);
+  assert.doesNotMatch(source, /defaultSelectedTrayToCompact/);
+  assert.doesNotMatch(source, /#tray-handle'\)\?\.click/);
   assert.match(source, /data-selected-density="compact"[\s\S]*party-module[\s\S]*display: grid !important/);
-  assert.match(source, /data-selected-density="compact"[\s\S]*selected-card__details[\s\S]*display: none !important/);
 });
 
 test('selected RSVP keeps Undo visually subordinate', () => {

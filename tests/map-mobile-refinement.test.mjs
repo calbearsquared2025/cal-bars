@@ -32,10 +32,19 @@ test('Nearby venue opens the selected tray directly instead of routing through L
   assert.match(source, /card\.click\(\)/);
 });
 
-test('Search forces selected Venue compact while Map retains tray-top toggling', () => {
+test('selected venues default compact and Map retains tray-top toggling', () => {
+  assert.match(source, /let selectedTrayExpanded = false/);
+  assert.match(source, /state\.selectedVenueId !== lastSelectedVenueId[\s\S]*selectedTrayExpanded = false/);
   assert.match(source, /dataset\.commandSurface === 'search'/);
   assert.match(source, /setSelectedTrayDensity\(false\)/);
   assert.match(source, /dataset\.commandSurface !== 'map'/);
+  assert.match(source, /setSelectedTrayDensity\(!selectedTrayExpanded\)/);
+});
+
+test('map interactions use one delegated document click listener', () => {
+  assert.match(source, /function handleDocumentClick\(event\)/);
+  assert.match(source, /document\.addEventListener\('click', handleDocumentClick, \{ capture: true \}\)/);
+  assert.equal((source.match(/document\.addEventListener\('click'/g) || []).length, 1);
 });
 
 test('attribution is placed left of the right-side map controls', () => {

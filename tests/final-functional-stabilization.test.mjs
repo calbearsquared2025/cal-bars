@@ -30,8 +30,18 @@ test('Add preserves an existing Venue context and exposes the existing new-locat
   assert.match(stabilization, /\.selected-card__plan-party/);
   assert.match(stabilization, /id = 'add-location-button'/);
   assert.match(stabilization, /Add a new location/);
+  assert.match(stabilization, /function routeAddLocationSearch/);
   assert.match(stabilization, /#mobile-search-button/);
   assert.doesNotMatch(stabilization, /fetch\(|XMLHttpRequest|joinExternalVenue/);
+});
+
+test('delegated interaction handling replaces duplicated document listeners', () => {
+  assert.match(stabilization, /function handleInteraction\(event\)/);
+  assert.match(stabilization, /function isActivationEvent\(event\)/);
+  assert.equal((stabilization.match(/document\.addEventListener\('pointerdown'/g) || []).length, 1);
+  assert.equal((stabilization.match(/document\.addEventListener\('keydown'/g) || []).length, 1);
+  assert.equal((stabilization.match(/document\.addEventListener\('click'/g) || []).length, 1);
+  assert.doesNotMatch(stabilization, /button\.addEventListener\('click'/);
 });
 
 test('Share and all rendered interface icons use inline SVG geometry', () => {

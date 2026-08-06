@@ -2,7 +2,6 @@ import { createIcon } from './icons.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-final-pass';
-let collapsedVenueId = '';
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -234,24 +233,7 @@ function installStyles() {
         font-weight: 800 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__details {
-        grid-column: 1 / -1 !important;
-        grid-row: 2 !important;
-        min-height: 44px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 7px !important;
-        color: var(--cgb-navy-900) !important;
-        background: var(--cgb-navy-50) !important;
-        border: 1px solid var(--cgb-neutral-200) !important;
-        border-radius: 11px !important;
-        font-size: .74rem !important;
-        font-weight: 800 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__details .ui-icon {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon {
         width: 17px !important;
         height: 17px !important;
         display: inline-block !important;
@@ -274,8 +256,7 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__note,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__event,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__report,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__details {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__report {
         display: none !important;
       }
 
@@ -370,11 +351,7 @@ function refineActions(root = document) {
     location.append(directions);
   }
 
-  if (details) {
-    details.classList.add('selected-card__details');
-    const icon = details.querySelector('.ui-icon') || createIcon('details');
-    details.replaceChildren(icon, document.createTextNode('Details'));
-  }
+  details?.remove();
 
   if (share) {
     share.classList.add('selected-card__share');
@@ -401,28 +378,11 @@ function refineActions(root = document) {
   }
 }
 
-function defaultSelectedTrayToCompact(root = document) {
-  const tray = root.querySelector('#venue-tray.tray--selected');
-  const venueId = window.CGBApp?.getState?.()?.selectedVenueId || '';
-
-  if (!tray || !venueId || document.body.dataset.commandSurface !== 'map') {
-    collapsedVenueId = '';
-    return;
-  }
-
-  if (collapsedVenueId === venueId) return;
-  collapsedVenueId = venueId;
-  if (tray.dataset.selectedDensity === 'expanded') {
-    requestAnimationFrame(() => document.querySelector('#tray-handle')?.click());
-  }
-}
-
 function refine() {
   if (!isMobile()) return;
   refineAttendance();
   refinePartyModules();
   refineActions();
-  defaultSelectedTrayToCompact();
 }
 
 function scheduleRefinement() {
