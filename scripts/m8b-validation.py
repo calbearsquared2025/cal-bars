@@ -142,17 +142,14 @@ if not evaluate("document.querySelector('#add-location-button')?.textContent.inc
     raise RuntimeError('Add a new location option is missing')
 screenshot('validation-artifacts/m8b-add-context.png')
 
-# Return to the rendered selected card and verify final functional details.
+# Render the selected Venue card and verify final functional details regardless of active tab visibility.
 evaluate("""(() => {
-  document.querySelector('#search-surface').hidden = true;
-  document.querySelector('#add-surface').hidden = true;
-  document.body.dataset.commandSurface = 'map';
   const state = window.CGBApp.getState();
   state.trayState = 'selected';
   window.CGBApp.render();
   return true;
 })()""")
-wait_for("document.body.dataset.commandSurface === 'map' && Boolean(document.querySelector('.selected-card'))")
+wait_for("Boolean(document.querySelector('.selected-card'))")
 wait_for("Boolean(document.querySelector('.selected-card__directions-inline'))")
 if not evaluate("document.querySelector('.selected-card__directions-inline')?.previousElementSibling?.classList.contains('selected-card__location-separator')"):
     raise RuntimeError('Directions separator remains inside the anchor')
