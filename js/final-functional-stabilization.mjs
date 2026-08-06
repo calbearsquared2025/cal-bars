@@ -13,6 +13,9 @@ const CONTEXTUAL_ADD_SELECTOR = [
 let listSurfaceLocked = false;
 let addContextVenueId = '';
 let postRenderFrame = 0;
+let appConnected = false;
+let appConnectAttempts = 0;
+const APP_CONNECT_MAX_ATTEMPTS = 1200;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -290,6 +293,24 @@ function handleNavigationContext(event) {
   if (event.target.closest?.('#mobile-map-button, #mobile-list-button, [data-command-close]')) clearAddContext();
 }
 
+function connectApp() {
+  if (appConnected) return;
+  const app = window.CGBApp;
+  if (!app?.render || !app?.subscribe) {
+    appConnectAttempts += 1;
+    if (appConnectAttempts <= APP_CONNECT_MAX_ATTEMPTS) {
+      window.setTimeout(connectApp, 25);
+    }
+    return;
+  }
+
+  appConnected = true;
+  installListRenderGuard();
+  app.subscribe('rendered', schedulePostRender);
+  app.subscribe('ready', schedulePostRender);
+  schedulePostRender();
+}
+
 function initialize() {
   queueMicrotask(() => {
     installStyles();
@@ -311,11 +332,9 @@ function initialize() {
   document.addEventListener('click', restoreContextForAddAction, { capture: true });
   document.addEventListener('click', routeSelectedVenuePlanThroughAdd, { capture: true });
 
-  installListRenderGuard();
   if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', schedulePostRender);
-  window.CGBApp?.subscribe?.('rendered', schedulePostRender);
-  window.CGBApp?.subscribe?.('ready', schedulePostRender);
+  connectApp();
   schedulePostRender();
 }
 
