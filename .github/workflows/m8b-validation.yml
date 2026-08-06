@@ -44,6 +44,8 @@ jobs:
           ACCEPTANCE_STATUS=$?
           set -e
           cat validation-artifacts/m8b-acceptance.log
+          split -b 8000 -d -a 2 validation-artifacts/m8b-list-nearby.webp.b64 validation-artifacts/list-part-
+          split -b 8000 -d -a 2 validation-artifacts/m8b-add-context.webp.b64 validation-artifacts/add-part-
           exit "$ACCEPTANCE_STATUS"
       - name: Commit validation screenshots
         if: always()
