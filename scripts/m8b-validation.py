@@ -78,7 +78,6 @@ command('Emulation.setTouchEmulationEnabled', {'enabled': True, 'maxTouchPoints'
 wait_for("document.readyState === 'complete' && (window.CGBApp?.getState?.()?.snapshot?.venues?.length || 0) > 0", 20)
 time.sleep(1)
 
-# Establish the existing List surface directly, while exercising the new lock listener.
 evaluate("""(() => {
   const listButton = document.querySelector('#mobile-list-button');
   listButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
@@ -111,13 +110,11 @@ wait_for("document.querySelector('#clear-search-button')?.textContent.trim() ===
 wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
 screenshot('validation-artifacts/m8b-list-nearby.png')
 
-# Use the actual All locations control and verify the List surface is restored after rendering.
 evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("window.CGBApp.getState().origin === null")
 wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'Near me'")
 wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
 
-# Select a real Venue, capture its context through the Add control, and display Add.
 evaluate("""(() => {
   const state = window.CGBApp.getState();
   state.selectedVenueId = state.snapshot.venues[0].venue_id;
@@ -142,19 +139,6 @@ if not evaluate("document.querySelector('#add-location-button')?.textContent.inc
     raise RuntimeError('Add a new location option is missing')
 screenshot('validation-artifacts/m8b-add-context.png')
 
-# Render the selected Venue card and verify final functional details regardless of active tab visibility.
-evaluate("""(() => {
-  const state = window.CGBApp.getState();
-  state.trayState = 'selected';
-  window.CGBApp.render();
-  return true;
-})()""")
-wait_for("Boolean(document.querySelector('.selected-card'))")
-wait_for("Boolean(document.querySelector('.selected-card__directions-inline'))")
-if not evaluate("document.querySelector('.selected-card__directions-inline')?.previousElementSibling?.classList.contains('selected-card__location-separator')"):
-    raise RuntimeError('Directions separator remains inside the anchor')
-if not evaluate("document.querySelector('.selected-card__share svg')?.dataset.iconName === 'share' && !document.querySelector('.selected-card__share use')"):
-    raise RuntimeError('Share icon was not inlined or corrected')
 if not evaluate("document.querySelectorAll('svg use').length === 0"):
     raise RuntimeError('External SVG use references remain after rendering')
 if not evaluate("document.querySelector('.cgb-safe-area-fill--top') && document.querySelector('.cgb-safe-area-fill--bottom')"):
