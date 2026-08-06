@@ -1,5 +1,3 @@
-import './visual-foundations.mjs';
-
 import {
   bearCountCopy,
   markerKind,
