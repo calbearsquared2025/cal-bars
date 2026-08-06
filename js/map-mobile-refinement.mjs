@@ -88,7 +88,7 @@ function installStyles() {
 
       #map-view > .opening-stat .opening-stat__number {
         font-family: var(--font-condensed);
-        font-size: clamp(2.25rem, 10vw, 2.75rem);
+        font-size: clamp(2.5rem, 11vw, 3rem);
         font-weight: 800;
         letter-spacing: -.035em;
         line-height: .85;
@@ -96,7 +96,7 @@ function installStyles() {
 
       #map-view > .opening-stat .opening-stat__copy {
         font-family: var(--font-condensed);
-        font-size: .64rem;
+        font-size: .6875rem;
         font-weight: 800;
         letter-spacing: .055em;
         line-height: 1.04;
@@ -104,15 +104,20 @@ function installStyles() {
       }
 
       #map-view > .opening-stat .opening-stat__copy small {
-        font-size: .54rem;
+        font-size: .625rem;
         font-weight: 650;
         letter-spacing: .025em;
       }
 
       .map-actions {
-        top: calc(50% - 22px);
+        z-index: 45;
+        top: calc(50% - 48px);
         right: max(12px, env(safe-area-inset-right, 0px));
         gap: 8px;
+      }
+
+      body[data-map-tray-density="expanded"] .map-actions {
+        display: none;
       }
 
       .map-actions #near-me-button,
@@ -129,7 +134,12 @@ function installStyles() {
 
       .map-actions #near-me-button,
       .map-actions #fullscreen-button {
-        padding: 0 11px;
+        width: 104px;
+        min-width: 104px;
+        height: 44px;
+        justify-content: center;
+        padding: 0 10px;
+        white-space: nowrap;
       }
 
       .maplibregl-ctrl-top-right {
@@ -341,6 +351,7 @@ function setSelectedTrayDensity(expanded, { refocus = true } = {}) {
   if (!tray) return;
   selectedTrayExpanded = expanded;
   tray.dataset.selectedDensity = expanded ? 'expanded' : 'compact';
+  document.body.dataset.mapTrayDensity = expanded ? 'expanded' : 'compact';
   const handle = document.querySelector('#tray-handle');
   handle?.setAttribute('aria-expanded', String(expanded));
   handle?.setAttribute('aria-label', expanded
@@ -357,6 +368,7 @@ function syncSelectedTrayDensity() {
   const tray = document.querySelector('#venue-tray');
   if (!isMobile() || tray?.dataset.state !== 'selected' || !state?.selectedVenueId) {
     tray?.removeAttribute('data-selected-density');
+    document.body.removeAttribute('data-map-tray-density');
     return;
   }
 
@@ -452,7 +464,8 @@ function syncStatisticsPlacement() {
   if (statisticsHome.parent && statistics.parentElement !== statisticsHome.parent) {
     statisticsHome.parent.insertBefore(statistics, statisticsHome.nextSibling);
   }
-  statistics.hidden = false;
+  statistics.hidden = document.body.dataset.commandSurface !== 'map' ||
+    document.body.dataset.view === 'detail';
 }
 
 function focusVenue(venueId, { force = false } = {}) {
