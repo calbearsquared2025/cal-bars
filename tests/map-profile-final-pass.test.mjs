@@ -6,52 +6,56 @@ const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/map-profile-final-pass.mjs', root), 'utf8');
 const loader = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('final profile is loaded after the prior mobile refinement layers', () => {
-  assert.match(loader, /import '\.\/search-map-refinement\.mjs';[\s\S]*import '\.\/map-profile-final-pass\.mjs';/);
+test('final profile remains the governing selected-venue hierarchy', () => {
+  assert.match(loader, /import '\.\/map-profile-final-pass\.mjs';/);
+  assert.match(source, /grid-template-columns: minmax\(0, 1fr\)/);
+  assert.match(source, /padding: 0 var\(--mobile-content-gutter\) 16px/);
+  assert.doesNotMatch(source, /98px|minmax\(112px, 34%\)/);
 });
 
-test('generic Community Location badges are omitted from consumer cards', () => {
-  assert.match(source, /selected-card \.badge--community/);
-  assert.match(source, /location-card \.badge--community/);
+test('expanded venue identity supports two lines and title navigation', () => {
+  assert.match(source, /selected-card h2[\s\S]*overflow-wrap: anywhere/);
+  assert.match(source, /line-height: 1\.12/);
+  assert.match(source, /function ensureTitleLink/);
+  assert.match(source, /selected-card__title-link/);
 });
 
-test('attendance uses an asymmetric large-number card', () => {
-  assert.match(source, /grid-template-columns: minmax\(0, 1fr\) 98px/);
-  assert.match(source, /bear-count__number/);
-  assert.match(source, /createIcon\('users'/);
-  assert.match(source, /font-size: 2rem !important/);
+test('attendance is full-width Inter sentence copy rather than a side card', () => {
+  assert.match(source, /\.bear-count,[\s\S]*font-family: var\(--font-ui\)/);
+  assert.match(source, /-webkit-line-clamp: 2/);
+  assert.match(source, /text-transform: none/);
+  assert.doesNotMatch(source, /bear-count__number|createIcon\('users'/);
 });
 
-test('Directions moves beside the location and Share sits beside RSVP', () => {
-  assert.match(source, /selected-card__directions-inline/);
-  assert.match(source, /location\.append\(directions\)/);
-  assert.match(source, /grid-template-columns: minmax\(0, 2fr\) minmax\(96px, 1fr\)/);
-  assert.match(source, /selected-card__share/);
+test('compact tray keeps identity metadata and activity while hiding expanded content', () => {
+  assert.match(source, /data-selected-density="compact"[\s\S]*selected-card h2[\s\S]*white-space: nowrap/);
+  assert.match(source, /data-selected-density="compact"[\s\S]*\.bear-count[\s\S]*display: block/);
+  assert.match(source, /data-selected-density="compact"[\s\S]*\.party-module,[\s\S]*\.action-row[\s\S]*display: none/);
 });
 
-test('obsolete hidden Details action is removed rather than restyled', () => {
-  assert.match(source, /const details = actions\.find/);
-  assert.match(source, /details\?\.remove\(\)/);
-  assert.doesNotMatch(source, /createIcon\('details'/);
-  assert.doesNotMatch(source, /selected-card__details\s*\{/);
+test('expanded Watch Party content is limited to host and critical restriction', () => {
+  assert.match(source, /party-module__host/);
+  assert.match(source, /party-module__critical/);
+  assert.match(source, /:not\(\.party-module__host\):not\(\.party-module__critical\)/);
+  assert.match(source, /restriction\|reservation\|required\|ticket\|cover/);
 });
 
-test('Watch Party content is compact and reporting is subordinate', () => {
-  assert.match(source, /party-module__title[\s\S]*display: none !important/);
-  assert.match(source, /Event information/);
-  assert.match(source, /Report an Issue/);
-  assert.match(source, /party-module__report[\s\S]*font-size: \.64rem/);
-});
-
-test('tray density has one owner and no click-driven compact workaround', () => {
-  assert.doesNotMatch(source, /collapsedVenueId/);
-  assert.doesNotMatch(source, /defaultSelectedTrayToCompact/);
-  assert.doesNotMatch(source, /#tray-handle'\)\?\.click/);
-  assert.match(source, /data-selected-density="compact"[\s\S]*party-module[\s\S]*display: grid !important/);
-});
-
-test('selected RSVP keeps Undo visually subordinate', () => {
-  assert.match(source, /intent-button__undo/);
-  assert.match(source, /font-size: \.68rem !important/);
+test('participation is the sole primary action with separate tertiary Undo', () => {
+  assert.match(source, /background: var\(--cgb-gold-400\)/);
+  assert.match(source, /min-height: 50px/);
   assert.match(source, /You’ll be here/);
+  assert.match(source, /className = 'intent-undo'/);
+  assert.match(source, /dataset\.undoProxy = 'true'/);
+});
+
+test('Directions and Share are secondary while Details remains tertiary', () => {
+  assert.match(source, /selected-card__directions-inline/);
+  assert.match(source, /selected-card__share/);
+  assert.match(source, /selected-card__details/);
+  assert.match(source, /details\.textContent = 'Details'/);
+  assert.doesNotMatch(source, /details\?\.remove\(\)/);
+});
+
+test('the work package adds no important declaration', () => {
+  assert.doesNotMatch(source, /!important/);
 });
