@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const [css, html] = await Promise.all([
+const [css, html, icons] = await Promise.all([
   readFile(new URL('../css/visual-foundations.css', import.meta.url), 'utf8'),
-  readFile(new URL('../index.html', import.meta.url), 'utf8')
+  readFile(new URL('../index.html', import.meta.url), 'utf8'),
+  readFile(new URL('../assets/icons.svg', import.meta.url), 'utf8')
 ]);
 
 test('approved typefaces load from the document head and use shared font roles', () => {
@@ -61,6 +62,9 @@ test('bottom navigation uses Inter and one active-state pattern for all destinat
   assert.match(css, /\.mobile-command__add-mark\s*\{[\s\S]*width:\s*24px[\s\S]*margin-top:\s*0[\s\S]*background:\s*var\(--cgb-neutral-100\)/);
   assert.doesNotMatch(css, /\.mobile-command--add:is\([^}]+\.mobile-command__add-mark/);
   assert.doesNotMatch(css, /\.mobile-command--add:is\([^}]+::after/);
+
+  assert.match(html, /id="mobile-list-button"[\s\S]*assets\/icons\.svg#icon-details/);
+  assert.match(icons, /<symbol id="icon-details" viewBox="0 0 24 24">[\s\S]*<circle cx="5" cy="7" r="1"\/>[\s\S]*<circle cx="5" cy="12" r="1"\/>[\s\S]*<circle cx="5" cy="17" r="1"\/>[\s\S]*<path d="M9 7h10M9 12h10M9 17h10"\/>/);
 });
 
 test('the work package adds no important override', () => {
