@@ -108,16 +108,14 @@ command('Emulation.setGeolocationOverride', {
 })
 evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'All locations'")
-if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
-    raise RuntimeError('Nearby switched away from List')
+wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
 screenshot('validation-artifacts/m8b-list-nearby.png')
 
 # Use the actual All locations control and verify the List surface is restored after rendering.
 evaluate("document.querySelector('#clear-search-button').click()")
 wait_for("window.CGBApp.getState().origin === null")
 wait_for("document.querySelector('#clear-search-button')?.textContent.trim() === 'Near me'")
-if not evaluate("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'"):
-    raise RuntimeError('All locations switched away from List')
+wait_for("document.body.dataset.commandSurface === 'list' && document.querySelector('#venue-tray')?.dataset.state === 'full'")
 
 # Select a real Venue, capture its context through the Add control, and display Add.
 evaluate("""(() => {
