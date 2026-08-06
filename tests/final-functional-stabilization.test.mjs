@@ -10,18 +10,17 @@ const [stabilization, icons, iconUpgrade, sprite] = await Promise.all([
   readFile(new URL('assets/icons.svg', root), 'utf8')
 ]);
 
-test('Nearby and All locations preserve the List surface through application rerenders', () => {
+test('Nearby and All locations preserve the List surface after application rerenders', () => {
   assert.match(stabilization, /#mobile-list-button, #clear-search-button/);
   assert.match(stabilization, /listSurfaceLocked = true/);
   assert.match(stabilization, /state\.trayState = next/);
   assert.match(stabilization, /setTrayState\('full'\)/);
   assert.match(stabilization, /setCommandActive\('list'\)/);
-  assert.match(stabilization, /installListRenderGuard/);
   assert.match(stabilization, /function connectApp\(\)/);
   assert.match(stabilization, /window\.setTimeout\(connectApp, 25\)/);
   assert.match(stabilization, /app\.subscribe\('rendered', schedulePostRender\)/);
-  assert.match(stabilization, /const result = render\(\.\.\.args\)/);
-  assert.match(stabilization, /if \(preserveList\) restoreListSurface\(\)/);
+  assert.match(stabilization, /if \(listSurfaceLocked\) restoreListSurface\(\)/);
+  assert.doesNotMatch(stabilization, /app\.render\s*=/);
 });
 
 test('Add preserves an existing Venue context and exposes the existing new-location search path', () => {
