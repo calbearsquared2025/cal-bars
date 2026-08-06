@@ -55,7 +55,19 @@ function syncFullscreenIcon() {
   const button = document.querySelector('#fullscreen-button');
   const icon = button?.querySelector('.ui-icon');
   if (!button || !icon) return;
-  setIcon(icon, button.getAttribute('aria-pressed') === 'true' ? 'compress' : 'fullscreen');
+
+  const active = button.getAttribute('aria-pressed') === 'true';
+  setIcon(icon, active ? 'compress' : 'fullscreen');
+
+  let label = button.querySelector('.fullscreen-button__label');
+  if (!label) {
+    label = document.createElement('span');
+    label.className = 'fullscreen-button__label';
+    button.append(label);
+  }
+
+  label.textContent = active ? 'Exit' : 'Full screen';
+  button.setAttribute('aria-label', active ? 'Exit full-screen map' : 'Enter full-screen map');
 }
 
 function syncListLocationLabel() {
@@ -70,7 +82,10 @@ function syncListLocationLabel() {
 }
 
 function scheduleUpgrade() {
-  requestAnimationFrame(() => upgradeRenderedIcons());
+  requestAnimationFrame(() => {
+    upgradeRenderedIcons();
+    syncFullscreenIcon();
+  });
 }
 
 function initialize() {
