@@ -7,6 +7,10 @@ import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
 import { createIcon, inlineSpriteIcons, setIcon } from './icons.mjs';
 
+let appConnected = false;
+let appConnectAttempts = 0;
+const APP_CONNECT_MAX_ATTEMPTS = 1200;
+
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
   element.replaceChildren(createIcon(iconName, { className }));
@@ -92,6 +96,23 @@ function scheduleUpgrade() {
   });
 }
 
+function connectApp() {
+  if (appConnected) return;
+  const app = window.CGBApp;
+  if (!app?.subscribe) {
+    appConnectAttempts += 1;
+    if (appConnectAttempts <= APP_CONNECT_MAX_ATTEMPTS) {
+      window.setTimeout(connectApp, 25);
+    }
+    return;
+  }
+
+  appConnected = true;
+  app.subscribe('rendered', scheduleUpgrade);
+  app.subscribe('ready', scheduleUpgrade);
+  scheduleUpgrade();
+}
+
 function initialize() {
   upgradeRenderedIcons();
   syncFullscreenIcon();
@@ -102,8 +123,7 @@ function initialize() {
     requestAnimationFrame(syncListLocationLabel);
   });
 
-  window.CGBApp?.subscribe?.('rendered', scheduleUpgrade);
-  window.CGBApp?.subscribe?.('ready', scheduleUpgrade);
+  connectApp();
 }
 
 if (document.readyState === 'loading') {
