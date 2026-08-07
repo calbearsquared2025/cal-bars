@@ -1,12 +1,12 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { isAbsolute, join } from 'node:path';
+import { posix, win32 } from 'node:path';
 
 function windowsBrowserPaths(env) {
   const roots = [env.ProgramFiles, env['ProgramFiles(x86)'], env.LOCALAPPDATA].filter(Boolean);
   return roots.flatMap((root) => [
-    join(root, 'Google', 'Chrome', 'Application', 'chrome.exe'),
-    join(root, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
+    win32.join(root, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    win32.join(root, 'Microsoft', 'Edge', 'Application', 'msedge.exe')
   ]);
 }
 
@@ -20,6 +20,7 @@ export function findBrowser({
     { encoding: 'utf8' }
   )
 } = {}) {
+  const path = platform === 'win32' ? win32 : posix;
   const candidates = [
     env.CHROME_BIN,
     ...(platform === 'win32' ? windowsBrowserPaths(env) : []),
@@ -29,7 +30,7 @@ export function findBrowser({
   ].filter(Boolean);
 
   for (const candidate of candidates) {
-    if (isAbsolute(candidate)) {
+    if (path.isAbsolute(candidate)) {
       if (fileExists(candidate)) return candidate;
       continue;
     }
