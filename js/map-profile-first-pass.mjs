@@ -469,7 +469,6 @@ function normalizeActionLabels(card) {
 }
 
 function enhanceSelectedCard() {
-  if (!isMobile()) return;
   const state = appState();
   document.body.classList.toggle('has-selected-venue', Boolean(state?.selectedVenueId));
 
@@ -479,7 +478,7 @@ function enhanceSelectedCard() {
   addPlanWatchPartyAction(card);
   normalizeActionLabels(card);
 
-  if (document.body.dataset.commandSurface === 'search') {
+  if (isMobile() && document.body.dataset.commandSurface === 'search') {
     const tray = document.querySelector('#venue-tray');
     if (tray) tray.dataset.selectedDensity = 'compact';
   }

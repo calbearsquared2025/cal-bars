@@ -149,6 +149,7 @@ function setSurface(next, { focus = false } = {}) {
   dom.searchSurface.hidden = next !== 'search';
   dom.addSurface.hidden = next !== 'add';
   document.body.dataset.commandSurface = next;
+  moveSearchForm();
   updateCommandState();
 
   if (next === 'search' && focus) {
@@ -162,7 +163,7 @@ function setSurface(next, { focus = false } = {}) {
 function moveSearchForm() {
   if (!dom.searchForm || !dom.searchSlot || !dom.mapToolbar) return;
   const mobile = window.matchMedia(MOBILE_QUERY).matches;
-  if (mobile) {
+  if (mobile || currentSurface === 'search') {
     if (dom.searchForm.parentElement !== dom.searchSlot) dom.searchSlot.append(dom.searchForm);
     return;
   }
@@ -367,8 +368,8 @@ function cacheDom() {
 
 function initializeShellControls() {
   if (!cacheDom()) return;
-  moveSearchForm();
   configureMissingLocationLink();
+  setSurface('map');
 
   document.querySelector('#header-about-button')?.addEventListener('click', () => {
     document.querySelector('#about-button')?.click();

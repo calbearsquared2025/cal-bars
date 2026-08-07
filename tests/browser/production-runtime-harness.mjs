@@ -222,6 +222,7 @@ async function runDesktopChecks() {
   check(Boolean(noPartyCard), 'Desktop no-Watch-Party venue should render in the shared List');
   noPartyCard?.click();
   await waitFor(() => selectedVenueId() === noPartyVenue?.venue_id && trayState() === 'selected', 'desktop Venue selection');
+  await waitFor(() => Boolean(element('#tray-selected .bear-count__prompt')) && Boolean(element('#tray-selected .selected-card__plan-party')), 'desktop shared selected-card refinement');
   check(isVisible('#tray-selected .selected-card'), 'Desktop selected Venue should render a visible selected card');
   check(!element('#tray-selected .party-module'), 'Desktop no-Watch-Party Venue should not render a Watch Party module');
   check(Boolean(element('#tray-selected .bear-count__prompt')), 'Desktop selected card should use the shared zero-attendance component');

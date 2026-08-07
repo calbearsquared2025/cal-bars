@@ -163,7 +163,7 @@ function clearAddContext() {
 }
 
 function syncAddContext() {
-  if (!isMobile() || document.body.dataset.commandSurface !== 'add' || !addContextVenueId) return;
+  if (document.body.dataset.commandSurface !== 'add' || !addContextVenueId) return;
   const state = appState();
   const venue = venueById(addContextVenueId, state);
   if (!state || !venue) {
@@ -224,7 +224,7 @@ function ensureAddLocationOption() {
 
 function routeSelectedVenuePlanThroughAdd(event) {
   const button = event.target.closest?.('.selected-card__plan-party');
-  if (!button || !isMobile()) return;
+  if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   captureAddContext();

@@ -414,7 +414,6 @@ function refineActions(root = document) {
 }
 
 function refine() {
-  if (!isMobile()) return;
   refineAttendance();
   refinePartyModules();
   refineActions();

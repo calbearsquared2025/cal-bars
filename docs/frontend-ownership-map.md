@@ -1,6 +1,6 @@
 # Frontend Behavior Ownership Map
 
-**Scope:** Documentation of the current California Golden Bars v2 frontend runtime only. This document does not change production ownership, import order, behavior, styling, or cleanup decisions.
+**Scope:** Documentation of the current California Golden Bars v2 frontend runtime and the desktop parity ownership decisions proven by the production-runtime harness.
 
 The current frontend intentionally contains base implementations, mobile intercepts, resilience fallbacks, and late presentation refinements. “Authoritative owner” below means the module that later cleanup should converge toward **after** equivalent runtime coverage exists; it does not mean secondary paths are safe to remove now.
 
@@ -15,7 +15,7 @@ The desktop parity milestone uses the current production mobile result as its re
 - `fan-intent.js` and its controller/core modules remain the shared join, move, undo, and aggregate-rendering implementation.
 - `watch-party-display.js` remains the shared final Watch Party renderer.
 - `external-venue-search.js` and the base Search renderer remain the shared result and selection implementation.
-- Selected-card attendance, Watch Party, action, and no-Watch-Party DOM refinements represent shared component behavior even where their current execution is mobile-gated. Desktop parity should promote those refinements rather than copy them.
+- Selected-card attendance, Watch Party, action, and no-Watch-Party DOM refinements are shared component behavior. Their semantic DOM post-processing now executes at both breakpoints; responsive CSS controls density and arrangement.
 
 ### B. Shared visual and component language
 
@@ -30,6 +30,15 @@ The desktop parity milestone uses the current production mobile result as its re
 - Desktop retains its persistent map/List split, desktop dimensions, and pointer/keyboard affordances.
 
 No desktop-only renderer, state path, Search handler, Add router, Fan Intent handler, Watch Party renderer, or List ordering function is justified by this classification.
+
+## Desktop parity implementation status
+
+- `shell-controls.mjs` owns Map/Search/Add/List transitions and reuses the same Search form on desktop and mobile. Desktop adds no navigation or Search/Add handler.
+- The existing selected-card profile passes now run at both breakpoints. The base card, Fan Intent integration, and final Watch Party renderer remain shared; only responsive presentation differs.
+- Selected-place and selected-game Add contexts use the existing Add surface and contribution routing on desktop. No desktop context renderer or contribution state was added.
+- The desktop List control remains on the base `app.js` path; the Nearby/All-locations intercept stays mobile-only.
+- Desktop presentation lives in responsive rules in the existing stylesheets. Mobile tray density, touch behavior, safe-area placement, and mobile map fitting remain breakpoint-specific.
+- No parallel desktop JavaScript path was required, so there is no unavoidable-duplication exception to document.
 
 | Behavior / state area | Current modules that touch it | Intended authoritative owner | Secondary / intercept / fallback modules | Known overlap or conflict | Cleanup status |
 |---|---|---|---|---|---|
@@ -54,7 +63,7 @@ No desktop-only renderer, state path, Search handler, Add router, Fan Intent han
 
 The browser harness loads the actual production `index.html`, which in turn loads the production module graph and its late-imported refinement modules. External reads/writes are redirected to a same-origin deterministic mock endpoint; the harness does not write to Google resources or depend on live production data.
 
-The focused runtime boundary covers accepted mobile state transitions most exposed to overlapping ownership: Map/Search/Add/List navigation, venue selection, selected-tray density toggling, Fan Intent count rerenders, selected Add context, existing Search selection, Nearby/All locations, Watch Party/no-Watch-Party card states, and direct venue entry/refresh.
+The focused runtime boundary covers accepted shared state transitions most exposed to overlapping ownership: Map/Search/Add/List navigation, venue selection, Fan Intent count rerenders, selected Add context, existing Search selection, Nearby/All locations, Watch Party/no-Watch-Party card states, and direct venue entry/refresh. Mobile coverage additionally protects selected-tray density and touch-specific behavior; desktop coverage proves the shared command, renderer, and contribution paths at a 1440 x 900 viewport.
 
 ## Runtime status after PR #62
 
@@ -66,4 +75,4 @@ These corrections narrow the harness to accepted production behavior. They do no
 
 ## Cleanup rule
 
-No production cleanup is authorized by this ownership map. A duplicated-looking path may be an active mobile intercept, desktop fallback, resilience fallback, or post-render compatibility layer. Future consolidation should begin only from a passing runtime baseline and should remove one ownership conflict at a time in a separate reviewable branch.
+Desktop parity does not authorize broad cleanup. This milestone removes only breakpoint gates that prevented already-proven shared product behavior from running on desktop and returns the desktop List location control to its existing base owner. A duplicated-looking path may still be an active mobile intercept, resilience fallback, or post-render compatibility layer; further consolidation should begin from the passing runtime baseline and remove one ownership conflict at a time.

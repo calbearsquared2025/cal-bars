@@ -240,7 +240,6 @@ function refinePlanWatchPartyAction(root = document) {
 }
 
 function refine() {
-  if (!isMobile()) return;
   refinePlanWatchPartyAction();
 }
 
