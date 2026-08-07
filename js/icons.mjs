@@ -28,10 +28,6 @@ const ICON_DEFINITIONS = Object.freeze({
     ['rect', { x: '4', y: '4', width: '16', height: '16', rx: '3' }],
     ['path', { d: 'M8 9h8M8 13h8M8 17h5' }]
   ],
-  calendar: [
-    ['rect', { x: '3', y: '5', width: '18', height: '16', rx: '3' }],
-    ['path', { d: 'M7 3v4m10-4v4M3 10h18' }]
-  ],
   star: [['path', { d: 'm12 3 2.75 5.57 6.15.9-4.45 4.33 1.05 6.12L12 17.03l-5.5 2.89 1.05-6.12L3.1 9.47l6.15-.9L12 3Z' }]],
   external: [
     ['path', { d: 'M14 4h6v6m0-6-9 9' }],
@@ -67,10 +63,6 @@ function appendDefinition(svg, name) {
 function iconNameFromUse(use) {
   const href = use?.getAttribute?.('href') || use?.getAttribute?.('xlink:href') || '';
   return href.match(/#icon-([a-z0-9-]+)$/i)?.[1] || '';
-}
-
-export function iconHref(name) {
-  return `#icon-${name}`;
 }
 
 export function createIcon(name, { className = 'ui-icon', label = '' } = {}) {
