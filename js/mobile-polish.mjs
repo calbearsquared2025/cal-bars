@@ -183,7 +183,6 @@ function scheduleSync() {
 }
 
 function sync() {
-  updatePeek();
   updateStatistics();
   updateListHeading();
   updateAddContext();
