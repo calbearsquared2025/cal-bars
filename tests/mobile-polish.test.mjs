@@ -25,6 +25,13 @@ test('navigation derives one active Map Search Add or List state', async () => {
   assert.match(script, /function inferActiveView/);
 });
 
+test('polish does not post-process selected-place Add context', async () => {
+  const script = await source('js/mobile-polish.mjs');
+  assert.doesNotMatch(script, /function updateAddContext/);
+  assert.doesNotMatch(script, /#add-context-name|#add-context-copy/);
+  assert.doesNotMatch(script, /querySelector\('\.add-context'\)/);
+});
+
 test('opening statistics use large numbers and small labels', async () => {
   const script = await source('js/mobile-polish.mjs');
   const css = await source('css/mobile-polish.css');

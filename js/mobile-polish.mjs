@@ -49,20 +49,6 @@ function updateListHeading() {
   eyebrow.textContent = state.origin ? `Within ${NEARBY_RADIUS_MILES} miles` : 'Browse';
 }
 
-function updateAddContext() {
-  const state = appState();
-  const context = document.querySelector('.add-context');
-  const name = document.querySelector('#add-context-name');
-  const copy = document.querySelector('#add-context-copy');
-  if (!context || !name || !copy) return;
-  const venue = state?.snapshot?.venues?.find((item) => item.venue_id === state.selectedVenueId) || null;
-  context.hidden = !venue;
-  if (!venue) return;
-  name.textContent = venue.name;
-  const place = [venue.city, venue.region].filter(Boolean).join(', ');
-  copy.textContent = place ? `${place} is selected.` : 'This place is selected.';
-}
-
 function normalizeSearchLabels() {
   document.querySelectorAll('.search-result-group--existing .search-result-group__heading')
     .forEach((heading) => { heading.textContent = 'CGB locations'; });
@@ -137,7 +123,6 @@ function scheduleSync() {
 function sync() {
   updateStatistics();
   updateListHeading();
-  updateAddContext();
   normalizeSearchLabels();
 }
 
