@@ -1,0 +1,563 @@
+/* Milestone 8A — authoritative mobile interaction and visual correction layer. */
+
+/* MapLibre owns the outer marker transform. Never animate it or pins lag behind the map. */
+.maplibregl-marker.cgb-marker,
+.cgb-marker {
+  width: 48px;
+  height: 54px;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  transition: none !important;
+}
+
+.cgb-marker .marker-pin,
+.cgb-marker .marker-star {
+  position: absolute;
+  transform: rotate(-45deg);
+  transform-origin: center;
+  transition: filter var(--motion-fast) ease, scale var(--motion-fast) ease !important;
+}
+
+.cgb-marker .marker-pin {
+  left: 8px;
+  top: 6px;
+  width: 32px;
+  height: 32px;
+  background: var(--cgb-navy-900);
+  border: 3px solid var(--cgb-navy-900);
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
+}
+
+.cgb-marker .marker-pin::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 10px;
+  height: 10px;
+  background: var(--cgb-white);
+  border-radius: 50%;
+}
+
+.cgb-marker.marker--cal-bar .marker-pin {
+  background: var(--cgb-navy-900);
+  border-color: var(--cgb-navy-900);
+}
+
+.cgb-marker.marker--cal-bar .marker-pin::after {
+  background: var(--cgb-white);
+}
+
+.cgb-marker.marker--community-location .marker-pin {
+  background: var(--cgb-white);
+  border-color: var(--cgb-navy-950);
+}
+
+.cgb-marker.marker--community-location .marker-pin::after {
+  background: var(--cgb-navy-950);
+}
+
+.cgb-marker .marker-star {
+  left: 5px;
+  top: 2px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--cgb-white);
+  background: var(--cgb-gold-400);
+  border: 3px solid var(--cgb-gold-400);
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 7px 16px rgba(1,1,51,.3);
+  font-size: 0;
+}
+
+.cgb-marker .marker-star::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  background: var(--cgb-navy-950);
+  border-radius: 50%;
+}
+
+.cgb-marker .marker-star__icon {
+  position: relative;
+  z-index: 1;
+  width: 17px;
+  height: 17px;
+  color: var(--cgb-white);
+  fill: currentColor;
+  stroke: currentColor;
+  transform: rotate(45deg);
+}
+
+.cgb-marker:hover .marker-pin,
+.cgb-marker:hover .marker-star,
+.cgb-marker.is-selected .marker-pin,
+.cgb-marker.is-selected .marker-star {
+  scale: 1.1;
+}
+
+.cgb-marker.is-selected .marker-pin,
+.cgb-marker.is-selected .marker-star {
+  filter: drop-shadow(0 0 6px rgba(253,181,21,.9));
+}
+
+.cgb-marker .marker-count {
+  top: -6px;
+  right: -27px;
+  z-index: 3;
+}
+
+@media (max-width: 899px) {
+  /* Secondary destinations keep game context while reclaiming vertical space. */
+  body[data-command-surface="search"],
+  body[data-command-surface="add"],
+  body[data-command-surface="list"] {
+    --header-height: calc(82px + env(safe-area-inset-top, 0px));
+  }
+
+  body[data-command-surface="search"] .site-header,
+  body[data-command-surface="add"] .site-header,
+  body[data-command-surface="list"] .site-header {
+    height: var(--header-height);
+    min-height: var(--header-height);
+    display: block;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  body[data-command-surface="search"] .site-header__brand-row,
+  body[data-command-surface="add"] .site-header__brand-row,
+  body[data-command-surface="list"] .site-header__brand-row,
+  body[data-command-surface="search"] .opening-stat,
+  body[data-command-surface="add"] .opening-stat,
+  body[data-command-surface="list"] .opening-stat {
+    display: none;
+  }
+
+  body[data-command-surface="search"] .game-button,
+  body[data-command-surface="add"] .game-button,
+  body[data-command-surface="list"] .game-button {
+    min-height: 64px;
+    grid-template-rows: auto auto;
+    padding: 7px 34px 7px 0;
+    border-bottom: 0;
+  }
+
+  body[data-command-surface="search"] .game-button__eyebrow,
+  body[data-command-surface="add"] .game-button__eyebrow,
+  body[data-command-surface="list"] .game-button__eyebrow {
+    display: none;
+  }
+
+  body[data-command-surface="search"] #header-game-label,
+  body[data-command-surface="add"] #header-game-label,
+  body[data-command-surface="list"] #header-game-label {
+    font-size: 1.08rem;
+  }
+
+  body[data-command-surface="search"] #header-kickoff,
+  body[data-command-surface="add"] #header-kickoff,
+  body[data-command-surface="list"] #header-kickoff {
+    font-size: .72rem;
+  }
+
+  /* Preserve descenders such as the g in Wagner. */
+  .game-button strong,
+  #header-game-label {
+    overflow: hidden;
+    padding-bottom: .16em;
+    line-height: 1.22;
+  }
+
+  /* Pin the menu to the viewport safe edge instead of the padded header content box. */
+  .site-header {
+    position: relative;
+  }
+
+  .site-header__brand-row {
+    width: 100%;
+    padding-right: 44px;
+  }
+
+  .site-header > .site-header__brand-row > #header-about-button {
+    position: absolute !important;
+    top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+    right: max(6px, env(safe-area-inset-right, 0px)) !important;
+    left: auto !important;
+    margin: 0 !important;
+  }
+
+  /* Large numerals and small supporting labels match the board. */
+  .opening-stat {
+    bottom: -31px;
+    height: 62px;
+  }
+
+  .opening-stat__item {
+    padding: 6px 10px;
+  }
+
+  .opening-stat strong {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    text-align: left;
+  }
+
+  .opening-stat__number {
+    color: var(--cgb-navy-950);
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+    font-weight: 800;
+    letter-spacing: -.045em;
+    line-height: .9;
+  }
+
+  .opening-stat__copy {
+    display: grid;
+    gap: 1px;
+    color: var(--cgb-navy-950);
+    font-family: var(--font-condensed);
+    font-size: .64rem;
+    font-weight: 900;
+    letter-spacing: .065em;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+
+  .opening-stat__copy small {
+    color: var(--cgb-ink-500);
+    font-size: .55rem;
+    font-weight: 750;
+    letter-spacing: .035em;
+  }
+
+  body[data-command-surface="search"] .command-surface:not([hidden]),
+  body[data-command-surface="add"] .command-surface:not([hidden]) {
+    inset: var(--header-height) 0 calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px)) 0;
+  }
+
+  .command-surface:not([hidden]) {
+    background: var(--cgb-warm-50);
+  }
+
+  .command-surface__shell {
+    padding-top: 14px;
+  }
+
+  .command-surface__header {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 10px;
+    padding-bottom: 11px;
+  }
+
+  .command-surface__header h2 {
+    font-size: clamp(1.45rem, 6.4vw, 1.9rem);
+  }
+
+  .command-surface__back {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    clip-path: none;
+    box-shadow: none;
+  }
+
+  .command-surface__intro {
+    margin: 12px 0 14px;
+    font-size: .84rem;
+  }
+
+  .command-surface .search-field {
+    border-radius: var(--radius-md);
+    clip-path: none;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .command-surface .search-submit {
+    clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+  }
+
+  .search-surface__legend {
+    display: none !important;
+  }
+
+  .search-result-group--existing .search-result-group__heading,
+  .search-result-group--external .search-result-group__heading {
+    font-size: .72rem;
+  }
+
+  .add-context {
+    margin-bottom: 11px;
+    padding: 10px 13px;
+    border-left: 4px solid var(--cgb-gold-400);
+    clip-path: none;
+  }
+
+  .add-context[hidden] {
+    display: none !important;
+  }
+
+  .add-actions {
+    border-top-color: var(--cgb-neutral-300);
+    border-bottom-color: var(--cgb-neutral-300);
+  }
+
+  .add-action {
+    min-height: 70px;
+    grid-template-columns: 32px minmax(0, 1fr) 18px;
+    gap: 10px;
+    padding: 11px 4px;
+  }
+
+  .add-action strong {
+    font-size: .96rem;
+  }
+
+  .add-action small {
+    font-size: .73rem;
+    line-height: 1.28;
+  }
+
+  .command-surface--add .add-missing-location {
+    display: none !important;
+  }
+
+  .mobile-command__add-mark {
+    width: 26px;
+    height: 26px;
+    margin-top: -4px;
+    border-width: 1px;
+    box-shadow: none;
+    font-size: 1.12rem;
+  }
+
+  /* Active state comes from one authoritative view value. */
+  .mobile-command[aria-current="page"] {
+    color: var(--cgb-navy-950);
+  }
+
+  .mobile-command:not([aria-current="page"])::after {
+    display: none;
+  }
+
+  /* Fixed viewport controls do not jump when fullscreen changes shell visibility. */
+  .map-actions {
+    position: fixed;
+    z-index: 80;
+    top: 46dvh;
+    right: max(12px, env(safe-area-inset-right, 0px));
+    left: auto;
+    display: grid;
+    gap: 8px;
+    pointer-events: auto;
+  }
+
+  .map-actions #near-me-button .ui-icon {
+    transform: translate(-1px, 1px);
+  }
+
+  .map-actions #fullscreen-button,
+  .map-actions #near-me-button {
+    position: static;
+  }
+
+  body[data-command-surface="search"] .map-actions,
+  body[data-command-surface="add"] .map-actions {
+    display: none;
+  }
+
+  body[data-command-surface="list"] .map-actions #near-me-button {
+    display: none;
+  }
+
+  /* Map has a compact preview; the full list is a distinct List destination. */
+  .tray--peek {
+    height: 116px;
+  }
+
+  .tray-summary {
+    min-height: 82px;
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto 16px;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 13px 11px;
+    text-align: left;
+  }
+
+  .tray-summary__copy {
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+
+  .tray-summary__copy .eyebrow {
+    color: var(--cgb-ink-500);
+    font-size: .62rem;
+  }
+
+  .tray-summary__copy strong {
+    overflow: hidden;
+    color: var(--cgb-navy-950);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    line-height: 1.08;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tray-summary__copy small {
+    overflow: hidden;
+    max-width: none;
+    color: var(--cgb-ink-500);
+    font-size: .67rem;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tray-summary__marker {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    display: block;
+    margin-left: 3px;
+    transform: rotate(-45deg);
+    background: var(--cgb-white);
+    border: 2px solid var(--cgb-navy-950);
+    border-radius: 50% 50% 50% 0;
+  }
+
+  .tray-summary__marker::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    background: var(--cgb-navy-950);
+    border-radius: 50%;
+  }
+
+  .tray-summary__marker[data-kind="cal-bar"] {
+    background: var(--cgb-navy-950);
+  }
+
+  .tray-summary__marker[data-kind="cal-bar"]::after {
+    background: var(--cgb-white);
+  }
+
+  .tray-summary__marker[data-kind="watch-party"] {
+    width: 26px;
+    height: 26px;
+    background: var(--cgb-gold-400);
+    border-color: var(--cgb-gold-400);
+  }
+
+  .tray-summary__marker[data-kind="watch-party"]::after {
+    inset: 5px;
+    background: var(--cgb-navy-950);
+  }
+
+  .tray-summary__count {
+    color: var(--cgb-navy-950);
+    font-family: var(--font-condensed);
+    font-size: .75rem;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+
+  .tray-summary__chevron {
+    width: 16px;
+  }
+
+  /* Selected Venue is a viewport-anchored bottom sheet, not an inset map card. */
+  #map-view > #venue-tray.venue-tray.tray--selected {
+    position: fixed !important;
+    z-index: 47;
+    inset: auto 0 var(--footer-height) 0 !important;
+    width: 100vw !important;
+    max-width: none !important;
+    max-height: min(58dvh, 520px);
+    margin: 0 !important;
+    transform: none !important;
+    background: var(--cgb-white) !important;
+    border: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    box-shadow: 0 -16px 38px rgba(1,1,51,.22);
+    overflow: hidden;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
+    height: 24px;
+    background: var(--cgb-white);
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
+    width: 42px;
+    height: 4px;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-selected,
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
+    background: var(--cgb-white);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* Fullscreen preserves navigation, controls, and the selected Venue sheet. */
+  .map-fullscreen .site-header,
+  .map-fullscreen .site-footer {
+    display: none;
+  }
+
+  .map-fullscreen .mobile-command-bar {
+    display: grid;
+  }
+
+  .map-fullscreen #map-view > #venue-tray.venue-tray.tray--selected {
+    display: block !important;
+    position: fixed !important;
+    inset: auto 0 var(--footer-height) 0 !important;
+    width: 100vw !important;
+    max-width: none !important;
+    max-height: min(52dvh, 500px);
+  }
+
+  .map-fullscreen .venue-tray.tray--peek,
+  .map-fullscreen .venue-tray.tray--full {
+    display: none;
+  }
+
+  .map-fullscreen #app,
+  .map-fullscreen .map-view,
+  .map-fullscreen .map {
+    min-height: calc(100dvh - var(--footer-height));
+    height: calc(100dvh - var(--footer-height));
+  }
+
+  body[data-command-surface="list"] .tray-list__header {
+    padding-top: 12px;
+    padding-bottom: 9px;
+  }
+
+  body[data-command-surface="list"] .tray-list__header h2 {
+    font-size: 1.45rem;
+  }
+
+  body[data-command-surface="list"] .location-card {
+    min-height: 60px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+
+  body[data-command-surface="list"] .location-card__party,
+  body[data-command-surface="list"] .location-card__description {
+    margin-top: 3px;
+    font-size: .68rem;
+  }
+}

@@ -77,7 +77,7 @@ function renderParty(party, index, total, snapshot) {
     reportLink.href = reportUrl;
     reportLink.target = '_blank';
     reportLink.rel = 'noopener noreferrer';
-    reportLink.textContent = 'Report a problem with this Watch Party';
+    reportLink.textContent = 'Report an Issue';
     module.append(reportLink);
   }
 

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Find where Cal fans are gathering for the selected football game.">
-  <meta name="theme-color" content="#002676">
+  <meta name="theme-color" content="#010133">
   <meta
     name="cgb-data-endpoint"
     content="https://script.google.com/macros/s/AKfycbx5Y4nfnKe7KyaSQHOEvYqpSVtcG7z6KFf1aAnD1NEvIf5y3Xlj1hHUECudo49V4tGlJw/exec"
@@ -51,6 +51,13 @@
   <link rel="stylesheet" href="css/external-venue.css">
   <link rel="stylesheet" href="css/watch-party-form.css">
   <link rel="stylesheet" href="css/watch-party-display.css">
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/design-board-1.css">
+  <link rel="stylesheet" href="css/design-board-2.css">
+  <link rel="stylesheet" href="css/design-board-3.css">
+  <link rel="stylesheet" href="css/design-board-4.css">
+  <link rel="stylesheet" href="css/mobile-command-navigation.css">
+  <link rel="stylesheet" href="css/mobile-polish.css">
   <style>
     .map-view,
     .map {
@@ -68,35 +75,40 @@
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="./" aria-label="Cal Golden Bars home">
-      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
-        <circle cx="17" cy="17" r="8"></circle>
-        <circle cx="34" cy="12" r="8"></circle>
-        <circle cx="49" cy="20" r="8"></circle>
-        <circle cx="13" cy="34" r="7"></circle>
-        <path d="M17 50c3-14 12-22 23-20 10 2 16 11 14 20-2 8-10 11-19 9-9 3-17-1-18-9z"></path>
-      </svg>
-      <span class="brand-name">CAL GOLDEN BARS</span>
-    </a>
+    <div class="site-header__brand-row">
+      <a class="brand" href="./" aria-label="Cal Golden Bars home">
+        <img class="brand-mark" src="assets/cgb-mark.svg" alt="">
+        <span class="brand-name">CAL GOLDEN BARS</span>
+      </a>
+      <button id="header-about-button" class="header-menu-button" type="button" aria-label="About Cal Golden Bars">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
     <button id="game-button" class="game-button" type="button" aria-haspopup="dialog" aria-controls="game-dialog">
-      <span class="game-button__eyebrow">Selected game</span>
+      <span class="game-button__eyebrow">Next up</span>
       <strong id="header-game-label">Loading schedule…</strong>
       <span id="header-kickoff">&nbsp;</span>
+      <svg class="ui-icon game-button__chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-down"></use></svg>
     </button>
+    <div class="opening-stat" aria-live="polite">
+      <span class="opening-stat__item opening-stat__item--party">
+        <strong id="watch-party-stat">— watch parties</strong>
+      </span>
+      <span class="opening-stat__item opening-stat__item--locations">
+        <strong id="location-stat">— locations mapped</strong>
+      </span>
+    </div>
   </header>
 
   <main id="app" aria-busy="true">
     <section id="map-view" class="map-view" aria-label="Game map">
       <div class="map-toolbar">
-        <div class="opening-stat" aria-live="polite">
-          <strong id="watch-party-stat">— watch parties</strong>
-          <span aria-hidden="true">·</span>
-          <span id="location-stat">— locations mapped</span>
-        </div>
         <form id="location-search" class="location-search" role="search">
           <label class="sr-only" for="location-query">Search city, ZIP, or venue</label>
           <div class="search-field">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.2-4.2m1.2-5.3a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"></path></svg>
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg>
             <input id="location-query" type="search" autocomplete="off" autocapitalize="words" placeholder="City, ZIP, or venue">
             <button class="search-submit" type="submit">Search</button>
           </div>
@@ -104,10 +116,11 @@
         </form>
         <div class="map-actions">
           <button id="near-me-button" class="secondary-button" type="button">
-            <span aria-hidden="true">◎</span> Near me
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-near-me"></use></svg>
+            Near me
           </button>
           <button id="fullscreen-button" class="icon-button" type="button" aria-pressed="false" aria-label="Enter full-screen map">
-            <span aria-hidden="true">⛶</span>
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-fullscreen"></use></svg>
           </button>
         </div>
       </div>
@@ -125,11 +138,14 @@
         </button>
         <div id="tray-peek" class="tray-peek">
           <button id="browse-locations-button" class="tray-summary" type="button">
-            <span>
-              <strong>Browse gathering locations</strong>
-              <small id="tray-summary-copy">Watch Parties first, then Cal Bars and Community Locations.</small>
+            <span id="tray-summary-marker" class="tray-summary__marker" aria-hidden="true"></span>
+            <span class="tray-summary__copy">
+              <span class="eyebrow">Nearby</span>
+              <strong id="tray-summary-title">Find your Cal crowd</strong>
+              <small id="tray-summary-copy">Tap a pin or open List to browse locations.</small>
             </span>
-            <span aria-hidden="true">⌃</span>
+            <span id="tray-summary-count" class="tray-summary__count" aria-hidden="true"></span>
+            <svg class="ui-icon tray-summary__chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-up"></use></svg>
           </button>
         </div>
         <div id="tray-selected" class="tray-selected" hidden></div>
@@ -141,7 +157,9 @@
             </div>
             <div class="tray-list__actions">
               <button id="clear-search-button" class="text-button" type="button" hidden>All locations</button>
-              <button id="close-list-button" class="icon-button" type="button" aria-label="Collapse location list">⌄</button>
+              <button id="close-list-button" class="icon-button" type="button" aria-label="Collapse location list">
+                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-down"></use></svg>
+              </button>
             </div>
           </div>
           <div id="location-list" class="location-list"></div>
@@ -149,9 +167,71 @@
       </section>
     </section>
 
+    <section id="search-surface" class="command-surface command-surface--search" hidden aria-labelledby="search-surface-title">
+      <div class="command-surface__shell">
+        <header class="command-surface__header">
+          <button class="command-surface__back" type="button" data-command-close aria-label="Back to map">
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>
+          </button>
+          <div>
+            <span class="eyebrow">Find a place</span>
+            <h2 id="search-surface-title">Search locations</h2>
+          </div>
+        </header>
+        <p class="command-surface__intro">Search Cal Golden Bars or find another place to add to the map.</p>
+        <div id="search-surface-intent" class="command-intent" role="status" hidden></div>
+        <div id="search-surface-form-slot" class="search-surface__form-slot"></div>
+      </div>
+    </section>
+
+    <section id="add-surface" class="command-surface command-surface--add" hidden aria-labelledby="add-surface-title">
+      <div class="command-surface__shell">
+        <header class="command-surface__header">
+          <button class="command-surface__back" type="button" data-command-close aria-label="Back to map">
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>
+          </button>
+          <div>
+            <span class="eyebrow">Contribute</span>
+            <h2 id="add-surface-title">Add to the map</h2>
+          </div>
+        </header>
+        <p class="command-surface__intro">Choose what you would like to add or correct.</p>
+        <section class="add-context" aria-live="polite" hidden>
+          <span class="eyebrow">Current place</span>
+          <strong id="add-context-name">Selected place</strong>
+          <p id="add-context-copy"></p>
+        </section>
+        <div class="add-actions">
+          <button id="add-watch-party-button" class="add-action add-action--primary" type="button">
+            <span class="add-action__icon" aria-hidden="true">★</span>
+            <span><strong>Plan a Watch Party</strong><small>Create a gathering for the selected game.</small></span>
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
+          </button>
+          <button id="add-cal-bar-button" class="add-action" type="button">
+            <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-location"></use></svg>
+            <span><strong>Nominate a Cal Bar</strong><small>Recommend a regular Cal-friendly location.</small></span>
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
+          </button>
+          <button id="add-report-button" class="add-action" type="button" aria-expanded="false" aria-controls="add-report-options">
+            <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-info"></use></svg>
+            <span><strong>Report a problem</strong><small>Correct a Venue or Watch Party listing.</small></span>
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
+          </button>
+          <div id="add-report-options" class="add-report-options" hidden>
+            <button id="add-report-listing-button" type="button">Report the Venue listing</button>
+            <button id="add-report-party-button" type="button" hidden>Report this Watch Party</button>
+          </div>
+        </div>
+        <a id="add-missing-location-link" class="add-missing-location" href="#" target="_blank" rel="noopener" hidden>Can’t find the location? Suggest it here.</a>
+      </div>
+    </section>
+
     <section id="detail-view" class="detail-view" hidden aria-label="Venue details">
       <div class="detail-shell">
-        <a id="detail-back" class="back-link" href="./">← Back to map</a>
+        <a id="detail-back" class="back-link" href="./">
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>
+          Back to map
+        </a>
         <article id="venue-detail" class="venue-detail"></article>
       </div>
     </section>
@@ -166,7 +246,9 @@
           <span class="eyebrow">Cal football</span>
           <h2>Choose a game</h2>
         </div>
-        <button class="icon-button" value="cancel" aria-label="Close game selector">×</button>
+        <button class="icon-button" value="cancel" aria-label="Close game selector">
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-close"></use></svg>
+        </button>
       </div>
       <div id="game-list" class="game-list"></div>
     </form>
@@ -190,6 +272,25 @@
     </div>
   </dialog>
 
+  <nav class="mobile-command-bar" aria-label="Primary navigation">
+    <button id="mobile-map-button" class="mobile-command mobile-command--active" type="button">
+      <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-map"></use></svg>
+      <span>Map</span>
+    </button>
+    <button id="mobile-search-button" class="mobile-command" type="button">
+      <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg>
+      <span>Search</span>
+    </button>
+    <button id="mobile-add-button" class="mobile-command mobile-command--add" type="button">
+      <span class="mobile-command__add-mark" aria-hidden="true">+</span>
+      <span>Add</span>
+    </button>
+    <button id="mobile-list-button" class="mobile-command" type="button">
+      <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-details"></use></svg>
+      <span>List</span>
+    </button>
+  </nav>
+
   <footer class="site-footer">
     <span>Not affiliated with Cal Athletics</span>
     <span aria-hidden="true">·</span>
@@ -202,7 +303,9 @@
     <form method="dialog" class="dialog-shell">
       <div class="dialog-header">
         <h2>About Cal Golden Bars v2</h2>
-        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+        <button class="icon-button" value="cancel" aria-label="Close">
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-close"></use></svg>
+        </button>
       </div>
       <p>Choose a Cal football game, find a gathering location, and select <strong>I’ll be here</strong>.</p>
       <p>Your selection uses a random identifier stored in this browser and privately recorded with your selection. Cal Golden Bars publishes aggregate Bear counts, not names or attendee lists.</p>
@@ -212,6 +315,9 @@
   <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>
   <script type="module" src="js/snapshot-refresh.mjs"></script>
   <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/icon-upgrade.mjs"></script>
+  <script type="module" src="js/shell-controls.mjs"></script>
+  <script type="module" src="js/mobile-polish.mjs"></script>
   <script type="module" src="js/map-failure.mjs"></script>
   <script type="module" src="js/watch-party-display.js"></script>
   <script type="module" src="js/fan-intent.js"></script>

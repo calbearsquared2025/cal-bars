@@ -107,7 +107,8 @@ test('direct-route refresh and renders use the canonical party cards without a s
   assert.match(client, /reportLink\.dataset\.watchPartyIssueEntry = party\.watch_party_id/);
   assert.match(client, /app\.subscribe\('rendered', render\)/);
   assert.match(client, /app\.subscribe\('ready', render\)/);
-  assert.equal((client.match(/Report a problem with this Watch Party/g) || []).length, 1);
+  assert.equal((client.match(/Report an Issue/g) || []).length, 1);
+  assert.doesNotMatch(client, /Report a problem with this Watch Party/);
   assert.doesNotMatch(html, /data-watch-party-issue-entry/);
 });
 
