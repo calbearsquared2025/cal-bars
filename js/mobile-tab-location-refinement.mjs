@@ -177,7 +177,7 @@ function syncAddGameContext() {
 
 function syncListLocationControl() {
   const button = document.querySelector('#clear-search-button');
-  if (!button) return;
+  if (!button || !isMobile()) return;
   const state = appState();
   const onList = document.body.dataset.commandSurface === 'list';
   button.hidden = !onList;

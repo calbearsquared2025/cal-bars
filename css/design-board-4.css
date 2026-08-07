@@ -416,6 +416,8 @@ body[data-view="detail"] #app {
   }
 
   .opening-stat {
+    grid-column: 3;
+    grid-row: 1;
     position: static;
     width: 100%;
     height: 58px;
@@ -423,7 +425,32 @@ body[data-view="detail"] #app {
   }
 
   .opening-stat strong {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
     font-size: .68rem;
+  }
+
+  .opening-stat__number {
+    color: var(--cgb-navy-950, #010133);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .opening-stat__copy {
+    display: grid;
+    color: var(--cgb-navy-800, #0b2856);
+    font-size: .62rem;
+    letter-spacing: .04em;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+
+  .opening-stat__copy small {
+    color: var(--cgb-ink-500, #657083);
+    font-size: .52rem;
   }
 
   .map-toolbar {
@@ -469,11 +496,147 @@ body[data-view="detail"] #app {
   }
 
   .selected-card {
-    padding: 4px 18px 18px;
+    grid-template-columns: minmax(0, 1fr) 112px;
+    gap: 12px 16px;
+    padding: 18px;
   }
 
   .selected-card h2 {
     font-size: 1.65rem;
+  }
+
+  .selected-card__header {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .selected-card__header > .icon-button {
+    display: none;
+  }
+
+  .selected-card .venue-location {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+    margin: 5px 0 0;
+  }
+
+  .selected-card .bear-count {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-content: center;
+    align-items: center;
+    gap: 2px 7px;
+    min-height: 84px;
+    margin: 0;
+    padding: 10px;
+    border: 1px solid rgba(1, 1, 51, .12);
+    border-radius: 16px;
+    background: var(--cgb-warm-50, #fffaf0);
+    color: var(--cgb-navy-950, #010133);
+  }
+
+  .selected-card .bear-count__icon {
+    grid-row: 1 / span 2;
+    width: 19px;
+    height: 19px;
+    color: var(--cgb-gold-600, #d99a00);
+  }
+
+  .selected-card .bear-count__number {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .selected-card .bear-count__label {
+    color: var(--cgb-ink-500, #657083);
+    font-size: .68rem;
+    line-height: 1.15;
+  }
+
+  .selected-card .bear-count--empty {
+    grid-template-columns: auto 1fr;
+  }
+
+  .selected-card .bear-count__prompt {
+    font-size: .82rem;
+    line-height: 1.2;
+  }
+
+  .selected-card > .venue-description,
+  .selected-card > .venue-activity-history,
+  .selected-card > .party-module,
+  .selected-card > .selected-card__plan-party,
+  .selected-card > .action-row {
+    grid-column: 1 / -1;
+  }
+
+  .selected-card > .party-module {
+    gap: 7px;
+    padding: 13px 14px;
+    border-radius: 16px;
+  }
+
+  .selected-card__plan-party {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    min-height: 54px;
+    padding: 11px 13px;
+    border: 1px dashed rgba(1, 1, 51, .22);
+    border-radius: 14px;
+    background: var(--cgb-neutral-100, #f2f4f7);
+    color: var(--cgb-navy-950, #010133);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .selected-card__plan-party-status {
+    color: var(--cgb-ink-500, #657083);
+    font-size: .72rem;
+  }
+
+  .selected-card__plan-party-action {
+    flex: 0 0 auto;
+    color: var(--cgb-navy-800, #0b2856);
+    font-size: .76rem;
+    font-weight: 800;
+  }
+
+  .selected-card .action-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(90px, .75fr) minmax(90px, .75fr);
+    gap: 8px;
+  }
+
+  .selected-card .action-row > .selected-card__directions-inline {
+    display: inline-flex;
+    color: var(--cgb-navy-700, #153f75);
+    font-size: .73rem;
+    font-weight: 780;
+  }
+
+  .selected-card .intent-button__main,
+  .selected-card .intent-button__undo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .selected-card .intent-button__undo {
+    margin-left: 7px;
+    padding-left: 7px;
+    border-left: 1px solid currentColor;
+    font-size: .7rem;
+    opacity: .72;
   }
 
   .location-card {

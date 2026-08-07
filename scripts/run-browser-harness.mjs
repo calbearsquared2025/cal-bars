@@ -139,7 +139,7 @@ function extractRuntimeResult(html) {
     .trim() || '';
 }
 
-async function runHarness({ path, marker, label, virtualTimeBudget }) {
+async function runHarness({ path, marker, label, virtualTimeBudget, windowSize = '390,844' }) {
   const url = `http://127.0.0.1:${address.port}${path}`;
   const profileDirectory = mkdtempSync(join(tmpdir(), 'cgb-browser-harness-'));
   const child = spawn(browser, [
@@ -154,7 +154,7 @@ async function runHarness({ path, marker, label, virtualTimeBudget }) {
     '--metrics-recording-only',
     '--no-first-run',
     `--user-data-dir=${profileDirectory}`,
-    '--window-size=390,844',
+    `--window-size=${windowSize}`,
     `--virtual-time-budget=${virtualTimeBudget}`,
     '--dump-dom',
     url
@@ -204,10 +204,26 @@ try {
     label: 'Production direct-route refresh harness',
     virtualTimeBudget: 30000
   }) && passed;
+
+  passed = await runHarness({
+    path: '/__cgb_production_runtime__?__cgb_harness=desktop',
+    marker: 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_PASS',
+    label: 'Desktop production runtime regression harness',
+    virtualTimeBudget: 60000,
+    windowSize: '1440,900'
+  }) && passed;
+
+  passed = await runHarness({
+    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_2026_01&__cgb_harness=desktop-direct',
+    marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
+    label: 'Desktop production direct-route refresh harness',
+    virtualTimeBudget: 30000,
+    windowSize: '1440,900'
+  }) && passed;
 } finally {
   server.close();
 }
 
 if (!passed) process.exit(1);
 
-console.log('Browser harnesses passed: reduced external-venue fixture plus the real index.html production module graph, high-risk mobile state transitions, and direct venue cold-load/refresh behavior.');
+console.log('Browser harnesses passed: reduced external-venue fixture plus the real index.html production module graph, high-risk mobile and desktop state transitions, and direct venue cold-load/refresh behavior.');
