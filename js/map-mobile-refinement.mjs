@@ -10,7 +10,7 @@ const STYLE_ID = 'cgb-map-mobile-refinement';
 
 let lastAutoFocusedVenueId = '';
 let lastSelectedVenueId = '';
-let selectedTrayExpanded = true;
+let selectedTrayExpanded = false;
 let trayObserver = null;
 
 function isMobile() {
@@ -206,7 +206,7 @@ function openPreviewVenue(event) {
   const card = previewVenueCard(button.dataset.directVenueId);
   if (!card) return;
 
-  selectedTrayExpanded = true;
+  selectedTrayExpanded = false;
   lastSelectedVenueId = '';
   card.click();
 }
@@ -239,7 +239,7 @@ function syncSelectedTrayDensity() {
 
   if (state.selectedVenueId !== lastSelectedVenueId) {
     lastSelectedVenueId = state.selectedVenueId;
-    selectedTrayExpanded = true;
+    selectedTrayExpanded = false;
   }
   setSelectedTrayDensity(selectedTrayExpanded);
 }
@@ -337,7 +337,7 @@ function initialize() {
   document.addEventListener('click', (event) => {
     const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
     if (!marker) return;
-    selectedTrayExpanded = true;
+    selectedTrayExpanded = false;
     lastSelectedVenueId = '';
     lastAutoFocusedVenueId = '';
     requestAnimationFrame(() => focusVenue(marker.dataset.venueId, { force: true }));
