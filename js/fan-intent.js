@@ -1,7 +1,9 @@
 import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';
+import { getFanCount } from './core.mjs';
 import {
   BROWSER_ID_STORAGE_KEY,
   INTENT_SELECTIONS_STORAGE_KEY,
+  compactListFanCountCopy,
   createBrowserId,
   isValidBrowserId,
   parseStoredSelections,
@@ -249,7 +251,12 @@ function renderLocationCardActivity(game) {
     if (description && migratedHistory) description.hidden = true;
 
     const presentation = activityPresentation(game, venue, countLine.textContent);
-    if (game.game_status === 'completed') countLine.textContent = presentation.primary;
+    if (game.game_status === 'completed') {
+      countLine.textContent = presentation.primary;
+    } else {
+      const fanCount = getFanCount(appState.snapshot, appState.gameId, venue.venue_id);
+      countLine.textContent = compactListFanCountCopy(fanCount);
+    }
 
     const compactHistory = game.game_status === 'completed'
       ? []

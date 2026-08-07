@@ -6,6 +6,7 @@ import {
   applyAggregateResponse,
   beginIntentTransaction,
   commitIntentResponse,
+  compactListFanCountCopy,
   createBrowserId,
   intentAction,
   isValidBrowserId,
@@ -34,6 +35,12 @@ test('stored selections tolerate malformed storage and preserve one venue per ga
     { game_1: 'ven_2' }
   );
   assert.deepEqual(withStoredSelection({ game_1: 'ven_1' }, 'game_1', null), {});
+});
+
+test('list fan counts suppress zero and use compact singular/plural copy', () => {
+  assert.equal(compactListFanCountCopy(0), '');
+  assert.equal(compactListFanCountCopy(1), '1 BEAR');
+  assert.equal(compactListFanCountCopy(2), '2 BEARS');
 });
 
 test('intent actions distinguish join, move, and withdraw', () => {
