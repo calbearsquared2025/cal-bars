@@ -330,12 +330,12 @@
   }
 
   .mobile-command__add-mark {
-    width: 26px;
-    height: 26px;
-    margin-top: -4px;
+    width: 20px;
+    height: 20px;
+    margin-top: 0;
     border-width: 1px;
     box-shadow: none;
-    font-size: 1.12rem;
+    font-size: 1rem;
   }
 
   .mobile-command--add .mobile-command__add-mark {
