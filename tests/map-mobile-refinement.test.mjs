@@ -16,20 +16,26 @@ test('zoom controls are removed and hidden', () => {
   assert.match(source, /button\.remove\(\)/);
 });
 
-test('preview follows the selected Venue before the ranked nearby fallback', () => {
+test('collapsed preview uses the selected Venue and otherwise returns to guidance', () => {
   assert.match(source, /function previewCandidate/);
   assert.match(source, /rankedVenue\(state, state\?\.selectedVenueId\)/);
-  assert.match(source, /rankNearbyVenues/);
-  assert.match(source, /NEARBY_RADIUS_MILES/);
   assert.match(source, /mode: 'selected'/);
-  assert.match(source, /mode: 'nearby'/);
+  assert.doesNotMatch(source, /rankNearbyVenues/);
+  assert.doesNotMatch(source, /mode: 'nearby'/);
+  assert.match(source, /Find your Cal crowd/);
+  assert.match(source, /Watch Parties first, then Cal Bars and Community Locations\./);
 });
 
-test('Nearby venue opens the selected tray directly instead of routing through List', () => {
+test('selected preview opens directly while guidance remains available to List', () => {
   assert.match(source, /function openPreviewVenue/);
   assert.match(source, /data-direct-venue-id/);
+  assert.match(source, /if \(!button \|\| !isMobile\(\) \|\| !button\.dataset\.directVenueId\) return;[\s\S]*event\.preventDefault\(\)/);
   assert.match(source, /event\.stopImmediatePropagation\(\)/);
   assert.match(source, /card\.click\(\)/);
+});
+
+test('zero-count selected previews do not place long empty-state copy in the compact count slot', () => {
+  assert.match(source, /count\.textContent = Number\(fanCount\) > 0 \? bearCountCopy\(fanCount\) : ''/);
 });
 
 test('Search forces selected Venue compact while Map retains tray-top toggling', () => {
