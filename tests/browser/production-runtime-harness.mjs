@@ -50,6 +50,7 @@ async function waitForApplicationReady(label = 'application ready') {
     document.readyState === 'complete' &&
     element('#app')?.getAttribute('aria-busy') === 'false' &&
     Boolean(state()?.snapshot) &&
+    state()?.dataSource === 'live' &&
     window.matchMedia('(max-width: 899px)').matches &&
     document.querySelectorAll('.mobile-command[data-command]').length === 4 &&
     Boolean(element('#cgb-mobile-tab-location-refinement')) &&
