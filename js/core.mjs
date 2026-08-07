@@ -1,4 +1,3 @@
-export const MILES_PER_KM = 0.621371;
 export const NEARBY_RADIUS_MILES = 25;
 
 export function parseDateOnly(value) {
