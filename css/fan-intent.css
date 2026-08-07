@@ -45,6 +45,16 @@
   margin-left: 8px !important;
 }
 
+.mobile-command--add .mobile-command__add-mark {
+  color: inherit !important;
+  background: transparent !important;
+  border-color: currentColor !important;
+}
+
+.mobile-command--add[aria-current="page"] .mobile-command__add-mark {
+  color: var(--cgb-gold-500) !important;
+}
+
 @keyframes cgb-intent-spin {
   to { transform: rotate(360deg); }
 }
