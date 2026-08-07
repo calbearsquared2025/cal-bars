@@ -338,6 +338,16 @@
     font-size: 1.12rem;
   }
 
+  .mobile-command--add .mobile-command__add-mark {
+    color: inherit;
+    background: transparent;
+    border-color: currentColor;
+  }
+
+  .mobile-command--add[aria-current="page"] .mobile-command__add-mark {
+    color: var(--cgb-gold-500);
+  }
+
   /* Active state comes from one authoritative view value. */
   .mobile-command[aria-current="page"] {
     color: var(--cgb-navy-950);
