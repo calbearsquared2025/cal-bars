@@ -100,6 +100,25 @@ async function ensureListSurface(label) {
   return waitFor(() => activeCommand() === 'list' && trayState() === 'full', label);
 }
 
+async function waitForIntentSettled(label) {
+  return waitFor(() => {
+    const button = element('#tray-selected .intent-button');
+    return !state()?.fanIntent?.pending && Boolean(button) && button.disabled === false;
+  }, label, 4000);
+}
+
+async function verifyListLocationControl(expectedLabel, label) {
+  click('#mobile-list-button');
+  return waitFor(() => {
+    const button = element('#clear-search-button');
+    return activeCommand() === 'list' &&
+      trayState() === 'full' &&
+      button &&
+      !button.hidden &&
+      button.textContent?.trim() === expectedLabel;
+  }, label, 4000);
+}
+
 function finish(marker) {
   if (!result) return;
   if (failures.length) {
@@ -183,16 +202,19 @@ async function runMainChecks() {
   await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'RSVP 0 → 1');
   check(trayState() === 'selected', 'RSVP 0 → 1 must retain selected tray state');
   check(trayDensity() === 'expanded', 'RSVP 0 → 1 must preserve expanded selected-tray density');
+  await waitForIntentSettled('RSVP 0 → 1 transaction completion');
 
   progress('density-collapse');
   click('#tray-handle');
   await waitFor(() => trayDensity() === 'compact', 'manual selected-tray collapse');
+  await waitForIntentSettled('intent control ready after selected-tray collapse');
 
   progress('rsvp-withdraw-compact');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 0 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'RSVP 1 → 0');
   check(trayState() === 'selected', 'RSVP 1 → 0 must retain selected tray state');
   check(trayDensity() === 'compact', 'RSVP 1 → 0 must preserve compact selected-tray density');
+  await waitForIntentSettled('RSVP 1 → 0 transaction completion');
 
   progress('selected-add');
   click('#mobile-add-button');
@@ -237,20 +259,14 @@ async function runMainChecks() {
   }, 'Near me List control');
   click('#clear-search-button');
   await waitFor(() => Boolean(state()?.origin), 'Nearby location state');
+  await settle();
 
-  await ensureListSurface('List after Nearby activation');
-  await waitFor(() => {
-    const button = element('#clear-search-button');
-    return button && !button.hidden && button.textContent?.trim() === 'All locations';
-  }, 'All locations List control');
+  await verifyListLocationControl('All locations', 'All locations List control');
   click('#clear-search-button');
   await waitFor(() => !state()?.origin, 'All locations state');
+  await settle();
 
-  await ensureListSurface('List after All locations');
-  await waitFor(() => {
-    const button = element('#clear-search-button');
-    return button && !button.hidden && button.textContent?.trim() === 'Near me';
-  }, 'Near me control restored after All locations');
+  await verifyListLocationControl('Near me', 'Near me control restored after All locations');
 
   progress('list-back-map');
   click('#mobile-map-button');
