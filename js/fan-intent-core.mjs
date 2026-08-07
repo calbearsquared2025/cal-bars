@@ -37,6 +37,12 @@ export function parseStoredSelections(value) {
   }
 }
 
+export function compactListFanCountCopy(count) {
+  const total = Math.max(0, Math.trunc(Number(count) || 0));
+  if (total === 0) return '';
+  return `${total} ${total === 1 ? 'BEAR' : 'BEARS'}`;
+}
+
 export function withStoredSelection(selections, gameId, venueId) {
   const next = { ...parseStoredSelections(selections) };
   if (!gameId) return next;
