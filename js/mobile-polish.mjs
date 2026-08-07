@@ -58,27 +58,10 @@ function normalizeSearchLabels() {
     .forEach((note) => { note.textContent = 'Not yet listed in Cal Golden Bars.'; });
 }
 
-function commandButtons() {
-  return Array.from(document.querySelectorAll('.mobile-command[data-command], .mobile-command'));
-}
-
 function setActiveView(next) {
   if (!isMobile() || !VALID_VIEWS.has(next)) return;
   activeView = next;
   document.body.dataset.commandSurface = next;
-  commandButtons().forEach((button) => {
-    const command = button.dataset.command || ({
-      'mobile-map-button': 'map',
-      'mobile-search-button': 'search',
-      'mobile-add-button': 'add',
-      'mobile-list-button': 'list'
-    })[button.id];
-    if (!command) return;
-    const selected = command === next;
-    button.classList.toggle('mobile-command--active', selected);
-    if (selected) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
 }
 
 function visibleSurface() {

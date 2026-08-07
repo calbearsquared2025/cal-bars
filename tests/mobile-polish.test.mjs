@@ -17,12 +17,17 @@ test('map preview targets remain available while List owns the full list', async
   assert.match(script, /dataset\.state === 'full' \? 'list' : 'map'/);
 });
 
-test('navigation derives one active Map Search Add or List state', async () => {
-  const script = await source('js/mobile-polish.mjs');
+test('polish tracks the active view without owning command-button state', async () => {
+  const [script, shell] = await Promise.all([
+    source('js/mobile-polish.mjs'),
+    source('js/shell-controls.mjs')
+  ]);
   assert.match(script, /const VALID_VIEWS = new Set\(\['map', 'search', 'add', 'list'\]\)/);
   assert.match(script, /function setActiveView/);
-  assert.match(script, /removeAttribute\('aria-current'\)/);
   assert.match(script, /function inferActiveView/);
+  assert.doesNotMatch(script, /commandButtons|mobile-command--active|aria-current/);
+  assert.match(shell, /mobile-command--active/);
+  assert.match(shell, /aria-current/);
 });
 
 test('polish does not post-process selected-place Add context', async () => {
