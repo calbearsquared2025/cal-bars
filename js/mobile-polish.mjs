@@ -27,8 +27,9 @@ function formatDistance(distance) {
 }
 
 function rankedLead(state = appState()) {
-  if (!state?.snapshot || !state.gameId) return null;
-  return rankVenues(state.snapshot, state.gameId, state.origin)?.[0] || null;
+  if (!state?.snapshot || !state.gameId || !state.selectedVenueId) return null;
+  return rankVenues(state.snapshot, state.gameId, state.origin)
+    .find(({ venue }) => venue.venue_id === state.selectedVenueId) || null;
 }
 
 function updatePeek() {
