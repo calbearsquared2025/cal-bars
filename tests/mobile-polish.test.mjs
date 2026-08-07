@@ -5,12 +5,13 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const source = (path) => readFile(new URL(path, root), 'utf8');
 
-test('map preview presents live Venue summary targets and List owns the full list', async () => {
+test('map preview targets remain available while List owns the full list', async () => {
   const html = await source('index.html');
   const script = await source('js/mobile-polish.mjs');
   assert.match(html, /id="tray-summary-title"/);
   assert.match(html, /id="tray-summary-count"/);
-  assert.match(script, /rankVenues/);
+  assert.doesNotMatch(script, /function updatePeek/);
+  assert.doesNotMatch(script, /tray-summary-title|tray-summary-count/);
   assert.match(script, /openListFromMap/);
   assert.match(script, /mobile-list-button/);
   assert.match(script, /dataset\.state === 'full' \? 'list' : 'map'/);
