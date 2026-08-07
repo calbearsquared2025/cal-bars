@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
+const iconUpgrade = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
 test('Search Add and List hide the map and Search does not show a selected tray', () => {
   assert.match(source, /data-command-surface="search"[\s\S]*#map[\s\S]*visibility: hidden !important/);
@@ -32,6 +33,7 @@ test('List toggles between Near me and All locations', () => {
   assert.match(source, /button\.textContent = usingLocation \? 'All locations' : 'Near me'/);
   assert.match(source, /requestLocation\('list'\)/);
   assert.match(source, /showAllLocations\(\)/);
+  assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
 });
 
 test('Nearby sheet restores its handle without allowing it to open List', () => {
