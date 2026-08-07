@@ -4,6 +4,33 @@
 
 The current frontend intentionally contains base implementations, mobile intercepts, resilience fallbacks, and late presentation refinements. “Authoritative owner” below means the module that later cleanup should converge toward **after** equivalent runtime coverage exists; it does not mean secondary paths are safe to remove now.
 
+## Desktop v2 parity classification
+
+The desktop parity milestone uses the current production mobile result as its reference without creating a parallel desktop implementation.
+
+### A. Shared product behavior
+
+- `app-state.mjs` and `app.js` remain the shared state, Venue selection, selected Game, tray, route, List data, and ranking implementation.
+- `shell-controls.mjs` remains the shared Search/Add surface and contribution-routing implementation.
+- `fan-intent.js` and its controller/core modules remain the shared join, move, undo, and aggregate-rendering implementation.
+- `watch-party-display.js` remains the shared final Watch Party renderer.
+- `external-venue-search.js` and the base Search renderer remain the shared result and selection implementation.
+- Selected-card attendance, Watch Party, action, and no-Watch-Party DOM refinements represent shared component behavior even where their current execution is mobile-gated. Desktop parity should promote those refinements rather than copy them.
+
+### B. Shared visual and component language
+
+- The same selected-card, Watch Party, Fan Intent, Venue badge, List card, Search, Add context, and selected-Game context DOM structures should render at both breakpoints.
+- Desktop may change grid dimensions, information density, max heights, and pointer/focus treatment through responsive CSS.
+- The existing command buttons and Search/Add surfaces should be reused with a desktop navigation and panel presentation rather than reimplemented.
+
+### C. Mobile-specific interaction and layout
+
+- Bottom command-bar placement, fixed full-screen Search/Add surfaces, compact/expanded selected-tray density, tray-top touch toggling, safe-area fills, touch spacing, and mobile map-control offsets remain mobile-only.
+- The mobile Nearby/List capture intercept and mobile-specific map fitting remain mobile-only while the shared origin and ranking state remains in `app.js`.
+- Desktop retains its persistent map/List split, desktop dimensions, and pointer/keyboard affordances.
+
+No desktop-only renderer, state path, Search handler, Add router, Fan Intent handler, Watch Party renderer, or List ordering function is justified by this classification.
+
 | Behavior / state area | Current modules that touch it | Intended authoritative owner | Secondary / intercept / fallback modules | Known overlap or conflict | Cleanup status |
 |---|---|---|---|---|---|
 | Application state | `js/app-state.mjs`, `js/app.js`, `js/fan-intent.js`, `js/external-venue-search.js`, `js/snapshot-refresh.mjs`, mobile refinement modules | `js/app-state.mjs` for shared state shape and app events; feature modules for their own state slices | `app.js` initializes and mutates core view state; Fan Intent, external search, refresh, and mobile refinements mutate feature-specific fields | State is centralized as an object, but write ownership is distributed across modules | **Tests first.** Do not consolidate state writes in this milestone. |
