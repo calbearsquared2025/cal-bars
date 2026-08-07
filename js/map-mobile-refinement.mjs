@@ -146,15 +146,7 @@ function rankedVenue(state, venueId) {
 
 function previewCandidate(state = appState()) {
   const selected = rankedVenue(state, state?.selectedVenueId);
-  if (selected) return { ...selected, mode: 'selected' };
-  if (!state?.origin || !state?.snapshot || !state.gameId) return null;
-  const nearest = rankNearbyVenues(
-    state.snapshot,
-    state.gameId,
-    state.origin,
-    NEARBY_RADIUS_MILES
-  )[0] || null;
-  return nearest ? { ...nearest, mode: 'nearby' } : null;
+  return selected ? { ...selected, mode: 'selected' } : null;
 }
 
 function previewVenueCard(venueId = '') {
