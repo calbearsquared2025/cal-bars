@@ -128,7 +128,7 @@ test('placeholder mark and shared icon system remain temporary-compatible and de
 
   for (const symbol of [
     'icon-search', 'icon-location', 'icon-map', 'icon-calendar', 'icon-near-me',
-    'icon-fullscreen', 'icon-directions', 'icon-share', 'icon-details', 'icon-star'
+    'icon-directions', 'icon-share', 'icon-details', 'icon-star'
   ]) {
     assert.match(icons, new RegExp(`id="${symbol}"`));
   }

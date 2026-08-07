@@ -35,12 +35,6 @@ test('utility actions are text-only and presented as one segmented control', () 
   assert.match(source, /min-height: 46px !important/);
 });
 
-test('fullscreen control includes an explicit dynamic label', () => {
-  assert.match(source, /#fullscreen-button[\s\S]*min-width: 88px !important/);
-  assert.match(source, /fullscreen-button__label/);
-  assert.match(icons, /label\.textContent = active \? 'Exit' : 'Full screen'/);
-  assert.match(icons, /Exit full-screen map/);
-});
 
 test('bottom navigation uses a pale navy treatment', () => {
   assert.match(source, /\.mobile-command-bar/);

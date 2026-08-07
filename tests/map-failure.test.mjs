@@ -31,11 +31,6 @@ function fixture({ selectedVenueId = null, loaded = false } = {}) {
   const elements = {
     '#map': { classList: classList() },
     '#map-fallback': { hidden: true },
-    '#fullscreen-button': {
-      disabled: false,
-      attributes: {},
-      setAttribute(name, value) { this.attributes[name] = value; }
-    },
     '#browse-locations-button': { click() { calls.browse += 1; } }
   };
   return {
@@ -61,8 +56,6 @@ test('map failure exposes fallback, removes unusable map state, and opens the lo
   assert.equal(item.state.markers.size, 0);
   assert.equal(item.elements['#map-fallback'].hidden, false);
   assert.equal(item.elements['#map'].classList.contains('map--fallback'), true);
-  assert.equal(item.elements['#fullscreen-button'].disabled, true);
-  assert.equal(item.elements['#fullscreen-button'].attributes['aria-disabled'], 'true');
   assert.equal(item.calls.browse, 1);
 });
 

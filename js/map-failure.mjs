@@ -31,12 +31,6 @@ export function showMapUnavailable({
   fallback.hidden = false;
   mapContainer.classList?.add?.('map--fallback');
 
-  const fullscreen = element(documentObject, '#fullscreen-button');
-  if (fullscreen) {
-    fullscreen.disabled = true;
-    fullscreen.setAttribute?.('aria-disabled', 'true');
-  }
-
   if (!state?.selectedVenueId) element(documentObject, '#browse-locations-button')?.click?.();
   return true;
 }

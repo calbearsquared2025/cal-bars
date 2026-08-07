@@ -5,7 +5,7 @@ import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
-import { createIcon, inlineSpriteIcons, setIcon } from './icons.mjs';
+import { createIcon, inlineSpriteIcons } from './icons.mjs';
 
 let appConnected = false;
 let appConnectAttempts = 0;
@@ -59,25 +59,6 @@ export function upgradeRenderedIcons(root = document) {
     .forEach((link) => appendIcon(link, 'external'));
 }
 
-function syncFullscreenIcon() {
-  const button = document.querySelector('#fullscreen-button');
-  const icon = button?.querySelector('.ui-icon');
-  if (!button || !icon) return;
-
-  const active = button.getAttribute('aria-pressed') === 'true';
-  setIcon(icon, active ? 'compress' : 'fullscreen');
-
-  let label = button.querySelector('.fullscreen-button__label');
-  if (!label) {
-    label = document.createElement('span');
-    label.className = 'fullscreen-button__label';
-    button.append(label);
-  }
-
-  label.textContent = active ? 'Exit' : 'Full screen';
-  button.setAttribute('aria-label', active ? 'Exit full-screen map' : 'Enter full-screen map');
-}
-
 function syncListLocationLabel() {
   const button = document.querySelector('#clear-search-button');
   if (!button) return;
@@ -92,7 +73,6 @@ function syncListLocationLabel() {
 function scheduleUpgrade() {
   requestAnimationFrame(() => {
     upgradeRenderedIcons();
-    syncFullscreenIcon();
   });
 }
 
@@ -115,10 +95,6 @@ function connectApp() {
 
 function initialize() {
   upgradeRenderedIcons();
-  syncFullscreenIcon();
-
-  const fullscreen = document.querySelector('#fullscreen-button');
-  fullscreen?.addEventListener('click', () => requestAnimationFrame(syncFullscreenIcon));
   document.querySelector('#mobile-list-button')?.addEventListener('click', () => {
     requestAnimationFrame(syncListLocationLabel);
   });

@@ -275,10 +275,6 @@ a { color: inherit; }
 .site-footer { min-height: var(--footer-height); display: flex; align-items: center; justify-content: center; flex-wrap: nowrap; gap: 4px; padding: 4px 8px calc(env(safe-area-inset-bottom, 0px) + 4px); background: white; color: var(--muted); border-top: 1px solid var(--line); font-size: .68rem; line-height: 1.1; text-align: center; white-space: nowrap; }
 .site-footer a, .site-footer .text-button { flex: 0 0 auto; color: var(--cal-blue); font-size: inherit; font-weight: 720; }
 
-.map-fullscreen .site-header, .map-fullscreen .site-footer, .map-fullscreen .venue-tray { display: none; }
-.map-fullscreen #app, .map-fullscreen .map-view, .map-fullscreen .map { min-height: 100dvh; height: 100dvh; }
-.map-fullscreen .map-toolbar { top: calc(env(safe-area-inset-top, 0px) + 10px); }
-
 :focus-visible { outline: 3px solid rgba(253,181,21,.95); outline-offset: 2px; }
 
 @media (max-width: 899px) {

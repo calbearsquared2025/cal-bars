@@ -10,8 +10,6 @@ const ICON_DEFINITIONS = Object.freeze({
     ['circle', { cx: '12', cy: '10', r: '2' }]
   ],
   'near-me': [['path', { d: 'm20 4-7 16-2.2-6.8L4 11l16-7Z' }]],
-  fullscreen: [['path', { d: 'M8 3H3v5M16 3h5v5M8 21H3v-5m13 5h5v-5' }]],
-  compress: [['path', { d: 'M8 8H3V3m13 5h5V3M8 16H3v5m13-5h5v5' }]],
   'chevron-up': [['path', { d: 'm5 15 7-7 7 7' }]],
   'chevron-down': [['path', { d: 'm5 9 7 7 7-7' }]],
   'chevron-right': [['path', { d: 'm9 5 7 7-7 7' }]],

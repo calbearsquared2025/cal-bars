@@ -82,7 +82,6 @@ function cacheDom() {
     searchInput: document.querySelector('#location-query'),
     suggestions: document.querySelector('#search-suggestions'),
     nearMe: document.querySelector('#near-me-button'),
-    fullscreen: document.querySelector('#fullscreen-button'),
     tray: document.querySelector('#venue-tray'),
     trayHandle: document.querySelector('#tray-handle'),
     trayPeek: document.querySelector('#tray-peek'),
@@ -1106,15 +1105,6 @@ function wireEvents() {
       dom.nearMe.disabled = false;
       showStatus('Location permission was not available');
     }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
-  });
-  dom.fullscreen.addEventListener('click', () => {
-    const active = document.body.classList.toggle('map-fullscreen');
-    dom.fullscreen.setAttribute('aria-pressed', String(active));
-    dom.fullscreen.setAttribute('aria-label', active ? 'Exit full-screen map' : 'Enter full-screen map');
-    requestAnimationFrame(() => {
-      state.map?.resize();
-      scheduleSelectedVenueVisibility();
-    });
   });
   dom.aboutButton.addEventListener('click', () => dom.aboutDialog.showModal());
   wireTrayDrag();
