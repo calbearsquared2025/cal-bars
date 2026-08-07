@@ -220,7 +220,23 @@ async function runMainChecks() {
   click('#mobile-add-button');
   await waitFor(() => activeCommand() === 'add', 'selected venue → Add');
   check(selectedVenueId() === noPartyVenue?.venue_id, 'Selected venue ID must be preserved when entering Add');
+  check(element('#add-surface .add-context:not(.add-game-context)')?.hidden === false, 'Selected-place Add context should be visible when entering Add');
   check(element('#add-context-name')?.textContent?.trim() === noPartyVenue?.name, 'Add context should preserve the selected venue name');
+
+  progress('selected-add-rerender');
+  check(typeof window.CGBApp?.render === 'function', 'CGB application render path should be available during selected Add');
+  window.CGBApp?.render?.();
+  await waitFor(() =>
+    activeCommand() === 'add' &&
+    selectedVenueId() === noPartyVenue?.venue_id &&
+    element('#add-surface .add-context:not(.add-game-context)')?.hidden === false &&
+    element('#add-context-name')?.textContent?.trim() === noPartyVenue?.name,
+  'selected Add context after application rerender', 4000);
+  check(activeCommand() === 'add', 'Add must remain the active surface after application rerender');
+  check(selectedVenueId() === noPartyVenue?.venue_id, 'Selected venue ID must survive the application rerender while Add is open');
+  check(element('#add-surface .add-context:not(.add-game-context)')?.hidden === false, 'Selected-place Add context must remain visible after application rerender');
+  check(element('#add-context-name')?.textContent?.trim() === noPartyVenue?.name, 'Selected-place Add context must identify the same venue after application rerender');
+
   click('#add-surface [data-command-close]');
   await waitFor(() => activeCommand() === 'map', 'selected Add → Map');
   check(selectedVenueId() === noPartyVenue?.venue_id, 'Selected venue must remain selected after leaving Add');
