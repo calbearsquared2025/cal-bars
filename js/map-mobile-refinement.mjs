@@ -1,8 +1,6 @@
 import {
   bearCountCopy,
   markerKind,
-  NEARBY_RADIUS_MILES,
-  rankNearbyVenues,
   rankVenues
 } from './core.mjs';
 
@@ -173,12 +171,12 @@ function updatePreviewIntent() {
   const candidate = previewCandidate(state);
   if (!candidate) {
     title.textContent = 'Find your Cal crowd';
-    copy.textContent = 'Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party.';
+    copy.textContent = 'Watch Parties first, then Cal Bars and Community Locations.';
     count.textContent = '';
     marker.dataset.kind = 'community-location';
     button.dataset.previewMode = 'guidance';
     button.removeAttribute('data-direct-venue-id');
-    button.setAttribute('aria-label', 'Tap a map pin or use Locate Me to find the nearest Cal Bar or Watch Party');
+    button.setAttribute('aria-label', 'Open the location list');
     return;
   }
 
@@ -200,12 +198,11 @@ function updatePreviewIntent() {
 
 function openPreviewVenue(event) {
   const button = event.target.closest?.('#browse-locations-button');
-  if (!button || !isMobile()) return;
+  if (!button || !isMobile() || !button.dataset.directVenueId) return;
 
   event.preventDefault();
   event.stopImmediatePropagation();
 
-  if (!button.dataset.directVenueId) return;
   const card = previewVenueCard(button.dataset.directVenueId);
   if (!card) return;
 
