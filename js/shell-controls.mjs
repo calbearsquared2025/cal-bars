@@ -206,6 +206,7 @@ function showSearch(intent = '') {
 
 function updateAddContext() {
   const venue = selectedVenue();
+  dom.addContext.hidden = !venue;
   dom.reportOptions.hidden = true;
   dom.reportButton.setAttribute('aria-expanded', 'false');
   if (!venue) {
@@ -342,6 +343,7 @@ function cacheDom() {
     searchSlot: document.querySelector('#search-surface-form-slot'),
     searchIntent: document.querySelector('#search-surface-intent'),
     addSurface: document.querySelector('#add-surface'),
+    addContext: document.querySelector('#add-surface .add-context:not(.add-game-context)'),
     addContextName: document.querySelector('#add-context-name'),
     addContextCopy: document.querySelector('#add-context-copy'),
     missingLocationLink: document.querySelector('#add-missing-location-link'),

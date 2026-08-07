@@ -59,17 +59,6 @@ export function upgradeRenderedIcons(root = document) {
     .forEach((link) => appendIcon(link, 'external'));
 }
 
-function syncListLocationLabel() {
-  const button = document.querySelector('#clear-search-button');
-  if (!button) return;
-  const usingLocation = Boolean(window.CGBApp?.getState?.()?.origin);
-  button.hidden = false;
-  button.textContent = usingLocation ? 'All locations' : 'Near me';
-  button.setAttribute('aria-label', usingLocation
-    ? 'Show all mapped locations'
-    : 'Use my location to show nearby locations');
-}
-
 function scheduleUpgrade() {
   requestAnimationFrame(() => {
     upgradeRenderedIcons();
@@ -95,10 +84,6 @@ function connectApp() {
 
 function initialize() {
   upgradeRenderedIcons();
-  document.querySelector('#mobile-list-button')?.addEventListener('click', () => {
-    requestAnimationFrame(syncListLocationLabel);
-  });
-
   connectApp();
 }
 

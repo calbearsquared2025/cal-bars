@@ -49,20 +49,6 @@ function updateListHeading() {
   eyebrow.textContent = state.origin ? `Within ${NEARBY_RADIUS_MILES} miles` : 'Browse';
 }
 
-function updateAddContext() {
-  const state = appState();
-  const context = document.querySelector('.add-context');
-  const name = document.querySelector('#add-context-name');
-  const copy = document.querySelector('#add-context-copy');
-  if (!context || !name || !copy) return;
-  const venue = state?.snapshot?.venues?.find((item) => item.venue_id === state.selectedVenueId) || null;
-  context.hidden = !venue;
-  if (!venue) return;
-  name.textContent = venue.name;
-  const place = [venue.city, venue.region].filter(Boolean).join(', ');
-  copy.textContent = place ? `${place} is selected.` : 'This place is selected.';
-}
-
 function normalizeSearchLabels() {
   document.querySelectorAll('.search-result-group--existing .search-result-group__heading')
     .forEach((heading) => { heading.textContent = 'CGB locations'; });
@@ -72,27 +58,10 @@ function normalizeSearchLabels() {
     .forEach((note) => { note.textContent = 'Not yet listed in Cal Golden Bars.'; });
 }
 
-function commandButtons() {
-  return Array.from(document.querySelectorAll('.mobile-command[data-command], .mobile-command'));
-}
-
 function setActiveView(next) {
   if (!isMobile() || !VALID_VIEWS.has(next)) return;
   activeView = next;
   document.body.dataset.commandSurface = next;
-  commandButtons().forEach((button) => {
-    const command = button.dataset.command || ({
-      'mobile-map-button': 'map',
-      'mobile-search-button': 'search',
-      'mobile-add-button': 'add',
-      'mobile-list-button': 'list'
-    })[button.id];
-    if (!command) return;
-    const selected = command === next;
-    button.classList.toggle('mobile-command--active', selected);
-    if (selected) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
 }
 
 function visibleSurface() {
@@ -137,7 +106,6 @@ function scheduleSync() {
 function sync() {
   updateStatistics();
   updateListHeading();
-  updateAddContext();
   normalizeSearchLabels();
 }
 

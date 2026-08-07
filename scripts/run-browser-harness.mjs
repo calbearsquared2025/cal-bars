@@ -1,9 +1,10 @@
-import { spawn, execFileSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createReadStream, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { findBrowser } from './browser-discovery.mjs';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
 const MIME_TYPES = new Map([
@@ -22,24 +23,6 @@ const runtimeSnapshot = JSON.parse(readFileSync(
 runtimeSnapshot.fanCounts = [];
 const runtimeSnapshotJson = JSON.stringify(runtimeSnapshot).replaceAll('<', '\\u003c');
 const productionIndex = readFileSync(join(repositoryRoot, 'index.html'), 'utf8');
-
-function findBrowser() {
-  const candidates = [
-    process.env.CHROME_BIN,
-    'google-chrome',
-    'google-chrome-stable',
-    'chromium',
-    'chromium-browser'
-  ].filter(Boolean);
-
-  for (const candidate of candidates) {
-    try {
-      if (candidate.includes('/')) return candidate;
-      return execFileSync('which', [candidate], { encoding: 'utf8' }).trim();
-    } catch (_) {}
-  }
-  throw new Error('No Chromium-compatible browser found for the browser harness.');
-}
 
 function safeFilePath(requestUrl) {
   const pathname = decodeURIComponent(new URL(requestUrl, 'http://127.0.0.1').pathname);

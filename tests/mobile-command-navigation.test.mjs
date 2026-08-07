@@ -46,5 +46,6 @@ test('navigation delegates to existing search, tray, and contribution contracts'
   assert.match(script, /buildMissingLocationFormUrl/);
   assert.match(script, /dom\.searchSlot\.append\(dom\.searchForm\)/);
   assert.match(script, /dom\.trayHandle\?\.click\(\)/);
+  assert.match(script, /dom\.addContext\.hidden = !venue/);
   assert.doesNotMatch(script, /MutationObserver/);
 });
