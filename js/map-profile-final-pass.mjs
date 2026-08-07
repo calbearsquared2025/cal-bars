@@ -2,7 +2,6 @@ import { createIcon } from './icons.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-final-pass';
-let collapsedVenueId = '';
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -87,6 +86,11 @@ function installStyles() {
         border-radius: 14px !important;
         line-height: 1.08 !important;
         text-align: center !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
+        min-height: 64px !important;
+        padding: 8px 7px !important;
       }
 
       .bear-count__icon {
@@ -291,6 +295,10 @@ function installStyles() {
           padding-inline: 4px !important;
         }
 
+        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
+          min-height: 58px !important;
+        }
+
         .bear-count__number {
           font-size: 1.7rem !important;
         }
@@ -303,7 +311,10 @@ function installStyles() {
 function refineAttendance(root = document) {
   const count = root.querySelector('#map-view .tray--selected .selected-card .bear-count');
   if (!count) return;
-  const raw = count.dataset.originalCopy || count.textContent.trim();
+  const alreadyRefined = Boolean(count.querySelector('.bear-count__number, .bear-count__prompt'));
+  const raw = alreadyRefined
+    ? count.dataset.originalCopy || count.textContent.trim()
+    : count.textContent.trim();
   count.dataset.originalCopy = raw;
   const match = raw.match(/^(\d+)\s+Bear(?:s)?\s+watching here/i);
   const number = match ? Number(match[1]) : 0;
@@ -313,6 +324,14 @@ function refineAttendance(root = document) {
   count.setAttribute('aria-label', raw || 'No Bears watching here yet. Be the first.');
 
   const icon = createIcon('users', { className: 'ui-icon bear-count__icon' });
+  if (empty) {
+    const prompt = document.createElement('strong');
+    prompt.className = 'bear-count__prompt';
+    prompt.textContent = 'Be the first.';
+    count.replaceChildren(icon, prompt);
+    return;
+  }
+
   const numeral = document.createElement('span');
   numeral.className = 'bear-count__number';
   numeral.textContent = String(number);
@@ -320,13 +339,6 @@ function refineAttendance(root = document) {
   label.className = 'bear-count__label';
   label.textContent = number === 1 ? 'Bear watching here' : 'Bears watching here';
   count.replaceChildren(icon, numeral, label);
-
-  if (empty) {
-    const prompt = document.createElement('strong');
-    prompt.className = 'bear-count__prompt';
-    prompt.textContent = 'Be the first.';
-    count.append(prompt);
-  }
 }
 
 function refinePartyModules(root = document) {
@@ -401,28 +413,11 @@ function refineActions(root = document) {
   }
 }
 
-function defaultSelectedTrayToCompact(root = document) {
-  const tray = root.querySelector('#venue-tray.tray--selected');
-  const venueId = window.CGBApp?.getState?.()?.selectedVenueId || '';
-
-  if (!tray || !venueId || document.body.dataset.commandSurface !== 'map') {
-    collapsedVenueId = '';
-    return;
-  }
-
-  if (collapsedVenueId === venueId) return;
-  collapsedVenueId = venueId;
-  if (tray.dataset.selectedDensity === 'expanded') {
-    requestAnimationFrame(() => document.querySelector('#tray-handle')?.click());
-  }
-}
-
 function refine() {
   if (!isMobile()) return;
   refineAttendance();
   refinePartyModules();
   refineActions();
-  defaultSelectedTrayToCompact();
 }
 
 function scheduleRefinement() {

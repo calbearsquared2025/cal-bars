@@ -38,6 +38,13 @@ test('zero-count selected previews do not place long empty-state copy in the com
   assert.match(source, /count\.textContent = Number\(fanCount\) > 0 \? bearCountCopy\(fanCount\) : ''/);
 });
 
+test('selected tray density defaults compact and remains owned by the mobile map controller', () => {
+  assert.match(source, /let selectedTrayExpanded = false/);
+  assert.match(source, /state\.selectedVenueId !== lastSelectedVenueId[\s\S]*selectedTrayExpanded = false/);
+  assert.match(source, /setSelectedTrayDensity\(selectedTrayExpanded\)/);
+  assert.match(source, /selectedTrayExpanded = false;[\s\S]*lastSelectedVenueId = '';[\s\S]*card\.click\(\)/);
+});
+
 test('Search forces selected Venue compact while Map retains tray-top toggling', () => {
   assert.match(source, /dataset\.commandSurface === 'search'/);
   assert.match(source, /setSelectedTrayDensity\(false\)/);
