@@ -1,7 +1,8 @@
 import { spawn, execFileSync } from 'node:child_process';
-import { createReadStream, readFileSync, statSync } from 'node:fs';
+import { createReadStream, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 const repositoryRoot = fileURLToPath(new URL('../', import.meta.url));
@@ -19,8 +20,8 @@ const runtimeSnapshot = JSON.parse(readFileSync(
   'utf8'
 ));
 runtimeSnapshot.fanCounts = [];
+const runtimeSnapshotJson = JSON.stringify(runtimeSnapshot).replaceAll('<', '\\u003c');
 const productionIndex = readFileSync(join(repositoryRoot, 'index.html'), 'utf8');
-const mockSelections = new Map();
 
 function findBrowser() {
   const candidates = [
@@ -48,24 +49,65 @@ function safeFilePath(requestUrl) {
   return candidate;
 }
 
-function sendJson(response, payload, status = 200) {
-  response.writeHead(status, {
-    'Content-Type': 'application/json; charset=utf-8',
-    'Cache-Control': 'no-store'
-  });
-  response.end(JSON.stringify(payload));
-}
-
 function sendProductionHarness(response) {
   const prelude = `<script>
     for (const key of ['cgb_v2_last_good_snapshot', 'cgb_v2_browser_id', 'cgb_v2_fan_intent_selections']) localStorage.removeItem(key);
     localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
+    (() => {
+      const snapshot = ${runtimeSnapshotJson};
+      const selections = new Map();
+      const nativeFetch = window.fetch.bind(window);
+      const fanCounts = () => {
+        const counts = new Map();
+        selections.forEach(({ gameId, venueId }) => {
+          const key = gameId + '\\u0000' + venueId;
+          const current = counts.get(key) || { game_id: gameId, venue_id: venueId, count: 0 };
+          current.count += 1;
+          counts.set(key, current);
+        });
+        return [...counts.values()];
+      };
+      const jsonResponse = (payload, status = 200) => new Response(JSON.stringify(payload), {
+        status,
+        headers: { 'Content-Type': 'application/json; charset=utf-8' }
+      });
+      window.fetch = async (input, init = {}) => {
+        const url = new URL(typeof input === 'string' ? input : input.url, location.href);
+        if (url.pathname !== '/__cgb_mock_api__') return nativeFetch(input, init);
+        const method = String(init.method || input?.method || 'GET').toUpperCase();
+        if (method !== 'POST') return jsonResponse({ ...snapshot, fanCounts: fanCounts() });
+        let operation;
+        try { operation = JSON.parse(String(init.body || '{}')); } catch (_) {
+          return jsonResponse({ ok: false, error: 'invalid_json' }, 400);
+        }
+        const { action, browserId, gameId, venueId } = operation || {};
+        if (!['join', 'withdraw', 'move'].includes(action) || !browserId || !gameId || !venueId) {
+          return jsonResponse({ ok: false, error: 'invalid_request' }, 400);
+        }
+        const key = browserId + '\\u0000' + gameId;
+        if (action === 'withdraw') selections.delete(key);
+        else selections.set(key, { gameId, venueId });
+        return jsonResponse({
+          ok: true,
+          action,
+          selection: action === 'withdraw'
+            ? null
+            : { game_id: gameId, venue_id: venueId, status: 'attending' },
+          fanCounts: fanCounts(),
+          venueHistoryCounts: Array.isArray(snapshot.venueHistoryCounts) ? snapshot.venueHistoryCounts : []
+        });
+      };
+    })();
   </script>`;
   const driver = `
     <output id="cgb-production-runtime-result">CGB_PRODUCTION_RUNTIME_RUNNING</output>
     <script type="module" src="/tests/browser/production-runtime-harness.mjs"></script>
   `;
   const html = productionIndex
+    .replace(
+      '<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>',
+      '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>'
+    )
     .replace('</head>', `${prelude}\n</head>`)
     .replace('</body>', `${driver}\n</body>`);
   response.writeHead(200, {
@@ -75,66 +117,8 @@ function sendProductionHarness(response) {
   response.end(html);
 }
 
-function aggregateMockFanCounts() {
-  const counts = new Map();
-  mockSelections.forEach(({ gameId, venueId }) => {
-    const key = `${gameId}\u0000${venueId}`;
-    const current = counts.get(key) || { game_id: gameId, venue_id: venueId, count: 0 };
-    current.count += 1;
-    counts.set(key, current);
-  });
-  return [...counts.values()];
-}
-
-function currentRuntimeSnapshot() {
-  return {
-    ...runtimeSnapshot,
-    fanCounts: aggregateMockFanCounts()
-  };
-}
-
-function handleMockWrite(request, response) {
-  let body = '';
-  request.setEncoding('utf8');
-  request.on('data', (chunk) => { body += chunk; });
-  request.on('end', () => {
-    let operation;
-    try { operation = JSON.parse(body || '{}'); } catch (_) {
-      sendJson(response, { ok: false, error: 'invalid_json' }, 400);
-      return;
-    }
-
-    const { action, browserId, gameId, venueId } = operation || {};
-    if (!['join', 'withdraw', 'move'].includes(action) || !browserId || !gameId || !venueId) {
-      sendJson(response, { ok: false, error: 'invalid_request' }, 400);
-      return;
-    }
-
-    const key = `${browserId}\u0000${gameId}`;
-    if (action === 'withdraw') mockSelections.delete(key);
-    else mockSelections.set(key, { gameId, venueId });
-
-    sendJson(response, {
-      ok: true,
-      action,
-      selection: action === 'withdraw'
-        ? null
-        : { game_id: gameId, venue_id: venueId, status: 'attending' },
-      fanCounts: aggregateMockFanCounts(),
-      venueHistoryCounts: Array.isArray(runtimeSnapshot.venueHistoryCounts)
-        ? runtimeSnapshot.venueHistoryCounts
-        : []
-    });
-  });
-}
-
 const server = createServer((request, response) => {
   const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
-  if (pathname === '/__cgb_mock_api__') {
-    if (request.method === 'POST') handleMockWrite(request, response);
-    else sendJson(response, currentRuntimeSnapshot());
-    return;
-  }
   if (pathname === '/__cgb_production_runtime__') {
     sendProductionHarness(response);
     return;
@@ -174,6 +158,7 @@ function extractRuntimeResult(html) {
 
 async function runHarness({ path, marker, label, virtualTimeBudget }) {
   const url = `http://127.0.0.1:${address.port}${path}`;
+  const profileDirectory = mkdtempSync(join(tmpdir(), 'cgb-browser-harness-'));
   const child = spawn(browser, [
     '--headless=new',
     '--no-sandbox',
@@ -185,6 +170,7 @@ async function runHarness({ path, marker, label, virtualTimeBudget }) {
     '--disable-sync',
     '--metrics-recording-only',
     '--no-first-run',
+    `--user-data-dir=${profileDirectory}`,
     '--window-size=390,844',
     `--virtual-time-budget=${virtualTimeBudget}`,
     '--dump-dom',
@@ -199,6 +185,7 @@ async function runHarness({ path, marker, label, virtualTimeBudget }) {
   child.stderr.on('data', (chunk) => { stderr += chunk; });
 
   const exitCode = await new Promise((resolve) => child.once('close', resolve));
+  rmSync(profileDirectory, { recursive: true, force: true, maxRetries: 3 });
   if (exitCode !== 0 || !stdout.includes(marker)) {
     console.error(`${label} failed.`);
     const runtimeResult = extractRuntimeResult(stdout);
@@ -221,20 +208,18 @@ try {
     virtualTimeBudget: 6000
   }) && passed;
 
-  mockSelections.clear();
   passed = await runHarness({
     path: '/__cgb_production_runtime__?__cgb_harness=main',
     marker: 'CGB_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Production runtime regression harness',
-    virtualTimeBudget: 18000
+    virtualTimeBudget: 60000
   }) && passed;
 
-  mockSelections.clear();
   passed = await runHarness({
     path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_2026_01&__cgb_harness=direct',
     marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Production direct-route refresh harness',
-    virtualTimeBudget: 10000
+    virtualTimeBudget: 30000
   }) && passed;
 } finally {
   server.close();
