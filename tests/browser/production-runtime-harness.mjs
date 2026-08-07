@@ -9,18 +9,23 @@ function progress(label) {
   if (result) result.textContent = `CGB_PRODUCTION_RUNTIME_PROGRESS:${label}`;
 }
 
-function delay(ms) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
+function yieldToBrowser() {
+  return new Promise((resolve) => window.setTimeout(resolve, 1));
 }
 
-async function waitFor(predicate, label, timeoutMs = 2200) {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < timeoutMs) {
+async function waitFor(predicate, label, maxAttempts = 2200) {
+  const conditionMet = () => {
     try {
-      if (predicate()) return true;
-    } catch (_) {}
-    await delay(25);
+      return predicate();
+    } catch (_) {
+      return false;
+    }
+  };
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    if (conditionMet()) return true;
+    await yieldToBrowser();
   }
+  if (conditionMet()) return true;
   failures.push(`Timed out waiting for ${label}`);
   return false;
 }
@@ -42,13 +47,14 @@ function click(selector) {
 
 async function waitForApplicationReady(label = 'application ready') {
   return waitFor(() =>
+    document.readyState === 'complete' &&
     element('#app')?.getAttribute('aria-busy') === 'false' &&
     Boolean(state()?.snapshot) &&
-    Boolean(document.body), label, 7000);
-}
-
-async function settle() {
-  await delay(80);
+    window.matchMedia('(max-width: 899px)').matches &&
+    document.querySelectorAll('.mobile-command[data-command]').length === 4 &&
+    Boolean(element('#cgb-mobile-tab-location-refinement')) &&
+    Boolean(element('#cgb-map-profile-final-pass')) &&
+    Boolean(document.body.dataset.commandSurface), label, 7000);
 }
 
 function activeCommand() {
@@ -131,7 +137,6 @@ function finish(marker) {
 async function runDirectRouteCheck() {
   progress('direct-ready');
   await waitForApplicationReady('direct venue application ready');
-  await settle();
   const params = new URLSearchParams(location.search);
   const requestedSlug = params.get('venue');
   const requestedGame = params.get('game');
@@ -149,7 +154,6 @@ async function runDirectRouteCheck() {
 async function runMainChecks() {
   progress('ready');
   await waitForApplicationReady();
-  await settle();
 
   progress('initial-map');
   check(activeCommand() === 'map', 'Initial mobile command surface should be Map');
@@ -234,7 +238,6 @@ async function runMainChecks() {
     element(`#search-suggestions button[data-venue-id="${partyVenue.venue_id}"]`)?.click();
     await waitFor(() => selectedVenueId() === partyVenue.venue_id && activeCommand() === 'map' && trayState() === 'selected', 'Search result → selected Map state');
     await waitFor(() => trayDensity() === 'compact', 'Search result selected tray compact density');
-    await settle();
     check(Boolean(element('#tray-selected .party-module')), 'Watch Party venue should render a Watch Party module in the selected card');
   }
 
@@ -259,12 +262,10 @@ async function runMainChecks() {
   }, 'Near me List control');
   click('#clear-search-button');
   await waitFor(() => Boolean(state()?.origin), 'Nearby location state');
-  await settle();
 
   await verifyListLocationControl('All locations', 'All locations List control');
   click('#clear-search-button');
   await waitFor(() => !state()?.origin, 'All locations state');
-  await settle();
 
   await verifyListLocationControl('Near me', 'Near me control restored after All locations');
 
