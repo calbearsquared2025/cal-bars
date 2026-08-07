@@ -151,7 +151,6 @@ function visibleSurface() {
 function inferActiveView() {
   const surface = visibleSurface();
   if (surface) return surface;
-  if (document.body.classList.contains('map-fullscreen')) return 'map';
   return document.querySelector('#venue-tray')?.dataset.state === 'full' ? 'list' : 'map';
 }
 
@@ -215,7 +214,6 @@ function initialize() {
   initializeNavigation();
   document.querySelector('#location-query')?.addEventListener('input', () => requestAnimationFrame(normalizeSearchLabels));
   document.querySelector('#location-search')?.addEventListener('submit', () => requestAnimationFrame(normalizeSearchLabels));
-  document.querySelector('#fullscreen-button')?.addEventListener('click', scheduleSync);
 
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleSync);
   sync();

@@ -347,7 +347,7 @@
     display: none;
   }
 
-  /* Fixed viewport controls do not jump when fullscreen changes shell visibility. */
+  /* Fixed viewport controls remain anchored over the map. */
   .map-actions {
     position: fixed;
     z-index: 80;
@@ -363,7 +363,6 @@
     transform: translate(-1px, 1px);
   }
 
-  .map-actions #fullscreen-button,
   .map-actions #near-me-button {
     position: static;
   }
@@ -507,37 +506,6 @@
     background: var(--cgb-white);
     border-radius: 0;
     box-shadow: none;
-  }
-
-  /* Fullscreen preserves navigation, controls, and the selected Venue sheet. */
-  .map-fullscreen .site-header,
-  .map-fullscreen .site-footer {
-    display: none;
-  }
-
-  .map-fullscreen .mobile-command-bar {
-    display: grid;
-  }
-
-  .map-fullscreen #map-view > #venue-tray.venue-tray.tray--selected {
-    display: block !important;
-    position: fixed !important;
-    inset: auto 0 var(--footer-height) 0 !important;
-    width: 100vw !important;
-    max-width: none !important;
-    max-height: min(52dvh, 500px);
-  }
-
-  .map-fullscreen .venue-tray.tray--peek,
-  .map-fullscreen .venue-tray.tray--full {
-    display: none;
-  }
-
-  .map-fullscreen #app,
-  .map-fullscreen .map-view,
-  .map-fullscreen .map {
-    min-height: calc(100dvh - var(--footer-height));
-    height: calc(100dvh - var(--footer-height));
   }
 
   body[data-command-surface="list"] .tray-list__header {

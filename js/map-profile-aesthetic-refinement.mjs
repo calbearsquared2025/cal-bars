@@ -187,41 +187,6 @@ function installStyles() {
         display: none !important;
       }
 
-      /* Make the map expansion control self-explanatory instead of relying on an ambiguous icon. */
-      #fullscreen-button {
-        width: auto !important;
-        min-width: 88px !important;
-        height: 44px !important;
-        padding: 0 12px !important;
-        gap: 7px !important;
-        border-radius: 999px !important;
-        color: var(--cgb-navy-950) !important;
-        background: rgba(255, 255, 255, .96) !important;
-        border: 1px solid var(--cgb-neutral-300) !important;
-        box-shadow: 0 6px 18px rgba(1, 1, 51, .14) !important;
-        font-family: var(--font-ui) !important;
-        font-size: .67rem !important;
-        font-weight: 800 !important;
-        line-height: 1 !important;
-      }
-
-      #fullscreen-button[aria-pressed="true"] {
-        color: var(--cgb-white) !important;
-        background: var(--cgb-navy-950) !important;
-        border-color: var(--cgb-navy-950) !important;
-      }
-
-      #fullscreen-button .ui-icon {
-        width: 17px !important;
-        height: 17px !important;
-        flex: 0 0 auto !important;
-      }
-
-      #fullscreen-button .fullscreen-button__label {
-        display: inline !important;
-        white-space: nowrap !important;
-      }
-
       .mobile-command-bar {
         background: color-mix(in srgb, var(--cgb-navy-50) 92%, white 8%) !important;
       }
@@ -248,11 +213,6 @@ function installStyles() {
           text-align: left !important;
         }
 
-        #fullscreen-button {
-          min-width: 80px !important;
-          padding-inline: 10px !important;
-          font-size: .64rem !important;
-        }
       }
     }
   `;

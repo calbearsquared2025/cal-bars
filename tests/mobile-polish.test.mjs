@@ -22,7 +22,6 @@ test('navigation derives one active Map Search Add or List state', async () => {
   assert.match(script, /function setActiveView/);
   assert.match(script, /removeAttribute\('aria-current'\)/);
   assert.match(script, /function inferActiveView/);
-  assert.match(script, /classList\.contains\('map-fullscreen'\)\) return 'map'/);
 });
 
 test('opening statistics use large numbers and small labels', async () => {
@@ -44,13 +43,6 @@ test('markers are compact teardrops and outer marker transforms never transition
   assert.match(css, /\.cgb-marker \.marker-star[\s\S]*width: 38px/);
 });
 
-test('fullscreen keeps controls stable and exposes the selected Venue tray', async () => {
-  const css = await source('css/mobile-polish.css');
-  assert.match(css, /\.map-actions[\s\S]*position: fixed[\s\S]*top: 46dvh/);
-  assert.match(css, /\.map-fullscreen #map-view > #venue-tray\.venue-tray\.tray--selected[\s\S]*display: block !important/);
-  assert.match(css, /\.map-fullscreen \.mobile-command-bar[\s\S]*display: grid/);
-  assert.match(css, /body\[data-command-surface="list"\] \.map-actions #near-me-button[\s\S]*display: none/);
-});
 
 test('selected Venue uses a viewport-anchored rounded bottom sheet', async () => {
   const css = await source('css/mobile-polish.css');
