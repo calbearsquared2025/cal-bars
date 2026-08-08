@@ -109,6 +109,39 @@ function attendanceNumber() {
   return match ? Number(match[0]) : 0;
 }
 
+function attendancePresentation() {
+  const count = element('#tray-selected .bear-count');
+  if (!count) return null;
+  const style = getComputedStyle(count);
+  return {
+    alignSelf: style.alignSelf,
+    display: style.display,
+    gridColumn: style.gridColumn,
+    minHeight: style.minHeight,
+    paddingTop: style.paddingTop,
+    paddingRight: style.paddingRight,
+    paddingBottom: style.paddingBottom,
+    paddingLeft: style.paddingLeft,
+    borderRadius: style.borderRadius,
+    textAlign: style.textAlign,
+    backgroundImage: style.backgroundImage
+  };
+}
+
+function isCanonicalAttendancePresentation(presentation) {
+  return presentation?.alignSelf === 'center' &&
+    presentation.display === 'grid' &&
+    presentation.gridColumn === '2' &&
+    presentation.minHeight === '94px' &&
+    presentation.paddingTop === '8px' &&
+    presentation.paddingRight === '7px' &&
+    presentation.paddingBottom === '8px' &&
+    presentation.paddingLeft === '7px' &&
+    presentation.borderRadius === '14px' &&
+    presentation.textAlign === 'center' &&
+    presentation.backgroundImage.includes('linear-gradient');
+}
+
 function setInputValue(selector, value) {
   const input = element(selector);
   check(Boolean(input), `Missing input: ${selector}`);
@@ -261,6 +294,17 @@ async function runDesktopChecks() {
   check(Boolean(element('#tray-selected .bear-count__prompt')), 'Desktop selected card should use the shared zero-attendance component');
   check(Boolean(element('#tray-selected .selected-card__plan-party')), 'Desktop selected card should use the shared no-Watch-Party contribution component');
   check(!badgeTexts('#tray-selected .selected-card').includes('COMMUNITY LOCATION'), 'Desktop selected card should omit the Community Location badge');
+  const selectedCountStyle = getComputedStyle(element('#tray-selected .bear-count'));
+  const selectedIntentRect = element('#tray-selected .intent-button')?.getBoundingClientRect();
+  const selectedShare = element('#tray-selected .selected-card__share');
+  const selectedShareRect = selectedShare?.getBoundingClientRect();
+  const selectedDetailsRect = element('#tray-selected .selected-card__details')?.getBoundingClientRect();
+  check(selectedCountStyle.justifyItems === 'center' && selectedCountStyle.textAlign === 'center', 'Desktop Bear count should use the centered status presentation');
+  check((selectedIntentRect?.width || 0) > (selectedShareRect?.width || Infinity) * 1.75 && (selectedIntentRect?.height || 0) >= 48, 'Desktop Fan Intent should be the wide primary action');
+  check(selectedShare?.textContent?.trim() === 'Share' && (selectedShareRect?.width || 0) >= 90 && (selectedShareRect?.height || 0) >= 48, 'Desktop Share should be a labeled secondary action');
+  check(Math.abs((selectedDetailsRect?.width || 0) - 44) < 1 && Math.abs((selectedDetailsRect?.height || 0) - 44) < 1, 'Desktop Details should retain its existing compact treatment');
+  check(parseFloat(getComputedStyle(element('#tray-selected')).borderBottomWidth) >= 2, 'Desktop selected Venue should have an obvious boundary above Browse');
+  check(getComputedStyle(element('#tray-list')).backgroundColor === 'rgb(242, 242, 242)', 'Desktop Browse surface should remain visually subordinate');
   const selectedRect = element('#tray-selected')?.getBoundingClientRect();
   const selectedListRect = element('#tray-list')?.getBoundingClientRect();
   const selectedRailRect = element('#venue-tray')?.getBoundingClientRect();
@@ -272,7 +316,14 @@ async function runDesktopChecks() {
   check(attendanceNumber() === 0, 'Desktop mocked Venue should begin at zero attendance');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop RSVP 0 to 1');
+  await waitFor(() => Boolean(element('#tray-selected .selected-card__share')) && Boolean(element('#tray-selected .intent-button__undo')), 'desktop selected action refinement');
+  await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'desktop positive attendance refinement');
+  check(!isVisible('#tray-selected .bear-count__icon'), 'Desktop positive attendance should hide the people icon');
+  check(isCanonicalAttendancePresentation(attendancePresentation()), 'Desktop should use the canonical attendance-card presentation');
   check(trayState() === 'selected', 'Desktop RSVP 0 to 1 should preserve selected Venue state');
+  const activeIntentRect = element('#tray-selected .intent-button')?.getBoundingClientRect();
+  const activeShareRect = element('#tray-selected .selected-card__share')?.getBoundingClientRect();
+  check((activeIntentRect?.width || 0) > (activeShareRect?.width || Infinity) * 1.75 && (activeIntentRect?.height || 0) >= 48, 'Desktop selected Fan Intent should retain the wide primary action hierarchy');
   await waitForIntentSettled('desktop RSVP 0 to 1 transaction completion');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 0 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'desktop RSVP 1 to 0');
@@ -399,6 +450,10 @@ async function runMainChecks() {
   check(attendanceNumber() === 0, 'Mocked selected venue should begin at zero attendance');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'RSVP 0 → 1');
+  await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'mobile positive attendance refinement');
+  check(!isVisible('#tray-selected .bear-count__icon'), 'Mobile positive attendance should hide the people icon');
+  const expandedAttendancePresentation = attendancePresentation();
+  check(isCanonicalAttendancePresentation(expandedAttendancePresentation), 'Expanded mobile tray should use the canonical attendance-card presentation');
   check(trayState() === 'selected', 'RSVP 0 → 1 must retain selected tray state');
   check(trayDensity() === 'expanded', 'RSVP 0 → 1 must preserve expanded selected-tray density');
   await waitForIntentSettled('RSVP 0 → 1 transaction completion');
@@ -406,6 +461,7 @@ async function runMainChecks() {
   progress('density-collapse');
   click('#tray-handle');
   await waitFor(() => trayDensity() === 'compact', 'manual selected-tray collapse');
+  check(JSON.stringify(attendancePresentation()) === JSON.stringify(expandedAttendancePresentation), 'Compact and expanded mobile trays should share one attendance-card presentation');
   await waitForIntentSettled('intent control ready after selected-tray collapse');
 
   progress('rsvp-withdraw-compact');

@@ -5,6 +5,9 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/map-profile-final-pass.mjs', root), 'utf8');
 const loader = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
+const firstPass = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
+const aesthetic = await readFile(new URL('js/map-profile-aesthetic-refinement.mjs', root), 'utf8');
+const desktopCss = await readFile(new URL('css/design-board-4.css', root), 'utf8');
 
 test('final profile is loaded after the prior mobile refinement layers', () => {
   assert.match(loader, /import '\.\/search-map-refinement\.mjs';[\s\S]*import '\.\/map-profile-final-pass\.mjs';/);
@@ -19,6 +22,14 @@ test('attendance uses an asymmetric large-number card for positive counts', () =
   assert.match(source, /bear-count__number/);
   assert.match(source, /createIcon\('users'/);
   assert.match(source, /font-size: 2rem !important/);
+});
+
+test('one final-pass component owns attendance presentation at every tray density and breakpoint', () => {
+  assert.match(source, /#map-view > #venue-tray\.venue-tray\.tray--selected \.selected-card > \.bear-count\s*\{[^}]*grid-column: 2 !important[^}]*place-content: center !important[^}]*text-align: center !important/);
+  assert.match(source, /\.selected-card \.bear-count:not\(\.bear-count--empty\) \.bear-count__icon\s*\{[^}]*display: none !important/);
+  assert.doesNotMatch(firstPass, /formatEmptyAttendance|bear-count--empty/);
+  assert.doesNotMatch(aesthetic, /bear-count/);
+  assert.doesNotMatch(desktopCss, /\.selected-card \.bear-count/);
 });
 
 test('zero attendance collapses to the invitation without a redundant numeral and label', () => {

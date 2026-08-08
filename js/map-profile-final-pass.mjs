@@ -12,6 +12,66 @@ function installStyles() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
+    #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count {
+      grid-column: 2 !important;
+      grid-row: 1 !important;
+      align-self: center !important;
+      justify-self: stretch !important;
+      min-height: 94px !important;
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      place-content: center !important;
+      justify-items: center !important;
+      gap: 1px !important;
+      margin: 2px 0 0 !important;
+      padding: 8px 7px !important;
+      color: var(--cgb-navy-950) !important;
+      background: linear-gradient(180deg, var(--cgb-gold-50), var(--cgb-white)) !important;
+      border: 1px solid var(--cgb-gold-300, #f2cc67) !important;
+      border-radius: 14px !important;
+      line-height: 1.08 !important;
+      text-align: center !important;
+    }
+
+    .selected-card .bear-count--empty {
+      min-height: 64px !important;
+      padding: 8px 7px !important;
+    }
+
+    .selected-card .bear-count:not(.bear-count--empty) .bear-count__icon {
+      display: none !important;
+    }
+
+    .selected-card .bear-count__icon {
+      width: 18px !important;
+      height: 18px !important;
+      color: var(--cgb-gold-500) !important;
+    }
+
+    .selected-card .bear-count__number {
+      color: var(--cgb-navy-950) !important;
+      font-family: var(--font-display) !important;
+      font-size: 2rem !important;
+      font-weight: 700 !important;
+      line-height: .9 !important;
+    }
+
+    .selected-card .bear-count__label,
+    .selected-card .bear-count__prompt {
+      display: block !important;
+      max-width: 78px !important;
+      font-family: var(--font-ui) !important;
+      font-size: .65rem !important;
+      font-weight: 750 !important;
+      line-height: 1.12 !important;
+      text-transform: none !important;
+    }
+
+    .selected-card .bear-count__prompt {
+      margin-top: 2px !important;
+      font-weight: 850 !important;
+    }
+
     @media (max-width: 899px) {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
         grid-template-columns: minmax(0, 1fr) 98px !important;
@@ -61,61 +121,6 @@ function installStyles() {
         margin-right: 6px !important;
         color: var(--cgb-ink-500) !important;
         text-decoration: none !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        align-self: center !important;
-        justify-self: stretch !important;
-        min-height: 94px !important;
-        display: grid !important;
-        place-content: center !important;
-        justify-items: center !important;
-        gap: 1px !important;
-        margin: 2px 0 0 !important;
-        padding: 8px 7px !important;
-        color: var(--cgb-navy-950) !important;
-        background: linear-gradient(180deg, var(--cgb-gold-50), var(--cgb-white)) !important;
-        border: 1px solid var(--cgb-gold-300, #f2cc67) !important;
-        border-radius: 14px !important;
-        line-height: 1.08 !important;
-        text-align: center !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
-        min-height: 64px !important;
-        padding: 8px 7px !important;
-      }
-
-      .bear-count__icon {
-        width: 18px !important;
-        height: 18px !important;
-        color: var(--cgb-gold-500) !important;
-      }
-
-      .bear-count__number {
-        color: var(--cgb-navy-950) !important;
-        font-family: var(--font-display) !important;
-        font-size: 2rem !important;
-        font-weight: 700 !important;
-        line-height: .9 !important;
-      }
-
-      .bear-count__label,
-      .bear-count__prompt {
-        display: block !important;
-        max-width: 78px !important;
-        font-family: var(--font-ui) !important;
-        font-size: .65rem !important;
-        font-weight: 750 !important;
-        line-height: 1.12 !important;
-        text-transform: none !important;
-      }
-
-      .bear-count__prompt {
-        margin-top: 2px !important;
-        font-weight: 850 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .party-module,

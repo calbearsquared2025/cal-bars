@@ -488,7 +488,9 @@ body[data-view="detail"] #app {
     flex: 0 0 auto;
     max-height: 48%;
     overflow-y: auto;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 3px solid var(--cgb-gold-400);
+    box-shadow: 0 8px 18px rgba(1, 1, 51, .1);
+    z-index: 2;
   }
 
   .venue-tray .tray-selected:empty {
@@ -501,12 +503,18 @@ body[data-view="detail"] #app {
     min-height: 0;
     max-height: none;
     overflow-y: auto;
+    background: var(--cgb-neutral-50);
+  }
+
+  .venue-tray .tray-list__header {
+    background: rgba(242, 242, 242, .98);
   }
 
   .selected-card {
     grid-template-columns: minmax(0, 1fr) 112px;
     gap: 12px 16px;
-    padding: 18px;
+    padding: 18px 18px 20px;
+    background: linear-gradient(180deg, var(--cgb-white) 0%, #fffdf7 100%);
   }
 
   .selected-card h2 {
@@ -529,51 +537,6 @@ body[data-view="detail"] #app {
     align-items: center;
     gap: 0;
     margin: 5px 0 0;
-  }
-
-  .selected-card .bear-count {
-    grid-column: 2;
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-content: center;
-    align-items: center;
-    gap: 2px 7px;
-    min-height: 84px;
-    margin: 0;
-    padding: 10px;
-    border: 1px solid rgba(1, 1, 51, .12);
-    border-radius: 16px;
-    background: var(--cgb-warm-50, #fffaf0);
-    color: var(--cgb-navy-950, #010133);
-  }
-
-  .selected-card .bear-count__icon {
-    grid-row: 1 / span 2;
-    width: 19px;
-    height: 19px;
-    color: var(--cgb-gold-600, #d99a00);
-  }
-
-  .selected-card .bear-count__number {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    line-height: 1;
-  }
-
-  .selected-card .bear-count__label {
-    color: var(--cgb-ink-500, #657083);
-    font-size: .68rem;
-    line-height: 1.15;
-  }
-
-  .selected-card .bear-count--empty {
-    grid-template-columns: auto 1fr;
-  }
-
-  .selected-card .bear-count__prompt {
-    font-size: .82rem;
-    line-height: 1.2;
   }
 
   .selected-card > .venue-description,
@@ -620,8 +583,32 @@ body[data-view="detail"] #app {
 
   .selected-card .action-row {
     display: grid;
-    grid-template-columns: minmax(0, 1.5fr) minmax(90px, .75fr) minmax(90px, .75fr);
+    grid-template-columns: minmax(0, 1fr) 44px 96px;
+    align-items: center;
     gap: 8px;
+    margin: 2px 0 0;
+  }
+
+  .selected-card .action-row > .intent-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding-inline: 14px;
+    font-size: .9rem;
+    font-weight: 850;
+  }
+
+  .selected-card .action-row > .selected-card__share {
+    width: 100%;
+    min-width: 96px;
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding-inline: 12px;
+    font-size: .76rem;
+    font-weight: 800;
   }
 
   .selected-card .action-row > .selected-card__directions-inline {
