@@ -22,10 +22,6 @@ body[data-view="detail"] #app {
   min-height: 100dvh;
 }
 
-.bear-count:not(.bear-count--empty) .bear-count__icon {
-  display: none;
-}
-
 /* ---------- Dialogs, feedback, and supporting flows ---------- */
 .status-toast {
   min-height: 40px;
@@ -541,56 +537,6 @@ body[data-view="detail"] #app {
     align-items: center;
     gap: 0;
     margin: 5px 0 0;
-  }
-
-  .selected-card .bear-count {
-    grid-column: 2;
-    grid-row: 1;
-    display: grid;
-    grid-template-columns: 1fr;
-    align-content: center;
-    align-items: center;
-    justify-items: center;
-    gap: 3px;
-    min-height: 84px;
-    margin: 0;
-    padding: 10px;
-    border: 1px solid rgba(1, 1, 51, .12);
-    border-radius: 16px;
-    background: var(--cgb-warm-50, #fffaf0);
-    color: var(--cgb-navy-950, #010133);
-    text-align: center;
-  }
-
-  .selected-card .bear-count__icon {
-    grid-row: auto;
-    width: 19px;
-    height: 19px;
-    color: var(--cgb-gold-600, #d99a00);
-  }
-
-  .selected-card .bear-count__number {
-    font-family: var(--font-display);
-    font-size: 2rem;
-    line-height: 1;
-  }
-
-  .selected-card .bear-count__label {
-    max-width: 80px;
-    color: var(--cgb-ink-500, #657083);
-    font-size: .68rem;
-    line-height: 1.15;
-  }
-
-  .selected-card .bear-count--empty {
-    grid-template-columns: 1fr;
-  }
-
-  .selected-card .bear-count__prompt {
-    max-width: 80px;
-    font-size: .82rem;
-    line-height: 1.2;
-    text-align: center;
   }
 
   .selected-card > .venue-description,

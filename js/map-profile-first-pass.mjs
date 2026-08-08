@@ -172,26 +172,6 @@ function installStyles() {
         display: none !important;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected .bear-count {
-        max-width: none !important;
-        display: grid !important;
-        gap: 1px !important;
-        margin: 0 !important;
-        padding: 1px 2px !important;
-        color: var(--cgb-navy-950) !important;
-        font-family: var(--font-ui) !important;
-        font-size: .78rem !important;
-        font-weight: 700 !important;
-        line-height: 1.23 !important;
-        text-align: left !important;
-        text-transform: none !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty strong {
-        font-size: .82rem !important;
-        font-weight: 850 !important;
-      }
-
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
         width: 100% !important;
         min-height: 40px !important;
@@ -286,7 +266,6 @@ function installStyles() {
         white-space: nowrap !important;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .bear-count,
       #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
       #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__plan-party,
       #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
@@ -416,21 +395,6 @@ function setSearchLanguage() {
   if (intro) intro.textContent = 'Search Cal Golden Bars or add another location to the map.';
 }
 
-function formatEmptyAttendance(card) {
-  const count = card.querySelector('.bear-count');
-  if (!count) return;
-  const text = count.textContent.replace(/\s+/g, ' ').trim();
-  if (!/^No Bears (?:are )?watching here yet\. Be the first\.$/i.test(text)) return;
-
-  count.classList.add('bear-count--empty');
-  count.setAttribute('aria-label', 'No Bears watching here yet. Be the first.');
-  const status = document.createElement('span');
-  status.textContent = 'No Bears watching here yet.';
-  const invitation = document.createElement('strong');
-  invitation.textContent = 'Be the first.';
-  count.replaceChildren(status, invitation);
-}
-
 function addPlanWatchPartyAction(card) {
   card.querySelector('.selected-card__party-empty')?.remove();
   const existing = card.querySelector('.selected-card__plan-party');
@@ -474,7 +438,6 @@ function enhanceSelectedCard() {
 
   const card = document.querySelector('#map-view > #venue-tray.venue-tray.tray--selected .selected-card');
   if (!card) return;
-  formatEmptyAttendance(card);
   addPlanWatchPartyAction(card);
   normalizeActionLabels(card);
 

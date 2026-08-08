@@ -3,11 +3,12 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const css = await readFile(new URL('../css/design-board-4.css', import.meta.url), 'utf8');
+const attendanceProfile = await readFile(new URL('../js/map-profile-final-pass.mjs', import.meta.url), 'utf8');
 const desktop = css.slice(css.lastIndexOf('@media (min-width: 900px)'));
 
 test('shared Bear count hides the people icon only after attendance exists', () => {
-  assert.match(css, /\.bear-count:not\(\.bear-count--empty\) \.bear-count__icon\s*\{[^}]*display:\s*none/);
-  assert.doesNotMatch(css, /\.bear-count--empty \.bear-count__icon\s*\{[^}]*display:\s*none/);
+  assert.match(attendanceProfile, /\.bear-count:not\(\.bear-count--empty\) \.bear-count__icon\s*\{[^}]*display:\s*none/);
+  assert.doesNotMatch(attendanceProfile, /\.bear-count--empty \.bear-count__icon\s*\{[^}]*display:\s*none/);
 });
 
 test('selected Venue and Browse surfaces have a clear desktop hierarchy', () => {
@@ -17,10 +18,10 @@ test('selected Venue and Browse surfaces have a clear desktop hierarchy', () => 
   assert.match(desktop, /\.selected-card\s*\{[^}]*background:\s*linear-gradient\(180deg, var\(--cgb-white\) 0%, #fffdf7 100%\)/);
 });
 
-test('desktop Bear count is centered with the existing shared markup', () => {
-  assert.match(desktop, /\.selected-card \.bear-count\s*\{[^}]*grid-template-columns:\s*1fr[^}]*justify-items:\s*center[^}]*text-align:\s*center/);
-  assert.match(desktop, /\.selected-card \.bear-count__icon\s*\{[^}]*grid-row:\s*auto/);
-  assert.match(desktop, /\.selected-card \.bear-count__prompt\s*\{[^}]*max-width:\s*80px[^}]*text-align:\s*center/);
+test('desktop Bear count uses the shared centered attendance component', () => {
+  assert.doesNotMatch(desktop, /\.selected-card \.bear-count/);
+  assert.match(attendanceProfile, /\.selected-card \.bear-count\s*\{[^}]*grid-template-columns:\s*1fr !important[^}]*justify-items:\s*center !important[^}]*text-align:\s*center !important/);
+  assert.match(attendanceProfile, /\.selected-card \.bear-count__prompt\s*\{[^}]*margin-top:\s*2px !important[^}]*font-weight:\s*850 !important/);
 });
 
 test('desktop primary and Share actions grow while Details stays untouched', () => {

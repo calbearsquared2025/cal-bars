@@ -11,44 +11,6 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      /* Restore asymmetry without returning to cramped icon-only controls. */
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card {
-        grid-template-columns: minmax(0, 1fr) minmax(112px, 34%) !important;
-        gap: 7px 14px !important;
-        padding: 0 14px 10px !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card__header {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        margin: 0 !important;
-        padding: 7px 0 8px 12px !important;
-        background: transparent !important;
-        border-left: 3px solid var(--cgb-navy-900) !important;
-        border-bottom: 0 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card h2 {
-        margin-top: 3px !important;
-        margin-bottom: 2px !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .bear-count {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        align-self: start !important;
-        justify-self: stretch !important;
-        margin: 0 !important;
-        padding: 30px 2px 0 0 !important;
-        font-size: .74rem !important;
-        line-height: 1.16 !important;
-        text-align: right !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .bear-count--empty strong {
-        margin-top: 2px !important;
-      }
-
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .party-module,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card__plan-party,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .action-row {
@@ -197,23 +159,6 @@ function installStyles() {
         }
       }
 
-      @media (max-width: 359px) {
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card {
-          grid-template-columns: minmax(0, 1fr) !important;
-        }
-
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card__header,
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .bear-count {
-          grid-column: 1 !important;
-        }
-
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .bear-count {
-          grid-row: auto !important;
-          padding: 0 2px !important;
-          text-align: left !important;
-        }
-
-      }
     }
   `;
   document.head.append(style);

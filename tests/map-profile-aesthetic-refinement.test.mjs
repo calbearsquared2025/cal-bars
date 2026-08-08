@@ -6,11 +6,9 @@ const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/map-profile-aesthetic-refinement.mjs', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('expanded profile restores an asymmetric identity and attendance layout', () => {
-  assert.match(source, /grid-template-columns: minmax\(0, 1fr\) minmax\(112px, 34%\)/);
-  assert.match(source, /selected-card__header[\s\S]*grid-column: 1 !important/);
-  assert.match(source, /bear-count[\s\S]*grid-column: 2 !important/);
-  assert.match(source, /padding: 30px 2px 0 0 !important/);
+test('expanded profile no longer owns an alternate attendance layout', () => {
+  assert.doesNotMatch(source, /bear-count/);
+  assert.doesNotMatch(source, /grid-template-columns: minmax\(0, 1fr\) minmax\(112px, 34%\)/);
 });
 
 test('planned Watch Party details remain visible in a compact light treatment', () => {
