@@ -217,6 +217,19 @@ async function runDesktopChecks() {
   check(isVisible('.mobile-command-bar'), 'Desktop should expose the shared Map, Search, Add, and List navigation component');
   check(!selectedVenueId(), 'Initial desktop state should have no selected venue');
 
+  const mapViewRect = element('#map-view')?.getBoundingClientRect();
+  const mapRect = element('#map')?.getBoundingClientRect();
+  const railRect = element('#venue-tray')?.getBoundingClientRect();
+  const list = element('#tray-list');
+  const footerRect = element('.site-footer')?.getBoundingClientRect();
+  check(Math.abs((mapRect?.width || 0) - (mapViewRect?.width || 0)) < 1, 'Desktop Map should fill the complete application canvas width');
+  check(Math.abs((railRect?.top || 0) - (mapViewRect?.top || 0) - 22) < 1, 'Desktop rail should keep its 22px top canvas margin');
+  check(Math.abs((mapViewRect?.right || 0) - (railRect?.right || 0) - 24) < 1, 'Desktop rail should keep its 24px right canvas margin');
+  check(Math.abs((mapViewRect?.bottom || 0) - (railRect?.bottom || 0) - 22) < 1, 'Desktop rail should keep its 22px bottom canvas margin');
+  check(getComputedStyle(list).overflowY === 'auto' && list.clientHeight > 0 && list.scrollHeight >= list.clientHeight, 'Desktop List should own an independent vertical scroll region');
+  check((footerRect?.bottom || Infinity) <= window.innerHeight + 1, 'Desktop footer should remain fully inside the viewport');
+  check(document.documentElement.scrollWidth <= document.documentElement.clientWidth, 'Desktop shell should not create horizontal document overflow');
+
   const partyVenueIds = currentPartyVenueIds();
   const noPartyVenue = firstVenue((venue) => venue.venue_type === 'community_location' && !partyVenueIds.has(venue.venue_id));
   const partyVenue = firstVenue((venue) => venue.venue_type === 'cal_bar' && partyVenueIds.has(venue.venue_id));
@@ -248,6 +261,12 @@ async function runDesktopChecks() {
   check(Boolean(element('#tray-selected .bear-count__prompt')), 'Desktop selected card should use the shared zero-attendance component');
   check(Boolean(element('#tray-selected .selected-card__plan-party')), 'Desktop selected card should use the shared no-Watch-Party contribution component');
   check(!badgeTexts('#tray-selected .selected-card').includes('COMMUNITY LOCATION'), 'Desktop selected card should omit the Community Location badge');
+  const selectedRect = element('#tray-selected')?.getBoundingClientRect();
+  const selectedListRect = element('#tray-list')?.getBoundingClientRect();
+  const selectedRailRect = element('#venue-tray')?.getBoundingClientRect();
+  check(getComputedStyle(element('#tray-selected')).overflowY === 'auto', 'Desktop selected Venue should own its capped scroll region');
+  check((selectedRect?.height || Infinity) <= (selectedRailRect?.height || 0) * .48 + 1, 'Desktop selected Venue should remain capped at 48% of the rail');
+  check((selectedListRect?.bottom || Infinity) <= (selectedRailRect?.bottom || 0) + 1, 'Desktop List should remain contained beneath the selected Venue');
 
   progress('desktop-rsvp');
   check(attendanceNumber() === 0, 'Desktop mocked Venue should begin at zero attendance');

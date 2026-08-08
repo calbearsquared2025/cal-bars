@@ -145,5 +145,6 @@ test('preview copy does not expose internal milestone numbering to users', () =>
 
 test('responsive desktop layout retains the same application', () => {
   assert.match(css, /@media \(min-width: 900px\)/);
-  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) 410px/);
+  assert.doesNotMatch(css, /grid-template-columns: minmax\(0, 1fr\) 410px/);
+  assert.doesNotMatch(css, /\.map\s*\{[^}]*grid-column:\s*1/);
 });

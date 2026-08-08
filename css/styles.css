@@ -295,17 +295,11 @@ a { color: inherit; }
   .brand-mark { width: 42px; height: 42px; }
   .brand-name { font-size: 1.24rem; }
   .game-button { max-width: 420px; grid-template-columns: auto; padding: 9px 13px; }
-  .map-view { display: grid; grid-template-columns: minmax(0, 1fr) 410px; }
   .map-toolbar { right: 430px; top: 16px; left: 16px; grid-template-columns: minmax(290px, 560px) auto; align-items: start; }
   .opening-stat { grid-column: 1 / -1; }
   .map-actions { grid-column: 2; grid-row: 2; }
-  .map { grid-column: 1; min-height: calc(100dvh - var(--header-height) - var(--footer-height)); }
-  .venue-tray { position: relative; grid-column: 2; grid-row: 1; height: auto !important; max-height: none; border-radius: 0; box-shadow: -12px 0 30px rgba(0,25,79,.12); border-left: 1px solid var(--line); padding: 0; }
+  .map { min-height: calc(100dvh - var(--header-height) - var(--footer-height)); }
   .tray-handle, .tray-peek, .tray-selected .icon-button, #close-list-button { display: none; }
-  .venue-tray .tray-selected, .venue-tray .tray-list { display: block !important; height: auto; }
-  .venue-tray .tray-selected:empty { display: none !important; }
-  .venue-tray .tray-selected { max-height: 48%; border-bottom: 1px solid var(--line); }
-  .tray-list { min-height: 0; max-height: calc(100dvh - var(--header-height) - var(--footer-height)); }
   .tray-list__header { padding-top: 16px; }
   .maplibregl-ctrl-top-right { top: 165px; }
   .selected-card { padding-top: 16px; }
