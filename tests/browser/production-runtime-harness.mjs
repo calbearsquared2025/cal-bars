@@ -116,6 +116,7 @@ function attendancePresentation() {
   return {
     alignSelf: style.alignSelf,
     display: style.display,
+    gridColumn: style.gridColumn,
     minHeight: style.minHeight,
     paddingTop: style.paddingTop,
     paddingRight: style.paddingRight,
@@ -130,6 +131,7 @@ function attendancePresentation() {
 function isCanonicalAttendancePresentation(presentation) {
   return presentation?.alignSelf === 'center' &&
     presentation.display === 'grid' &&
+    presentation.gridColumn === '2' &&
     presentation.minHeight === '94px' &&
     presentation.paddingTop === '8px' &&
     presentation.paddingRight === '7px' &&

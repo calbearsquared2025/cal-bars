@@ -25,7 +25,7 @@ test('attendance uses an asymmetric large-number card for positive counts', () =
 });
 
 test('one final-pass component owns attendance presentation at every tray density and breakpoint', () => {
-  assert.match(source, /\.selected-card \.bear-count\s*\{[^}]*place-content: center !important[^}]*text-align: center !important/);
+  assert.match(source, /#map-view > #venue-tray\.venue-tray\.tray--selected \.selected-card > \.bear-count\s*\{[^}]*grid-column: 2 !important[^}]*place-content: center !important[^}]*text-align: center !important/);
   assert.match(source, /\.selected-card \.bear-count:not\(\.bear-count--empty\) \.bear-count__icon\s*\{[^}]*display: none !important/);
   assert.doesNotMatch(firstPass, /formatEmptyAttendance|bear-count--empty/);
   assert.doesNotMatch(aesthetic, /bear-count/);

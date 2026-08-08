@@ -12,7 +12,7 @@ function installStyles() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
-    .selected-card .bear-count {
+    #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count {
       grid-column: 2 !important;
       grid-row: 1 !important;
       align-self: center !important;

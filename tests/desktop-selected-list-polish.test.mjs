@@ -20,7 +20,7 @@ test('selected Venue and Browse surfaces have a clear desktop hierarchy', () => 
 
 test('desktop Bear count uses the shared centered attendance component', () => {
   assert.doesNotMatch(desktop, /\.selected-card \.bear-count/);
-  assert.match(attendanceProfile, /\.selected-card \.bear-count\s*\{[^}]*grid-template-columns:\s*1fr !important[^}]*justify-items:\s*center !important[^}]*text-align:\s*center !important/);
+  assert.match(attendanceProfile, /\.selected-card > \.bear-count\s*\{[^}]*grid-template-columns:\s*1fr !important[^}]*justify-items:\s*center !important[^}]*text-align:\s*center !important/);
   assert.match(attendanceProfile, /\.selected-card \.bear-count__prompt\s*\{[^}]*margin-top:\s*2px !important[^}]*font-weight:\s*850 !important/);
 });
 
