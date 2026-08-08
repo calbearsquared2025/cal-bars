@@ -213,6 +213,7 @@ async function runDirectRouteCheck() {
   check(badges.includes('WATCH PARTY'), 'Direct venue detail should preserve the Watch Party badge');
   check(badges.includes('CAL BAR'), 'Direct venue detail should preserve the Cal Bar badge');
   check(!badges.includes('COMMUNITY LOCATION'), 'Direct venue detail should not render a Community Location badge');
+  check(getComputedStyle(document.body).overflowY !== 'hidden', 'Mobile Venue Detail should retain document scrolling');
   finish('CGB_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -234,6 +235,7 @@ async function runDesktopDirectRouteCheck() {
   check(badges.includes('WATCH PARTY'), 'Desktop direct venue detail should preserve the Watch Party badge');
   check(badges.includes('CAL BAR'), 'Desktop direct venue detail should preserve the Cal Bar badge');
   check(!badges.includes('COMMUNITY LOCATION'), 'Desktop direct venue detail should not render a Community Location badge');
+  check(getComputedStyle(document.body).overflowY !== 'hidden', 'Desktop Venue Detail should retain document scrolling');
   finish('CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -249,6 +251,7 @@ async function runDesktopChecks() {
   check(element('#location-list')?.children.length > 0, 'Desktop List should render shared location data');
   check(isVisible('.mobile-command-bar'), 'Desktop should expose the shared Map, Search, Add, and List navigation component');
   check(!selectedVenueId(), 'Initial desktop state should have no selected venue');
+  check(getComputedStyle(document.body).overflowY === 'hidden', 'Desktop Map application should own the outer document scroll lock');
 
   const mapViewRect = element('#map-view')?.getBoundingClientRect();
   const mapRect = element('#map')?.getBoundingClientRect();
@@ -278,6 +281,7 @@ async function runDesktopChecks() {
   click('#mobile-add-button');
   await waitFor(() => activeCommand() === 'add' && element('#add-surface')?.hidden === false, 'desktop Map to Add without selection');
   check(isVisible('#add-surface'), 'Desktop Add should be visibly usable without a selected Venue');
+  check(getComputedStyle(element('#add-surface')).overflowY === 'auto', 'Desktop Add should remain independently scrollable');
   check(element('#add-surface .add-context:not(.add-game-context)')?.hidden === true, 'Desktop Add should omit selected-place context when no Venue is selected');
   check(isVisible('#add-game-context'), 'Desktop Add should preserve the shared selected-Game context');
   click('#add-surface [data-command-close]');
@@ -348,6 +352,7 @@ async function runDesktopChecks() {
   click('#mobile-search-button');
   await waitFor(() => activeCommand() === 'search' && element('#search-surface')?.hidden === false, 'desktop Map to Search');
   check(isVisible('#search-surface'), 'Desktop Search surface should be visibly usable');
+  check(getComputedStyle(element('#search-surface')).overflowY === 'auto', 'Desktop Search should remain independently scrollable');
   check(element('#search-surface')?.contains(element('#location-search')), 'Desktop Search should reuse the shared Search form DOM');
   setInputValue('#location-query', partyVenue?.name || '');
   await waitFor(() => Boolean(partyVenue && element(`#search-suggestions button[data-venue-id="${partyVenue.venue_id}"]`)), 'desktop existing Search result');
@@ -400,22 +405,26 @@ async function runMainChecks() {
   check(element('#mobile-map-button')?.classList.contains('mobile-command--active'), 'Map command should be active initially');
   check(trayState() === 'peek', 'Initial tray should be the no-selection peek state');
   check(!selectedVenueId(), 'Initial state should have no selected venue');
+  check(getComputedStyle(document.body).overflowY === 'hidden', 'Mobile Map application should own the outer document scroll lock');
 
   progress('search-roundtrip');
   click('#mobile-search-button');
   await waitFor(() => activeCommand() === 'search' && !element('#search-surface')?.hidden, 'Map → Search');
+  check(getComputedStyle(element('#search-surface')).overflowY === 'auto', 'Mobile Search should remain independently scrollable');
   click('#search-surface [data-command-close]');
   await waitFor(() => activeCommand() === 'map' && element('#search-surface')?.hidden, 'Search → Map');
 
   progress('add-roundtrip');
   click('#mobile-add-button');
   await waitFor(() => activeCommand() === 'add' && !element('#add-surface')?.hidden, 'Map → Add');
+  check(getComputedStyle(element('#add-surface')).overflowY === 'auto', 'Mobile Add should remain independently scrollable');
   click('#add-surface [data-command-close]');
   await waitFor(() => activeCommand() === 'map' && element('#add-surface')?.hidden, 'Add → Map');
 
   progress('list-roundtrip');
   click('#mobile-list-button');
   await waitFor(() => activeCommand() === 'list' && trayState() === 'full', 'Map → List');
+  check(getComputedStyle(element('#tray-list')).overflowY === 'auto', 'Mobile List should remain independently scrollable');
   click('#mobile-map-button');
   await waitFor(() => activeCommand() === 'map' && trayState() !== 'full', 'List → Map');
 
