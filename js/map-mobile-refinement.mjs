@@ -321,6 +321,10 @@ function sync() {
   positionAttribution();
 
   const state = appState();
+  if (state?.locationFocusVenueId === state.selectedVenueId) {
+    state.locationFocusVenueId = null;
+    return;
+  }
   const tray = document.querySelector('#venue-tray');
   if (!isMobile() || document.body.dataset.commandSurface !== 'map' ||
       !state?.selectedVenueId || tray?.dataset.state !== 'selected') return;

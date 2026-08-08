@@ -8,6 +8,7 @@ test('selected venues focus the map at city scale with tray-aware offset', () =>
   assert.match(source, /const FOCUS_ZOOM = 11/);
   assert.match(source, /zoom: Math\.max\(currentZoom, FOCUS_ZOOM\)/);
   assert.match(source, /offset: \[0, verticalOffset\]/);
+  assert.match(source, /locationFocusVenueId === state\.selectedVenueId/);
 });
 
 test('zoom controls are removed and hidden', () => {

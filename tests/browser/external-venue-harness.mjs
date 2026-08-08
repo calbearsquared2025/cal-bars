@@ -134,7 +134,6 @@ appState.gameId = 'game_1';
 appState.fanIntent.browserId = 'browser_1234567890abcdef';
 
 let throwPostSuccessRender = false;
-let throwMapMovement = false;
 appState.map = {
   getStyle() {
     return {
@@ -145,9 +144,7 @@ appState.map = {
       }
     };
   },
-  easeTo() {
-    if (throwMapMovement) throw new Error('mock_map_movement_failed');
-  }
+  easeTo() {}
 };
 
 let renderCount = 0;
@@ -155,11 +152,13 @@ let backendCallCount = 0;
 let mapTilerCallCount = 0;
 let receivedWrite = null;
 let lastStatus = '';
+let focusedLocation = null;
 window.CGBApp = Object.freeze({
   render() {
     renderCount += 1;
     if (throwPostSuccessRender && backendCallCount >= 2) throw new Error('mock_post_success_render_failed');
   },
+  focusLocation(origin) { focusedLocation = origin; },
   showStatus(message) { lastStatus = message; }
 });
 window.matchMedia = window.matchMedia || (() => ({ matches: false }));
@@ -285,9 +284,11 @@ try {
   assert(appState.snapshot.fanCounts[0].count === 1, 'Authoritative count was not applied');
   assert(renderCount > 0, 'Shared render path was not invoked');
   assert(!dialog.open, 'Confirmation dialog remained open after success');
+  await waitFor(() => focusedLocation, 'Shared Locate me focus path was not invoked');
+  assert(focusedLocation.lon === canonicalExternalVenue.longitude, 'Created Venue longitude was not focused');
+  assert(focusedLocation.lat === canonicalExternalVenue.latitude, 'Created Venue latitude was not focused');
 
   throwPostSuccessRender = true;
-  throwMapMovement = true;
   searchInput.value = 'Second Berkeley';
   searchInput.dispatchEvent(new Event('input', { bubbles: true }));
   await waitFor(

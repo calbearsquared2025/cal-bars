@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
+const app = await readFile(new URL('js/app.js', root), 'utf8');
 const iconUpgrade = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
 test('Search Add and List hide the map and Search does not show a selected tray', () => {
@@ -26,7 +27,8 @@ test('Locate Me stays on Map and restores Nearby preview', () => {
   assert.match(source, /setTrayState\('peek'\)/);
   assert.match(source, /setCommandActive\('map'\)/);
   assert.match(source, /rankNearbyVenues/);
-  assert.match(source, /fitBounds/);
+  assert.match(source, /CGBApp\?\.focusLocation/);
+  assert.match(app, /function focusLocation[\s\S]*fitBounds/);
 });
 
 test('List toggles between Near me and All locations', () => {
