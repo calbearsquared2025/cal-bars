@@ -38,6 +38,13 @@ function element(selector) {
   return document.querySelector(selector);
 }
 
+function badgeTexts(selectorOrElement) {
+  const target = typeof selectorOrElement === 'string' ? element(selectorOrElement) : selectorOrElement;
+  return [...(target?.querySelectorAll('.venue-badge') || [])]
+    .map((badge) => badge.textContent?.trim())
+    .filter(Boolean);
+}
+
 function isVisible(selectorOrElement) {
   const target = typeof selectorOrElement === 'string' ? element(selectorOrElement) : selectorOrElement;
   if (!target || target.hidden) return false;
@@ -169,6 +176,10 @@ async function runDirectRouteCheck() {
   check(selectedVenueId() === venue?.venue_id, 'Direct venue URL should select the requested venue');
   check(element('#detail-view')?.hidden === false, 'Direct venue URL should render the venue detail view');
   check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Direct venue detail should preserve venue identity');
+  const badges = badgeTexts('#venue-detail');
+  check(badges.includes('WATCH PARTY'), 'Direct venue detail should preserve the Watch Party badge');
+  check(badges.includes('CAL BAR'), 'Direct venue detail should preserve the Cal Bar badge');
+  check(!badges.includes('COMMUNITY LOCATION'), 'Direct venue detail should not render a Community Location badge');
   finish('CGB_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -186,6 +197,10 @@ async function runDesktopDirectRouteCheck() {
   check(selectedVenueId() === venue?.venue_id, 'Desktop direct venue URL should select the requested venue');
   check(isVisible('#detail-view'), 'Desktop direct venue URL should visibly render the venue detail view');
   check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Desktop direct venue detail should preserve venue identity');
+  const badges = badgeTexts('#venue-detail');
+  check(badges.includes('WATCH PARTY'), 'Desktop direct venue detail should preserve the Watch Party badge');
+  check(badges.includes('CAL BAR'), 'Desktop direct venue detail should preserve the Cal Bar badge');
+  check(!badges.includes('COMMUNITY LOCATION'), 'Desktop direct venue detail should not render a Community Location badge');
   finish('CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -203,10 +218,15 @@ async function runDesktopChecks() {
   check(!selectedVenueId(), 'Initial desktop state should have no selected venue');
 
   const partyVenueIds = currentPartyVenueIds();
-  const noPartyVenue = firstVenue((venue) => !partyVenueIds.has(venue.venue_id));
-  const partyVenue = firstVenue((venue) => partyVenueIds.has(venue.venue_id));
-  check(Boolean(noPartyVenue), 'Desktop fixture should contain a venue without a Watch Party');
-  check(Boolean(partyVenue), 'Desktop fixture should contain a venue with a Watch Party');
+  const noPartyVenue = firstVenue((venue) => venue.venue_type === 'community_location' && !partyVenueIds.has(venue.venue_id));
+  const partyVenue = firstVenue((venue) => venue.venue_type === 'cal_bar' && partyVenueIds.has(venue.venue_id));
+  check(Boolean(noPartyVenue), 'Desktop fixture should contain a Community Location without a Watch Party');
+  check(Boolean(partyVenue), 'Desktop fixture should contain a Cal Bar with a Watch Party');
+  const communityListBadges = badgeTexts(`#location-list .location-card[data-venue-id="${noPartyVenue?.venue_id}"]`);
+  const partyListBadges = badgeTexts(`#location-list .location-card[data-venue-id="${partyVenue?.venue_id}"]`);
+  check(!communityListBadges.includes('COMMUNITY LOCATION'), 'Desktop List should omit the Community Location badge');
+  check(partyListBadges.includes('WATCH PARTY'), 'Desktop List should preserve the Watch Party badge');
+  check(partyListBadges.includes('CAL BAR'), 'Desktop List should preserve the Cal Bar badge');
 
   progress('desktop-add-without-selection');
   click('#mobile-add-button');
@@ -227,6 +247,7 @@ async function runDesktopChecks() {
   check(!element('#tray-selected .party-module'), 'Desktop no-Watch-Party Venue should not render a Watch Party module');
   check(Boolean(element('#tray-selected .bear-count__prompt')), 'Desktop selected card should use the shared zero-attendance component');
   check(Boolean(element('#tray-selected .selected-card__plan-party')), 'Desktop selected card should use the shared no-Watch-Party contribution component');
+  check(!badgeTexts('#tray-selected .selected-card').includes('COMMUNITY LOCATION'), 'Desktop selected card should omit the Community Location badge');
 
   progress('desktop-rsvp');
   check(attendanceNumber() === 0, 'Desktop mocked Venue should begin at zero attendance');
@@ -264,6 +285,10 @@ async function runDesktopChecks() {
   await waitFor(() => selectedVenueId() === partyVenue?.venue_id && activeCommand() === 'map' && trayState() === 'selected', 'desktop Search result to selected Map state');
   check(isVisible('#tray-selected .selected-card'), 'Desktop Search result should leave a visible selected card');
   check(Boolean(element('#tray-selected .party-module')), 'Desktop Watch Party Venue should render the shared Watch Party module');
+  const selectedPartyBadges = badgeTexts('#tray-selected .selected-card');
+  check(selectedPartyBadges.includes('WATCH PARTY'), 'Desktop selected card should preserve the Watch Party badge');
+  check(selectedPartyBadges.includes('CAL BAR'), 'Desktop selected card should preserve the Cal Bar badge');
+  check(!selectedPartyBadges.includes('COMMUNITY LOCATION'), 'Desktop selected Cal Bar should not render a Community Location badge');
 
   progress('desktop-nearby-all');
   try {
@@ -325,10 +350,15 @@ async function runMainChecks() {
   await waitFor(() => activeCommand() === 'map' && trayState() !== 'full', 'List → Map');
 
   const partyVenueIds = currentPartyVenueIds();
-  const noPartyVenue = firstVenue((venue) => !partyVenueIds.has(venue.venue_id));
-  const partyVenue = firstVenue((venue) => partyVenueIds.has(venue.venue_id));
-  check(Boolean(noPartyVenue), 'Fixture should contain a venue without a Watch Party for the selected game');
-  check(Boolean(partyVenue), 'Fixture should contain a venue with a Watch Party for the selected game');
+  const noPartyVenue = firstVenue((venue) => venue.venue_type === 'community_location' && !partyVenueIds.has(venue.venue_id));
+  const partyVenue = firstVenue((venue) => venue.venue_type === 'cal_bar' && partyVenueIds.has(venue.venue_id));
+  check(Boolean(noPartyVenue), 'Fixture should contain a Community Location without a Watch Party for the selected game');
+  check(Boolean(partyVenue), 'Fixture should contain a Cal Bar with a Watch Party for the selected game');
+  const communityListBadges = badgeTexts(`#location-list .location-card[data-venue-id="${noPartyVenue?.venue_id}"]`);
+  const partyListBadges = badgeTexts(`#location-list .location-card[data-venue-id="${partyVenue?.venue_id}"]`);
+  check(!communityListBadges.includes('COMMUNITY LOCATION'), 'Mobile List should omit the Community Location badge');
+  check(partyListBadges.includes('WATCH PARTY'), 'Mobile List should preserve the Watch Party badge');
+  check(partyListBadges.includes('CAL BAR'), 'Mobile List should preserve the Cal Bar badge');
 
   progress('select-no-party');
   await ensureListSurface('List before selecting venue');
@@ -340,6 +370,7 @@ async function runMainChecks() {
   await waitFor(() => trayDensity() === 'compact', 'new selected venue compact density');
   check(Boolean(element('#tray-selected .selected-card')), 'Selected venue should render a selected card');
   check(!element('#tray-selected .party-module'), 'No-Watch-Party venue should not render a Watch Party module');
+  check(!badgeTexts('#tray-selected .selected-card').includes('COMMUNITY LOCATION'), 'Mobile selected card should omit the Community Location badge');
 
   progress('density-expand');
   click('#tray-handle');
@@ -400,6 +431,10 @@ async function runMainChecks() {
     await waitFor(() => selectedVenueId() === partyVenue.venue_id && activeCommand() === 'map' && trayState() === 'selected', 'Search result → selected Map state');
     await waitFor(() => trayDensity() === 'compact', 'Search result selected tray compact density');
     check(Boolean(element('#tray-selected .party-module')), 'Watch Party venue should render a Watch Party module in the selected card');
+    const selectedPartyBadges = badgeTexts('#tray-selected .selected-card');
+    check(selectedPartyBadges.includes('WATCH PARTY'), 'Mobile selected card should preserve the Watch Party badge');
+    check(selectedPartyBadges.includes('CAL BAR'), 'Mobile selected card should preserve the Cal Bar badge');
+    check(!selectedPartyBadges.includes('COMMUNITY LOCATION'), 'Mobile selected Cal Bar should not render a Community Location badge');
   }
 
   progress('nearby-list');
