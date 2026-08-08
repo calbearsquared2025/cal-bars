@@ -1263,7 +1263,6 @@ textarea {
   }
 
   .map-view {
-    grid-template-columns: minmax(0, 1fr) minmax(400px, 440px);
     background: var(--cgb-neutral-100);
   }
 
