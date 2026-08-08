@@ -18,6 +18,7 @@ export const appState = {
   listQuery: '',
   trayState: 'peek',
   map: null,
+  locationFocusVenueId: null,
   markers: new Map(),
   userMarker: null,
   detailMode: false,
@@ -120,6 +121,7 @@ export function resetAppStateForTests() {
   appState.origin = null;
   appState.listQuery = '';
   appState.trayState = 'peek';
+  appState.locationFocusVenueId = null;
   appState.detailMode = false;
   appState.dataSource = 'fallback';
   appState.fanIntent.browserId = null;

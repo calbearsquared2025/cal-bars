@@ -321,6 +321,43 @@ function rankedVisibleVenues(query = state.listQuery) {
   return rankVenues(state.snapshot, state.gameId);
 }
 
+function focusLocation(origin, nearby) {
+  if (!state.map || !origin) return;
+  const center = [Number(origin.lon), Number(origin.lat)];
+  if (!center.every(Number.isFinite)) return;
+  if (origin.venueId) state.locationFocusVenueId = origin.venueId;
+  const ranked = nearby ?? rankNearbyVenues(state.snapshot, state.gameId, origin);
+
+  if (window.matchMedia(MOBILE_MEDIA_QUERY).matches) {
+    const points = [
+      center,
+      ...ranked.slice(0, 2).map(({ venue }) => [Number(venue.longitude), Number(venue.latitude)])
+    ].filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat));
+
+    if (points.length > 1) {
+      const lons = points.map(([lon]) => lon);
+      const lats = points.map(([, lat]) => lat);
+      state.map.fitBounds([
+        [Math.min(...lons), Math.min(...lats)],
+        [Math.max(...lons), Math.max(...lats)]
+      ], {
+        padding: { top: 72, right: 54, bottom: 148, left: 54 },
+        maxZoom: 11,
+        duration: REDUCED_MOTION ? 0 : 520,
+        essential: true
+      });
+      return;
+    }
+  }
+
+  state.map.easeTo({
+    center,
+    zoom: window.matchMedia(MOBILE_MEDIA_QUERY).matches ? 10 : 11,
+    duration: REDUCED_MOTION ? 0 : 500,
+    essential: true
+  });
+}
+
 function renderMarkers() {
   if (!state.map) return;
   state.markers.forEach((marker) => marker.remove());
@@ -1091,11 +1128,7 @@ function wireEvents() {
       renderLocationList();
       renderMarkers();
       setTrayState('full');
-      state.map?.easeTo({
-        center: [state.origin.lon, state.origin.lat],
-        zoom: 11,
-        duration: REDUCED_MOTION ? 0 : 500
-      });
+      focusLocation(state.origin, nearby);
       dom.nearMe.disabled = false;
       showStatus(nearby.length
         ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
@@ -1139,6 +1172,7 @@ window.CGBApp = Object.freeze({
   getSnapshot: () => state.snapshot,
   render: renderAll,
   refreshSnapshot,
+  focusLocation,
   restoreSelection,
   selectGame,
   showStatus,
