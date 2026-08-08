@@ -22,6 +22,10 @@ body[data-view="detail"] #app {
   min-height: 100dvh;
 }
 
+.bear-count:not(.bear-count--empty) .bear-count__icon {
+  display: none;
+}
+
 /* ---------- Dialogs, feedback, and supporting flows ---------- */
 .status-toast {
   min-height: 40px;

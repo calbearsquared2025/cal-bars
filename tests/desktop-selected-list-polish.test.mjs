@@ -5,6 +5,11 @@ import test from 'node:test';
 const css = await readFile(new URL('../css/design-board-4.css', import.meta.url), 'utf8');
 const desktop = css.slice(css.lastIndexOf('@media (min-width: 900px)'));
 
+test('shared Bear count hides the people icon only after attendance exists', () => {
+  assert.match(css, /\.bear-count:not\(\.bear-count--empty\) \.bear-count__icon\s*\{[^}]*display:\s*none/);
+  assert.doesNotMatch(css, /\.bear-count--empty \.bear-count__icon\s*\{[^}]*display:\s*none/);
+});
+
 test('selected Venue and Browse surfaces have a clear desktop hierarchy', () => {
   assert.match(desktop, /\.venue-tray \.tray-selected:not\(:empty\)\s*\{[^}]*border-bottom:\s*3px solid var\(--cgb-gold-400\)[^}]*box-shadow:/);
   assert.match(desktop, /\.venue-tray \.tray-list\s*\{[^}]*background:\s*var\(--cgb-neutral-50\)/);

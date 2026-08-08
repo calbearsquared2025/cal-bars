@@ -284,6 +284,8 @@ async function runDesktopChecks() {
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop RSVP 0 to 1');
   await waitFor(() => Boolean(element('#tray-selected .selected-card__share')) && Boolean(element('#tray-selected .intent-button__undo')), 'desktop selected action refinement');
+  await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'desktop positive attendance refinement');
+  check(!isVisible('#tray-selected .bear-count__icon'), 'Desktop positive attendance should hide the people icon');
   check(trayState() === 'selected', 'Desktop RSVP 0 to 1 should preserve selected Venue state');
   const activeIntentRect = element('#tray-selected .intent-button')?.getBoundingClientRect();
   const activeShareRect = element('#tray-selected .selected-card__share')?.getBoundingClientRect();
@@ -414,6 +416,8 @@ async function runMainChecks() {
   check(attendanceNumber() === 0, 'Mocked selected venue should begin at zero attendance');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'RSVP 0 → 1');
+  await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'mobile positive attendance refinement');
+  check(!isVisible('#tray-selected .bear-count__icon'), 'Mobile positive attendance should hide the people icon');
   check(trayState() === 'selected', 'RSVP 0 → 1 must retain selected tray state');
   check(trayDensity() === 'expanded', 'RSVP 0 → 1 must preserve expanded selected-tray density');
   await waitForIntentSettled('RSVP 0 → 1 transaction completion');
