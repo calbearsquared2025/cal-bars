@@ -99,7 +99,7 @@ test('every rendered list and detail current-game count has explicit Bear meanin
   assert.doesNotMatch(app, /count\.textContent = String\(fanCount\)/);
 });
 
-test('Watch Party and venue-type badges render through independent descriptors', () => {
+test('Watch Party and allowed venue badges render through shared descriptors', () => {
   assert.match(app, /venueBadgeDescriptors\(venue, party\)/);
   assert.match(css, /\.venue-badges/);
 });

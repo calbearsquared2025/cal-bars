@@ -38,10 +38,12 @@ test('TBD kickoff is displayed without a timestamp', () => {
   assert.match(formatKickoff(game, 'en-US'), /Time TBD/);
 });
 
-test('selected-game watch party determines marker treatment', () => {
-  const venue = snapshot.venues.find((item) => item.venue_id === 'ven_000001');
-  assert.equal(markerKind(snapshot, 'game_2026_01', venue), 'watch-party');
-  assert.equal(markerKind(snapshot, 'game_2026_02', venue), 'cal-bar');
+test('selected-game events and internal venue type determine marker treatment', () => {
+  const calBar = snapshot.venues.find((item) => item.venue_id === 'ven_000001');
+  const communityLocation = snapshot.venues.find((item) => item.venue_id === 'ven_000003');
+  assert.equal(markerKind(snapshot, 'game_2026_01', calBar), 'watch-party');
+  assert.equal(markerKind(snapshot, 'game_2026_02', calBar), 'cal-bar');
+  assert.equal(markerKind(snapshot, 'game_2026_01', communityLocation), 'community-location');
 });
 
 test('rank order is Watch Party, Cal Bar, then Community Location', () => {
@@ -61,7 +63,7 @@ test('Bear count copy is explicit for zero, singular, and plural counts', () => 
   assert.equal(bearCountCopy(3), '3 Bears watching here');
 });
 
-test('Watch Party and permanent venue badges are independent', () => {
+test('consumer badges preserve Watch Party and Cal Bar treatments while suppressing Community Location', () => {
   const calBar = { venue_type: 'cal_bar' };
   const communityLocation = { venue_type: 'community_location' };
   const party = { watch_party_id: 'wp_test' };
@@ -71,12 +73,12 @@ test('Watch Party and permanent venue badges are independent', () => {
     { text: 'CAL BAR', kind: 'cal' }
   ]);
   assert.deepEqual(venueBadgeDescriptors(communityLocation, party), [
-    { text: 'WATCH PARTY', kind: 'party' },
-    { text: 'COMMUNITY LOCATION', kind: 'community' }
+    { text: 'WATCH PARTY', kind: 'party' }
   ]);
   assert.deepEqual(venueBadgeDescriptors(calBar, null), [
     { text: 'CAL BAR', kind: 'cal' }
   ]);
+  assert.deepEqual(venueBadgeDescriptors(communityLocation, null), []);
 });
 
 test('exact venue matching does not treat city or ZIP searches as a venue selection', () => {

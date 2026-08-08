@@ -13,11 +13,6 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      #map-view .selected-card .badge--community,
-      #location-list .location-card .badge--community {
-        display: none !important;
-      }
-
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
         grid-template-columns: minmax(0, 1fr) 98px !important;
         gap: 9px 14px !important;

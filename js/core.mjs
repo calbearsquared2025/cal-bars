@@ -57,10 +57,7 @@ export function venueTypeLabel(venue) {
 export function venueBadgeDescriptors(venue, party) {
   const badges = [];
   if (party) badges.push({ text: 'WATCH PARTY', kind: 'party' });
-  badges.push({
-    text: venueTypeLabel(venue),
-    kind: venue?.venue_type === 'cal_bar' ? 'cal' : 'community'
-  });
+  if (venue?.venue_type === 'cal_bar') badges.push({ text: 'CAL BAR', kind: 'cal' });
   return badges;
 }
 

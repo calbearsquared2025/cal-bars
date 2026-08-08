@@ -10,9 +10,8 @@ test('final profile is loaded after the prior mobile refinement layers', () => {
   assert.match(loader, /import '\.\/search-map-refinement\.mjs';[\s\S]*import '\.\/map-profile-final-pass\.mjs';/);
 });
 
-test('generic Community Location badges are omitted from consumer cards', () => {
-  assert.match(source, /selected-card \.badge--community/);
-  assert.match(source, /location-card \.badge--community/);
+test('Community Location suppression is not a breakpoint-specific profile override', () => {
+  assert.doesNotMatch(source, /badge--community/);
 });
 
 test('attendance uses an asymmetric large-number card for positive counts', () => {
