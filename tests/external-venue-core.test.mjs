@@ -90,6 +90,28 @@ test('US region country_code is not treated as a state abbreviation', () => {
   assert.notEqual(normalized.region, 'US');
 });
 
+test('Albany Bulb-style US hierarchy resolves a later California admin item instead of region US', () => {
+  const albanyBulb = {
+    id: 'poi.55162381',
+    type: 'Feature',
+    place_type: ['poi'],
+    text: 'Albany Bulb',
+    place_name: 'Albany Bulb, Albany, California, United States',
+    center: [-122.3253929, 37.88996424],
+    properties: { country_code: 'us' },
+    context: [
+      { id: 'municipality.albany', place_type: ['municipality'], text: 'Albany', place_designation: 'city' },
+      { id: 'region.us', place_type: ['region'], text: 'US', country_code: 'us' },
+      { id: 'subregion.california', place_type: ['subregion'], text: 'California', country_code: 'us' },
+      { id: 'country.us', place_type: ['country'], text: 'United States', short_code: 'us' }
+    ]
+  };
+
+  const normalized = normalizeMapTilerFeature(albanyBulb);
+  assert.equal(normalized.region, 'CA');
+  assert.notEqual(normalized.region, 'US');
+});
+
 test('US administrative hierarchy prefers municipality and state over neighborhood and county', () => {
   const twoPitchers = {
     id: 'poi.64751681',
