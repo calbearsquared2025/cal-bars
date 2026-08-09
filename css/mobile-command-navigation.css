@@ -493,9 +493,9 @@
     bottom: auto;
     left: auto;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(12px, .5fr) auto;
     align-items: center;
-    gap: 4px;
+    column-gap: 0;
     width: min(390px, 34vw);
     height: 52px;
     min-height: 52px;
@@ -527,6 +527,25 @@
     display: none;
   }
 
+  #mobile-list-button {
+    grid-row: 1;
+    grid-column: 1;
+    width: 100%;
+    justify-content: center;
+    border: 1px solid rgba(1, 1, 51, .18);
+    border-radius: 9px 0 0 9px;
+  }
+
+  #mobile-map-button {
+    grid-row: 1;
+    grid-column: 2;
+    width: 100%;
+    justify-content: center;
+    border: 1px solid rgba(1, 1, 51, .18);
+    border-left: 0;
+    border-radius: 0 9px 9px 0;
+  }
+
   .mobile-command:hover:not(:disabled),
   .mobile-command:focus-visible {
     background: var(--cgb-neutral-100, #f2f2f2);
@@ -544,24 +563,29 @@
 
   .mobile-command--add,
   .mobile-command--add[aria-current="page"] {
-    margin-top: 0;
-    background: var(--cgb-gold-400, #fdb515);
+    grid-row: 1;
+    grid-column: 4;
+    min-height: 34px;
+    margin: 0 0 0 12px;
+    padding: 5px 9px;
+    border: 1px solid var(--cgb-gold-400, #fdb515);
+    background: var(--cgb-gold-50, #fff7dc);
     color: var(--cgb-navy-950, #010133);
   }
 
   .mobile-command--add:hover:not(:disabled),
   .mobile-command--add:focus-visible {
-    background: var(--cgb-gold-500, #e6a411);
+    background: rgba(253, 181, 21, .18);
   }
 
   .mobile-command__add-mark {
-    width: 18px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     margin-top: 0;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    font-size: 1rem;
+    font-size: .9rem;
   }
 
   .command-surface[hidden] {
