@@ -307,7 +307,9 @@ function handleSearchResultClick(event) {
 
 function syncViewState() {
   const detailVisible = !dom.detailView?.hidden;
-  document.body.dataset.view = detailVisible ? 'detail' : 'map';
+  const view = detailVisible ? 'detail' : 'map';
+  document.documentElement.dataset.view = view;
+  document.body.dataset.view = view;
 
   if (detailVisible) {
     dom.searchSurface.hidden = true;

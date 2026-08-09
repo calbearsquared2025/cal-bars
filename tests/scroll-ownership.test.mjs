@@ -14,9 +14,11 @@ test('the map application view owns the outer scroll lock without disabling deta
     source('js/shell-controls.mjs')
   ]);
 
-  assert.match(baseCss, /body\[data-view="map"\]\s*\{[^}]*overflow-y:\s*hidden/);
-  assert.doesNotMatch(baseCss, /body\[data-view="detail"\]\s*\{[^}]*overflow(?:-y)?:\s*hidden/);
-  assert.match(shellControls, /document\.body\.dataset\.view = detailVisible \? 'detail' : 'map'/);
+  assert.match(baseCss, /html\[data-view="map"\]\s*\{[^}]*overflow-y:\s*hidden/);
+  assert.doesNotMatch(baseCss, /body\[data-view="map"\]\s*\{[^}]*overflow(?:-y)?:\s*hidden/);
+  assert.doesNotMatch(baseCss, /html\[data-view="detail"\]\s*\{[^}]*overflow(?:-y)?:\s*hidden/);
+  assert.match(shellControls, /document\.documentElement\.dataset\.view = view/);
+  assert.match(shellControls, /document\.body\.dataset\.view = view/);
 });
 
 test('existing internal scroll owners remain in place', async () => {

@@ -213,7 +213,7 @@ async function runDirectRouteCheck() {
   check(badges.includes('WATCH PARTY'), 'Direct venue detail should preserve the Watch Party badge');
   check(badges.includes('CAL BAR'), 'Direct venue detail should preserve the Cal Bar badge');
   check(!badges.includes('COMMUNITY LOCATION'), 'Direct venue detail should not render a Community Location badge');
-  check(getComputedStyle(document.body).overflowY !== 'hidden', 'Mobile Venue Detail should retain document scrolling');
+  check(getComputedStyle(document.scrollingElement).overflowY !== 'hidden', 'Mobile Venue Detail should retain document scrolling');
   finish('CGB_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -235,7 +235,7 @@ async function runDesktopDirectRouteCheck() {
   check(badges.includes('WATCH PARTY'), 'Desktop direct venue detail should preserve the Watch Party badge');
   check(badges.includes('CAL BAR'), 'Desktop direct venue detail should preserve the Cal Bar badge');
   check(!badges.includes('COMMUNITY LOCATION'), 'Desktop direct venue detail should not render a Community Location badge');
-  check(getComputedStyle(document.body).overflowY !== 'hidden', 'Desktop Venue Detail should retain document scrolling');
+  check(getComputedStyle(document.scrollingElement).overflowY !== 'hidden', 'Desktop Venue Detail should retain document scrolling');
   finish('CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -251,7 +251,7 @@ async function runDesktopChecks() {
   check(element('#location-list')?.children.length > 0, 'Desktop List should render shared location data');
   check(isVisible('.mobile-command-bar'), 'Desktop should expose the shared Map, Search, Add, and List navigation component');
   check(!selectedVenueId(), 'Initial desktop state should have no selected venue');
-  check(getComputedStyle(document.body).overflowY === 'hidden', 'Desktop Map application should own the outer document scroll lock');
+  check(document.scrollingElement === document.documentElement && getComputedStyle(document.scrollingElement).overflowY === 'hidden', 'Desktop Map application root should own the outer document scroll lock');
 
   const mapViewRect = element('#map-view')?.getBoundingClientRect();
   const mapRect = element('#map')?.getBoundingClientRect();
@@ -405,7 +405,7 @@ async function runMainChecks() {
   check(element('#mobile-map-button')?.classList.contains('mobile-command--active'), 'Map command should be active initially');
   check(trayState() === 'peek', 'Initial tray should be the no-selection peek state');
   check(!selectedVenueId(), 'Initial state should have no selected venue');
-  check(getComputedStyle(document.body).overflowY === 'hidden', 'Mobile Map application should own the outer document scroll lock');
+  check(document.scrollingElement === document.documentElement && getComputedStyle(document.scrollingElement).overflowY === 'hidden', 'Mobile Map application root should own the outer document scroll lock');
 
   progress('search-roundtrip');
   click('#mobile-search-button');
