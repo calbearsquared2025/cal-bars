@@ -111,10 +111,20 @@ function cityFor(feature, code) {
 }
 
 function regionFor(feature, code) {
-  const region = hierarchyMatch(feature, ['region', 'subregion', 'county']);
-  const text = cleanText(region?.text || region?.place_name || region?.name, 160);
-  if (code !== 'US') return text;
-  return US_REGION_CODES[normalizeComparable(text)] || text;
+  if (code !== 'US') {
+    const region = hierarchyMatch(feature, ['region', 'subregion', 'county']);
+    return cleanText(region?.text || region?.place_name || region?.name, 160);
+  }
+
+  const administrativeItems = hierarchyItems(feature).filter((item) =>
+    ['region', 'subregion', 'county'].some((prefix) => hierarchyItemMatches(item, prefix))
+  );
+  for (const item of administrativeItems) {
+    const text = cleanText(item?.text || item?.place_name || item?.name, 160);
+    const mapped = US_REGION_CODES[normalizeComparable(text)];
+    if (mapped) return mapped;
+  }
+  return '';
 }
 
 function coordinatesFor(feature) {
