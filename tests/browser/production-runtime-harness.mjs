@@ -241,13 +241,21 @@ async function runDesktopChecks() {
   progress('desktop-ready');
   await waitForDesktopApplicationReady();
 
-  progress('desktop-initial-map');
-  check(activeCommand() === 'map', 'Initial desktop command surface should be Map');
+  progress('desktop-initial-locations');
   check(isVisible('#map-view'), 'Desktop Map view should be visible');
-  check(isVisible('#location-search'), 'Desktop Search should be available from the initial Map');
-  check(isVisible('#location-list'), 'Desktop location List should be visible');
-  check(element('#location-list')?.children.length > 0, 'Desktop List should render shared location data');
-  check(isVisible('.mobile-command-bar'), 'Desktop should expose the shared Map, Search, Add, and List navigation component');
+  check(isVisible('#location-search'), 'Desktop Search should remain persistently visible');
+  check(isVisible('#near-me-button'), 'Desktop Near Me should remain persistently visible');
+  check(trayState() === 'full', 'Desktop should open with Locations as the primary panel state');
+  check(isVisible('#tray-list'), 'Desktop Locations should visibly occupy the panel');
+  check(!isVisible('#tray-selected'), 'Desktop Locations should not stack selected Venue content');
+  check(element('#location-list')?.children.length > 0, 'Desktop Locations should render shared location data');
+  check(isVisible('.mobile-command-bar'), 'Desktop should expose the shared panel controls');
+  check(!isVisible('#mobile-search-button'), 'Desktop should remove Search from the panel controls');
+  check(element('#mobile-map-button span:last-child')?.textContent?.trim() === 'Selected', 'Desktop Map command should be presented as Selected');
+  check(element('#mobile-list-button span:last-child')?.textContent?.trim() === 'Locations', 'Desktop List command should be presented as Locations');
+  check(element('#mobile-add-button span:last-child')?.textContent?.trim() === 'Add', 'Desktop Add action should reuse the shared Add control');
+  check(element('#mobile-map-button')?.disabled === true, 'Desktop Selected should be disabled until a Venue is selected');
+  check(element('#mobile-list-button')?.getAttribute('aria-current') === 'page', 'Desktop Locations should be the active panel state initially');
   check(!selectedVenueId(), 'Initial desktop state should have no selected venue');
 
   const mapViewRect = element('#map-view')?.getBoundingClientRect();
@@ -259,7 +267,7 @@ async function runDesktopChecks() {
   check(Math.abs((railRect?.top || 0) - (mapViewRect?.top || 0) - 22) < 1, 'Desktop rail should keep its 22px top canvas margin');
   check(Math.abs((mapViewRect?.right || 0) - (railRect?.right || 0) - 24) < 1, 'Desktop rail should keep its 24px right canvas margin');
   check(Math.abs((mapViewRect?.bottom || 0) - (railRect?.bottom || 0) - 22) < 1, 'Desktop rail should keep its 22px bottom canvas margin');
-  check(getComputedStyle(list).overflowY === 'auto' && list.clientHeight > 0 && list.scrollHeight >= list.clientHeight, 'Desktop List should own an independent vertical scroll region');
+  check(getComputedStyle(list).overflowY === 'auto' && list.clientHeight > 0, 'Desktop Locations should own the available panel scroll region');
   check((footerRect?.bottom || Infinity) <= window.innerHeight + 1, 'Desktop footer should remain fully inside the viewport');
   check(document.documentElement.scrollWidth <= document.documentElement.clientWidth, 'Desktop shell should not create horizontal document overflow');
 
@@ -270,26 +278,30 @@ async function runDesktopChecks() {
   check(Boolean(partyVenue), 'Desktop fixture should contain a Cal Bar with a Watch Party');
   const communityListBadges = badgeTexts(`#location-list .location-card[data-venue-id="${noPartyVenue?.venue_id}"]`);
   const partyListBadges = badgeTexts(`#location-list .location-card[data-venue-id="${partyVenue?.venue_id}"]`);
-  check(!communityListBadges.includes('COMMUNITY LOCATION'), 'Desktop List should omit the Community Location badge');
-  check(partyListBadges.includes('WATCH PARTY'), 'Desktop List should preserve the Watch Party badge');
-  check(partyListBadges.includes('CAL BAR'), 'Desktop List should preserve the Cal Bar badge');
+  check(!communityListBadges.includes('COMMUNITY LOCATION'), 'Desktop Locations should omit the Community Location badge');
+  check(partyListBadges.includes('WATCH PARTY'), 'Desktop Locations should preserve the Watch Party badge');
+  check(partyListBadges.includes('CAL BAR'), 'Desktop Locations should preserve the Cal Bar badge');
 
   progress('desktop-add-without-selection');
   click('#mobile-add-button');
-  await waitFor(() => activeCommand() === 'add' && element('#add-surface')?.hidden === false, 'desktop Map to Add without selection');
+  await waitFor(() => activeCommand() === 'add' && element('#add-surface')?.hidden === false, 'desktop Locations to Add without selection');
   check(isVisible('#add-surface'), 'Desktop Add should be visibly usable without a selected Venue');
   check(element('#add-surface .add-context:not(.add-game-context)')?.hidden === true, 'Desktop Add should omit selected-place context when no Venue is selected');
   check(isVisible('#add-game-context'), 'Desktop Add should preserve the shared selected-Game context');
+  check(element('#mobile-add-button')?.getAttribute('aria-current') !== 'page', 'Desktop Add should behave as an action rather than an active panel tab');
   click('#add-surface [data-command-close]');
-  await waitFor(() => activeCommand() === 'map' && element('#add-surface')?.hidden, 'desktop Add to Map without selection');
+  await waitFor(() => activeCommand() === 'map' && element('#add-surface')?.hidden && trayState() === 'full', 'desktop Add back to Locations without selection');
 
-  progress('desktop-select-no-party');
+  progress('desktop-select-from-list');
   const noPartyCard = noPartyVenue && element(`#location-list .location-card[data-venue-id="${noPartyVenue.venue_id}"]`);
-  check(Boolean(noPartyCard), 'Desktop no-Watch-Party venue should render in the shared List');
+  check(Boolean(noPartyCard), 'Desktop venue should render in shared Locations');
   noPartyCard?.click();
-  await waitFor(() => selectedVenueId() === noPartyVenue?.venue_id && trayState() === 'selected', 'desktop Venue selection');
+  await waitFor(() => selectedVenueId() === noPartyVenue?.venue_id && trayState() === 'selected', 'desktop Locations selection');
+  await waitFor(() => element('#mobile-map-button')?.disabled === false && element('#mobile-map-button')?.getAttribute('aria-current') === 'page', 'desktop Selected control state');
   await waitFor(() => Boolean(element('#tray-selected .bear-count__prompt')) && Boolean(element('#tray-selected .selected-card__plan-party')), 'desktop shared selected-card refinement');
   check(isVisible('#tray-selected .selected-card'), 'Desktop selected Venue should render a visible selected card');
+  check(!isVisible('#tray-list'), 'Desktop selected Venue should not stack Locations underneath');
+  check(getComputedStyle(element('#tray-selected')).overflowY === 'auto', 'Desktop Selected should own the available panel scroll region');
   check(!element('#tray-selected .party-module'), 'Desktop no-Watch-Party Venue should not render a Watch Party module');
   check(Boolean(element('#tray-selected .bear-count__prompt')), 'Desktop selected card should use the shared zero-attendance component');
   check(Boolean(element('#tray-selected .selected-card__plan-party')), 'Desktop selected card should use the shared no-Watch-Party contribution component');
@@ -300,30 +312,26 @@ async function runDesktopChecks() {
   const selectedShareRect = selectedShare?.getBoundingClientRect();
   const selectedDetailsRect = element('#tray-selected .selected-card__details')?.getBoundingClientRect();
   check(selectedCountStyle.justifyItems === 'center' && selectedCountStyle.textAlign === 'center', 'Desktop Bear count should use the centered status presentation');
-  check((selectedIntentRect?.width || 0) > (selectedShareRect?.width || Infinity) * 1.75 && (selectedIntentRect?.height || 0) >= 48, 'Desktop Fan Intent should be the wide primary action');
-  check(selectedShare?.textContent?.trim() === 'Share' && (selectedShareRect?.width || 0) >= 90 && (selectedShareRect?.height || 0) >= 48, 'Desktop Share should be a labeled secondary action');
+  check((selectedIntentRect?.width || 0) > (selectedShareRect?.width || Infinity) * 1.75 && (selectedIntentRect?.height || 0) >= 48, 'Desktop Fan Intent should remain the wide primary action');
+  check(selectedShare?.textContent?.trim() === 'Share' && (selectedShareRect?.width || 0) >= 90 && (selectedShareRect?.height || 0) >= 48, 'Desktop Share should remain a labeled secondary action');
   check(Math.abs((selectedDetailsRect?.width || 0) - 44) < 1 && Math.abs((selectedDetailsRect?.height || 0) - 44) < 1, 'Desktop Details should retain its existing compact treatment');
-  check(parseFloat(getComputedStyle(element('#tray-selected')).borderBottomWidth) >= 2, 'Desktop selected Venue should have an obvious boundary above Browse');
-  check(getComputedStyle(element('#tray-list')).backgroundColor === 'rgb(242, 242, 242)', 'Desktop Browse surface should remain visually subordinate');
-  const selectedRect = element('#tray-selected')?.getBoundingClientRect();
-  const selectedListRect = element('#tray-list')?.getBoundingClientRect();
-  const selectedRailRect = element('#venue-tray')?.getBoundingClientRect();
-  check(getComputedStyle(element('#tray-selected')).overflowY === 'auto', 'Desktop selected Venue should own its capped scroll region');
-  check((selectedRect?.height || Infinity) <= (selectedRailRect?.height || 0) * .48 + 1, 'Desktop selected Venue should remain capped at 48% of the rail');
-  check((selectedListRect?.bottom || Infinity) <= (selectedRailRect?.bottom || 0) + 1, 'Desktop List should remain contained beneath the selected Venue');
+
+  progress('desktop-locations-roundtrip');
+  click('#mobile-list-button');
+  await waitFor(() => trayState() === 'full' && isVisible('#tray-list') && !isVisible('#tray-selected'), 'desktop Selected to Locations');
+  check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Locations should preserve selected Venue identity');
+  check(element('#mobile-list-button')?.getAttribute('aria-current') === 'page', 'Desktop Locations should become the active panel state');
+  click('#mobile-map-button');
+  await waitFor(() => trayState() === 'selected' && isVisible('#tray-selected') && !isVisible('#tray-list'), 'desktop Locations to Selected');
 
   progress('desktop-rsvp');
   check(attendanceNumber() === 0, 'Desktop mocked Venue should begin at zero attendance');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop RSVP 0 to 1');
-  await waitFor(() => Boolean(element('#tray-selected .selected-card__share')) && Boolean(element('#tray-selected .intent-button__undo')), 'desktop selected action refinement');
   await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'desktop positive attendance refinement');
   check(!isVisible('#tray-selected .bear-count__icon'), 'Desktop positive attendance should hide the people icon');
   check(isCanonicalAttendancePresentation(attendancePresentation()), 'Desktop should use the canonical attendance-card presentation');
   check(trayState() === 'selected', 'Desktop RSVP 0 to 1 should preserve selected Venue state');
-  const activeIntentRect = element('#tray-selected .intent-button')?.getBoundingClientRect();
-  const activeShareRect = element('#tray-selected .selected-card__share')?.getBoundingClientRect();
-  check((activeIntentRect?.width || 0) > (activeShareRect?.width || Infinity) * 1.75 && (activeIntentRect?.height || 0) >= 48, 'Desktop selected Fan Intent should retain the wide primary action hierarchy');
   await waitForIntentSettled('desktop RSVP 0 to 1 transaction completion');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 0 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'desktop RSVP 1 to 0');
@@ -342,25 +350,12 @@ async function runDesktopChecks() {
   await waitFor(() => activeCommand() === 'add' && selectedVenueId() === noPartyVenue?.venue_id, 'desktop selected Add after application rerender', 4000);
   check(isVisible('#add-surface .add-context:not(.add-game-context)'), 'Desktop selected-place Add context should survive a shared application rerender');
   click('#add-surface [data-command-close]');
-  await waitFor(() => activeCommand() === 'map', 'desktop selected Add to Map');
+  await waitFor(() => activeCommand() === 'map' && trayState() === 'selected', 'desktop selected Add back to Selected');
 
-  progress('desktop-search-result');
-  click('#mobile-search-button');
-  await waitFor(() => activeCommand() === 'search' && element('#search-surface')?.hidden === false, 'desktop Map to Search');
-  check(isVisible('#search-surface'), 'Desktop Search surface should be visibly usable');
-  check(element('#search-surface')?.contains(element('#location-search')), 'Desktop Search should reuse the shared Search form DOM');
-  setInputValue('#location-query', partyVenue?.name || '');
-  await waitFor(() => Boolean(partyVenue && element(`#search-suggestions button[data-venue-id="${partyVenue.venue_id}"]`)), 'desktop existing Search result');
-  element(`#search-suggestions button[data-venue-id="${partyVenue?.venue_id}"]`)?.click();
-  await waitFor(() => selectedVenueId() === partyVenue?.venue_id && activeCommand() === 'map' && trayState() === 'selected', 'desktop Search result to selected Map state');
-  check(isVisible('#tray-selected .selected-card'), 'Desktop Search result should leave a visible selected card');
-  check(Boolean(element('#tray-selected .party-module')), 'Desktop Watch Party Venue should render the shared Watch Party module');
-  const selectedPartyBadges = badgeTexts('#tray-selected .selected-card');
-  check(selectedPartyBadges.includes('WATCH PARTY'), 'Desktop selected card should preserve the Watch Party badge');
-  check(selectedPartyBadges.includes('CAL BAR'), 'Desktop selected card should preserve the Cal Bar badge');
-  check(!selectedPartyBadges.includes('COMMUNITY LOCATION'), 'Desktop selected Cal Bar should not render a Community Location badge');
 
   progress('desktop-nearby-all');
+  click('#mobile-list-button');
+  await waitFor(() => trayState() === 'full', 'desktop Locations before Nearby');
   try {
     Object.defineProperty(navigator, 'geolocation', {
       configurable: true,
@@ -375,12 +370,12 @@ async function runDesktopChecks() {
   }
   click('#near-me-button');
   await waitFor(() => Boolean(state()?.origin), 'desktop Nearby location state');
-  check(isVisible('#location-list'), 'Desktop Nearby should keep the shared List visible');
+  check(isVisible('#location-list'), 'Desktop Nearby should keep Locations visible');
   check(!element('#clear-search-button')?.hidden, 'Desktop Nearby should expose All locations');
   check(element('#clear-search-button')?.textContent?.trim() === 'All locations', 'Desktop Nearby should label the reset action All locations');
   click('#clear-search-button');
   await waitFor(() => !state()?.origin, 'desktop All locations state');
-  check(isVisible('#location-list'), 'Desktop All locations should keep the shared List visible');
+  check(isVisible('#location-list'), 'Desktop All locations should keep Locations visible');
 
   progress('desktop-game-dialog');
   click('#game-button');

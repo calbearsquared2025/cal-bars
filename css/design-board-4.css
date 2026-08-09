@@ -479,30 +479,31 @@ body[data-view="detail"] #app {
     width: min(390px, 34vw);
     height: auto;
     max-height: none;
+    padding-top: 52px;
+    overflow: hidden;
     border-radius: var(--radius-lg);
     box-shadow: 0 18px 48px rgba(1, 1, 51, .22);
   }
 
-  .venue-tray .tray-selected:not(:empty) {
-    display: block !important;
-    flex: 0 0 auto;
-    max-height: 48%;
-    overflow-y: auto;
-    border-bottom: 3px solid var(--cgb-gold-400);
-    box-shadow: 0 8px 18px rgba(1, 1, 51, .1);
-    z-index: 2;
-  }
-
-  .venue-tray .tray-selected:empty {
+  .venue-tray > .tray-handle,
+  .venue-tray > .tray-peek {
     display: none !important;
   }
 
+  .venue-tray .tray-selected,
   .venue-tray .tray-list {
-    display: block !important;
     flex: 1 1 auto;
     min-height: 0;
     max-height: none;
     overflow-y: auto;
+  }
+
+  .venue-tray .tray-selected[hidden],
+  .venue-tray .tray-list[hidden] {
+    display: none !important;
+  }
+
+  .venue-tray .tray-list {
     background: var(--cgb-neutral-50);
   }
 
