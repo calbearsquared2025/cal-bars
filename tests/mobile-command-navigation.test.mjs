@@ -58,7 +58,10 @@ test('desktop reuses the shared command owner as Locations, Selected, and Add on
   ]);
   const desktop = css.slice(css.lastIndexOf('@media (min-width: 900px)'));
   assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*right:\s*24px/);
-  assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\) auto/);
+  assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\) minmax\(12px, \.5fr\) auto/);
+  assert.match(desktop, /#mobile-list-button\s*\{[^}]*grid-row:\s*1[^}]*grid-column:\s*1[^}]*width:\s*100%[^}]*justify-content:\s*center[^}]*border:\s*1px solid rgba\(1, 1, 51, \.18\)[^}]*border-radius:\s*9px 0 0 9px/);
+  assert.match(desktop, /#mobile-map-button\s*\{[^}]*grid-row:\s*1[^}]*grid-column:\s*2[^}]*width:\s*100%[^}]*justify-content:\s*center[^}]*border:\s*1px solid rgba\(1, 1, 51, \.18\)[^}]*border-left:\s*0[^}]*border-radius:\s*0 9px 9px 0/);
+  assert.match(desktop, /\.mobile-command--add,[\s\S]*grid-row:\s*1[^}]*grid-column:\s*4[^}]*min-height:\s*34px[^}]*margin:\s*0 0 0 12px[^}]*background:\s*var\(--cgb-gold-50/);
   assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*width:\s*min\(390px, 34vw\)/);
   assert.match(desktop, /#mobile-search-button\s*\{[^}]*display:\s*none/);
   assert.doesNotMatch(desktop, /left:\s*18px/);
