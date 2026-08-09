@@ -15,8 +15,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
       - name: Focused external venue tests
         run: node --test tests/external-venue-core.test.mjs tests/external-venue-script.test.mjs tests/external-venue-interface.test.mjs
       - run: npm test
