@@ -1168,6 +1168,7 @@ async function boot() {
 }
 
 window.CGBApp = Object.freeze({
+  mapTilerKey: MAPTILER_KEY,
   getState: () => state,
   getSnapshot: () => state.snapshot,
   render: renderAll,

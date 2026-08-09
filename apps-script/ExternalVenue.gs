@@ -56,39 +56,11 @@ function parseJoinExternalVenuePayload_(payload) {
 
   const source = cleanExternalText_(place.source, 40).toLowerCase();
   const placeId = cleanExternalText_(place.placeId, 200);
-  const name = cleanExternalText_(place.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
-  const address = cleanExternalText_(place.address, CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
-  const addressLine1 = cleanExternalText_(place.addressLine1, 220);
-  const addressLine2 = cleanExternalText_(place.addressLine2, 120);
-  const city = cleanExternalText_(place.city, 140);
-  const region = cleanExternalText_(place.region, 140);
-  const postalCode = cleanExternalText_(place.postalCode, 32);
-  const countryCode = cleanExternalText_(place.countryCode, 2).toUpperCase();
-  const latitude = Number(place.latitude);
-  const longitude = Number(place.longitude);
 
   if (!CGB_BROWSER_ID_PATTERN.test(browserId)) throw fanIntentError_('invalid_browser_id');
   if (!isSafeCanonicalId_(gameId)) throw fanIntentError_('invalid_game_id');
   if (source !== CGB_EXTERNAL_SOURCE) throw externalVenueError_('unsupported_external_source');
   if (!CGB_EXTERNAL_PLACE_ID_PATTERN.test(placeId)) throw externalVenueError_('invalid_external_place_id');
-  if (!name) throw externalVenueError_('invalid_external_name');
-  if (!address || !addressLine1 || !city || !region || !/^[A-Z]{2}$/.test(countryCode)) {
-    throw externalVenueError_('invalid_external_address');
-  }
-  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 ||
-      !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
-    throw externalVenueError_('invalid_external_coordinates');
-  }
-
-  const normalizedAddress = normalizeExternalAddressParts_({
-    address_line_1: addressLine1,
-    address_line_2: addressLine2,
-    city: city,
-    region: region,
-    postal_code: postalCode,
-    country_code: countryCode
-  });
-  if (!normalizedAddress) throw externalVenueError_('invalid_external_address');
 
   return {
     action: 'joinExternalVenue',
@@ -96,18 +68,7 @@ function parseJoinExternalVenuePayload_(payload) {
     gameId: gameId,
     externalPlace: {
       source: source,
-      placeId: placeId,
-      name: name,
-      address: address,
-      addressLine1: addressLine1,
-      addressLine2: addressLine2,
-      city: city,
-      region: region,
-      postalCode: postalCode,
-      countryCode: countryCode,
-      latitude: latitude,
-      longitude: longitude,
-      normalizedAddress: normalizedAddress
+      placeId: placeId
     }
   };
 }
@@ -320,18 +281,7 @@ function normalizeMapTilerFeatureForPublication_(feature) {
   const regionItem = find(['region', 'subregion', 'county']);
   let region = text(regionItem, 140);
   if (countryCode === 'US') {
-    const rawRegionCode = cleanExternalText_(
-      regionItem && (
-        regionItem.short_code ||
-        regionItem.properties && regionItem.properties.short_code ||
-        regionItem.country_code
-      ),
-      20
-    );
-    const abbreviation = rawRegionCode.split('-').pop().replace(/[^A-Za-z]/g, '').toUpperCase();
-    region = /^[A-Z]{2}$/.test(abbreviation)
-      ? abbreviation
-      : (CGB_US_REGION_CODES[normalizeExternalComparableText_(region)] || region).toUpperCase();
+    region = (CGB_US_REGION_CODES[normalizeExternalComparableText_(region)] || region).toUpperCase();
   }
   const postalCode = text(find(['postal_code', 'postcode']), 32);
 
@@ -402,6 +352,7 @@ function findCanonicalExternalVenue_(rows, place) {
       String(record.object.external_place_id || '') === place.placeId;
   });
   if (externalMatch) return externalMatch;
+  if (!place.normalizedAddress) return null;
 
   return rows.find(function(record) {
     return normalizeExternalAddressParts_(record.object) === place.normalizedAddress;

@@ -46,7 +46,7 @@ function feature({
     center: [longitude, latitude],
     context: [
       { id: `place.${city.toLowerCase()}`, text: city },
-      { id: `region.${region.toLowerCase()}`, text: region, short_code: 'US-CA' },
+      { id: `region.${region.toLowerCase()}`, text: region, country_code: 'us' },
       { id: `postcode.${postalCode}`, text: postalCode },
       { id: 'country.us', text: 'United States', short_code: 'us' }
     ]
@@ -134,18 +134,7 @@ appState.gameId = 'game_1';
 appState.fanIntent.browserId = 'browser_1234567890abcdef';
 
 let throwPostSuccessRender = false;
-appState.map = {
-  getStyle() {
-    return {
-      sources: {
-        base: {
-          url: 'https://api.maptiler.com/maps/test/style.json?key=existing-browser-key'
-        }
-      }
-    };
-  },
-  easeTo() {}
-};
+appState.map = { easeTo() {} };
 
 let renderCount = 0;
 let backendCallCount = 0;
@@ -154,6 +143,7 @@ let receivedWrite = null;
 let lastStatus = '';
 let focusedLocation = null;
 window.CGBApp = Object.freeze({
+  mapTilerKey: 'existing-browser-key',
   render() {
     renderCount += 1;
     if (throwPostSuccessRender && backendCallCount >= 2) throw new Error('mock_post_success_render_failed');
@@ -277,8 +267,9 @@ try {
   assert(backendCallCount === 1, 'Combined write was not sent exactly once');
   assert(receivedWrite.action === 'joinExternalVenue', 'Wrong write action');
   assert(receivedWrite.gameId === 'game_1', 'Selected game was not preserved');
+  assert(receivedWrite.externalPlace.source === 'maptiler', 'External provider source was not preserved');
   assert(receivedWrite.externalPlace.placeId === 'poi.98765', 'Provider place ID was not preserved');
-  assert(receivedWrite.externalPlace.region === 'CA', 'Canonical US state abbreviation was not sent');
+  assert(Object.keys(receivedWrite.externalPlace).sort().join(',') === 'placeId,source', 'Browser sent non-authoritative venue metadata');
   assert(appState.selectedVenueId === canonicalExternalVenue.venue_id, 'Canonical Venue was not selected');
   assert(appState.fanIntent.selections.game_1 === canonicalExternalVenue.venue_id, 'Fan Intent selection was not persisted');
   assert(appState.snapshot.fanCounts[0].count === 1, 'Authoritative count was not applied');

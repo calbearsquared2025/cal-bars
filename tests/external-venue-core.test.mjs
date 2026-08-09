@@ -6,7 +6,6 @@ import {
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
-  findExistingMapTilerKey,
   mappedLocationFieldMatches,
   normalizeMapTilerFeature,
   normalizeMapTilerPostalOrigin,
@@ -24,7 +23,7 @@ const feature = {
   center: [-122.252, 37.839],
   context: [
     { id: 'place.oakland', text: 'Oakland' },
-    { id: 'region.california', text: 'California', short_code: 'US-CA' },
+    { id: 'region.california', text: 'California', country_code: 'us' },
     { id: 'postcode.94618', text: '94618' },
     { id: 'country.us', text: 'United States', short_code: 'us' }
   ]
@@ -85,6 +84,12 @@ test('MapTiler POI results normalize into the narrow external-place shape', () =
   });
 });
 
+test('US region country_code is not treated as a state abbreviation', () => {
+  const normalized = normalizeMapTilerFeature(feature);
+  assert.equal(normalized.region, 'CA');
+  assert.notEqual(normalized.region, 'US');
+});
+
 test('US administrative hierarchy prefers municipality and state over neighborhood and county', () => {
   const twoPitchers = {
     id: 'poi.64751681',
@@ -97,7 +102,7 @@ test('US administrative hierarchy prefers municipality and state over neighborho
       { id: 'place.northlake', text: 'Northlake', place_designation: 'neighbourhood' },
       { id: 'municipality.oakland', text: 'Oakland', place_designation: 'city' },
       { id: 'county.alameda', text: 'Alameda' },
-      { id: 'region.california', text: 'California', short_code: 'US-CA' },
+      { id: 'region.california', text: 'California', country_code: 'us' },
       { id: 'postal_code.94612', text: '94612' },
       { id: 'country.us', text: 'United States', short_code: 'us' }
     ]
@@ -116,7 +121,7 @@ test('normalization requires a concrete POI or address with canonical address co
   assert.deepEqual(normalizeMapTilerResults({ features: [feature, feature] }).map((item) => item.placeId), ['poi.98765']);
 });
 
-test('MapTiler request uses the existing public key, concrete result types, autocomplete, and bounded results', () => {
+test('MapTiler request uses the explicit public key, concrete result types, autocomplete, and bounded results', () => {
   const url = new URL(buildMapTilerSearchUrl('McNally Oakland', 'existing-public-key', { limit: 99 }));
   assert.equal(url.hostname, 'api.maptiler.com');
   assert.equal(url.pathname, '/geocoding/McNally%20Oakland.json');
@@ -166,15 +171,6 @@ test('exact mapped city and ZIP matches are resolved before area geocoding', () 
   assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland').map((venue) => venue.venue_id), ['one', 'two']);
   assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland, CA').map((venue) => venue.venue_id), ['one', 'two']);
   assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Two Pitchers').map((venue) => venue.venue_id), []);
-});
-
-test('frontend reuses the key already present in MapTiler resource requests', () => {
-  assert.equal(findExistingMapTilerKey({
-    resourceEntries: [{ name: 'https://api.maptiler.com/maps/test/style.json?key=already-loaded' }]
-  }), 'already-loaded');
-  assert.equal(findExistingMapTilerKey({
-    style: { sources: { base: { url: 'https://api.maptiler.com/tiles/test/tiles.json?key=style-key' } } }
-  }), 'style-key');
 });
 
 test('joinExternalVenue responses accept only the public Venue whitelist', () => {

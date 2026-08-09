@@ -10,7 +10,6 @@ import {
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
-  findExistingMapTilerKey,
   mappedLocationFieldMatches,
   normalizeMapTilerPostalOrigin,
   normalizeMapTilerResults,
@@ -69,13 +68,8 @@ function ensureExternalState() {
   return appState.externalSearch;
 }
 
-function existingMapTilerKey() {
-  let style = null;
-  try { style = appState.map?.getStyle?.() || null; } catch (_) {}
-  const resourceEntries = typeof performance?.getEntriesByType === 'function'
-    ? performance.getEntriesByType('resource')
-    : [];
-  return findExistingMapTilerKey({ resourceEntries, style });
+function configuredMapTilerKey() {
+  return String(window.CGBApp?.mapTilerKey || '').trim();
 }
 
 async function fetchJson(url, options = {}, timeoutMs = SEARCH_TIMEOUT_MS) {
@@ -209,7 +203,7 @@ function showExternalResults(results) {
 }
 
 async function searchExternalPlaces(query, sequence) {
-  const key = existingMapTilerKey();
+  const key = configuredMapTilerKey();
   if (!key) {
     showExternalFailure(Object.assign(new Error('maptiler_not_configured'), { code: 'maptiler_not_configured' }));
     return;
@@ -269,7 +263,7 @@ function panToSearchOriginSafely(origin) {
 }
 
 async function renderSubmittedZip(query) {
-  const key = existingMapTilerKey();
+  const key = configuredMapTilerKey();
   if (!key) throw Object.assign(new Error('maptiler_not_configured'), { code: 'maptiler_not_configured' });
   const payload = await fetchJson(buildMapTilerPostalSearchUrl(query, key));
   const origin = normalizeMapTilerPostalOrigin(payload, query);
@@ -363,17 +357,7 @@ function selectExternalPlace(place) {
 function externalPlacePayload(selected) {
   return {
     source: selected.source,
-    placeId: selected.placeId,
-    name: selected.name,
-    address: selected.address,
-    addressLine1: selected.addressLine1,
-    addressLine2: selected.addressLine2,
-    city: selected.city,
-    region: selected.region,
-    postalCode: selected.postalCode,
-    countryCode: selected.countryCode,
-    latitude: selected.latitude,
-    longitude: selected.longitude
+    placeId: selected.placeId
   };
 }
 
