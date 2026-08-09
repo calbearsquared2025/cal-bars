@@ -21,19 +21,19 @@ The desktop parity milestone uses the current production mobile result as its re
 
 - The same selected-card, Watch Party, Fan Intent, Venue badge, List card, Search, Add context, and selected-Game context DOM structures should render at both breakpoints.
 - Desktop may change grid dimensions, information density, max heights, and pointer/focus treatment through responsive CSS.
-- The existing command buttons and Search/Add surfaces should be reused with a desktop navigation and panel presentation rather than reimplemented.
+- The existing command buttons and Search/Add surfaces are reused. Desktop presents the shared controls as **Locations / Selected / + Add** while persistent map Search remains outside the panel.
 
 ### C. Mobile-specific interaction and layout
 
 - Bottom command-bar placement, fixed full-screen Search/Add surfaces, compact/expanded selected-tray density, tray-top touch toggling, safe-area fills, touch spacing, and mobile map-control offsets remain mobile-only.
 - The mobile Nearby/List capture intercept and mobile-specific map fitting remain mobile-only while the shared origin and ranking state remains in `app.js`.
-- Desktop retains its persistent map/List split, desktop dimensions, and pointer/keyboard affordances.
+- Desktop retains its persistent map, desktop dimensions, and pointer/keyboard affordances. The right-side tray shows either the shared Locations list or the shared selected-Venue renderer, never both simultaneously.
 
 No desktop-only renderer, state path, Search handler, Add router, Fan Intent handler, Watch Party renderer, or List ordering function is justified by this classification.
 
 ## Desktop parity implementation status
 
-- `shell-controls.mjs` owns Map/Search/Add/List transitions and reuses the same Search form on desktop and mobile. Desktop adds no navigation or Search/Add handler.
+- `shell-controls.mjs` remains the shared command owner. Mobile keeps Map/Search/Add/List; desktop reuses those controls as Locations/Selected/+ Add, hides the redundant Search command, and keeps the same Search form permanently in the map toolbar.
 - The existing selected-card profile passes now run at both breakpoints. The base card, Fan Intent integration, and final Watch Party renderer remain shared; only responsive presentation differs.
 - Selected-place and selected-game Add contexts use the existing Add surface and contribution routing on desktop. No desktop context renderer or contribution state was added.
 - The desktop List control remains on the base `app.js` path; the Nearby/All-locations intercept stays mobile-only.
@@ -63,7 +63,7 @@ No desktop-only renderer, state path, Search handler, Add router, Fan Intent han
 
 The browser harness loads the actual production `index.html`, which in turn loads the production module graph and its late-imported refinement modules. External reads/writes are redirected to a same-origin deterministic mock endpoint; the harness does not write to Google resources or depend on live production data.
 
-The focused runtime boundary covers accepted shared state transitions most exposed to overlapping ownership: Map/Search/Add/List navigation, venue selection, Fan Intent count rerenders, selected Add context, existing Search selection, Nearby/All locations, Watch Party/no-Watch-Party card states, and direct venue entry/refresh. Mobile coverage additionally protects selected-tray density and touch-specific behavior; desktop coverage proves the shared command, renderer, and contribution paths at a 1440 x 900 viewport.
+The focused runtime boundary covers accepted shared state transitions most exposed to overlapping ownership: mobile Map/Search/Add/List navigation; desktop Locations/Selected/+ Add panel behavior; venue selection; Fan Intent count rerenders; selected Add context; existing Search selection; Nearby/All locations; Watch Party/no-Watch-Party card states; and direct venue entry/refresh. Mobile coverage additionally protects selected-tray density and touch-specific behavior; desktop coverage proves the shared renderer, Add, marker-selection, and mutually exclusive panel paths at a 1440 x 900 viewport.
 
 ## Runtime status after PR #62
 

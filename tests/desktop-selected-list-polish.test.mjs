@@ -11,10 +11,12 @@ test('shared Bear count hides the people icon only after attendance exists', () 
   assert.doesNotMatch(attendanceProfile, /\.bear-count--empty \.bear-count__icon\s*\{[^}]*display:\s*none/);
 });
 
-test('selected Venue and Browse surfaces have a clear desktop hierarchy', () => {
-  assert.match(desktop, /\.venue-tray \.tray-selected:not\(:empty\)\s*\{[^}]*border-bottom:\s*3px solid var\(--cgb-gold-400\)[^}]*box-shadow:/);
+test('selected Venue and Locations use one full-height desktop panel state at a time', () => {
+  assert.match(desktop, /\.venue-tray \.tray-selected,\s*\.venue-tray \.tray-list\s*\{[^}]*flex:\s*1 1 auto[^}]*overflow-y:\s*auto/);
+  assert.match(desktop, /\.venue-tray \.tray-selected\[hidden\],\s*\.venue-tray \.tray-list\[hidden\]\s*\{[^}]*display:\s*none !important/);
+  assert.doesNotMatch(desktop, /max-height:\s*48%/);
+  assert.doesNotMatch(desktop, /border-bottom:\s*3px solid var\(--cgb-gold-400\)/);
   assert.match(desktop, /\.venue-tray \.tray-list\s*\{[^}]*background:\s*var\(--cgb-neutral-50\)/);
-  assert.match(desktop, /\.venue-tray \.tray-list__header\s*\{[^}]*background:\s*rgba\(242, 242, 242, \.98\)/);
   assert.match(desktop, /\.selected-card\s*\{[^}]*background:\s*linear-gradient\(180deg, var\(--cgb-white\) 0%, #fffdf7 100%\)/);
 });
 

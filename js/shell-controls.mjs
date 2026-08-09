@@ -47,6 +47,10 @@ function selectedGame(state = appState()) {
   return state.snapshot.games.find((game) => game.game_id === state.gameId) || null;
 }
 
+function isMobileLayout() {
+  return window.matchMedia(MOBILE_QUERY).matches;
+}
+
 function showStatus(message, timeout = 3600) {
   window.CGBApp?.showStatus?.(message, timeout);
 }
@@ -128,7 +132,25 @@ function contributionUrl(intent, venueId) {
   return '';
 }
 
+function updateResponsiveCommandLabels() {
+  const mobile = isMobileLayout();
+  const labels = mobile
+    ? { map: 'Map', search: 'Search', add: 'Add', list: 'List' }
+    : { map: 'Selected', search: 'Search', add: 'Add', list: 'Locations' };
+
+  dom.commandButtons.forEach((button) => {
+    const label = button.querySelector('span:last-child');
+    const command = button.dataset.command;
+    if (label && labels[command]) label.textContent = labels[command];
+  });
+
+  const selectedButton = dom.commandButtons.find((button) => button.dataset.command === 'map');
+  if (selectedButton) selectedButton.disabled = !mobile && !selectedVenue();
+}
+
 function updateCommandState() {
+  updateResponsiveCommandLabels();
+  const mobile = isMobileLayout();
   const trayState = dom.tray?.dataset.state || 'peek';
   const active = currentSurface === 'search' || currentSurface === 'add'
     ? currentSurface
@@ -138,7 +160,7 @@ function updateCommandState() {
 
   dom.commandButtons.forEach((button) => {
     const command = button.dataset.command;
-    const isActive = command === active;
+    const isActive = command === active && (mobile || command !== 'add');
     button.classList.toggle('mobile-command--active', isActive);
     button.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
@@ -162,7 +184,7 @@ function setSurface(next, { focus = false } = {}) {
 
 function moveSearchForm() {
   if (!dom.searchForm || !dom.searchSlot || !dom.mapToolbar) return;
-  const mobile = window.matchMedia(MOBILE_QUERY).matches;
+  const mobile = isMobileLayout();
   if (mobile || currentSurface === 'search') {
     if (dom.searchForm.parentElement !== dom.searchSlot) dom.searchSlot.append(dom.searchForm);
     return;
@@ -177,6 +199,8 @@ function showMap() {
   updateSearchIntent();
   setSurface('map');
   if (dom.tray?.dataset.state === 'full') dom.closeList?.click();
+  if (!isMobileLayout()) normalizeDesktopTray();
+  updateCommandState();
 }
 
 function showList() {
@@ -305,6 +329,11 @@ function handleSearchResultClick(event) {
   requestAnimationFrame(() => setSurface('map'));
 }
 
+function normalizeDesktopTray() {
+  if (isMobileLayout() || document.body.dataset.view === 'detail') return;
+  if (dom.tray?.dataset.state === 'peek') dom.trayHandle?.click();
+}
+
 function syncViewState() {
   const detailVisible = !dom.detailView?.hidden;
   document.body.dataset.view = detailVisible ? 'detail' : 'map';
@@ -312,6 +341,8 @@ function syncViewState() {
   if (detailVisible) {
     dom.searchSurface.hidden = true;
     dom.addSurface.hidden = true;
+  } else {
+    normalizeDesktopTray();
   }
 
   updateAddContext();
@@ -398,15 +429,22 @@ function initializeShellControls() {
     searchSubmissionPending = Boolean(dom.searchInput.value.trim());
   }, { capture: true });
   dom.searchInput.addEventListener('input', configureMissingLocationLink);
+  document.addEventListener('click', (event) => {
+    if (isMobileLayout()) return;
+    if (!event.target.closest?.('#location-list .location-card, .cgb-marker')) return;
+    requestAnimationFrame(updateCommandState);
+  });
 
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
     moveSearchForm();
-    if (!window.matchMedia(MOBILE_QUERY).matches) {
+    if (!isMobileLayout()) {
       currentSurface = 'map';
       dom.searchSurface.hidden = true;
       dom.addSurface.hidden = true;
       document.body.dataset.commandSurface = 'map';
+      normalizeDesktopTray();
     }
+    updateCommandState();
   });
 
   syncViewState();

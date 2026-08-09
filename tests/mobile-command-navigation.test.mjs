@@ -49,3 +49,25 @@ test('navigation delegates to existing search, tray, and contribution contracts'
   assert.match(script, /dom\.addContext\.hidden = !venue/);
   assert.doesNotMatch(script, /MutationObserver/);
 });
+
+test('desktop reuses the shared command owner as Locations, Selected, and Add only', async () => {
+  const [css, script, app] = await Promise.all([
+    source('css/mobile-command-navigation.css'),
+    source('js/shell-controls.mjs'),
+    source('js/app.js')
+  ]);
+  const desktop = css.slice(css.lastIndexOf('@media (min-width: 900px)'));
+  assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*right:\s*24px/);
+  assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\) minmax\(0, 1fr\) auto/);
+  assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*width:\s*min\(390px, 34vw\)/);
+  assert.match(desktop, /#mobile-search-button\s*\{[^}]*display:\s*none/);
+  assert.doesNotMatch(desktop, /left:\s*18px/);
+  assert.doesNotMatch(desktop, /top:\s*78px !important/);
+  assert.match(script, /map: 'Selected'/);
+  assert.match(script, /list: 'Locations'/);
+  assert.match(script, /selectedButton\.disabled = !mobile && !selectedVenue\(\)/);
+  assert.match(script, /function normalizeDesktopTray\(\)/);
+  const sharedVenueSelections = app.match(/button\.addEventListener\('click', \(\) => selectVenue\(venue\.venue_id\)\);/g) || [];
+  assert.equal(sharedVenueSelections.length >= 2, true);
+  assert.doesNotMatch(script, /MutationObserver/);
+});
