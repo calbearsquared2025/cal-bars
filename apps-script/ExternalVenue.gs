@@ -168,14 +168,11 @@ function mapTilerVerificationKey_() {
   );
 }
 
-function verifyExternalPlaceWithMapTiler_(clientPlace) {
-  const key = mapTilerVerificationKey_();
-  if (!key) throw externalVenueError_('external_venue_unavailable');
-
+function fetchMapTilerFeatures_(query, key, querySuffix) {
   const url = CGB_MAPTILER_GEOCODING_URL +
-    encodeURIComponent(clientPlace.placeId) +
+    encodeURIComponent(query) +
     '.json?key=' + encodeURIComponent(key) +
-    '&language=en';
+    '&language=en' + (querySuffix || '');
 
   let response;
   try {
@@ -200,11 +197,32 @@ function verifyExternalPlaceWithMapTiler_(clientPlace) {
   } catch (error) {
     throw externalVenueError_('external_venue_unavailable');
   }
-  const features = payload && Array.isArray(payload.features) ? payload.features : [];
-  const feature = features.find(function(candidate) {
+  return payload && Array.isArray(payload.features) ? payload.features : [];
+}
+
+function verifyExternalPlaceWithMapTiler_(clientPlace) {
+  const key = mapTilerVerificationKey_();
+  if (!key) throw externalVenueError_('external_venue_unavailable');
+
+  const features = fetchMapTilerFeatures_(clientPlace.placeId, key);
+  const exactFeature = features.find(function(candidate) {
     return cleanExternalText_(candidate && candidate.id, 200) === clientPlace.placeId;
   });
-  const verified = normalizeMapTilerFeatureForPublication_(feature);
+  let verified = normalizeMapTilerFeatureForPublication_(exactFeature);
+  if (!verified && exactFeature) {
+    const canonicalName = cleanExternalText_(exactFeature.text || exactFeature.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
+    if (canonicalName) {
+      const enrichedFeatures = fetchMapTilerFeatures_(
+        canonicalName,
+        key,
+        '&limit=10&autocomplete=false&types=poi%2Caddress'
+      );
+      const enrichedFeature = enrichedFeatures.find(function(candidate) {
+        return cleanExternalText_(candidate && candidate.id, 200) === clientPlace.placeId;
+      });
+      verified = normalizeMapTilerFeatureForPublication_(enrichedFeature);
+    }
+  }
   if (!verified) throw externalVenueError_('external_venue_unavailable');
   return verified;
 }

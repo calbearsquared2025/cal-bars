@@ -90,26 +90,46 @@ test('US region country_code is not treated as a state abbreviation', () => {
   assert.notEqual(normalized.region, 'US');
 });
 
-test('Albany Bulb-style US hierarchy resolves a later California admin item instead of region US', () => {
-  const albanyBulb = {
-    id: 'poi.55162381',
-    type: 'Feature',
-    place_type: ['poi'],
-    text: 'Albany Bulb',
-    place_name: 'Albany Bulb, Albany, California, United States',
-    center: [-122.3253929, 37.88996424],
-    properties: { country_code: 'us' },
-    context: [
-      { id: 'municipality.albany', place_type: ['municipality'], text: 'Albany', place_designation: 'city' },
-      { id: 'region.us', place_type: ['region'], text: 'US', country_code: 'us' },
-      { id: 'subregion.california', place_type: ['subregion'], text: 'California', country_code: 'us' },
-      { id: 'country.us', place_type: ['country'], text: 'United States', short_code: 'us' }
-    ]
-  };
+test('real Santa Monica Pier and Albany Bulb hierarchies normalize California as CA', () => {
+  const realFeatures = [
+    {
+      id: 'poi.55158442',
+      place_type: ['poi'],
+      text: 'Santa Monica Pier',
+      place_name: 'Santa Monica Pier, Downtown Santa Monica, Santa Monica, United States',
+      center: [-118.49739992191428, 34.008896169545125],
+      properties: { country_code: 'us' },
+      context: [
+        { id: 'address.22424228', text: 'Santa Monica Pier', country_code: 'us', kind: 'street' },
+        { id: 'postal_code.4480556', text: '90405', country_code: 'us' },
+        { id: 'place.5009837', text: 'Downtown Santa Monica', country_code: 'us', place_designation: 'quarter' },
+        { id: 'municipality.269116', text: 'Santa Monica', country_code: 'us', place_designation: 'city' },
+        { id: 'county.22068', text: 'Los Angeles', country_code: 'us' },
+        { id: 'region.2166', text: 'California', country_code: 'us' },
+        { id: 'country.213', text: 'United States', country_code: 'us' }
+      ]
+    },
+    {
+      id: 'poi.55162381',
+      place_type: ['poi'],
+      text: 'Albany Bulb',
+      place_name: 'Albany Bulb, Albany, United States',
+      center: [-122.32539285428419, 37.88996423602199],
+      properties: { country_code: 'us' },
+      context: [
+        { id: 'municipality.268335', text: 'Albany', country_code: 'us', place_designation: 'town' },
+        { id: 'county.22205', text: 'Alameda', country_code: 'us' },
+        { id: 'region.2166', text: 'California', country_code: 'us' },
+        { id: 'country.213', text: 'United States', country_code: 'us' }
+      ]
+    }
+  ];
 
-  const normalized = normalizeMapTilerFeature(albanyBulb);
-  assert.equal(normalized.region, 'CA');
-  assert.notEqual(normalized.region, 'US');
+  for (const realFeature of realFeatures) {
+    const normalized = normalizeMapTilerFeature(realFeature);
+    assert.equal(normalized.region, 'CA');
+    assert.notEqual(normalized.region, 'US');
+  }
 });
 
 test('US administrative hierarchy prefers municipality and state over neighborhood and county', () => {

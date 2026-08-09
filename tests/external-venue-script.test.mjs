@@ -328,7 +328,7 @@ test('minimal external-place request is accepted and persists server-verified ve
   assert.deepEqual(response.fanCounts, [{ game_id: 'game_1', venue_id: created.venue_id, count: 1 }]);
 });
 
-test('Albany Bulb-style server verification skips region US and stores California as CA', () => {
+test('sparse Albany Bulb ID verification is enriched by exact provider ID and stores California as CA', () => {
   const place = externalPlace({
     placeId: 'poi.55162381',
     name: 'Albany Bulb',
@@ -340,15 +340,27 @@ test('Albany Bulb-style server verification skips region US and stores Californi
     latitude: 37.88996424,
     longitude: -122.3253929
   });
-  const feature = mapTilerFeature(place, {
+  const sparseFeature = {
+    id: place.placeId,
+    place_type: ['poi'],
+    text: place.name,
+    place_name: place.name,
+    center: [place.longitude, place.latitude],
+    properties: { country_code: 'us' }
+  };
+  const enrichedFeature = mapTilerFeature(place, {
+    place_name: 'Albany Bulb, Albany, United States',
     context: [
-      { id: 'municipality.albany', place_type: ['municipality'], text: 'Albany', place_designation: 'city' },
-      { id: 'region.us', place_type: ['region'], text: 'US', country_code: 'us' },
-      { id: 'subregion.california', place_type: ['subregion'], text: 'California', country_code: 'us' },
-      { id: 'country.us', place_type: ['country'], text: 'United States', short_code: 'us' }
+      { id: 'municipality.268335', text: 'Albany', country_code: 'us', place_designation: 'town' },
+      { id: 'county.22205', text: 'Alameda', country_code: 'us' },
+      { id: 'region.2166', text: 'California', country_code: 'us' },
+      { id: 'country.213', text: 'United States', country_code: 'us' }
     ]
   });
-  const harness = buildHarness({ mapTilerFeatures: new Map([[place.placeId, feature]]) });
+  const harness = buildHarness({ mapTilerFeatures: new Map([
+    [place.placeId, sparseFeature],
+    [place.name, enrichedFeature]
+  ]) });
   const response = joinExternal(harness.api, minimalExternalPlace({ placeId: place.placeId }));
   const created = sheetObjects(harness.venueSheet, VENUE_HEADERS)
     .find((venue) => venue.external_place_id === place.placeId);
@@ -356,7 +368,10 @@ test('Albany Bulb-style server verification skips region US and stores Californi
   assert.equal(response.ok, true);
   assert.equal(created.region, 'CA');
   assert.notEqual(created.region, 'US');
-  assert.equal(harness.mapTilerRequests.length, 1);
+  assert.equal(harness.mapTilerRequests.length, 2);
+  assert.match(harness.mapTilerRequests[0].url, /\/geocoding\/poi\.55162381\.json\?/);
+  assert.match(harness.mapTilerRequests[1].url, /\/geocoding\/Albany%20Bulb\.json\?/);
+  assert.match(harness.mapTilerRequests[1].url, /autocomplete=false/);
 });
 
 test('legacy full request is accepted but forged browser venue metadata is ignored', () => {
