@@ -278,10 +278,20 @@ function normalizeMapTilerFeatureForPublication_(feature) {
   });
   const city = text(designatedCity || find(cityTypes), 140);
 
-  const regionItem = find(['region', 'subregion', 'county']);
-  let region = text(regionItem, 140);
+  let region = '';
   if (countryCode === 'US') {
-    region = (CGB_US_REGION_CODES[normalizeExternalComparableText_(region)] || region).toUpperCase();
+    const administrativeItems = hierarchy.filter(function(item) {
+      return ['region', 'subregion', 'county'].some(function(prefix) { return matches(item, prefix); });
+    });
+    for (let index = 0; index < administrativeItems.length; index += 1) {
+      const mapped = CGB_US_REGION_CODES[normalizeExternalComparableText_(text(administrativeItems[index], 140))];
+      if (mapped) {
+        region = mapped.toUpperCase();
+        break;
+      }
+    }
+  } else {
+    region = text(find(['region', 'subregion', 'county']), 140);
   }
   const postalCode = text(find(['postal_code', 'postcode']), 32);
 
