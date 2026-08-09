@@ -1,6 +1,5 @@
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
-const COMPACT_TRAY_HEIGHT = 104;
 const HEADER_OVERHANG = 31;
 
 function isMobile() {
@@ -78,10 +77,6 @@ function installStyles() {
       body[data-command-surface="search"] .command-surface:not([hidden]),
       body[data-command-surface="add"] .command-surface:not([hidden]) {
         inset: calc(var(--header-height) + ${HEADER_OVERHANG}px) 0 var(--footer-height) 0 !important;
-      }
-
-      body[data-command-surface="search"].has-selected-venue .command-surface:not([hidden]) {
-        bottom: calc(var(--footer-height) + ${COMPACT_TRAY_HEIGHT}px) !important;
       }
 
       .command-surface .search-field {
@@ -231,52 +226,6 @@ function installStyles() {
         height: 16px !important;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
-        height: ${COMPACT_TRAY_HEIGHT}px !important;
-        max-height: ${COMPACT_TRAY_HEIGHT}px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-handle {
-        height: 18px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
-        max-height: 86px !important;
-        overflow: hidden !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card {
-        gap: 2px !important;
-        padding: 0 14px 7px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__header {
-        margin-bottom: 0 !important;
-        padding-top: 7px !important;
-        padding-bottom: 8px !important;
-        border-bottom: 0 !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card h2 {
-        display: block !important;
-        overflow: hidden !important;
-        font-size: 1.03rem !important;
-        line-height: 1.05 !important;
-        text-overflow: ellipsis !important;
-        white-space: nowrap !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__plan-party,
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
-        display: none !important;
-      }
-
-      body[data-command-surface="search"] #map-view > #venue-tray.venue-tray.tray--selected {
-        display: block !important;
-        z-index: 47 !important;
-      }
-
       body[data-command-surface="list"] #map {
         visibility: hidden !important;
       }
@@ -372,24 +321,6 @@ function openListSurface(event) {
   setCommandActive('list');
 }
 
-function prepareSearchSurface() {
-  if (!isMobile()) return;
-  const state = appState();
-  const selected = Boolean(state?.selectedVenueId);
-  document.body.classList.toggle('has-selected-venue', selected);
-
-  if (selected) {
-    setTrayState('selected');
-    const tray = document.querySelector('#venue-tray');
-    if (tray) tray.dataset.selectedDensity = 'compact';
-    const handle = document.querySelector('#tray-handle');
-    handle?.setAttribute('aria-expanded', 'false');
-    handle?.setAttribute('aria-label', 'Expand selected location');
-  } else {
-    setTrayState('peek');
-  }
-}
-
 function setSearchLanguage() {
   const intro = document.querySelector('#search-surface .command-surface__intro');
   if (intro) intro.textContent = 'Search Cal Golden Bars or add another location to the map.';
@@ -433,18 +364,10 @@ function normalizeActionLabels(card) {
 }
 
 function enhanceSelectedCard() {
-  const state = appState();
-  document.body.classList.toggle('has-selected-venue', Boolean(state?.selectedVenueId));
-
   const card = document.querySelector('#map-view > #venue-tray.venue-tray.tray--selected .selected-card');
   if (!card) return;
   addPlanWatchPartyAction(card);
   normalizeActionLabels(card);
-
-  if (isMobile() && document.body.dataset.commandSurface === 'search') {
-    const tray = document.querySelector('#venue-tray');
-    if (tray) tray.dataset.selectedDensity = 'compact';
-  }
 }
 
 function scheduleEnhancement() {
@@ -460,9 +383,6 @@ function initialize() {
   setSearchLanguage();
 
   document.querySelector('#mobile-list-button')?.addEventListener('click', openListSurface, { capture: true });
-  document.querySelector('#mobile-search-button')?.addEventListener('click', () => {
-    requestAnimationFrame(prepareSearchSurface);
-  }, { capture: true });
 
   scheduleEnhancement();
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleEnhancement);

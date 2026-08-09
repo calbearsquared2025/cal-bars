@@ -9,8 +9,6 @@ const FOCUS_ZOOM = 11;
 const STYLE_ID = 'cgb-map-mobile-refinement';
 
 let lastAutoFocusedVenueId = '';
-let lastSelectedVenueId = '';
-let selectedTrayExpanded = false;
 let trayObserver = null;
 
 function isMobile() {
@@ -96,27 +94,6 @@ function installStyles() {
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > .icon-button {
-        display: none !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
-        height: 170px !important;
-        max-height: 170px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
-        max-height: 146px !important;
-        overflow: hidden !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card {
-        gap: 7px !important;
-        padding-bottom: 12px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .venue-description,
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
-      #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
         display: none !important;
       }
     }
@@ -206,42 +183,7 @@ function openPreviewVenue(event) {
   const card = previewVenueCard(button.dataset.directVenueId);
   if (!card) return;
 
-  selectedTrayExpanded = false;
-  lastSelectedVenueId = '';
   card.click();
-}
-
-function setSelectedTrayDensity(expanded) {
-  const tray = document.querySelector('#venue-tray.tray--selected');
-  if (!tray) return;
-  selectedTrayExpanded = expanded;
-  tray.dataset.selectedDensity = expanded ? 'expanded' : 'compact';
-  const handle = document.querySelector('#tray-handle');
-  handle?.setAttribute('aria-expanded', String(expanded));
-  handle?.setAttribute('aria-label', expanded
-    ? 'Collapse selected location'
-    : 'Expand selected location');
-  requestAnimationFrame(positionAttribution);
-}
-
-function syncSelectedTrayDensity() {
-  const state = appState();
-  const tray = document.querySelector('#venue-tray');
-  if (!isMobile() || tray?.dataset.state !== 'selected' || !state?.selectedVenueId) {
-    tray?.removeAttribute('data-selected-density');
-    return;
-  }
-
-  if (document.body.dataset.commandSurface === 'search') {
-    setSelectedTrayDensity(false);
-    return;
-  }
-
-  if (state.selectedVenueId !== lastSelectedVenueId) {
-    lastSelectedVenueId = state.selectedVenueId;
-    selectedTrayExpanded = false;
-  }
-  setSelectedTrayDensity(selectedTrayExpanded);
 }
 
 function handleTrayTopTap(event) {
@@ -252,7 +194,7 @@ function handleTrayTopTap(event) {
 
   event.preventDefault();
   event.stopImmediatePropagation();
-  setSelectedTrayDensity(!selectedTrayExpanded);
+  document.querySelector('#tray-selected .selected-card__header > .icon-button')?.click();
 }
 
 function focusVenue(venueId, { force = false } = {}) {
@@ -317,15 +259,20 @@ function sync() {
   removeZoomControls();
   updatePreviewIntent();
   requestAnimationFrame(updatePreviewIntent);
-  syncSelectedTrayDensity();
   positionAttribution();
 
   const state = appState();
+  const tray = document.querySelector('#venue-tray');
+  if (isMobile() && document.body.dataset.commandSurface === 'map' && tray?.dataset.state === 'selected') {
+    const handle = document.querySelector('#tray-handle');
+    handle?.setAttribute('aria-expanded', 'true');
+    handle?.setAttribute('aria-label', 'Collapse selected location');
+  }
+
   if (state?.locationFocusVenueId === state.selectedVenueId) {
     state.locationFocusVenueId = null;
     return;
   }
-  const tray = document.querySelector('#venue-tray');
   if (!isMobile() || document.body.dataset.commandSurface !== 'map' ||
       !state?.selectedVenueId || tray?.dataset.state !== 'selected') return;
   focusVenue(state.selectedVenueId);
@@ -341,8 +288,6 @@ function initialize() {
   document.addEventListener('click', (event) => {
     const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
     if (!marker) return;
-    selectedTrayExpanded = false;
-    lastSelectedVenueId = '';
     lastAutoFocusedVenueId = '';
     requestAnimationFrame(() => focusVenue(marker.dataset.venueId, { force: true }));
   });

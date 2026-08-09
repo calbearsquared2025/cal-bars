@@ -93,10 +93,6 @@ function trayState() {
   return element('#venue-tray')?.dataset?.state || '';
 }
 
-function trayDensity() {
-  return element('#venue-tray')?.dataset?.selectedDensity || '';
-}
-
 function selectedVenueId() {
   return state()?.selectedVenueId || '';
 }
@@ -352,7 +348,6 @@ async function runDesktopChecks() {
   click('#add-surface [data-command-close]');
   await waitFor(() => activeCommand() === 'map' && trayState() === 'selected', 'desktop selected Add back to Selected');
 
-
   progress('desktop-nearby-all');
   click('#mobile-list-button');
   await waitFor(() => trayState() === 'full', 'desktop Locations before Nearby');
@@ -432,38 +427,45 @@ async function runMainChecks() {
   noPartyCard?.click();
   await waitFor(() => selectedVenueId() === noPartyVenue?.venue_id && trayState() === 'selected', 'venue selection');
   await waitFor(() => activeCommand() === 'map', 'selected venue returning to Map');
-  await waitFor(() => trayDensity() === 'compact', 'new selected venue compact density');
-  check(Boolean(element('#tray-selected .selected-card')), 'Selected venue should render a selected card');
+  check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Selected venue should not expose an intermediate density state');
+  check(isVisible('#tray-selected .selected-card'), 'Selected venue should render the full selected card');
   check(!element('#tray-selected .party-module'), 'No-Watch-Party venue should not render a Watch Party module');
+  check(isVisible('#tray-selected .selected-card__plan-party'), 'No-Watch-Party selected profile should preserve the contribution action');
+  check(isVisible('#tray-selected .intent-button'), 'Selected profile should preserve Fan Intent');
+  check(isVisible('#tray-selected .selected-card__directions-inline'), 'Selected profile should preserve Directions');
+  check(isVisible('#tray-selected .selected-card__share'), 'Selected profile should preserve Share');
+  check(isVisible('#tray-selected .selected-card__details'), 'Selected profile should preserve Details');
   check(!badgeTexts('#tray-selected .selected-card').includes('COMMUNITY LOCATION'), 'Mobile selected card should omit the Community Location badge');
 
-  progress('density-expand');
+  progress('selected-to-mini');
   click('#tray-handle');
-  await waitFor(() => trayDensity() === 'expanded', 'manual selected-tray expansion');
+  await waitFor(() => trayState() === 'peek' && selectedVenueId() === noPartyVenue?.venue_id, 'selected profile → mini profile');
+  check(isVisible('#tray-peek'), 'Selected Venue mini profile should be visible');
+  check(!isVisible('#tray-selected'), 'Full selected profile should be hidden in mini state');
+  check(element('#browse-locations-button')?.dataset?.directVenueId === noPartyVenue?.venue_id, 'Mini profile should retain the selected Venue');
 
-  progress('rsvp-join-expanded');
+  progress('mini-to-selected');
+  click('#browse-locations-button');
+  await waitFor(() => trayState() === 'selected' && selectedVenueId() === noPartyVenue?.venue_id, 'mini profile → full selected profile');
+  check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Mini profile should open directly to the full selected profile');
+  check(isVisible('#tray-selected .selected-card__details'), 'Direct mini-to-selected transition should expose full selected actions');
+
+  progress('rsvp-join-selected');
   check(attendanceNumber() === 0, 'Mocked selected venue should begin at zero attendance');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'RSVP 0 → 1');
   await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'mobile positive attendance refinement');
   check(!isVisible('#tray-selected .bear-count__icon'), 'Mobile positive attendance should hide the people icon');
-  const expandedAttendancePresentation = attendancePresentation();
-  check(isCanonicalAttendancePresentation(expandedAttendancePresentation), 'Expanded mobile tray should use the canonical attendance-card presentation');
-  check(trayState() === 'selected', 'RSVP 0 → 1 must retain selected tray state');
-  check(trayDensity() === 'expanded', 'RSVP 0 → 1 must preserve expanded selected-tray density');
+  check(isCanonicalAttendancePresentation(attendancePresentation()), 'Selected mobile tray should use the canonical attendance-card presentation');
+  check(trayState() === 'selected', 'RSVP 0 → 1 must retain the full selected profile');
+  check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'RSVP 0 → 1 must not recreate an intermediate density state');
   await waitForIntentSettled('RSVP 0 → 1 transaction completion');
 
-  progress('density-collapse');
-  click('#tray-handle');
-  await waitFor(() => trayDensity() === 'compact', 'manual selected-tray collapse');
-  check(JSON.stringify(attendancePresentation()) === JSON.stringify(expandedAttendancePresentation), 'Compact and expanded mobile trays should share one attendance-card presentation');
-  await waitForIntentSettled('intent control ready after selected-tray collapse');
-
-  progress('rsvp-withdraw-compact');
+  progress('rsvp-withdraw-selected');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 0 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'RSVP 1 → 0');
-  check(trayState() === 'selected', 'RSVP 1 → 0 must retain selected tray state');
-  check(trayDensity() === 'compact', 'RSVP 1 → 0 must preserve compact selected-tray density');
+  check(trayState() === 'selected', 'RSVP 1 → 0 must retain the full selected profile');
+  check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'RSVP 1 → 0 must not recreate an intermediate density state');
   await waitForIntentSettled('RSVP 1 → 0 transaction completion');
 
   progress('selected-add');
@@ -490,6 +492,8 @@ async function runMainChecks() {
   click('#add-surface [data-command-close]');
   await waitFor(() => activeCommand() === 'map', 'selected Add → Map');
   check(selectedVenueId() === noPartyVenue?.venue_id, 'Selected venue must remain selected after leaving Add');
+  check(trayState() === 'selected', 'Selected Add roundtrip must return to the full selected profile');
+  check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Selected Add rerender must not recreate an intermediate density state');
 
   progress('search-result');
   if (partyVenue) {
@@ -498,9 +502,12 @@ async function runMainChecks() {
     setInputValue('#location-query', partyVenue.name);
     await waitFor(() => Boolean(element(`#search-suggestions button[data-venue-id="${partyVenue.venue_id}"]`)), 'existing Search result');
     element(`#search-suggestions button[data-venue-id="${partyVenue.venue_id}"]`)?.click();
-    await waitFor(() => selectedVenueId() === partyVenue.venue_id && activeCommand() === 'map' && trayState() === 'selected', 'Search result → selected Map state');
-    await waitFor(() => trayDensity() === 'compact', 'Search result selected tray compact density');
+    await waitFor(() => selectedVenueId() === partyVenue.venue_id && activeCommand() === 'map' && trayState() === 'selected', 'Search result → full selected Map state');
+    check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Search result should open directly to the full selected profile');
     check(Boolean(element('#tray-selected .party-module')), 'Watch Party venue should render a Watch Party module in the selected card');
+    check(isVisible('#tray-selected .party-module__event'), 'Watch Party selected profile should preserve Event information');
+    check(isVisible('#tray-selected .party-module__report'), 'Watch Party selected profile should preserve Report an Issue');
+    check(isVisible('#tray-selected .selected-card__details'), 'Watch Party selected profile should preserve Details');
     const selectedPartyBadges = badgeTexts('#tray-selected .selected-card');
     check(selectedPartyBadges.includes('WATCH PARTY'), 'Mobile selected card should preserve the Watch Party badge');
     check(selectedPartyBadges.includes('CAL BAR'), 'Mobile selected card should preserve the Cal Bar badge');

@@ -8,7 +8,7 @@ const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
 test('Search never displays a selected or Nearby mini tray', () => {
   assert.match(source, /data-command-surface="search"\] #map-view > #venue-tray\.venue-tray[\s\S]*display: none !important/);
-  assert.match(source, /has-selected-venue \.command-surface:not\(\[hidden\]\)[\s\S]*bottom: var\(--footer-height\) !important/);
+  assert.doesNotMatch(source, /has-selected-venue/);
 });
 
 test('submitted searches and existing CGB result clicks are tracked as map-return actions', () => {

@@ -6,9 +6,10 @@ const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/map-profile-aesthetic-refinement.mjs', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('expanded profile no longer owns an alternate attendance layout', () => {
+test('selected profile no longer owns an alternate attendance layout', () => {
   assert.doesNotMatch(source, /bear-count/);
   assert.doesNotMatch(source, /grid-template-columns: minmax\(0, 1fr\) minmax\(112px, 34%\)/);
+  assert.doesNotMatch(source, /data-selected-density/);
 });
 
 test('planned Watch Party details remain visible in a compact light treatment', () => {
@@ -32,7 +33,6 @@ test('utility actions are text-only and presented as one segmented control', () 
   assert.match(source, /secondary-button:last-child[\s\S]*border-radius: 0 10px 10px 0/);
   assert.match(source, /min-height: 46px !important/);
 });
-
 
 test('bottom navigation uses a pale navy treatment', () => {
   assert.match(source, /\.mobile-command-bar/);

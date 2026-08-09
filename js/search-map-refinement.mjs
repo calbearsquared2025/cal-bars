@@ -23,10 +23,6 @@ function installStyles() {
       body[data-command-surface="search"] #map-view > #venue-tray.venue-tray {
         display: none !important;
       }
-
-      body[data-command-surface="search"].has-selected-venue .command-surface:not([hidden]) {
-        bottom: var(--footer-height) !important;
-      }
     }
   `;
   document.head.append(style);
