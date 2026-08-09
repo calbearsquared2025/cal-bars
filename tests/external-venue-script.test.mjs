@@ -328,6 +328,37 @@ test('minimal external-place request is accepted and persists server-verified ve
   assert.deepEqual(response.fanCounts, [{ game_id: 'game_1', venue_id: created.venue_id, count: 1 }]);
 });
 
+test('Albany Bulb-style server verification skips region US and stores California as CA', () => {
+  const place = externalPlace({
+    placeId: 'poi.55162381',
+    name: 'Albany Bulb',
+    address: 'Albany, Albany, CA, United States',
+    addressLine1: 'Albany',
+    city: 'Albany',
+    region: 'CA',
+    postalCode: '',
+    latitude: 37.88996424,
+    longitude: -122.3253929
+  });
+  const feature = mapTilerFeature(place, {
+    context: [
+      { id: 'municipality.albany', place_type: ['municipality'], text: 'Albany', place_designation: 'city' },
+      { id: 'region.us', place_type: ['region'], text: 'US', country_code: 'us' },
+      { id: 'subregion.california', place_type: ['subregion'], text: 'California', country_code: 'us' },
+      { id: 'country.us', place_type: ['country'], text: 'United States', short_code: 'us' }
+    ]
+  });
+  const harness = buildHarness({ mapTilerFeatures: new Map([[place.placeId, feature]]) });
+  const response = joinExternal(harness.api, minimalExternalPlace({ placeId: place.placeId }));
+  const created = sheetObjects(harness.venueSheet, VENUE_HEADERS)
+    .find((venue) => venue.external_place_id === place.placeId);
+
+  assert.equal(response.ok, true);
+  assert.equal(created.region, 'CA');
+  assert.notEqual(created.region, 'US');
+  assert.equal(harness.mapTilerRequests.length, 1);
+});
+
 test('legacy full request is accepted but forged browser venue metadata is ignored', () => {
   const { api, venueSheet, mapTilerRequests } = buildHarness();
   const response = joinExternal(api, externalPlace({
