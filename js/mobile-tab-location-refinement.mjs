@@ -7,7 +7,6 @@ import {
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-tab-location-refinement';
-const MAP_MAX_ZOOM = 11;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -15,10 +14,6 @@ function isMobile() {
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
-}
-
-function reducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function installStyles() {
@@ -190,37 +185,6 @@ function syncListLocationControl() {
     : 'Use my location to show nearby locations');
 }
 
-function fitMapToLocation(origin, nearby) {
-  const state = appState();
-  if (!state?.map || !origin) return;
-  const points = [
-    [Number(origin.lon), Number(origin.lat)],
-    ...nearby.slice(0, 2).map(({ venue }) => [Number(venue.longitude), Number(venue.latitude)])
-  ].filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat));
-
-  if (points.length > 1) {
-    const lons = points.map(([lon]) => lon);
-    const lats = points.map(([, lat]) => lat);
-    state.map.fitBounds([
-      [Math.min(...lons), Math.min(...lats)],
-      [Math.max(...lons), Math.max(...lats)]
-    ], {
-      padding: { top: 72, right: 54, bottom: 148, left: 54 },
-      maxZoom: MAP_MAX_ZOOM,
-      duration: reducedMotion() ? 0 : 520,
-      essential: true
-    });
-    return;
-  }
-
-  state.map.easeTo({
-    center: [Number(origin.lon), Number(origin.lat)],
-    zoom: 10,
-    duration: reducedMotion() ? 0 : 500,
-    essential: true
-  });
-}
-
 function locationSuccess(position, target) {
   const state = appState();
   if (!state) return;
@@ -249,7 +213,7 @@ function locationSuccess(position, target) {
   }
 
   window.CGBApp?.render?.();
-  if (target === 'map') requestAnimationFrame(() => fitMapToLocation(state.origin, nearby));
+  if (target === 'map') requestAnimationFrame(() => window.CGBApp?.focusLocation?.(state.origin, nearby));
   window.CGBApp?.showStatus?.(nearby.length
     ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
     : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);

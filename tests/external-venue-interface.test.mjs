@@ -63,6 +63,14 @@ test('only a validated server response enters the canonical snapshot', () => {
   assert.match(app, /buildVenueUrl\(venue\.slug, state\.gameId/);
 });
 
+test('successful external creation uses the shared Locate me focus behavior', () => {
+  const join = functionBlock(client, 'joinSelectedExternalVenue', 'cancelConfirmation');
+  assert.match(join, /CGBApp\?\.focusLocation/);
+  assert.match(join, /venueId: venue\.venue_id/);
+  assert.match(app, /function focusLocation[\s\S]*fitBounds/);
+  assert.doesNotMatch(client, /panToCommittedVenueSafely/);
+});
+
 test('creation pending prevents duplicate taps and failure retains retry context without optimistic venue state', () => {
   const join = functionBlock(client, 'joinSelectedExternalVenue', 'cancelConfirmation');
   assert.match(join, /if \(!selected \|\| state\.pending \|\| appState\.fanIntent\.pending\) return false/);

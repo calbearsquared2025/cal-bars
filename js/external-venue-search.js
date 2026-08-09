@@ -429,18 +429,6 @@ function renderApplicationSafely(context) {
   }
 }
 
-function panToCommittedVenueSafely(venue) {
-  try {
-    appState.map?.easeTo?.({
-      center: [Number(venue.longitude), Number(venue.latitude)],
-      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 420,
-      essential: true
-    });
-  } catch (error) {
-    console.error('External venue map movement failed after a successful write.', error);
-  }
-}
-
 async function joinSelectedExternalVenue() {
   const state = ensureExternalState();
   const selected = state.retry || state.selected;
@@ -481,8 +469,12 @@ async function joinSelectedExternalVenue() {
       if (dom.externalDialog.open) dom.externalDialog.close();
       window.CGBApp?.showStatus('Community Location added. You’ll be here.', 3200);
       window.gtag?.('event', 'community_location_created');
+      window.CGBApp?.focusLocation?.({
+        lon: venue.longitude,
+        lat: venue.latitude,
+        venueId: venue.venue_id
+      });
       renderApplicationSafely('post-success');
-      panToCommittedVenueSafely(venue);
       return true;
     } catch (error) {
       console.error('External venue write succeeded but the local application commit failed.', error);
