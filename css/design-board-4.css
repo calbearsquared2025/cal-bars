@@ -469,6 +469,12 @@ body[data-view="detail"] #app {
     right: 28px;
   }
 
+  .maplibregl-ctrl-bottom-right {
+    right: auto;
+    bottom: 4px;
+    left: 8px;
+  }
+
   .venue-tray {
     top: 22px;
     right: 24px;
