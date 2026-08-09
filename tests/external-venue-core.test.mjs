@@ -6,7 +6,6 @@ import {
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
-  findExistingMapTilerKey,
   mappedLocationFieldMatches,
   normalizeMapTilerFeature,
   normalizeMapTilerPostalOrigin,
@@ -24,7 +23,7 @@ const feature = {
   center: [-122.252, 37.839],
   context: [
     { id: 'place.oakland', text: 'Oakland' },
-    { id: 'region.california', text: 'California', short_code: 'US-CA' },
+    { id: 'region.california', text: 'California', country_code: 'us' },
     { id: 'postcode.94618', text: '94618' },
     { id: 'country.us', text: 'United States', short_code: 'us' }
   ]
@@ -85,6 +84,54 @@ test('MapTiler POI results normalize into the narrow external-place shape', () =
   });
 });
 
+test('US region country_code is not treated as a state abbreviation', () => {
+  const normalized = normalizeMapTilerFeature(feature);
+  assert.equal(normalized.region, 'CA');
+  assert.notEqual(normalized.region, 'US');
+});
+
+test('real Santa Monica Pier and Albany Bulb hierarchies normalize California as CA', () => {
+  const realFeatures = [
+    {
+      id: 'poi.55158442',
+      place_type: ['poi'],
+      text: 'Santa Monica Pier',
+      place_name: 'Santa Monica Pier, Downtown Santa Monica, Santa Monica, United States',
+      center: [-118.49739992191428, 34.008896169545125],
+      properties: { country_code: 'us' },
+      context: [
+        { id: 'address.22424228', text: 'Santa Monica Pier', country_code: 'us', kind: 'street' },
+        { id: 'postal_code.4480556', text: '90405', country_code: 'us' },
+        { id: 'place.5009837', text: 'Downtown Santa Monica', country_code: 'us', place_designation: 'quarter' },
+        { id: 'municipality.269116', text: 'Santa Monica', country_code: 'us', place_designation: 'city' },
+        { id: 'county.22068', text: 'Los Angeles', country_code: 'us' },
+        { id: 'region.2166', text: 'California', country_code: 'us' },
+        { id: 'country.213', text: 'United States', country_code: 'us' }
+      ]
+    },
+    {
+      id: 'poi.55162381',
+      place_type: ['poi'],
+      text: 'Albany Bulb',
+      place_name: 'Albany Bulb, Albany, United States',
+      center: [-122.32539285428419, 37.88996423602199],
+      properties: { country_code: 'us' },
+      context: [
+        { id: 'municipality.268335', text: 'Albany', country_code: 'us', place_designation: 'town' },
+        { id: 'county.22205', text: 'Alameda', country_code: 'us' },
+        { id: 'region.2166', text: 'California', country_code: 'us' },
+        { id: 'country.213', text: 'United States', country_code: 'us' }
+      ]
+    }
+  ];
+
+  for (const realFeature of realFeatures) {
+    const normalized = normalizeMapTilerFeature(realFeature);
+    assert.equal(normalized.region, 'CA');
+    assert.notEqual(normalized.region, 'US');
+  }
+});
+
 test('US administrative hierarchy prefers municipality and state over neighborhood and county', () => {
   const twoPitchers = {
     id: 'poi.64751681',
@@ -97,7 +144,7 @@ test('US administrative hierarchy prefers municipality and state over neighborho
       { id: 'place.northlake', text: 'Northlake', place_designation: 'neighbourhood' },
       { id: 'municipality.oakland', text: 'Oakland', place_designation: 'city' },
       { id: 'county.alameda', text: 'Alameda' },
-      { id: 'region.california', text: 'California', short_code: 'US-CA' },
+      { id: 'region.california', text: 'California', country_code: 'us' },
       { id: 'postal_code.94612', text: '94612' },
       { id: 'country.us', text: 'United States', short_code: 'us' }
     ]
@@ -116,7 +163,7 @@ test('normalization requires a concrete POI or address with canonical address co
   assert.deepEqual(normalizeMapTilerResults({ features: [feature, feature] }).map((item) => item.placeId), ['poi.98765']);
 });
 
-test('MapTiler request uses the existing public key, concrete result types, autocomplete, and bounded results', () => {
+test('MapTiler request uses the explicit public key, concrete result types, autocomplete, and bounded results', () => {
   const url = new URL(buildMapTilerSearchUrl('McNally Oakland', 'existing-public-key', { limit: 99 }));
   assert.equal(url.hostname, 'api.maptiler.com');
   assert.equal(url.pathname, '/geocoding/McNally%20Oakland.json');
@@ -166,15 +213,6 @@ test('exact mapped city and ZIP matches are resolved before area geocoding', () 
   assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland').map((venue) => venue.venue_id), ['one', 'two']);
   assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland, CA').map((venue) => venue.venue_id), ['one', 'two']);
   assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Two Pitchers').map((venue) => venue.venue_id), []);
-});
-
-test('frontend reuses the key already present in MapTiler resource requests', () => {
-  assert.equal(findExistingMapTilerKey({
-    resourceEntries: [{ name: 'https://api.maptiler.com/maps/test/style.json?key=already-loaded' }]
-  }), 'already-loaded');
-  assert.equal(findExistingMapTilerKey({
-    style: { sources: { base: { url: 'https://api.maptiler.com/tiles/test/tiles.json?key=style-key' } } }
-  }), 'style-key');
 });
 
 test('joinExternalVenue responses accept only the public Venue whitelist', () => {

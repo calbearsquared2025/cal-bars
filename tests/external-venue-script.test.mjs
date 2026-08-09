@@ -108,6 +108,14 @@ function baseVenue(overrides = {}) {
   };
 }
 
+function minimalExternalPlace(overrides = {}) {
+  return {
+    source: 'maptiler',
+    placeId: 'poi.98765',
+    ...overrides
+  };
+}
+
 function externalPlace(overrides = {}) {
   return {
     source: 'maptiler',
@@ -153,7 +161,7 @@ function mapTilerFeature(place = externalPlace(), overrides = {}) {
         id: 'region.2',
         place_type: ['region'],
         text: regionName,
-        short_code: `${place.countryCode}-${place.region}`
+        country_code: place.countryCode.toLowerCase()
       },
       {
         id: 'postal_code.3',
@@ -275,7 +283,7 @@ function post(api, payload) {
   return JSON.parse(api.doPost({ postData: { contents: JSON.stringify(payload) } }).text);
 }
 
-function joinExternal(api, place = externalPlace()) {
+function joinExternal(api, place = minimalExternalPlace()) {
   return post(api, { action: 'joinExternalVenue', browserId, gameId: 'game_1', externalPlace: place });
 }
 
@@ -287,18 +295,9 @@ function activeFanRows(fanSheet) {
   return sheetObjects(fanSheet, FAN_HEADERS).filter((row) => row.status === 'attending');
 }
 
-test('new external place is confirmed with MapTiler and provider fields are authoritative', () => {
+test('minimal external-place request is accepted and persists server-verified venue data', () => {
   const { api, venueSheet, fanSheet, mapTilerRequests } = buildHarness();
-  const response = joinExternal(api, externalPlace({
-    name: 'Forged browser name',
-    address: '1 Fake St, Fake City, ZZ 00000, United States',
-    addressLine1: '1 Fake St',
-    city: 'Fake City',
-    region: 'ZZ',
-    postalCode: '00000',
-    latitude: 0,
-    longitude: 0
-  }));
+  const response = joinExternal(api);
   const venues = sheetObjects(venueSheet, VENUE_HEADERS);
   const created = venues.find((venue) => venue.external_place_id === 'poi.98765');
 
@@ -310,6 +309,7 @@ test('new external place is confirmed with MapTiler and provider fields are auth
   assert.equal(created.address_line_1, '5352 College Ave');
   assert.equal(created.city, 'Oakland');
   assert.equal(created.region, 'CA');
+  assert.notEqual(created.region, 'US');
   assert.equal(created.postal_code, '94618');
   assert.equal(created.latitude, 37.839);
   assert.equal(created.longitude, -122.252);
@@ -328,7 +328,79 @@ test('new external place is confirmed with MapTiler and provider fields are auth
   assert.deepEqual(response.fanCounts, [{ game_id: 'game_1', venue_id: created.venue_id, count: 1 }]);
 });
 
-test('external place ID matching reuses the canonical Venue', () => {
+test('sparse Albany Bulb ID verification is enriched by exact provider ID and stores California as CA', () => {
+  const place = externalPlace({
+    placeId: 'poi.55162381',
+    name: 'Albany Bulb',
+    address: 'Albany, Albany, CA, United States',
+    addressLine1: 'Albany',
+    city: 'Albany',
+    region: 'CA',
+    postalCode: '',
+    latitude: 37.88996424,
+    longitude: -122.3253929
+  });
+  const sparseFeature = {
+    id: place.placeId,
+    place_type: ['poi'],
+    text: place.name,
+    place_name: place.name,
+    center: [place.longitude, place.latitude],
+    properties: { country_code: 'us' }
+  };
+  const enrichedFeature = mapTilerFeature(place, {
+    place_name: 'Albany Bulb, Albany, United States',
+    context: [
+      { id: 'municipality.268335', text: 'Albany', country_code: 'us', place_designation: 'town' },
+      { id: 'county.22205', text: 'Alameda', country_code: 'us' },
+      { id: 'region.2166', text: 'California', country_code: 'us' },
+      { id: 'country.213', text: 'United States', country_code: 'us' }
+    ]
+  });
+  const harness = buildHarness({ mapTilerFeatures: new Map([
+    [place.placeId, sparseFeature],
+    [place.name, enrichedFeature]
+  ]) });
+  const response = joinExternal(harness.api, minimalExternalPlace({ placeId: place.placeId }));
+  const created = sheetObjects(harness.venueSheet, VENUE_HEADERS)
+    .find((venue) => venue.external_place_id === place.placeId);
+
+  assert.equal(response.ok, true);
+  assert.equal(created.region, 'CA');
+  assert.notEqual(created.region, 'US');
+  assert.equal(harness.mapTilerRequests.length, 2);
+  assert.match(harness.mapTilerRequests[0].url, /\/geocoding\/poi\.55162381\.json\?/);
+  assert.match(harness.mapTilerRequests[1].url, /\/geocoding\/Albany%20Bulb\.json\?/);
+  assert.match(harness.mapTilerRequests[1].url, /autocomplete=false/);
+});
+
+test('legacy full request is accepted but forged browser venue metadata is ignored', () => {
+  const { api, venueSheet, mapTilerRequests } = buildHarness();
+  const response = joinExternal(api, externalPlace({
+    name: 'Forged browser name',
+    address: '1 Fake St, Fake City, ZZ 00000, United States',
+    addressLine1: '1 Fake St',
+    city: 'Fake City',
+    region: 'ZZ',
+    postalCode: '00000',
+    countryCode: 'US',
+    latitude: 0,
+    longitude: 0
+  }));
+  const created = sheetObjects(venueSheet, VENUE_HEADERS).find((venue) => venue.external_place_id === 'poi.98765');
+
+  assert.equal(response.ok, true);
+  assert.equal(created.name, "McNally's Irish Pub");
+  assert.equal(created.address_line_1, '5352 College Ave');
+  assert.equal(created.city, 'Oakland');
+  assert.equal(created.region, 'CA');
+  assert.equal(created.postal_code, '94618');
+  assert.equal(created.latitude, 37.839);
+  assert.equal(created.longitude, -122.252);
+  assert.equal(mapTilerRequests.length, 1);
+});
+
+test('external place ID matching reuses the canonical Venue without MapTiler verification', () => {
   const matched = baseVenue({
     venue_id: 'ven_maptiler',
     slug: 'canonical-maptiler-place',
@@ -343,7 +415,7 @@ test('external place ID matching reuses the canonical Venue', () => {
   assert.equal(mapTilerRequests.length, 0);
 });
 
-test('normalized-address matching reuses a Venue when external IDs differ', () => {
+test('normalized-address matching reuses a Venue only after server verification', () => {
   const addressMatch = baseVenue({
     venue_id: 'ven_address',
     slug: 'address-match',
@@ -359,7 +431,7 @@ test('normalized-address matching reuses a Venue when external IDs differ', () =
   const response = joinExternal(api);
   assert.equal(response.venue.venue_id, 'ven_address');
   assert.equal(sheetObjects(venueSheet, VENUE_HEADERS).length, 2);
-  assert.equal(mapTilerRequests.length, 0);
+  assert.equal(mapTilerRequests.length, 1);
 });
 
 test('ordinary repeated requests remain one Venue and one active Fan Intent', () => {
@@ -394,16 +466,7 @@ test('joining an external Venue moves an existing selection without duplicate ac
 test('moving from one external Venue to another keeps one active selection', () => {
   const { api, venueSheet, fanSheet } = buildHarness();
   const first = joinExternal(api);
-  const second = joinExternal(api, externalPlace({
-    placeId: 'poi.22222',
-    name: 'Second External Pub',
-    address: '900 Second St, Berkeley, CA 94710, United States',
-    addressLine1: '900 Second St',
-    city: 'Berkeley',
-    postalCode: '94710',
-    latitude: 37.87,
-    longitude: -122.3
-  }));
+  const second = joinExternal(api, minimalExternalPlace({ placeId: 'poi.22222' }));
   assert.notEqual(first.venue.venue_id, second.venue.venue_id);
   assert.equal(sheetObjects(venueSheet, VENUE_HEADERS).filter((row) => row.external_source === 'maptiler').length, 2);
   assert.equal(activeFanRows(fanSheet).length, 1);
@@ -420,12 +483,10 @@ test('failed Fan Intent append removes the just-created Venue', () => {
   assert.equal(sheetObjects(harness.fanSheet, FAN_HEADERS).length, 0);
 });
 
-test('invalid provider, identifiers, address, coordinates, and closed games are rejected', () => {
+test('invalid provider, identifiers, and closed games are rejected', () => {
   const invalid = buildHarness();
-  assert.equal(joinExternal(invalid.api, externalPlace({ source: 'google' })).error, 'unsupported_external_source');
-  assert.equal(joinExternal(invalid.api, externalPlace({ placeId: '' })).error, 'invalid_external_place_id');
-  assert.equal(joinExternal(invalid.api, externalPlace({ addressLine1: '' })).error, 'invalid_external_address');
-  assert.equal(joinExternal(invalid.api, externalPlace({ latitude: 999 })).error, 'invalid_external_coordinates');
+  assert.equal(joinExternal(invalid.api, minimalExternalPlace({ source: 'google' })).error, 'unsupported_external_source');
+  assert.equal(joinExternal(invalid.api, minimalExternalPlace({ placeId: '' })).error, 'invalid_external_place_id');
   const closed = buildHarness({ gameStatus: 'completed' });
   assert.equal(joinExternal(closed.api).error, 'game_not_open');
 });

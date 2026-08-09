@@ -111,14 +111,20 @@ function cityFor(feature, code) {
 }
 
 function regionFor(feature, code) {
-  const region = hierarchyMatch(feature, ['region', 'subregion', 'county']);
-  const text = cleanText(region?.text || region?.place_name || region?.name, 160);
-  if (code !== 'US') return text;
+  if (code !== 'US') {
+    const region = hierarchyMatch(feature, ['region', 'subregion', 'county']);
+    return cleanText(region?.text || region?.place_name || region?.name, 160);
+  }
 
-  const rawCode = cleanText(region?.short_code || region?.properties?.short_code || region?.country_code, 20);
-  const abbreviation = rawCode.split('-').pop().replace(/[^A-Za-z]/g, '').toUpperCase();
-  if (/^[A-Z]{2}$/.test(abbreviation)) return abbreviation;
-  return US_REGION_CODES[normalizeComparable(text)] || text;
+  const administrativeItems = hierarchyItems(feature).filter((item) =>
+    ['region', 'subregion', 'county'].some((prefix) => hierarchyItemMatches(item, prefix))
+  );
+  for (const item of administrativeItems) {
+    const text = cleanText(item?.text || item?.place_name || item?.name, 160);
+    const mapped = US_REGION_CODES[normalizeComparable(text)];
+    if (mapped) return mapped;
+  }
+  return '';
 }
 
 function coordinatesFor(feature) {
@@ -280,42 +286,6 @@ export function normalizeMapTilerPostalOrigin(payload, query) {
     });
   }
   return null;
-}
-
-function keyFromUrl(value) {
-  try {
-    const url = new URL(String(value));
-    if (url.hostname !== 'api.maptiler.com') return '';
-    return cleanText(url.searchParams.get('key'), 240);
-  } catch (_) {
-    return '';
-  }
-}
-
-function visitStrings(value, visitor, seen = new Set()) {
-  if (typeof value === 'string') return visitor(value);
-  if (!value || typeof value !== 'object' || seen.has(value)) return '';
-  seen.add(value);
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      const found = visitStrings(item, visitor, seen);
-      if (found) return found;
-    }
-    return '';
-  }
-  for (const child of Object.values(value)) {
-    const found = visitStrings(child, visitor, seen);
-    if (found) return found;
-  }
-  return '';
-}
-
-export function findExistingMapTilerKey({ resourceEntries = [], style = null } = {}) {
-  for (const entry of resourceEntries || []) {
-    const key = keyFromUrl(entry?.name || entry);
-    if (key) return key;
-  }
-  return visitStrings(style, keyFromUrl);
 }
 
 export function responseContainsPrivateExternalFields(value) {

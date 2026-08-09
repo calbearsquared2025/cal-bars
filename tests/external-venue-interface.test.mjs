@@ -39,15 +39,15 @@ test('external selection opens verification without creating a Venue', () => {
   assert.match(html, /id="external-venue-confirm"[^>]*>I’ll be here</);
 });
 
-test('combined write preserves selected game and sends only normalized external fields', () => {
+test('combined write preserves selected game and sends only external provider identity', () => {
+  const payload = functionBlock(client, 'externalPlacePayload', 'postJoinExternalVenue');
   assert.match(client, /action: 'joinExternalVenue'/);
   assert.match(client, /browserId: appState\.fanIntent\.browserId/);
   assert.match(client, /gameId: selected\.gameId/);
   assert.match(client, /externalPlace: externalPlacePayload\(selected\)/);
-  assert.match(client, /source: selected\.source/);
-  assert.match(client, /placeId: selected\.placeId/);
-  assert.match(client, /addressLine1: selected\.addressLine1/);
-  assert.match(client, /countryCode: selected\.countryCode/);
+  assert.match(payload, /source: selected\.source/);
+  assert.match(payload, /placeId: selected\.placeId/);
+  assert.doesNotMatch(payload, /name:|address:|addressLine|city:|region:|postalCode:|countryCode:|latitude:|longitude:/);
   assert.doesNotMatch(client, /external_source|external_place_id/);
 });
 
@@ -106,10 +106,12 @@ test('missing-location fallback uses exact copy only when a valid URL is configu
   assert.doesNotMatch(html, /Nominate as a Cal Bar|Add a Photo|Suggest an Update/);
 });
 
-test('external search reuses the MapTiler key already loaded by the map and commits no new key literal', () => {
-  assert.match(client, /findExistingMapTilerKey/);
-  assert.match(client, /performance\.getEntriesByType\('resource'\)/);
-  assert.match(client, /appState\.map\?\.getStyle/);
+test('explicit frontend MapTiler key ownership replaces resource and style scavenging', () => {
+  assert.match(app, /const MAPTILER_KEY = '[^']+'/);
+  assert.match(app, /mapTilerKey: MAPTILER_KEY/);
+  assert.match(client, /CGBApp\?\.mapTilerKey/);
+  assert.doesNotMatch(client, /findExistingMapTilerKey|performance\.getEntriesByType|appState\.map\?\.getStyle/);
+  assert.doesNotMatch(core, /findExistingMapTilerKey|keyFromUrl|visitStrings/);
   assert.doesNotMatch(client, /const MAPTILER_KEY|[?&]key=[A-Za-z0-9_-]{8,}/);
   assert.match(core, /api\.maptiler\.com\/geocoding/);
 });
