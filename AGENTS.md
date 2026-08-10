@@ -33,6 +33,7 @@ The former seven-document set is deprecated. `CGB_v2_Repository_Audit.md` and th
 - Keep changes limited to the approved task.
 - Run the relevant automated checks and browser tests.
 - Provide physical-device previews or checks for visual and interaction changes.
+- When implementation work produces commits, include a copy-pasteable local preview command in the completion response so the branch can be reviewed immediately. Default to `py -m http.server 8765` from the repository root and include `http://localhost:8765/`; if that port is unavailable, provide the same command with another free high port.
 - Review the complete diff for privacy, security, and unrelated changes.
 - Record any required Google, MapTiler, DNS, or GitHub owner actions.
 - Stop at the requested acceptance boundary.
