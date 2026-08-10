@@ -39,6 +39,15 @@ test('Fan Intent integration uses explicit application lifecycle and render func
   assert.match(app, /restoreSelection/);
 });
 
+test('post-join invitations use transient render-owned state without refresh persistence', () => {
+  assert.match(client, /let postJoinInvitation = null/);
+  assert.match(client, /subscribeAppEvent\('rendered', renderPostJoinInvitation\)/);
+  assert.match(client, /postJoinInvitation = \{ gameId: appState\.gameId, venueId, firstBear \}/);
+  assert.match(client, /clearPostJoinInvitation\(\)[\s\S]*controller\?\.performIntent/);
+  assert.match(client, /intent\.insertAdjacentElement\('afterend', panel\)/);
+  assert.doesNotMatch(client, /storageSet\([^\n]*postJoin|localStorage[^\n]*postJoin/i);
+});
+
 test('the body-wide MutationObserver and DOM venue inference fallbacks are removed', () => {
   assert.doesNotMatch(client, /MutationObserver/);
   assert.doesNotMatch(client, /document\.body/);

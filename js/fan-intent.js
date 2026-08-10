@@ -17,6 +17,7 @@ const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const WRITE_TIMEOUT_MS = 10000;
 
 let controller = null;
+let postJoinInvitation = null;
 
 function storageGet(key) {
   try { return window.localStorage.getItem(key); } catch (_) { return null; }
@@ -196,7 +197,7 @@ function activityPresentation(game, venue, currentCopy) {
 }
 
 function renderDetailActivity(game) {
-  const activity = document.querySelector('.activity-card');
+  const activity = document.querySelector('#venue-detail > .activity-card');
   const venue = selectedVenue();
   if (!activity || !venue) return;
 
@@ -297,14 +298,41 @@ async function refreshAggregates() {
   return window.CGBSnapshotRefresh?.refresh?.() || false;
 }
 
-function showPostJoinInvitation(venueId, firstBear) {
+function removePostJoinInvitation() {
   document.querySelectorAll('.post-join-invitation').forEach((panel) => panel.remove());
+  document.querySelectorAll('.action-row.has-post-join-invitation')
+    .forEach((row) => row.classList.remove('has-post-join-invitation'));
+}
+
+function clearPostJoinInvitation() {
+  postJoinInvitation = null;
+  removePostJoinInvitation();
+}
+
+function renderPostJoinInvitation() {
+  removePostJoinInvitation();
+  if (!postJoinInvitation) return;
+
+  const { gameId, venueId, firstBear } = postJoinInvitation;
+  if (
+    gameId !== appState.gameId ||
+    appState.selectedVenueId !== venueId ||
+    activeVenueId() !== venueId
+  ) {
+    postJoinInvitation = null;
+    return;
+  }
+
   const venue = venueById(venueId);
-  const row = document.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
-  if (!venue || !row || activeVenueId() !== venueId) return;
+  const surface = appState.detailMode
+    ? document.querySelector('#venue-detail')
+    : document.querySelector('#tray-selected');
+  const row = surface?.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
+  const intent = row?.querySelector(':scope > .intent-button');
+  if (!venue || !row || !intent) return;
 
   const panel = document.createElement('section');
-  panel.className = 'post-join-invitation activity-card';
+  panel.className = 'post-join-invitation';
   panel.setAttribute('aria-live', 'polite');
   const heading = document.createElement('strong');
   heading.textContent = firstBear
@@ -320,7 +348,13 @@ function showPostJoinInvitation(venueId, firstBear) {
   share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
   share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
   panel.append(heading, copy, share);
-  row.insertAdjacentElement('afterend', panel);
+  row.classList.add('has-post-join-invitation');
+  intent.insertAdjacentElement('afterend', panel);
+}
+
+function showPostJoinInvitation(venueId, firstBear) {
+  postJoinInvitation = { gameId: appState.gameId, venueId, firstBear };
+  renderPostJoinInvitation();
 }
 
 async function handleDocumentClick(event) {
@@ -329,6 +363,7 @@ async function handleDocumentClick(event) {
     event.preventDefault();
     const retry = appState.fanIntent.retry;
     const previousCount = getFanCount(appState.snapshot, appState.gameId, retryButton.dataset.venueId);
+    clearPostJoinInvitation();
     const saved = await controller?.retryIntent();
     if (saved && retry?.action === 'join') {
       const authoritativeCount = getFanCount(appState.snapshot, appState.gameId, retryButton.dataset.venueId);
@@ -343,6 +378,7 @@ async function handleDocumentClick(event) {
   const venueId = intentButton.dataset.venueId;
   const wasJoin = !activeVenueId();
   const previousCount = getFanCount(appState.snapshot, appState.gameId, venueId);
+  clearPostJoinInvitation();
   const saved = await controller?.performIntent(venueId);
   if (saved && wasJoin && activeVenueId() === venueId) {
     const authoritativeCount = getFanCount(appState.snapshot, appState.gameId, venueId);
@@ -381,6 +417,7 @@ async function bootFanIntent() {
   });
 
   subscribeAppEvent('rendered', renderIntentButtons);
+  subscribeAppEvent('rendered', renderPostJoinInvitation);
   document.addEventListener('click', handleDocumentClick);
   startSynchronization();
 
