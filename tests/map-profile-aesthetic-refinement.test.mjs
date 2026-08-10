@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/map-profile-aesthetic-refinement.mjs', root), 'utf8');
+const watchPartyStyles = await readFile(new URL('css/watch-party-display.css', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
 test('selected profile no longer owns an alternate attendance layout', () => {
@@ -12,12 +13,14 @@ test('selected profile no longer owns an alternate attendance layout', () => {
   assert.doesNotMatch(source, /data-selected-density/);
 });
 
-test('planned Watch Party details remain visible in a compact light treatment', () => {
-  assert.match(source, /dark navy is reserved for the primary RSVP action/);
-  assert.match(source, /selected-card > \.party-module[\s\S]*display: grid !important/);
-  assert.match(source, /background: linear-gradient\(135deg, var\(--cgb-gold-50\), var\(--cgb-white\) 78%\)/);
-  assert.match(source, /border-left: 4px solid var\(--cgb-gold-400\)/);
-  assert.match(source, /party-module__report[\s\S]*color: var\(--cgb-ink-500\)/);
+test('Watch Party visual treatment is shared across mobile and desktop', () => {
+  assert.doesNotMatch(source, /dark navy is reserved for the primary RSVP action/);
+  assert.doesNotMatch(source, /background: linear-gradient\(135deg, var\(--cgb-gold-50\), var\(--cgb-white\) 78%\)/);
+  assert.match(watchPartyStyles, /#venue-tray \.selected-card > \.party-module[\s\S]*display: grid/);
+  assert.match(watchPartyStyles, /background: linear-gradient\(135deg, var\(--cgb-gold-50\), var\(--cgb-white\) 78%\)/);
+  assert.match(watchPartyStyles, /border-left: 4px solid var\(--cgb-gold-400\)/);
+  assert.match(watchPartyStyles, /party-module__report[\s\S]*color: var\(--cgb-ink-500\)/);
+  assert.doesNotMatch(watchPartyStyles, /max-width: 899px/);
 });
 
 test('empty Watch Party prompt includes the approved period and secondary action', () => {
