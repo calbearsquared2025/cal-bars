@@ -16,6 +16,7 @@ import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
+import { subscribeAppEvent } from './app-state.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const CONTRIBUTION_INTENTS = Object.freeze({
@@ -448,8 +449,8 @@ function initializeShellControls() {
   });
 
   syncViewState();
-  window.CGBApp?.subscribe?.('rendered', syncViewState);
-  window.CGBApp?.subscribe?.('ready', syncViewState);
+  subscribeAppEvent('rendered', syncViewState);
+  subscribeAppEvent('ready', syncViewState);
 }
 
 if (document.readyState === 'loading') {
