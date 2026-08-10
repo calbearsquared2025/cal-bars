@@ -47,6 +47,10 @@ test('navigation delegates to existing search, tray, and contribution contracts'
   assert.match(script, /dom\.searchSlot\.append\(dom\.searchForm\)/);
   assert.match(script, /dom\.trayHandle\?\.click\(\)/);
   assert.match(script, /dom\.addContext\.hidden = !venue/);
+  assert.match(script, /import \{ subscribeAppEvent \} from '\.\/app-state\.mjs'/);
+  assert.match(script, /subscribeAppEvent\('rendered', syncViewState\)/);
+  assert.match(script, /subscribeAppEvent\('ready', syncViewState\)/);
+  assert.doesNotMatch(script, /window\.CGBApp\?\.subscribe\?\.\('rendered', syncViewState\)/);
   assert.doesNotMatch(script, /MutationObserver/);
 });
 
