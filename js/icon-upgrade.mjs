@@ -30,8 +30,22 @@ function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
   if (label === 'view details' || label === 'details') return 'details';
-  if (label === 'share') return 'share';
+  if (label === 'share' || label === 'share watch party') return 'share';
   return null;
+}
+
+function clarifyShareLabels(root = document) {
+  root.querySelectorAll('.action-row').forEach((row) => {
+    const share = Array.from(row.querySelectorAll(':scope > button'))
+      .find((button) => /^Share(?: Watch Party)?$/i.test(button.textContent.trim()));
+    if (!share) return;
+    const container = row.parentElement;
+    const hasWatchParty = Boolean(container?.querySelector(':scope > .party-module'));
+    const icon = share.querySelector('.ui-icon');
+    share.replaceChildren();
+    if (icon) share.append(icon);
+    share.append(document.createTextNode(hasWatchParty ? 'Share Watch Party' : 'Share'));
+  });
 }
 
 export function upgradeRenderedIcons(root = document) {
@@ -49,6 +63,7 @@ export function upgradeRenderedIcons(root = document) {
     replaceTextWithIcon(button, 'chevron-down');
   });
 
+  clarifyShareLabels(root);
   root.querySelectorAll('.action-row > a, .action-row > button').forEach((action) => {
     const iconName = actionIconName(action);
     if (iconName) prependIcon(action, iconName);
