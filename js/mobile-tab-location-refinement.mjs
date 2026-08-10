@@ -22,7 +22,7 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      /* Search, Add, and List are opaque tab surfaces; the map never shows through. */
+      /* Search, Add, and List are opaque peer tab surfaces; the map never shows through. */
       body[data-command-surface="search"] #map,
       body[data-command-surface="add"] #map,
       body[data-command-surface="list"] #map {
@@ -47,6 +47,11 @@ function installStyles() {
         padding-top: 48px !important;
       }
 
+      body[data-command-surface="search"] .command-surface__back,
+      body[data-command-surface="add"] .command-surface__back {
+        display: none !important;
+      }
+
       body[data-command-surface="search"] #map-view > #venue-tray,
       body[data-command-surface="add"] #map-view > #venue-tray {
         display: none !important;
@@ -58,6 +63,10 @@ function installStyles() {
 
       body[data-command-surface="list"] .tray-list__header {
         padding-top: 46px !important;
+      }
+
+      body[data-command-surface="list"] #close-list-button {
+        display: none !important;
       }
 
       /* Restore the compact Nearby sheet language used by the earlier map pass. */
@@ -101,8 +110,25 @@ function installStyles() {
         display: inline-flex !important;
         align-items: center;
         min-height: 36px;
-        padding: 0 8px;
+        padding: 0 12px;
         white-space: nowrap;
+        text-decoration: none !important;
+        border: 1px solid var(--cgb-neutral-300);
+        border-radius: 999px;
+        background: var(--cgb-white);
+      }
+    }
+
+    @media (min-width: 900px) {
+      .selected-card .action-row {
+        grid-template-columns: minmax(0, 1fr) minmax(92px, auto) 96px !important;
+      }
+
+      .selected-card .action-row > .selected-card__details {
+        width: auto !important;
+        min-width: 92px !important;
+        padding-inline: 11px !important;
+        font-size: .76rem !important;
       }
     }
   `;
@@ -168,6 +194,11 @@ function syncAddGameContext() {
   const copy = context.querySelector('#add-game-context-copy');
   if (name) name.textContent = gameTitle(game);
   if (copy) copy.textContent = formatKickoff(game);
+}
+
+function syncCorrectionLanguage() {
+  const listingUpdate = document.querySelector('#add-report-listing-button');
+  if (listingUpdate) listingUpdate.textContent = 'Suggest an Update';
 }
 
 function syncListLocationControl() {
@@ -286,6 +317,7 @@ function disablePeekHandleNavigation(event) {
 function sync() {
   installStyles();
   syncAddGameContext();
+  syncCorrectionLanguage();
   syncListLocationControl();
 }
 
