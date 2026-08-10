@@ -17,7 +17,6 @@ const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const WRITE_TIMEOUT_MS = 10000;
 
 let controller = null;
-let postJoinInvitation = null;
 
 function storageGet(key) {
   try { return window.localStorage.getItem(key); } catch (_) { return null; }
@@ -304,24 +303,14 @@ function removePostJoinInvitation() {
     .forEach((row) => row.classList.remove('has-post-join-invitation'));
 }
 
-function clearPostJoinInvitation() {
-  postJoinInvitation = null;
-  removePostJoinInvitation();
-}
-
 function renderPostJoinInvitation() {
   removePostJoinInvitation();
-  if (!postJoinInvitation) return;
-
-  const { gameId, venueId, firstBear } = postJoinInvitation;
+  const venueId = activeVenueId();
   if (
-    gameId !== appState.gameId ||
-    appState.selectedVenueId !== venueId ||
-    activeVenueId() !== venueId
-  ) {
-    postJoinInvitation = null;
-    return;
-  }
+    !venueId ||
+    appState.fanIntent.pending ||
+    appState.selectedVenueId !== venueId
+  ) return;
 
   const venue = venueById(venueId);
   const surface = appState.detailMode
@@ -330,6 +319,7 @@ function renderPostJoinInvitation() {
   const row = surface?.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
   const intent = row?.querySelector(':scope > .intent-button');
   if (!venue || !row || !intent) return;
+  const firstBear = getFanCount(appState.snapshot, appState.gameId, venueId) === 1;
 
   const panel = document.createElement('section');
   panel.className = 'post-join-invitation';
@@ -352,38 +342,18 @@ function renderPostJoinInvitation() {
   intent.insertAdjacentElement('afterend', panel);
 }
 
-function showPostJoinInvitation(venueId, firstBear) {
-  postJoinInvitation = { gameId: appState.gameId, venueId, firstBear };
-  renderPostJoinInvitation();
-}
-
 async function handleDocumentClick(event) {
   const retryButton = event.target.closest('.intent-retry[data-venue-id]');
   if (retryButton) {
     event.preventDefault();
-    const retry = appState.fanIntent.retry;
-    const previousCount = getFanCount(appState.snapshot, appState.gameId, retryButton.dataset.venueId);
-    clearPostJoinInvitation();
-    const saved = await controller?.retryIntent();
-    if (saved && retry?.action === 'join') {
-      const authoritativeCount = getFanCount(appState.snapshot, appState.gameId, retryButton.dataset.venueId);
-      showPostJoinInvitation(retryButton.dataset.venueId, previousCount === 0 && authoritativeCount === 1);
-    }
+    await controller?.retryIntent();
     return;
   }
 
   const intentButton = event.target.closest('.intent-button[data-venue-id]');
   if (!intentButton) return;
   event.preventDefault();
-  const venueId = intentButton.dataset.venueId;
-  const wasJoin = !activeVenueId();
-  const previousCount = getFanCount(appState.snapshot, appState.gameId, venueId);
-  clearPostJoinInvitation();
-  const saved = await controller?.performIntent(venueId);
-  if (saved && wasJoin && activeVenueId() === venueId) {
-    const authoritativeCount = getFanCount(appState.snapshot, appState.gameId, venueId);
-    showPostJoinInvitation(venueId, previousCount === 0 && authoritativeCount === 1);
-  }
+  await controller?.performIntent(intentButton.dataset.venueId);
 }
 
 function startSynchronization() {

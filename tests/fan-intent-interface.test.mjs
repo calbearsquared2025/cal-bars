@@ -39,13 +39,21 @@ test('Fan Intent integration uses explicit application lifecycle and render func
   assert.match(app, /restoreSelection/);
 });
 
-test('post-join invitations use transient render-owned state without refresh persistence', () => {
-  assert.match(client, /let postJoinInvitation = null/);
+test('attendance invitations are render-owned and derived from confirmed attendance', () => {
   assert.match(client, /subscribeAppEvent\('rendered', renderPostJoinInvitation\)/);
-  assert.match(client, /postJoinInvitation = \{ gameId: appState\.gameId, venueId, firstBear \}/);
-  assert.match(client, /clearPostJoinInvitation\(\)[\s\S]*controller\?\.performIntent/);
+  assert.match(client, /const venueId = activeVenueId\(\)/);
+  assert.match(client, /appState\.fanIntent\.pending/);
+  assert.match(client, /getFanCount\(appState\.snapshot, appState\.gameId, venueId\) === 1/);
   assert.match(client, /intent\.insertAdjacentElement\('afterend', panel\)/);
+  assert.doesNotMatch(client, /let postJoinInvitation|showPostJoinInvitation|clearPostJoinInvitation/);
   assert.doesNotMatch(client, /storageSet\([^\n]*postJoin|localStorage[^\n]*postJoin/i);
+});
+
+test('join, move, retry, and refresh share the same attendance-derived invitation rule', () => {
+  assert.match(client, /controller\?\.performIntent\(intentButton\.dataset\.venueId\)/);
+  assert.match(client, /controller\?\.retryIntent\(\)/);
+  assert.match(client, /appState\.selectedVenueId !== venueId/);
+  assert.doesNotMatch(client, /wasJoin|wasCommitment|retry\?\.action === 'join'|notifySuccessfulCommit/);
 });
 
 test('the body-wide MutationObserver and DOM venue inference fallbacks are removed', () => {

@@ -71,6 +71,14 @@ test('successful external creation uses the shared Locate me focus behavior', ()
   assert.doesNotMatch(client, /panToCommittedVenueSafely/);
 });
 
+test('successful external attendance settles through the shared invitation render lifecycle', () => {
+  const join = functionBlock(client, 'joinSelectedExternalVenue', 'cancelConfirmation');
+  assert.match(join, /commitExternalVenue\(response, selected\)/);
+  assert.match(join, /appState\.fanIntent\.pending = null[\s\S]*renderApplicationSafely\('settled-state'\)/);
+  assert.match(fanClient, /subscribeAppEvent\('rendered', renderPostJoinInvitation\)/);
+  assert.doesNotMatch(client, /notifySuccessfulCommit|postJoinInvitation/);
+});
+
 test('creation pending prevents duplicate taps and failure retains retry context without optimistic venue state', () => {
   const join = functionBlock(client, 'joinSelectedExternalVenue', 'cancelConfirmation');
   assert.match(join, /if \(!selected \|\| state\.pending \|\| appState\.fanIntent\.pending\) return false/);

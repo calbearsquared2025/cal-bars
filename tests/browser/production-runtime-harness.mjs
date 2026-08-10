@@ -240,7 +240,8 @@ async function runDirectRouteCheck() {
   check(!badges.includes('COMMUNITY LOCATION'), 'Direct venue detail should not render a Community Location badge');
   await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent after refresh');
   check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh fixture should restore the existing Fan Intent selection');
-  check(!postJoinInvitation('#venue-detail'), 'Refresh while already joined should not recreate the invitation');
+  await waitFor(() => invitationHeading('#venue-detail') === "You're starting the Cal crowd here.", 'restored invitation after refresh');
+  checkPostJoinInvitationLayout('Restored invitation after refresh', '#venue-detail');
   finish('CGB_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -272,7 +273,8 @@ async function runDesktopDirectRouteCheck() {
   check(!badges.includes('COMMUNITY LOCATION'), 'Desktop direct venue detail should not render a Community Location badge');
   await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop restored Fan Intent after refresh');
   check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Desktop refresh fixture should restore the existing Fan Intent selection');
-  check(!postJoinInvitation('#venue-detail'), 'Desktop refresh while already joined should not recreate the invitation');
+  await waitFor(() => invitationHeading('#venue-detail') === "You're starting the Cal crowd here.", 'desktop restored invitation after refresh');
+  checkPostJoinInvitationLayout('Desktop restored invitation after refresh', '#venue-detail');
   finish('CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -603,6 +605,20 @@ async function runMainChecks() {
     check(selectedPartyBadges.includes('WATCH PARTY'), 'Mobile selected card should preserve the Watch Party badge');
     check(selectedPartyBadges.includes('CAL BAR'), 'Mobile selected card should preserve the Cal Bar badge');
     check(!selectedPartyBadges.includes('COMMUNITY LOCATION'), 'Mobile selected Cal Bar should not render a Community Location badge');
+
+    progress('rsvp-move-selected');
+    const partyAttendanceBeforeMove = attendanceNumber();
+    click('#tray-selected .intent-button');
+    await waitFor(
+      () => attendanceNumber() === partyAttendanceBeforeMove + 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true',
+      'RSVP move to Watch Party venue'
+    );
+    const expectedMoveInvitation = partyAttendanceBeforeMove === 0
+      ? "You're starting the Cal crowd here."
+      : "You're in. Bring more Bears.";
+    await waitFor(() => invitationHeading() === expectedMoveInvitation, 'post-move invitation');
+    checkPostJoinInvitationLayout('Post-move invitation');
+    await waitForIntentSettled('RSVP move transaction completion');
   }
 
   progress('nearby-list');
