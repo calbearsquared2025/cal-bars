@@ -667,14 +667,27 @@ function showManualCopy(url) {
   input.select();
 }
 
-async function shareVenue(venue) {
+function shareGameLabel(game) {
+  const opponent = game?.opponent_name || 'Cal football';
+  return game?.home_away === 'away' ? `Cal at ${opponent}` : `Cal vs. ${opponent}`;
+}
+
+function buildVenueSharePayload(venue) {
   const url = buildVenueUrl(venue.slug, state.gameId, location.href);
   const game = selectedGame();
-  const payload = {
-    title: `${venue.name} · Cal Golden Bars`,
-    text: `${gameTitle(game)} at ${venue.name}`,
+  const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
+  return {
+    title: `${party ? 'Watch Party at ' : ''}${venue.name} · Cal Golden Bars`,
+    text: party
+      ? `${shareGameLabel(game)} Watch Party at ${venue.name}. Join the Bears:`
+      : `I'm watching ${shareGameLabel(game)} at ${venue.name}. Join the Bears here:`,
     url
   };
+}
+
+async function shareVenue(venue) {
+  const payload = buildVenueSharePayload(venue);
+  const { url } = payload;
   let nativeShareAvailable = typeof navigator.share === 'function';
   if (nativeShareAvailable && typeof navigator.canShare === 'function') {
     try { nativeShareAvailable = navigator.canShare(payload); } catch (_) { nativeShareAvailable = false; }
@@ -691,6 +704,7 @@ async function shareVenue(venue) {
 
   if (result.method === 'clipboard' || result.method === 'legacy-copy') showStatus('Link copied');
   else if (result.method === 'manual') showManualCopy(result.url);
+  return result;
 }
 
 function renderSelectedCard() {
@@ -1176,6 +1190,7 @@ window.CGBApp = Object.freeze({
   focusLocation,
   restoreSelection,
   selectGame,
+  shareVenue,
   showStatus,
   subscribe: subscribeAppEvent
 });
