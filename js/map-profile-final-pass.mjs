@@ -261,28 +261,6 @@ function installStyles() {
         display: inline-block !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] {
-        height: auto !important;
-        max-height: min(54dvh, 420px) !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .tray-selected {
-        max-height: none !important;
-        overflow-y: auto !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .action-row {
-        display: grid !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__note,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__event,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .party-module__report,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-selected-density="compact"] .selected-card__details {
-        display: none !important;
-      }
-
       @media (max-width: 359px) {
         body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
           grid-template-columns: minmax(0, 1fr) 82px !important;

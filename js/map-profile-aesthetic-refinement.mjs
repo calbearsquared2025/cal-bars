@@ -11,14 +11,14 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .party-module,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card__plan-party,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .action-row {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .party-module,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {
         grid-column: 1 / -1 !important;
       }
 
       /* Watch Party details stay visible, but dark navy is reserved for the primary RSVP action. */
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module {
         display: grid !important;
         gap: 4px !important;
         margin: 1px 0 0 !important;
@@ -32,32 +32,32 @@ function installStyles() {
         box-shadow: none !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module .party-module__title {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title {
         gap: 6px !important;
         color: var(--cgb-navy-950) !important;
         font-size: .68rem !important;
         line-height: 1.15 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module .party-module__title .ui-icon {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title .ui-icon {
         width: 14px !important;
         height: 14px !important;
         color: var(--cgb-gold-500) !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module p {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p {
         margin: 0 !important;
         color: var(--cgb-ink-700) !important;
         font-size: .71rem !important;
         line-height: 1.24 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module .party-meta {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta {
         color: var(--cgb-navy-900) !important;
         font-weight: 800 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module a:not(.party-module__report) {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module a:not(.party-module__report) {
         color: var(--cgb-navy-900) !important;
         font-size: .71rem !important;
         font-weight: 800 !important;
@@ -66,7 +66,7 @@ function installStyles() {
         text-underline-offset: 3px !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not([data-selected-density="compact"]) .selected-card > .party-module .party-module__report {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__report {
         margin-top: 3px !important;
         padding-top: 6px !important;
         color: var(--cgb-ink-500) !important;

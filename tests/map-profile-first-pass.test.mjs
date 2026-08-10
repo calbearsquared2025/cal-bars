@@ -40,9 +40,7 @@ test('attendance rendering is delegated while secondary actions remain readable'
   assert.match(profile, /node\.textContent = 'Details'/);
 });
 
-test('Search collapses a selected Venue and the profile module remains loaded', () => {
-  assert.match(profile, /COMPACT_TRAY_HEIGHT = 104/);
-  assert.match(profile, /prepareSearchSurface/);
-  assert.match(profile, /dataset\.selectedDensity = 'compact'/);
+test('profile pass no longer owns an intermediate selected density', () => {
+  assert.doesNotMatch(profile, /COMPACT_TRAY_HEIGHT|prepareSearchSurface|selectedDensity|data-selected-density/);
   assert.match(icons, /import '\.\/map-profile-first-pass\.mjs';/);
 });

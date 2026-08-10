@@ -24,7 +24,7 @@ test('attendance uses an asymmetric large-number card for positive counts', () =
   assert.match(source, /font-size: 2rem !important/);
 });
 
-test('one final-pass component owns attendance presentation at every tray density and breakpoint', () => {
+test('one final-pass component owns attendance presentation at every breakpoint', () => {
   assert.match(source, /#map-view > #venue-tray\.venue-tray\.tray--selected \.selected-card > \.bear-count\s*\{[^}]*grid-column: 2 !important[^}]*place-content: center !important[^}]*text-align: center !important/);
   assert.match(source, /\.selected-card \.bear-count:not\(\.bear-count--empty\) \.bear-count__icon\s*\{[^}]*display: none !important/);
   assert.doesNotMatch(firstPass, /formatEmptyAttendance|bear-count--empty/);
@@ -57,11 +57,11 @@ test('Watch Party content is compact and reporting is subordinate', () => {
   assert.match(source, /party-module__report[\s\S]*font-size: \.64rem/);
 });
 
-test('final profile does not independently toggle selected tray density', () => {
-  assert.doesNotMatch(source, /defaultSelectedTrayToCompact/);
-  assert.doesNotMatch(source, /collapsedVenueId/);
-  assert.doesNotMatch(source, /#tray-handle'\)\?\.click/);
-  assert.match(source, /data-selected-density="compact"[\s\S]*selected-card__details[\s\S]*display: none !important/);
+test('selected profile has one presentation with no medium-density selector', () => {
+  assert.doesNotMatch(source, /data-selected-density|selectedDensity|defaultSelectedTrayToCompact|collapsedVenueId/);
+  assert.match(source, /selected-card__details/);
+  assert.match(source, /party-module__event/);
+  assert.match(source, /party-module__report/);
 });
 
 test('selected RSVP keeps Undo visually subordinate', () => {

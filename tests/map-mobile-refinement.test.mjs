@@ -27,7 +27,7 @@ test('collapsed preview uses the selected Venue and otherwise returns to guidanc
   assert.match(source, /Watch Parties first, then Cal Bars and Community Locations\./);
 });
 
-test('selected preview opens directly while guidance remains available to List', () => {
+test('selected mini profile opens the existing full selected profile directly', () => {
   assert.match(source, /function openPreviewVenue/);
   assert.match(source, /data-direct-venue-id/);
   assert.match(source, /if \(!button \|\| !isMobile\(\) \|\| !button\.dataset\.directVenueId\) return;[\s\S]*event\.preventDefault\(\)/);
@@ -35,21 +35,22 @@ test('selected preview opens directly while guidance remains available to List',
   assert.match(source, /card\.click\(\)/);
 });
 
-test('zero-count selected previews do not place long empty-state copy in the compact count slot', () => {
+test('zero-count selected previews do not place long empty-state copy in the mini count slot', () => {
   assert.match(source, /count\.textContent = Number\(fanCount\) > 0 \? bearCountCopy\(fanCount\) : ''/);
 });
 
-test('selected tray density defaults compact and remains owned by the mobile map controller', () => {
-  assert.match(source, /let selectedTrayExpanded = false/);
-  assert.match(source, /state\.selectedVenueId !== lastSelectedVenueId[\s\S]*selectedTrayExpanded = false/);
-  assert.match(source, /setSelectedTrayDensity\(selectedTrayExpanded\)/);
-  assert.match(source, /selectedTrayExpanded = false;[\s\S]*lastSelectedVenueId = '';[\s\S]*card\.click\(\)/);
+test('selected tray toggles from the full profile directly to the existing mini profile', () => {
+  assert.match(source, /function handleTrayTopTap/);
+  assert.match(source, /tray\.dataset\.state !== 'selected'/);
+  assert.match(source, /selected-card__header > \.icon-button'\)\?\.click\(\)/);
+  assert.match(source, /Collapse selected location/);
+  assert.doesNotMatch(source, /selectedTrayExpanded|lastSelectedVenueId|setSelectedTrayDensity|selectedDensity|data-selected-density/);
 });
 
-test('Search forces selected Venue compact while Map retains tray-top toggling', () => {
-  assert.match(source, /dataset\.commandSurface === 'search'/);
-  assert.match(source, /setSelectedTrayDensity\(false\)/);
-  assert.match(source, /dataset\.commandSurface !== 'map'/);
+test('selected profile uses content-driven height rather than a medium fixed-height override', () => {
+  assert.doesNotMatch(source, /tray--selected\[data-selected-density/);
+  assert.doesNotMatch(source, /height: 170px !important/);
+  assert.doesNotMatch(source, /max-height: 170px !important/);
 });
 
 test('attribution is placed left of the right-side map controls', () => {
