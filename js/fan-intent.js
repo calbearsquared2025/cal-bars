@@ -297,18 +297,57 @@ async function refreshAggregates() {
   return window.CGBSnapshotRefresh?.refresh?.() || false;
 }
 
-function handleDocumentClick(event) {
+function showPostJoinInvitation(venueId, firstBear) {
+  document.querySelectorAll('.post-join-invitation').forEach((panel) => panel.remove());
+  const venue = venueById(venueId);
+  const row = document.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
+  if (!venue || !row || activeVenueId() !== venueId) return;
+
+  const panel = document.createElement('section');
+  panel.className = 'post-join-invitation activity-card';
+  panel.setAttribute('aria-live', 'polite');
+  const heading = document.createElement('strong');
+  heading.textContent = firstBear
+    ? "You're starting the Cal crowd here."
+    : "You're in. Bring more Bears.";
+  const copy = document.createElement('p');
+  copy.textContent = firstBear
+    ? 'Invite other Bears to join you.'
+    : 'Share this spot so other Cal fans can find you.';
+  const share = document.createElement('button');
+  share.type = 'button';
+  share.className = 'secondary-button post-join-share';
+  share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
+  share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
+  panel.append(heading, copy, share);
+  row.insertAdjacentElement('afterend', panel);
+}
+
+async function handleDocumentClick(event) {
   const retryButton = event.target.closest('.intent-retry[data-venue-id]');
   if (retryButton) {
     event.preventDefault();
-    controller?.retryIntent();
+    const retry = appState.fanIntent.retry;
+    const previousCount = getFanCount(appState.snapshot, appState.gameId, retryButton.dataset.venueId);
+    const saved = await controller?.retryIntent();
+    if (saved && retry?.action === 'join') {
+      const authoritativeCount = getFanCount(appState.snapshot, appState.gameId, retryButton.dataset.venueId);
+      showPostJoinInvitation(retryButton.dataset.venueId, previousCount === 0 && authoritativeCount === 1);
+    }
     return;
   }
 
   const intentButton = event.target.closest('.intent-button[data-venue-id]');
   if (!intentButton) return;
   event.preventDefault();
-  controller?.performIntent(intentButton.dataset.venueId);
+  const venueId = intentButton.dataset.venueId;
+  const wasJoin = !activeVenueId();
+  const previousCount = getFanCount(appState.snapshot, appState.gameId, venueId);
+  const saved = await controller?.performIntent(venueId);
+  if (saved && wasJoin && activeVenueId() === venueId) {
+    const authoritativeCount = getFanCount(appState.snapshot, appState.gameId, venueId);
+    showPostJoinInvitation(venueId, previousCount === 0 && authoritativeCount === 1);
+  }
 }
 
 function startSynchronization() {
