@@ -1,3 +1,64 @@
+/* Shared selected-profile Watch Party treatment. Mobile is the visual baseline on every viewport. */
+#venue-tray .selected-card > .party-module {
+  display: grid;
+  gap: 4px;
+  margin: 1px 0 0;
+  padding: 9px 11px 8px;
+  color: var(--cgb-navy-950);
+  background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 78%);
+  border: 1px solid var(--cgb-gold-300, #f2cc67);
+  border-left: 4px solid var(--cgb-gold-400);
+  border-radius: 12px;
+  clip-path: none;
+  box-shadow: none;
+}
+
+#venue-tray .selected-card > .party-module .party-module__title {
+  gap: 6px;
+  color: var(--cgb-navy-950);
+  font-size: .68rem;
+  line-height: 1.15;
+}
+
+#venue-tray .selected-card > .party-module .party-module__title .ui-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--cgb-gold-500);
+}
+
+#venue-tray .selected-card > .party-module p {
+  margin: 0;
+  color: var(--cgb-ink-700);
+  font-size: .71rem;
+  line-height: 1.24;
+}
+
+#venue-tray .selected-card > .party-module .party-meta {
+  color: var(--cgb-navy-900);
+  font-weight: 800;
+}
+
+#venue-tray .selected-card > .party-module a:not(.party-module__report) {
+  color: var(--cgb-navy-900);
+  font-size: .71rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+#venue-tray .selected-card > .party-module .party-module__report {
+  margin-top: 3px;
+  padding-top: 6px;
+  color: var(--cgb-ink-500);
+  border-top: 1px solid var(--cgb-neutral-200);
+  font-size: .66rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 .party-module--multiple {
   max-height: min(18rem, 42vh);
   overflow: auto;
