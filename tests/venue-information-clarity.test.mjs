@@ -105,9 +105,9 @@ test('Detail attendance separates the numeral from the singular/plural label', (
   assert.match(detailRefinement, /activity-card > strong[\s\S]*gap: 6px/);
 });
 
-test('Detail Watch Party treatment reuses gold language, page scrolling, and exact external copy', () => {
-  assert.match(watchPartyDisplay, /link\.textContent = 'External event details'/);
-  assert.doesNotMatch(watchPartyDisplay, /Open event information/);
+test('Detail Watch Party treatment reuses gold language, page scrolling, and scopes exact external copy to Detail', () => {
+  assert.match(watchPartyDisplay, /link\.textContent = 'Open event information'/);
+  assert.match(detailRefinement, /document\.createTextNode\('External event details'\)/);
   assert.match(detailRefinement, /venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
   assert.match(detailRefinement, /max-height: none !important/);
   assert.match(detailRefinement, /overflow: visible !important/);
