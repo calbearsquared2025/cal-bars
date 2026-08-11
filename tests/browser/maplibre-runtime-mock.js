@@ -28,6 +28,7 @@
       };
       this.zoom = Number.isFinite(options.zoom) ? options.zoom : 3.2;
       this.controls = [];
+      this.removed = false;
       maps.push(this);
       queueMicrotask(() => this.emit('load'));
     }
@@ -60,7 +61,9 @@
       return this;
     }
 
-    remove() {}
+    remove() {
+      this.removed = true;
+    }
 
     getStyle() {
       return { sources: {} };
@@ -105,6 +108,7 @@
       this.options = options;
       this.lngLat = null;
       this.map = null;
+      this.removed = false;
       markers.push(this);
     }
 
@@ -118,7 +122,9 @@
       return this;
     }
 
-    remove() {}
+    remove() {
+      this.removed = true;
+    }
   }
 
   window.CGBMapLibreRuntimeMock = Object.freeze({ maps, markers });
