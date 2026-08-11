@@ -1,6 +1,7 @@
 import {
   bearCountCopy,
   buildGameUrl,
+  buildVenueShareMessage,
   buildVenueUrl,
   calculateMinimalPan,
   findExactVenueMatch,
@@ -613,10 +614,10 @@ function createActionRow(venue, { details = true } = {}) {
   return row;
 }
 
-function legacyCopyUrl(url) {
+function legacyCopyText(text) {
   const proxy = document.createElement('textarea');
   proxy.className = 'copy-proxy';
-  proxy.value = url;
+  proxy.value = text;
   proxy.readOnly = true;
   proxy.setAttribute('aria-hidden', 'true');
   document.body.append(proxy);
@@ -629,23 +630,23 @@ function legacyCopyUrl(url) {
   return copied;
 }
 
-function showManualCopy(url) {
+function showManualCopy(text) {
   document.querySelector('.manual-copy-panel')?.remove();
   const panel = document.createElement('section');
   panel.className = 'manual-copy-panel';
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-modal', 'true');
-  panel.setAttribute('aria-label', 'Copy venue link');
+  panel.setAttribute('aria-label', 'Copy share message');
 
   const heading = document.createElement('strong');
-  heading.textContent = 'Copy this link';
+  heading.textContent = 'Copy this message';
   const explanation = document.createElement('p');
-  explanation.textContent = 'Automatic copying is unavailable in this browser. Select and copy the complete URL below.';
+  explanation.textContent = 'Automatic copying is unavailable in this browser. Select and copy the complete message below.';
   const input = document.createElement('input');
   input.type = 'text';
   input.readOnly = true;
-  input.value = url;
-  input.setAttribute('aria-label', 'Venue and selected-game URL');
+  input.value = text;
+  input.setAttribute('aria-label', 'Share message');
   input.addEventListener('focus', () => input.select());
 
   const actions = document.createElement('div');
@@ -653,7 +654,7 @@ function showManualCopy(url) {
   const select = document.createElement('button');
   select.type = 'button';
   select.className = 'primary-button';
-  select.textContent = 'Select link';
+  select.textContent = 'Select message';
   select.addEventListener('click', () => { input.focus(); input.select(); });
   const close = document.createElement('button');
   close.type = 'button';
@@ -667,43 +668,39 @@ function showManualCopy(url) {
   input.select();
 }
 
-function shareGameLabel(game) {
-  const opponent = game?.opponent_name || 'Cal football';
-  return game?.home_away === 'away' ? `Cal at ${opponent}` : `Cal vs. ${opponent}`;
-}
-
 function buildVenueSharePayload(venue) {
   const url = buildVenueUrl(venue.slug, state.gameId, location.href);
   const game = selectedGame();
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
   return {
     title: `${party ? 'Watch Party at ' : ''}${venue.name} · Cal Golden Bars`,
-    text: party
-      ? `${shareGameLabel(game)} Watch Party at ${venue.name}. Join the Bears:`
-      : `I'm watching ${shareGameLabel(game)} at ${venue.name}. Join the Bears here:`,
-    url
+    text: buildVenueShareMessage({
+      venueName: venue.name,
+      opponentName: game?.opponent_name,
+      hasWatchParty: Boolean(party),
+      url
+    })
   };
 }
 
 async function shareVenue(venue) {
   const payload = buildVenueSharePayload(venue);
-  const { url } = payload;
   let nativeShareAvailable = typeof navigator.share === 'function';
   if (nativeShareAvailable && typeof navigator.canShare === 'function') {
     try { nativeShareAvailable = navigator.canShare(payload); } catch (_) { nativeShareAvailable = false; }
   }
   const result = await shareOrCopy({
     payload,
-    url,
+    copyText: payload.text,
     share: nativeShareAvailable ? (sharePayload) => navigator.share(sharePayload) : null,
     writeClipboard: typeof navigator.clipboard?.writeText === 'function'
       ? (text) => navigator.clipboard.writeText(text)
       : null,
-    legacyCopy: legacyCopyUrl
+    legacyCopy: legacyCopyText
   });
 
-  if (result.method === 'clipboard' || result.method === 'legacy-copy') showStatus('Link copied');
-  else if (result.method === 'manual') showManualCopy(result.url);
+  if (result.method === 'clipboard' || result.method === 'legacy-copy') showStatus('Message copied');
+  else if (result.method === 'manual') showManualCopy(result.text);
   return result;
 }
 
