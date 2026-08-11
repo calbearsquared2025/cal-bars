@@ -105,7 +105,7 @@ function sendProductionHarness(response) {
   </script>`;
   const driver = `
     <output id="cgb-production-runtime-result">CGB_PRODUCTION_RUNTIME_RUNNING</output>
-    <script type="module" src="/tests/browser/production-runtime-harness.mjs"></script>
+    <script type="module" src="/tests/browser/production-runtime-router.mjs"></script>
   `;
   const html = productionIndex
     .replace(
@@ -242,6 +242,22 @@ try {
   }) && passed;
 
   passed = await runHarness({
+    path: '/__cgb_production_runtime__?venue=bear-territory-test-cafe-alameda&game=game_9e8f4860c6a256c0fae6007d&__cgb_harness=direct',
+    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+    label: 'Small-portrait fan-added Watch Party Detail harness',
+    virtualTimeBudget: 30000,
+    windowSize: '320,700'
+  }) && passed;
+
+  passed = await runHarness({
+    path: '/__cgb_production_runtime__?venue=california-test-grill-san-francisco&game=game_64902a48440e55522742d631&__cgb_harness=direct',
+    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+    label: 'Short-landscape plain fan-added Detail harness',
+    virtualTimeBudget: 30000,
+    windowSize: '844,390'
+  }) && passed;
+
+  passed = await runHarness({
     path: '/__cgb_production_runtime__?__cgb_harness=desktop',
     marker: 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Desktop production runtime regression harness',
@@ -262,4 +278,4 @@ try {
 
 if (!passed) process.exit(1);
 
-console.log('Browser harnesses passed: reduced external-venue fixture plus the real index.html production module graph, high-risk mobile and desktop state transitions, and direct venue cold-load/refresh behavior.');
+console.log('Browser harnesses passed: reduced external-venue fixture plus the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');
