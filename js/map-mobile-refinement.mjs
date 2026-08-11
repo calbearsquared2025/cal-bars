@@ -34,6 +34,23 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
+      /* Keep the map shell on one viewport plane. Owned inner surfaces still scroll independently. */
+      body[data-view="map"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+      }
+
+      @supports not (height: 100dvh) {
+        body[data-view="map"] {
+          height: 100vh !important;
+        }
+      }
+
       .maplibregl-ctrl-top-right {
         display: none !important;
       }
