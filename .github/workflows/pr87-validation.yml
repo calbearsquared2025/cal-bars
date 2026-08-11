@@ -1,0 +1,41 @@
+name: PR87 temporary validation
+
+on:
+  push:
+    branches:
+      - agent/prelaunch-venue-information-pass-1
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Environment
+        run: |
+          node --version
+          npm --version
+          command -v google-chrome || command -v chromium || command -v chromium-browser || true
+      - name: Unit and source tests
+        run: npm test
+      - name: Data validation
+        run: npm run validate:data
+      - name: Migration tests
+        run: npm run test:migration
+      - name: JavaScript syntax checks
+        run: |
+          node --check js/icon-upgrade.mjs
+          node --check js/watch-party-display.js
+          node --check js/listing-update.js
+          node --check tests/browser/production-runtime-router.mjs
+          node --check tests/browser/venue-detail-runtime-harness.mjs
+          node --check tests/browser/production-runtime-harness.mjs
+          node --check scripts/run-browser-harness.mjs
+      - name: Private-value scan
+        run: node scripts/scan-private-values.mjs
+      - name: Diff check
+        run: git diff --check origin/main...HEAD
+      - name: Production runtime browser harness
+        run: npm run test:browser
