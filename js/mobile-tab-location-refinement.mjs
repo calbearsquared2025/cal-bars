@@ -56,10 +56,6 @@ function installStyles() {
         inset: var(--header-height) 0 var(--footer-height) 0 !important;
       }
 
-      body[data-command-surface="list"] .tray-list__header {
-        padding-top: 46px !important;
-      }
-
       body[data-command-surface="list"] #close-list-button {
         display: none !important;
       }
@@ -118,6 +114,10 @@ function installStyles() {
       body[data-command-surface="search"] .command-surface__shell,
       body[data-command-surface="add"] .command-surface__shell {
         padding-top: 48px !important;
+      }
+
+      body[data-command-surface="list"] .tray-list__header {
+        padding-top: 46px !important;
       }
     }
 
