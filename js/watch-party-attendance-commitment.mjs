@@ -1,13 +1,24 @@
 import { appState } from './app-state.mjs';
+import { buildCommittedExternalVenueWatchPartyUrl } from './external-watch-party-cta-core.mjs';
 
 const FORM_URL_META = 'cgb-watch-party-form-url';
 const VENUE_ENTRY_META = 'cgb-watch-party-venue-id-entry';
+const VENUE_NAME_ENTRY_META = 'cgb-watch-party-venue-name-entry';
 const GAME_ENTRY_META = 'cgb-watch-party-game-id-entry';
 const WAIT_TIMEOUT_MS = 11000;
 const POLL_MS = 40;
 
 function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function formConfig(documentObject = document) {
+  return {
+    formUrl: meta(FORM_URL_META, documentObject),
+    venueIdEntry: meta(VENUE_ENTRY_META, documentObject),
+    venueNameEntry: meta(VENUE_NAME_ENTRY_META, documentObject),
+    gameIdEntry: meta(GAME_ENTRY_META, documentObject)
+  };
 }
 
 function normalizeFormUrl(value, base = location.href) {
@@ -38,6 +49,18 @@ export function watchPartyCommitmentContext(href, documentObject = document) {
   } catch (_) {
     return null;
   }
+}
+
+function selectedVenueWatchPartyContext(documentObject = document) {
+  const venueId = appState.selectedVenueId || '';
+  const gameId = appState.gameId || '';
+  const href = buildCommittedExternalVenueWatchPartyUrl({
+    config: formConfig(documentObject),
+    snapshot: appState.snapshot,
+    gameId,
+    venueId
+  });
+  return href && venueId && gameId ? { href, venueId, gameId } : null;
 }
 
 function activeVenueId(gameId) {
@@ -86,6 +109,20 @@ async function commitAttendance(venueId, gameId) {
   });
 }
 
+function openExternalUrl(href, documentObject = document) {
+  if (!href) return false;
+  const link = documentObject.createElement('a');
+  link.href = href;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.dataset.watchPartyAttendanceBypass = 'true';
+  link.hidden = true;
+  documentObject.body.append(link);
+  link.click();
+  link.remove();
+  return true;
+}
+
 function openWaitingWindow(windowObject = window) {
   const opened = windowObject.open('', '_blank');
   try {
@@ -107,7 +144,39 @@ function navigatePreparedWindow(opened, href) {
   return false;
 }
 
+function reportAttendanceFailure() {
+  window.CGBApp?.showStatus?.(
+    'Watch Party planning can continue, but attendance was not saved. Use “I’ll be here” when you return.',
+    6200
+  );
+}
+
+function handleSelectedVenuePlan(event) {
+  const button = event.target.closest?.('.selected-card__plan-party');
+  if (!button) return false;
+
+  const context = selectedVenueWatchPartyContext();
+  if (!context) return false;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  // This CTA already has venue + game context, so bypass the generic Add surface.
+  // Open the prefilled Google Form immediately from the user's click, then reuse
+  // the existing Fan Intent action in the CGB tab to record/move attendance.
+  openExternalUrl(context.href);
+
+  if (activeVenueId(context.gameId) !== context.venueId) {
+    void commitAttendance(context.venueId, context.gameId).then((saved) => {
+      if (!saved) reportAttendanceFailure();
+    });
+  }
+  return true;
+}
+
 function handleWatchPartyFormLaunch(event) {
+  if (handleSelectedVenuePlan(event)) return;
+
   const anchor = event.target.closest?.('a[href]');
   if (!anchor || anchor.dataset.watchPartyAttendanceBypass === 'true') return;
 
@@ -121,23 +190,9 @@ function handleWatchPartyFormLaunch(event) {
   const preparedWindow = openWaitingWindow();
 
   void commitAttendance(context.venueId, context.gameId).then((saved) => {
-    if (!saved) {
-      window.CGBApp?.showStatus?.(
-        'Watch Party planning can continue, but attendance was not saved. Use “I’ll be here” when you return.',
-        6200
-      );
-    }
+    if (!saved) reportAttendanceFailure();
     if (navigatePreparedWindow(preparedWindow, href)) return;
-
-    const retry = document.createElement('a');
-    retry.href = href;
-    retry.target = '_blank';
-    retry.rel = 'noopener noreferrer';
-    retry.dataset.watchPartyAttendanceBypass = 'true';
-    retry.hidden = true;
-    document.body.append(retry);
-    retry.click();
-    retry.remove();
+    openExternalUrl(href);
   });
 }
 
