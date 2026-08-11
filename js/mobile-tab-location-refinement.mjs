@@ -42,11 +42,6 @@ function installStyles() {
         background: var(--cgb-warm-50) !important;
       }
 
-      body[data-command-surface="search"] .command-surface__shell,
-      body[data-command-surface="add"] .command-surface__shell {
-        padding-top: 48px !important;
-      }
-
       body[data-command-surface="search"] .command-surface__back,
       body[data-command-surface="add"] .command-surface__back {
         display: none !important;
@@ -116,6 +111,13 @@ function installStyles() {
         border: 1px solid var(--cgb-neutral-300);
         border-radius: 999px;
         background: var(--cgb-white);
+      }
+    }
+
+    @media (max-width: 899px) and (orientation: portrait) {
+      body[data-command-surface="search"] .command-surface__shell,
+      body[data-command-surface="add"] .command-surface__shell {
+        padding-top: 48px !important;
       }
     }
 
