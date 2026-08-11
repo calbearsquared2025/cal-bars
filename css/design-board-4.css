@@ -201,7 +201,7 @@ body[data-view="detail"] #app {
 }
 
 /* ---------- Short iPhone landscape ---------- */
-@media (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 650px) {
   :root {
     --header-height: calc(62px + env(safe-area-inset-top, 0px));
     --mobile-command-height: 52px;
