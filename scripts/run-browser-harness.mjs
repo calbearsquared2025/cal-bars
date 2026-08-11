@@ -34,11 +34,28 @@ function safeFilePath(requestUrl) {
 
 function sendProductionHarness(response) {
   const prelude = `<script>
-    for (const key of ['cgb_v2_last_good_snapshot', 'cgb_v2_browser_id', 'cgb_v2_fan_intent_selections']) localStorage.removeItem(key);
+    const cgbPrejoinedReload = sessionStorage.getItem('cgb_prejoined_reload') === 'ready';
+    if (!cgbPrejoinedReload) {
+      for (const key of ['cgb_v2_last_good_snapshot', 'cgb_v2_browser_id', 'cgb_v2_fan_intent_selections']) localStorage.removeItem(key);
+    }
     localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
     (() => {
       const snapshot = ${runtimeSnapshotJson};
       const selections = new Map();
+      if (cgbPrejoinedReload) {
+        const browserId = localStorage.getItem('cgb_v2_browser_id');
+        const storedSelections = JSON.parse(localStorage.getItem('cgb_v2_fan_intent_selections') || '{}');
+        Object.entries(storedSelections).forEach(([gameId, venueId]) => {
+          selections.set(browserId + '\\u0000' + gameId, { gameId, venueId });
+        });
+      }
+      let failNextJoin = false;
+      window.CGBProductionHarness = Object.freeze({
+        failNextJoin() { failNextJoin = true; },
+        seedOtherSelection(gameId, venueId) {
+          selections.set('browser_other_1234567890abcdef' + '\\u0000' + gameId, { gameId, venueId });
+        }
+      });
       const nativeFetch = window.fetch.bind(window);
       const fanCounts = () => {
         const counts = new Map();
@@ -66,6 +83,10 @@ function sendProductionHarness(response) {
         const { action, browserId, gameId, venueId } = operation || {};
         if (!['join', 'withdraw', 'move'].includes(action) || !browserId || !gameId || !venueId) {
           return jsonResponse({ ok: false, error: 'invalid_request' }, 400);
+        }
+        if (action === 'join' && failNextJoin) {
+          failNextJoin = false;
+          return jsonResponse({ ok: false, error: 'temporary_failure' }, 503);
         }
         const key = browserId + '\\u0000' + gameId;
         if (action === 'withdraw') selections.delete(key);
@@ -199,7 +220,7 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_2026_01&__cgb_harness=direct',
+    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_prejoined=1&__cgb_harness=direct',
     marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Production direct-route refresh harness',
     virtualTimeBudget: 30000
@@ -214,7 +235,7 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_2026_01&__cgb_harness=desktop-direct',
+    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_prejoined=1&__cgb_harness=desktop-direct',
     marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Desktop production direct-route refresh harness',
     virtualTimeBudget: 30000,

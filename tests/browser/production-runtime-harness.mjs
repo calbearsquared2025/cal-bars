@@ -124,6 +124,27 @@ function attendancePresentation() {
   };
 }
 
+function postJoinInvitation(surface = '#tray-selected') {
+  return element(`${surface} .post-join-invitation`);
+}
+
+function invitationHeading(surface = '#tray-selected') {
+  return postJoinInvitation(surface)?.querySelector('strong')?.textContent?.trim() || '';
+}
+
+function checkPostJoinInvitationLayout(label, surface = '#tray-selected') {
+  const panel = postJoinInvitation(surface);
+  const row = panel?.closest('.action-row');
+  const intent = row?.querySelector(':scope > .intent-button');
+  const share = row?.querySelector(':scope > .selected-card__share');
+  const details = row?.querySelector(':scope > .selected-card__details');
+  check(isVisible(panel), `${label} should be visible inline`);
+  check(Boolean(row?.classList.contains('has-post-join-invitation')), `${label} should use the selected action row`);
+  check(intent?.nextElementSibling === panel, `${label} should immediately follow the RSVP state`);
+  check(!share || Boolean(panel.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING), `${label} should precede Share`);
+  check(!details || Boolean(panel.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING), `${label} should precede Details`);
+}
+
 function isCanonicalAttendancePresentation(presentation) {
   return presentation?.alignSelf === 'center' &&
     presentation.display === 'grid' &&
@@ -199,6 +220,14 @@ async function runDirectRouteCheck() {
   const requestedGame = params.get('game');
   const venue = state()?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug);
 
+  if (params.get('__cgb_prejoined') === '1' && sessionStorage.getItem('cgb_prejoined_reload') !== 'ready') {
+    localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
+    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [requestedGame]: venue?.venue_id }));
+    sessionStorage.setItem('cgb_prejoined_reload', 'ready');
+    location.reload();
+    return;
+  }
+
   check(Boolean(venue), 'Direct-route fixture venue should exist');
   check(state()?.detailMode === true, 'Direct venue URL should enter detail mode');
   check(state()?.gameId === requestedGame, 'Direct venue URL should preserve selected game');
@@ -209,6 +238,10 @@ async function runDirectRouteCheck() {
   check(badges.includes('WATCH PARTY'), 'Direct venue detail should preserve the Watch Party badge');
   check(badges.includes('CAL BAR'), 'Direct venue detail should preserve the Cal Bar badge');
   check(!badges.includes('COMMUNITY LOCATION'), 'Direct venue detail should not render a Community Location badge');
+  await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent after refresh');
+  check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh fixture should restore the existing Fan Intent selection');
+  await waitFor(() => invitationHeading('#venue-detail') === "You're starting the Cal crowd here.", 'restored invitation after refresh');
+  checkPostJoinInvitationLayout('Restored invitation after refresh', '#venue-detail');
   finish('CGB_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -220,6 +253,14 @@ async function runDesktopDirectRouteCheck() {
   const requestedGame = params.get('game');
   const venue = state()?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug);
 
+  if (params.get('__cgb_prejoined') === '1' && sessionStorage.getItem('cgb_prejoined_reload') !== 'ready') {
+    localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
+    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [requestedGame]: venue?.venue_id }));
+    sessionStorage.setItem('cgb_prejoined_reload', 'ready');
+    location.reload();
+    return;
+  }
+
   check(Boolean(venue), 'Desktop direct-route fixture venue should exist');
   check(state()?.detailMode === true, 'Desktop direct venue URL should enter detail mode');
   check(state()?.gameId === requestedGame, 'Desktop direct venue URL should preserve selected game');
@@ -230,6 +271,10 @@ async function runDesktopDirectRouteCheck() {
   check(badges.includes('WATCH PARTY'), 'Desktop direct venue detail should preserve the Watch Party badge');
   check(badges.includes('CAL BAR'), 'Desktop direct venue detail should preserve the Cal Bar badge');
   check(!badges.includes('COMMUNITY LOCATION'), 'Desktop direct venue detail should not render a Community Location badge');
+  await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop restored Fan Intent after refresh');
+  check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Desktop refresh fixture should restore the existing Fan Intent selection');
+  await waitFor(() => invitationHeading('#venue-detail') === "You're starting the Cal crowd here.", 'desktop restored invitation after refresh');
+  checkPostJoinInvitationLayout('Desktop restored invitation after refresh', '#venue-detail');
   finish('CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE');
 }
 
@@ -322,17 +367,30 @@ async function runDesktopChecks() {
 
   progress('desktop-rsvp');
   check(attendanceNumber() === 0, 'Desktop mocked Venue should begin at zero attendance');
+  window.CGBProductionHarness?.seedOtherSelection?.(state()?.gameId, noPartyVenue?.venue_id);
+  await window.CGBFanIntent?.refresh?.();
+  await waitFor(() => attendanceNumber() === 1, 'desktop ordinary-join baseline');
   click('#tray-selected .intent-button');
-  await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop RSVP 0 to 1');
+  await waitFor(() => attendanceNumber() === 2 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop ordinary RSVP 1 to 2');
+  await waitFor(() => invitationHeading() === "You're in. Bring more Bears.", 'desktop ordinary post-join invitation');
   await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'desktop positive attendance refinement');
   check(!isVisible('#tray-selected .bear-count__icon'), 'Desktop positive attendance should hide the people icon');
   check(isCanonicalAttendancePresentation(attendancePresentation()), 'Desktop should use the canonical attendance-card presentation');
-  check(trayState() === 'selected', 'Desktop RSVP 0 to 1 should preserve selected Venue state');
-  await waitForIntentSettled('desktop RSVP 0 to 1 transaction completion');
+  check(trayState() === 'selected', 'Desktop ordinary RSVP should preserve selected Venue state');
+  checkPostJoinInvitationLayout('Desktop ordinary post-join invitation');
+  await waitForIntentSettled('desktop ordinary RSVP transaction completion');
+  window.CGBApp?.render?.();
+  await waitFor(() => invitationHeading() === "You're in. Bring more Bears.", 'desktop invitation after selected-profile rerender');
   click('#tray-selected .intent-button');
-  await waitFor(() => attendanceNumber() === 0 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'desktop RSVP 1 to 0');
-  check(trayState() === 'selected', 'Desktop RSVP 1 to 0 should preserve selected Venue state');
-  await waitForIntentSettled('desktop RSVP 1 to 0 transaction completion');
+  await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'desktop Undo 2 to 1');
+  check(!postJoinInvitation(), 'Desktop Undo should remove the invitation');
+  check(trayState() === 'selected', 'Desktop Undo should preserve selected Venue state');
+  await waitForIntentSettled('desktop Undo transaction completion');
+  click('#tray-selected .intent-button');
+  await waitFor(() => attendanceNumber() === 2 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop rejoin 1 to 2');
+  await waitFor(() => invitationHeading() === "You're in. Bring more Bears.", 'desktop rejoin invitation');
+  checkPostJoinInvitationLayout('Desktop rejoin invitation');
+  await waitForIntentSettled('desktop rejoin transaction completion');
 
   progress('desktop-selected-add');
   click('#mobile-add-button');
@@ -461,12 +519,47 @@ async function runMainChecks() {
   check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'RSVP 0 → 1 must not recreate an intermediate density state');
   await waitForIntentSettled('RSVP 0 → 1 transaction completion');
 
+  await waitFor(() => invitationHeading() === "You're starting the Cal crowd here.", 'first-Bear post-join invitation');
+  checkPostJoinInvitationLayout('First-Bear post-join invitation');
+  const mobileTrayRect = element('#tray-selected')?.getBoundingClientRect();
+  const mobileInvitationRect = postJoinInvitation()?.getBoundingClientRect();
+  check(
+    (mobileInvitationRect?.top || -1) >= (mobileTrayRect?.top || 0) &&
+      (mobileInvitationRect?.bottom || Infinity) <= (mobileTrayRect?.bottom || 0) + 1,
+    'Mobile post-join invitation should be visible in the selected action area without scrolling'
+  );
+  window.CGBApp?.render?.();
+  await waitFor(() => invitationHeading() === "You're starting the Cal crowd here.", 'first-Bear invitation after selected-tray rerender');
+
   progress('rsvp-withdraw-selected');
   click('#tray-selected .intent-button');
   await waitFor(() => attendanceNumber() === 0 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'RSVP 1 → 0');
   check(trayState() === 'selected', 'RSVP 1 → 0 must retain the full selected profile');
   check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'RSVP 1 → 0 must not recreate an intermediate density state');
   await waitForIntentSettled('RSVP 1 → 0 transaction completion');
+
+  check(!postJoinInvitation(), 'Undo should not display the post-join invitation');
+
+  progress('rsvp-rejoin-selected');
+  click('#tray-selected .intent-button');
+  await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'RSVP rejoin success');
+  await waitFor(() => invitationHeading() === "You're starting the Cal crowd here.", 'post-Undo rejoin invitation');
+  checkPostJoinInvitationLayout('Post-Undo rejoin invitation');
+  await waitForIntentSettled('RSVP rejoin transaction completion');
+  click('#tray-selected .intent-button');
+  await waitFor(() => attendanceNumber() === 0 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'Undo before retry scenario');
+  await waitForIntentSettled('Undo before retry transaction completion');
+
+  progress('rsvp-retry-success');
+  window.CGBProductionHarness?.failNextJoin?.();
+  click('#tray-selected .intent-button');
+  await waitFor(() => Boolean(element('#tray-selected .intent-retry')), 'failed join retry control');
+  check(!postJoinInvitation(), 'Failed join should not display the post-join invitation');
+  click('#tray-selected .intent-retry');
+  await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'retry join success');
+  await waitFor(() => invitationHeading() === "You're starting the Cal crowd here.", 'retry-success invitation');
+  checkPostJoinInvitationLayout('Retry-success invitation');
+  await waitForIntentSettled('retry-success transaction completion');
 
   progress('selected-add');
   click('#mobile-add-button');
@@ -512,6 +605,20 @@ async function runMainChecks() {
     check(selectedPartyBadges.includes('WATCH PARTY'), 'Mobile selected card should preserve the Watch Party badge');
     check(selectedPartyBadges.includes('CAL BAR'), 'Mobile selected card should preserve the Cal Bar badge');
     check(!selectedPartyBadges.includes('COMMUNITY LOCATION'), 'Mobile selected Cal Bar should not render a Community Location badge');
+
+    progress('rsvp-move-selected');
+    const partyAttendanceBeforeMove = attendanceNumber();
+    click('#tray-selected .intent-button');
+    await waitFor(
+      () => attendanceNumber() === partyAttendanceBeforeMove + 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true',
+      'RSVP move to Watch Party venue'
+    );
+    const expectedMoveInvitation = partyAttendanceBeforeMove === 0
+      ? "You're starting the Cal crowd here."
+      : "You're in. Bring more Bears.";
+    await waitFor(() => invitationHeading() === expectedMoveInvitation, 'post-move invitation');
+    checkPostJoinInvitationLayout('Post-move invitation');
+    await waitForIntentSettled('RSVP move transaction completion');
   }
 
   progress('nearby-list');

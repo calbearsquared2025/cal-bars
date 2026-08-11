@@ -196,7 +196,7 @@ function activityPresentation(game, venue, currentCopy) {
 }
 
 function renderDetailActivity(game) {
-  const activity = document.querySelector('.activity-card');
+  const activity = document.querySelector('#venue-detail > .activity-card');
   const venue = selectedVenue();
   if (!activity || !venue) return;
 
@@ -297,18 +297,63 @@ async function refreshAggregates() {
   return window.CGBSnapshotRefresh?.refresh?.() || false;
 }
 
-function handleDocumentClick(event) {
+function removePostJoinInvitation() {
+  document.querySelectorAll('.post-join-invitation').forEach((panel) => panel.remove());
+  document.querySelectorAll('.action-row.has-post-join-invitation')
+    .forEach((row) => row.classList.remove('has-post-join-invitation'));
+}
+
+function renderPostJoinInvitation() {
+  removePostJoinInvitation();
+  const venueId = activeVenueId();
+  if (
+    !venueId ||
+    appState.fanIntent.pending ||
+    appState.selectedVenueId !== venueId
+  ) return;
+
+  const venue = venueById(venueId);
+  const surface = appState.detailMode
+    ? document.querySelector('#venue-detail')
+    : document.querySelector('#tray-selected');
+  const row = surface?.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
+  const intent = row?.querySelector(':scope > .intent-button');
+  if (!venue || !row || !intent) return;
+  const firstBear = getFanCount(appState.snapshot, appState.gameId, venueId) === 1;
+
+  const panel = document.createElement('section');
+  panel.className = 'post-join-invitation';
+  panel.setAttribute('aria-live', 'polite');
+  const heading = document.createElement('strong');
+  heading.textContent = firstBear
+    ? "You're starting the Cal crowd here."
+    : "You're in. Bring more Bears.";
+  const copy = document.createElement('p');
+  copy.textContent = firstBear
+    ? 'Invite other Bears to join you.'
+    : 'Share this spot so other Cal fans can find you.';
+  const share = document.createElement('button');
+  share.type = 'button';
+  share.className = 'secondary-button post-join-share';
+  share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
+  share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
+  panel.append(heading, copy, share);
+  row.classList.add('has-post-join-invitation');
+  intent.insertAdjacentElement('afterend', panel);
+}
+
+async function handleDocumentClick(event) {
   const retryButton = event.target.closest('.intent-retry[data-venue-id]');
   if (retryButton) {
     event.preventDefault();
-    controller?.retryIntent();
+    await controller?.retryIntent();
     return;
   }
 
   const intentButton = event.target.closest('.intent-button[data-venue-id]');
   if (!intentButton) return;
   event.preventDefault();
-  controller?.performIntent(intentButton.dataset.venueId);
+  await controller?.performIntent(intentButton.dataset.venueId);
 }
 
 function startSynchronization() {
@@ -342,6 +387,7 @@ async function bootFanIntent() {
   });
 
   subscribeAppEvent('rendered', renderIntentButtons);
+  subscribeAppEvent('rendered', renderPostJoinInvitation);
   document.addEventListener('click', handleDocumentClick);
   startSynchronization();
 
