@@ -29,7 +29,6 @@ jobs:
           node --check js/icon-upgrade.mjs
           node --check js/watch-party-display.js
           node --check js/listing-update.js
-          node --check tests/browser/production-runtime-router.mjs
           node --check tests/browser/venue-detail-runtime-harness.mjs
           node --check tests/browser/production-runtime-harness.mjs
           node --check scripts/run-browser-harness.mjs
