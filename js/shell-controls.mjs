@@ -360,7 +360,9 @@ function normalizeDesktopTray() {
 }
 
 function syncViewState() {
-  const detailVisible = !dom.detailView?.hidden;
+  const pendingDirectDetail = dom.app?.getAttribute('aria-busy') === 'true' &&
+    new URLSearchParams(location.search).has('venue');
+  const detailVisible = !dom.detailView?.hidden || pendingDirectDetail;
   document.body.dataset.view = detailVisible ? 'detail' : 'map';
 
   if (detailVisible) {
@@ -391,6 +393,7 @@ function configureMissingLocationLink() {
 function cacheDom() {
   const commandButtons = Array.from(document.querySelectorAll('.mobile-command'));
   dom = {
+    app: document.querySelector('#app'),
     detailView: document.querySelector('#detail-view'),
     mapToolbar: document.querySelector('.map-toolbar'),
     searchForm: document.querySelector('#location-search'),

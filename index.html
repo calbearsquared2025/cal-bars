@@ -58,6 +58,7 @@
   <link rel="stylesheet" href="css/design-board-4.css">
   <link rel="stylesheet" href="css/mobile-command-navigation.css">
   <link rel="stylesheet" href="css/mobile-polish.css">
+  <link rel="stylesheet" href="css/venue-detail.css">
   <style>
     .map-view,
     .map {
@@ -74,6 +75,11 @@
   </style>
 </head>
 <body>
+  <script>
+    if (new URLSearchParams(window.location.search).has('venue')) {
+      document.body.dataset.view = 'detail';
+    }
+  </script>
   <header class="site-header">
     <div class="site-header__brand-row">
       <a class="brand" href="./" aria-label="Cal Golden Bars home">

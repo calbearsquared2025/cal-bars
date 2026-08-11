@@ -3,6 +3,7 @@ import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
+import { createIcon } from './icons.mjs';
 
 function issueConfig() {
   const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
@@ -62,7 +63,8 @@ function renderParty(party, index, total, snapshot, { detail = false } = {}) {
     link.href = party.official_event_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = detail ? 'External event details' : 'Open event information';
+    if (detail) link.append(createIcon('external'), document.createTextNode('External event details'));
+    else link.textContent = 'Open event information';
     module.append(link);
   }
 

@@ -33,6 +33,7 @@ import {
   subscribeAppEvent
 } from './app-state.mjs';
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
+import { createIcon } from './icons.mjs';
 
 const MAPTILER_KEY = 'jNqIsIVa4dP9qv7vQ8fy';
 const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98cc3dbf3d7c/style.json?key=${MAPTILER_KEY}`;
@@ -673,7 +674,7 @@ function createDetailActionRow(venue) {
   const share = document.createElement('button');
   share.type = 'button';
   share.className = 'secondary-button detail-share';
-  share.textContent = 'Share';
+  share.append(createIcon('share'), document.createTextNode('Share'));
   share.addEventListener('click', () => shareVenue(venue));
   row.append(intent, share);
   return row;
@@ -966,7 +967,7 @@ function renderDetailView() {
   directions.href = directionsUrl(venue);
   directions.target = '_blank';
   directions.rel = 'noopener';
-  directions.textContent = 'Directions';
+  directions.append(createIcon('directions'), document.createTextNode('Directions'));
   addressActions.append(directions);
   if (venue.website_url) {
     const website = document.createElement('a');
@@ -974,7 +975,7 @@ function renderDetailView() {
     website.href = venue.website_url;
     website.target = '_blank';
     website.rel = 'noopener';
-    website.textContent = 'Visit venue website';
+    website.append(createIcon('external'), document.createTextNode('Visit venue website'));
     addressActions.append(website);
   }
   hero.append(addressActions);

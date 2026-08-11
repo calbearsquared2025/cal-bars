@@ -8,7 +8,9 @@ const [
   app,
   mobile,
   css,
+  detailCss,
   detailRefinement,
+  shellControls,
   fanIntent,
   watchPartyDisplay,
   watchPartyForm,
@@ -23,7 +25,9 @@ const [
   read('../js/app.js'),
   read('../js/map-mobile-refinement.mjs'),
   read('../css/design-board-4.css'),
+  read('../css/venue-detail.css'),
   read('../js/icon-upgrade.mjs'),
+  read('../js/shell-controls.mjs'),
   read('../js/fan-intent.js'),
   read('../js/watch-party-display.js'),
   read('../js/watch-party-form.js'),
@@ -46,10 +50,21 @@ test('Detail retains the global game selector while removing opening stats and t
   assert.match(app, /dom\.headerGameLabel\.textContent = gameTitle\(game\)/);
   assert.match(app, /dom\.headerKickoff\.textContent = formatKickoff\(game\)/);
   assert.match(app, /function selectGame\(gameId\)[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)/);
-  assert.match(detailRefinement, /body\[data-view="detail"\] \.site-header[\s\S]*display: grid !important/);
-  assert.match(detailRefinement, /body\[data-view="detail"\] \.opening-stat,[\s\S]*display: none !important/);
+  assert.match(detailCss, /body\[data-view="detail"\] \.site-header[\s\S]*display: grid !important/);
+  assert.match(detailCss, /body\[data-view="detail"\] \.opening-stat,[\s\S]*display: none !important/);
   assert.doesNotMatch(app, /className = 'detail-game-context'/);
-  assert.doesNotMatch(detailRefinement, /detail-game-context::after/);
+  assert.doesNotMatch(detailCss, /detail-game-context::after/);
+});
+
+test('Detail route and presentation are established before asynchronous application rendering', () => {
+  const detailStyles = html.indexOf('href="css/venue-detail.css"');
+  const applicationModule = html.indexOf('src="js/app.js"');
+  assert.ok(detailStyles > -1 && detailStyles < applicationModule);
+  assert.match(html, /new URLSearchParams\(window\.location\.search\)\.has\('venue'\)[\s\S]*document\.body\.dataset\.view = 'detail'/);
+  assert.match(detailCss, /body\[data-view="detail"\] #map-view[\s\S]*display: none !important/);
+  assert.match(detailCss, /body\[data-view="detail"\] #detail-view\[hidden\][\s\S]*display: block !important/);
+  assert.doesNotMatch(detailRefinement, /installDesktopDetailHierarchy|cgb-desktop-detail-hierarchy|createElement\('style'\)/);
+  assert.match(shellControls, /pendingDirectDetail[\s\S]*aria-busy[\s\S]*has\('venue'\)[\s\S]*detailVisible = !dom\.detailView\?\.hidden \|\| pendingDirectDetail/);
 });
 
 test('app.js is the single structural owner for Venue Detail on every render', () => {
@@ -82,9 +97,9 @@ test('no-photo Detail creates one noninteractive Venue-local MapLibre map from c
   assert.equal((detailRefinement.match(/new window\.maplibregl\.Marker/g) || []).length, 1);
   assert.match(app, /function disposeMapForDetail\(\)[\s\S]*state\.markers\.clear\(\)[\s\S]*state\.map\?\.remove\?\.\(\)[\s\S]*state\.map = null/);
   assert.doesNotMatch(detailRefinement, /NavigationControl|GeolocateControl|cluster:/);
-  assert.match(detailRefinement, /detail-local-map[\s\S]*height: 138px/);
-  assert.match(detailRefinement, /@media \(max-width: 359px\)[\s\S]*height: 124px/);
-  assert.match(detailRefinement, /orientation: landscape[\s\S]*height: 120px/);
+  assert.match(detailCss, /detail-local-map[\s\S]*height: 138px/);
+  assert.match(detailCss, /@media \(max-width: 359px\)[\s\S]*height: 124px/);
+  assert.match(detailCss, /orientation: landscape[\s\S]*height: 120px/);
   assert.match(css, /detail-hero\.detail-hero--no-photo[\s\S]*min-height: 0/);
 });
 
@@ -98,14 +113,14 @@ test('Detail identity moves Directions and short description into the address hi
   assert.match(app, /addressActions\.className = 'detail-address-actions'/);
   assert.match(app, /directions\.className = 'detail-directions-inline'/);
   assert.match(app, /hero\.append\(addressActions\)[\s\S]*description\.className = 'detail-description'[\s\S]*hero\.append\(description\)/);
-  assert.match(detailRefinement, /detail-description[\s\S]*color: var\(--cgb-ink-700\)/);
+  assert.match(detailCss, /detail-description[\s\S]*color: var\(--cgb-ink-700\)/);
 });
 
 test('FAN-ADDED is provenance-only and suppressed for Cal Bars', () => {
   assert.match(app, /venue\.venue_type !== 'cal_bar' && venue\.verification_status === 'user_added'/);
   assert.match(app, /badge\.textContent = 'FAN-ADDED'/);
   assert.match(app, /function createDetailBadges\(venue, party\)[\s\S]*createBadges\(venue, party\)/);
-  assert.doesNotMatch(`${app}\n${detailRefinement}`, /Fan-selected/i);
+  assert.doesNotMatch(`${app}\n${detailRefinement}\n${detailCss}`, /Fan-selected/i);
 });
 
 test('Watch Party identity coverage includes Cal Bar, fan-added non-Cal-Bar, and no-party states', () => {
@@ -120,15 +135,16 @@ test('Detail attendance separates the numeral from the singular/plural label', (
   assert.match(app, /className = 'bear-count__number'/);
   assert.match(app, /className = 'bear-count__label'/);
   assert.match(app, /number === 1 \? 'Bear watching here' : 'Bears watching here'/);
-  assert.match(detailRefinement, /activity-card > strong[\s\S]*gap: 6px/);
+  assert.match(detailCss, /activity-card > strong[\s\S]*gap: 6px/);
 });
 
 test('Detail Watch Party treatment reuses gold language, page scrolling, and scopes exact external copy to Detail', () => {
-  assert.match(watchPartyDisplay, /detail \? 'External event details' : 'Open event information'/);
+  assert.match(watchPartyDisplay, /if \(detail\) link\.append\(createIcon\('external'\), document\.createTextNode\('External event details'\)\)/);
+  assert.match(watchPartyDisplay, /else link\.textContent = 'Open event information'/);
   assert.match(watchPartyDisplay, /container\.querySelector\(':scope > \.detail-contribution, :scope > \.action-row'\)/);
-  assert.match(detailRefinement, /venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
-  assert.match(detailRefinement, /max-height: none !important/);
-  assert.match(detailRefinement, /overflow: visible !important/);
+  assert.match(detailCss, /venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
+  assert.match(detailCss, /max-height: none !important/);
+  assert.match(detailCss, /overflow: visible !important/);
   assert.match(watchPartyDisplay, /party-module__report/);
 });
 
@@ -138,7 +154,8 @@ test('Detail sticky row resolves to Fan Intent and Share while Directions moves 
   assert.match(app, /share\.className = 'secondary-button detail-share'/);
   assert.match(app, /row\.append\(intent, share\)/);
   assert.doesNotMatch(detailActionSource, /directions/i);
-  assert.match(detailRefinement, /grid-template-columns: minmax\(0, 1fr\) minmax\(96px, \.42fr\)/);
+  assert.match(detailCss, /grid-template-columns: minmax\(0, 1fr\) minmax\(96px, \.42fr\)/);
+  assert.match(app, /share\.append\(createIcon\('share'\), document\.createTextNode\('Share'\)\)/);
 });
 
 test('Detail contributions consolidate existing configured actions without changing their URLs or eligibility owners', () => {

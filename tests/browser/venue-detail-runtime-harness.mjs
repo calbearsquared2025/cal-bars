@@ -181,6 +181,8 @@ function verifyImmediateSingleOwnerRerender(venue, hasParty) {
   window.CGBApp?.render?.();
   check(!element('#venue-detail .detail-game-context'), 'Base rerender should not recreate the superseded selected-game module');
   check(Boolean(element('#venue-detail .detail-local-map')) === !venue.photo_url, 'Base rerender should immediately retain the accepted no-photo map structure');
+  check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Base renderer should emit the Detail Share icon without a later upgrade');
+  check(Boolean(element('#venue-detail .detail-directions-inline .ui-icon')), 'Base renderer should emit the Detail Directions icon without a later upgrade');
   verifyIdentity(venue, hasParty);
   verifyHierarchy(venue);
   verifyAttendance();
@@ -241,6 +243,8 @@ async function main() {
   check(visible('#game-button'), 'Global game selector should remain visible and functional on Detail');
   check(!visible('.opening-stat'), 'Opening Watch Party/location stats should be absent on Detail');
   check(!element('#venue-detail .detail-game-context'), 'Duplicate in-page selected-game module should be absent');
+  check(!element('#cgb-desktop-detail-hierarchy'), 'Detail presentation should not be injected as a runtime style correction');
+  check(Array.from(document.styleSheets).some((sheet) => String(sheet.href || '').endsWith('/css/venue-detail.css')), 'Detail presentation should load from the static stylesheet chain');
   check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), 'Global game selector should identify the selected opponent');
   const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
   check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Global game selector should preserve known or TBD kickoff behavior');
