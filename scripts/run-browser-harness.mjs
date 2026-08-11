@@ -213,10 +213,25 @@ try {
   }) && passed;
 
   passed = await runHarness({
+    path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_64902a48440e55522742d631&__cgb_prejoined=1&__cgb_harness=direct',
+    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+    label: 'Production TBD direct-route refresh harness',
+    virtualTimeBudget: 30000
+  }) && passed;
+
+  passed = await runHarness({
     path: '/__cgb_production_runtime__?__cgb_harness=main',
     marker: 'CGB_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Production runtime regression harness',
     virtualTimeBudget: 60000
+  }) && passed;
+
+  passed = await runHarness({
+    path: '/__cgb_production_runtime__?__cgb_harness=landscape',
+    marker: 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS_PASS',
+    label: 'Short landscape production runtime regression harness',
+    virtualTimeBudget: 30000,
+    windowSize: '844,390'
   }) && passed;
 
   passed = await runHarness({

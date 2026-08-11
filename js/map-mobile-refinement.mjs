@@ -1,5 +1,6 @@
 import {
   bearCountCopy,
+  compactVenueLocation,
   markerKind,
   rankVenues
 } from './core.mjs';
@@ -165,7 +166,7 @@ function updatePreviewIntent() {
       : 'Community Location';
   const context = mode === 'selected' ? 'Selected' : 'Nearby';
   title.textContent = venue.name;
-  copy.textContent = [context, type, formatDistance(distance)].filter(Boolean).join(' · ');
+  copy.textContent = [context, type, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   count.textContent = Number(fanCount) > 0 ? bearCountCopy(fanCount) : '';
   marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
   button.dataset.previewMode = mode;

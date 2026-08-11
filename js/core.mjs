@@ -54,6 +54,12 @@ export function venueTypeLabel(venue) {
   return venue?.venue_type === 'cal_bar' ? 'CAL BAR' : 'COMMUNITY LOCATION';
 }
 
+export function compactVenueLocation(venue) {
+  const street = String(venue?.address_line_1 || '').trim();
+  const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
+  return [street, locality].filter(Boolean).join(' · ');
+}
+
 export function venueBadgeDescriptors(venue, party) {
   const badges = [];
   if (party) badges.push({ text: 'WATCH PARTY', kind: 'party' });

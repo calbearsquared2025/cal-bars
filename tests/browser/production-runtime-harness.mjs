@@ -234,9 +234,19 @@ async function runDirectRouteCheck() {
   check(selectedVenueId() === venue?.venue_id, 'Direct venue URL should select the requested venue');
   check(element('#detail-view')?.hidden === false, 'Direct venue URL should render the venue detail view');
   check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Direct venue detail should preserve venue identity');
+  const game = state()?.snapshot?.games?.find((candidate) => candidate.game_id === requestedGame);
+  const gameHeading = element('#venue-detail .detail-game-context h2')?.textContent?.trim() || '';
+  const kickoff = element('#venue-detail .detail-game-context p')?.textContent?.trim() || '';
+  check(gameHeading.includes('Cal') && gameHeading.includes(game?.opponent_name || ''), 'Direct venue detail should identify Cal and the selected opponent');
+  check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Direct venue detail should preserve known or TBD kickoff context');
+  check(element('#venue-detail .detail-address')?.textContent?.includes(venue?.address_line_1 || ''), 'Direct venue detail should preserve the useful street address');
+  check(element('#venue-detail .detail-hero')?.classList.contains('detail-hero--no-photo') === !venue?.photo_url, 'Direct venue detail should identify the no-photo launch state');
+  const heroRect = element('#venue-detail .detail-hero')?.getBoundingClientRect();
+  check(Boolean(venue?.photo_url) || (heroRect?.height || Infinity) < window.innerHeight * .55, 'No-photo detail should not reserve most of the initial viewport for an empty photo plane');
   const badges = badgeTexts('#venue-detail');
-  check(badges.includes('WATCH PARTY'), 'Direct venue detail should preserve the Watch Party badge');
-  check(badges.includes('CAL BAR'), 'Direct venue detail should preserve the Cal Bar badge');
+  const hasParty = currentPartyVenueIds().has(venue?.venue_id);
+  check(badges.includes('WATCH PARTY') === hasParty, 'Direct venue detail should preserve selected-game Watch Party identity');
+  check(badges.includes('CAL BAR') === (venue?.venue_type === 'cal_bar'), 'Direct venue detail should preserve Cal Bar identity');
   check(!badges.includes('COMMUNITY LOCATION'), 'Direct venue detail should not render a Community Location badge');
   await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent after refresh');
   check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh fixture should restore the existing Fan Intent selection');
@@ -267,6 +277,13 @@ async function runDesktopDirectRouteCheck() {
   check(selectedVenueId() === venue?.venue_id, 'Desktop direct venue URL should select the requested venue');
   check(isVisible('#detail-view'), 'Desktop direct venue URL should visibly render the venue detail view');
   check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Desktop direct venue detail should preserve venue identity');
+  const game = state()?.snapshot?.games?.find((candidate) => candidate.game_id === requestedGame);
+  const gameHeading = element('#venue-detail .detail-game-context h2')?.textContent?.trim() || '';
+  const kickoff = element('#venue-detail .detail-game-context p')?.textContent?.trim() || '';
+  check(gameHeading.includes('Cal') && gameHeading.includes(game?.opponent_name || ''), 'Desktop direct venue detail should identify Cal and the selected opponent');
+  check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Desktop direct venue detail should preserve known or TBD kickoff context');
+  check(element('#venue-detail .detail-address')?.textContent?.includes(venue?.address_line_1 || ''), 'Desktop direct venue detail should preserve the useful street address');
+  check(element('#venue-detail .detail-hero')?.classList.contains('detail-hero--no-photo') === !venue?.photo_url, 'Desktop direct venue detail should identify the no-photo launch state');
   const badges = badgeTexts('#venue-detail');
   check(badges.includes('WATCH PARTY'), 'Desktop direct venue detail should preserve the Watch Party badge');
   check(badges.includes('CAL BAR'), 'Desktop direct venue detail should preserve the Cal Bar badge');
@@ -322,6 +339,9 @@ async function runDesktopChecks() {
   check(!communityListBadges.includes('COMMUNITY LOCATION'), 'Desktop Locations should omit the Community Location badge');
   check(partyListBadges.includes('WATCH PARTY'), 'Desktop Locations should preserve the Watch Party badge');
   check(partyListBadges.includes('CAL BAR'), 'Desktop Locations should preserve the Cal Bar badge');
+  const communityPartyVenue = firstVenue((venue) => venue.venue_type === 'community_location' && partyVenueIds.has(venue.venue_id));
+  const communityPartyBadges = badgeTexts(`#location-list .location-card[data-venue-id="${communityPartyVenue?.venue_id}"]`);
+  check(communityPartyBadges.includes('WATCH PARTY') && !communityPartyBadges.includes('CAL BAR'), 'Desktop Watch Party at a Community Location should remain distinct from a Cal Bar');
 
   progress('desktop-add-without-selection');
   click('#mobile-add-button');
@@ -347,6 +367,7 @@ async function runDesktopChecks() {
   check(Boolean(element('#tray-selected .bear-count__prompt')), 'Desktop selected card should use the shared zero-attendance component');
   check(Boolean(element('#tray-selected .selected-card__plan-party')), 'Desktop selected card should use the shared no-Watch-Party contribution component');
   check(!badgeTexts('#tray-selected .selected-card').includes('COMMUNITY LOCATION'), 'Desktop selected card should omit the Community Location badge');
+  check(element('#tray-selected .venue-location')?.textContent?.includes(noPartyVenue?.address_line_1 || ''), 'Desktop selected profile should show useful street information');
   const selectedCountStyle = getComputedStyle(element('#tray-selected .bear-count'));
   const selectedIntentRect = element('#tray-selected .intent-button')?.getBoundingClientRect();
   const selectedShare = element('#tray-selected .selected-card__share');
@@ -439,6 +460,28 @@ async function runDesktopChecks() {
   finish('CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS');
 }
 
+async function runShortLandscapeChecks() {
+  progress('short-landscape-ready');
+  await waitForApplicationReady('short landscape application ready');
+  check(window.innerWidth > window.innerHeight, 'Short landscape harness should run in landscape orientation');
+  check(window.innerHeight <= 500, 'Short landscape harness should exercise the compact-height breakpoint');
+
+  const partyVenueIds = currentPartyVenueIds();
+  const longVenue = firstVenue((venue) =>
+    venue.name.length > 50 && venue.address_line_1.length > 35 && !partyVenueIds.has(venue.venue_id));
+  check(Boolean(longVenue), 'Short landscape fixture should include long Venue name and address content');
+  element(`#location-list .location-card[data-venue-id="${longVenue?.venue_id}"]`)?.click();
+  await waitFor(() => selectedVenueId() === longVenue?.venue_id && trayState() === 'selected', 'short landscape long Venue selection');
+
+  check(isVisible('#tray-selected .selected-card'), 'Short landscape should keep the selected profile visible');
+  check(element('#tray-selected .venue-location')?.textContent?.includes(longVenue?.address_line_1 || ''), 'Short landscape should preserve useful street information');
+  check(!element('#tray-selected .party-module'), 'Short landscape no-Watch-Party state should not fabricate a Watch Party');
+  check(attendanceNumber() === 0, 'Short landscape zero-Bear state should remain explicit');
+  check(document.documentElement.scrollWidth <= document.documentElement.clientWidth, 'Short landscape should not create horizontal document overflow');
+  check((element('#venue-tray')?.getBoundingClientRect().top || -1) >= (element('.site-header')?.getBoundingClientRect().bottom || 0), 'Short landscape selected tray should remain below the header');
+  finish('CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS');
+}
+
 async function runMainChecks() {
   progress('ready');
   await waitForApplicationReady();
@@ -501,12 +544,14 @@ async function runMainChecks() {
   check(isVisible('#tray-peek'), 'Selected Venue mini profile should be visible');
   check(!isVisible('#tray-selected'), 'Full selected profile should be hidden in mini state');
   check(element('#browse-locations-button')?.dataset?.directVenueId === noPartyVenue?.venue_id, 'Mini profile should retain the selected Venue');
+  check(element('#tray-summary-copy')?.textContent?.includes(noPartyVenue?.address_line_1 || ''), 'Mini profile should show useful street information');
 
   progress('mini-to-selected');
   click('#browse-locations-button');
   await waitFor(() => trayState() === 'selected' && selectedVenueId() === noPartyVenue?.venue_id, 'mini profile → full selected profile');
   check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Mini profile should open directly to the full selected profile');
   check(isVisible('#tray-selected .selected-card__details'), 'Direct mini-to-selected transition should expose full selected actions');
+  check(element('#tray-selected .venue-location')?.textContent?.includes(noPartyVenue?.address_line_1 || ''), 'Full selected profile should show useful street information');
 
   progress('rsvp-join-selected');
   check(attendanceNumber() === 0, 'Mocked selected venue should begin at zero attendance');
@@ -606,6 +651,14 @@ async function runMainChecks() {
     check(selectedPartyBadges.includes('CAL BAR'), 'Mobile selected card should preserve the Cal Bar badge');
     check(!selectedPartyBadges.includes('COMMUNITY LOCATION'), 'Mobile selected Cal Bar should not render a Community Location badge');
 
+    const communityPartyVenue = firstVenue((venue) => venue.venue_type === 'community_location' && currentPartyVenueIds().has(venue.venue_id));
+    const communityPartyCard = communityPartyVenue && element(`#location-list .location-card[data-venue-id="${communityPartyVenue.venue_id}"]`);
+    check(Boolean(communityPartyCard), 'Mobile fixture should include a Watch Party at a Community Location');
+    communityPartyCard?.click();
+    await waitFor(() => selectedVenueId() === communityPartyVenue?.venue_id && trayState() === 'selected', 'Community Location Watch Party selection');
+    const communityPartyBadges = badgeTexts('#tray-selected .selected-card');
+    check(communityPartyBadges.includes('WATCH PARTY') && !communityPartyBadges.includes('CAL BAR'), 'Mobile Watch Party at a Community Location should remain distinct from a Cal Bar');
+
     progress('rsvp-move-selected');
     const partyAttendanceBeforeMove = attendanceNumber();
     click('#tray-selected .intent-button');
@@ -659,6 +712,8 @@ async function runMainChecks() {
 const mode = new URLSearchParams(location.search).get('__cgb_harness');
 (mode === 'direct'
   ? runDirectRouteCheck()
+  : mode === 'landscape'
+    ? runShortLandscapeChecks()
   : mode === 'desktop'
     ? runDesktopChecks()
     : mode === 'desktop-direct'
@@ -667,6 +722,8 @@ const mode = new URLSearchParams(location.search).get('__cgb_harness');
   failures.push(error?.stack || String(error));
   finish(mode === 'direct'
     ? 'CGB_PRODUCTION_DIRECT_ROUTE'
+    : mode === 'landscape'
+      ? 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS'
     : mode === 'desktop'
       ? 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS'
       : mode === 'desktop-direct'

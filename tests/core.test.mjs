@@ -5,6 +5,7 @@ import {
   bearCountCopy,
   buildVenueUrl,
   calculateMinimalPan,
+  compactVenueLocation,
   findExactVenueMatch,
   formatKickoff,
   gameTitle,
@@ -32,6 +33,16 @@ test('game titles use the single canonical opponent name', () => {
   assert.equal(gameTitle({ opponent_name: 'North Carolina State', home_away: 'away' }), 'at North Carolina State');
 });
 
+test('compact venue location uses street and locality without postal-address noise', () => {
+  assert.equal(compactVenueLocation({
+    address_line_1: '12345 A Very Long Boulevard Name',
+    address_line_2: 'Suite 900',
+    city: 'San Francisco',
+    region: 'CA',
+    postal_code: '94103'
+  }), '12345 A Very Long Boulevard Name · San Francisco, CA');
+});
+
 test('TBD kickoff is displayed without a timestamp', () => {
   const game = snapshot.games.find((item) => item.kickoff_status === 'tbd');
   assert.ok(game);
@@ -41,9 +52,11 @@ test('TBD kickoff is displayed without a timestamp', () => {
 test('selected-game events and internal venue type determine marker treatment', () => {
   const calBar = snapshot.venues.find((item) => item.venue_id === 'ven_000001');
   const communityLocation = snapshot.venues.find((item) => item.venue_id === 'ven_000003');
+  const communityLocationWithoutParty = snapshot.venues.find((item) => item.venue_id === 'ven_000004');
   assert.equal(markerKind(snapshot, 'game_2026_01', calBar), 'watch-party');
   assert.equal(markerKind(snapshot, 'game_2026_02', calBar), 'cal-bar');
-  assert.equal(markerKind(snapshot, 'game_2026_01', communityLocation), 'community-location');
+  assert.equal(markerKind(snapshot, 'game_2026_01', communityLocation), 'watch-party');
+  assert.equal(markerKind(snapshot, 'game_2026_01', communityLocationWithoutParty), 'community-location');
 });
 
 test('rank order is Watch Party, Cal Bar, then Community Location', () => {

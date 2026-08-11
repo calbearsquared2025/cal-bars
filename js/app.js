@@ -4,6 +4,7 @@ import {
   buildVenueShareMessage,
   buildVenueUrl,
   calculateMinimalPan,
+  compactVenueLocation,
   findExactVenueMatch,
   formatKickoff,
   gameTitle,
@@ -728,7 +729,7 @@ function renderSelectedCard() {
   heading.append(title);
   const locationLine = document.createElement('p');
   locationLine.className = 'venue-location';
-  locationLine.textContent = [venue.city, venue.region, formatDistance(distance)].filter(Boolean).join(' · ');
+  locationLine.textContent = [compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   heading.append(locationLine);
   header.append(heading);
   const collapse = document.createElement('button');
@@ -845,7 +846,7 @@ function renderDetailView() {
   dom.venueDetail.replaceChildren();
   dom.venueDetail.dataset.venueId = venue.venue_id;
   const hero = document.createElement('header');
-  hero.className = 'detail-hero';
+  hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
   hero.append(createBadges(venue, party));
   const title = document.createElement('h1');
   title.textContent = venue.name;
@@ -868,7 +869,7 @@ function renderDetailView() {
   eyebrow.textContent = 'Selected game';
   gameContext.append(eyebrow);
   const gameHeading = document.createElement('h2');
-  gameHeading.textContent = gameTitle(game);
+  gameHeading.textContent = `Cal ${gameTitle(game)}`;
   gameContext.append(gameHeading);
   const kickoff = document.createElement('p');
   kickoff.textContent = formatKickoff(game);
