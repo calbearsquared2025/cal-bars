@@ -6,11 +6,12 @@ const root = new URL('../', import.meta.url);
 const profile = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('shared mobile header uses one taller geometry without overlapping the statistics plane', () => {
-  assert.match(profile, /--header-height: calc\(176px/);
+test('portrait mobile header keeps the taller geometry without overriding landscape', () => {
+  assert.match(profile, /@media \(max-width: 899px\) and \(orientation: portrait\)[\s\S]*--header-height: calc\(176px/);
   assert.match(profile, /HEADER_OVERHANG = 31/);
   assert.match(profile, /data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"/);
   assert.match(profile, /opening-stat[\s\S]*display: grid !important/);
+  assert.match(profile, /@media \(max-width: 899px\) \{[\s\S]*search-field:focus-within/);
 });
 
 test('List fully replaces the map below the shared header', () => {
