@@ -148,7 +148,7 @@ function updatePreviewIntent() {
   const candidate = previewCandidate(state);
   if (!candidate) {
     title.textContent = 'Find your Cal crowd';
-    copy.textContent = 'Watch Parties first, then Cal Bars and Community Locations.';
+    copy.textContent = 'Explore Watch Parties, Cal Bars, and places where other Bears are planning to watch.';
     count.textContent = '';
     marker.dataset.kind = 'community-location';
     button.dataset.previewMode = 'guidance';
