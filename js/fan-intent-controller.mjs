@@ -76,11 +76,18 @@ export function createFanIntentController({
     }
   }
 
+  async function ensureIntent(venueId) {
+    const state = getState();
+    if (!venueId || !state.gameId) return false;
+    if (state.fanIntent.selections?.[state.gameId] === venueId) return true;
+    return performIntent(venueId);
+  }
+
   async function retryIntent() {
     const retry = getState().fanIntent.retry;
     if (!retry) return false;
     return performIntent(retry.venueId, retry.action);
   }
 
-  return Object.freeze({ performIntent, retryIntent });
+  return Object.freeze({ ensureIntent, performIntent, retryIntent });
 }

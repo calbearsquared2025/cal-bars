@@ -356,6 +356,11 @@ async function handleDocumentClick(event) {
   await controller?.performIntent(intentButton.dataset.venueId);
 }
 
+export async function ensureFanIntentAttendance(venueId, gameId = appState.gameId) {
+  if (!controller || !venueId || !gameId || gameId !== appState.gameId) return false;
+  return controller.ensureIntent(venueId);
+}
+
 function startSynchronization() {
   window.addEventListener('storage', (event) => {
     if (event.key === INTENT_SELECTIONS_STORAGE_KEY) {
@@ -399,6 +404,7 @@ async function bootFanIntent() {
 }
 
 window.CGBFanIntent = Object.freeze({
+  ensureAttendance: ensureFanIntentAttendance,
   clearLocalIdentity() {
     storageRemove(BROWSER_ID_STORAGE_KEY);
     storageRemove(INTENT_SELECTIONS_STORAGE_KEY);

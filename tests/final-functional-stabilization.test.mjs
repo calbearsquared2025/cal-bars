@@ -27,7 +27,7 @@ test('Add preserves an existing Venue context and exposes the existing new-locat
   assert.match(stabilization, /let addContextVenueId = ''/);
   assert.match(stabilization, /captureAddContext/);
   assert.match(stabilization, /state\.selectedVenueId = addContextVenueId/);
-  assert.match(stabilization, /\.selected-card__plan-party/);
+  assert.doesNotMatch(stabilization, /\.selected-card__plan-party/);
   assert.match(stabilization, /id = 'add-location-button'/);
   assert.match(stabilization, /Add a new location/);
   assert.match(stabilization, /#mobile-search-button/);

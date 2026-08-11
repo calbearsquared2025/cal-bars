@@ -222,16 +222,6 @@ function ensureAddLocationOption() {
   });
 }
 
-function routeSelectedVenuePlanThroughAdd(event) {
-  const button = event.target.closest?.('.selected-card__plan-party');
-  if (!button) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  captureAddContext();
-  document.querySelector('#mobile-add-button')?.click();
-  requestAnimationFrame(() => document.querySelector('#add-watch-party-button')?.focus());
-}
-
 function fixDirectionsSeparator() {
   document.querySelectorAll('.selected-card__directions-inline').forEach((link) => {
     link.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
@@ -312,7 +302,6 @@ function initialize() {
   }, { capture: true });
   document.addEventListener('click', handleNavigationContext, { capture: true });
   document.addEventListener('click', restoreContextForAddAction, { capture: true });
-  document.addEventListener('click', routeSelectedVenuePlanThroughAdd, { capture: true });
 
   if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', schedulePostRender);
