@@ -15,7 +15,7 @@ function installStyles() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
-    @media (max-width: 899px) {
+    @media (max-width: 899px) and (orientation: portrait) {
       :root {
         --header-height: calc(176px + env(safe-area-inset-top, 0px)) !important;
       }
@@ -78,7 +78,9 @@ function installStyles() {
       body[data-command-surface="add"] .command-surface:not([hidden]) {
         inset: calc(var(--header-height) + ${HEADER_OVERHANG}px) 0 var(--footer-height) 0 !important;
       }
+    }
 
+    @media (max-width: 899px) {
       .command-surface .search-field {
         border-color: var(--cgb-neutral-300) !important;
         box-shadow: var(--shadow-xs) !important;
