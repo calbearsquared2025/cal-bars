@@ -539,3 +539,24 @@
     font-size: .68rem;
   }
 }
+
+/* Short landscape keeps the selected venue beside the map instead of covering it. */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
+  #map-view > #venue-tray.venue-tray.tray--selected {
+    position: absolute !important;
+    inset:
+      8px
+      max(8px, env(safe-area-inset-right, 0px))
+      calc(var(--footer-height) + 8px)
+      auto !important;
+    width: min(46vw, 430px) !important;
+    max-width: 430px !important;
+    max-height: none;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg);
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
+    height: 18px;
+  }
+}
