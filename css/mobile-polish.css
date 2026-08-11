@@ -540,8 +540,57 @@
   }
 }
 
-/* Short landscape keeps the selected venue beside the map instead of covering it. */
-@media (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
+/* Short landscape keeps the header compact and the selected venue beside the map. */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 650px) {
+  :root {
+    --header-height: calc(62px + env(safe-area-inset-top, 0px));
+    --mobile-command-height: 52px;
+    --footer-height: calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .site-header {
+    height: var(--header-height);
+    min-height: var(--header-height);
+    grid-template-columns: minmax(190px, .75fr) minmax(250px, 1fr);
+    grid-template-rows: 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: calc(env(safe-area-inset-top, 0px) + 5px) max(12px, env(safe-area-inset-right, 0px)) 5px max(12px, env(safe-area-inset-left, 0px));
+  }
+
+  .site-header__brand-row {
+    min-height: 42px;
+    padding-right: 0;
+  }
+
+  .site-header > .site-header__brand-row > #header-about-button {
+    display: none !important;
+  }
+
+  .brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand-name {
+    font-size: .86rem;
+  }
+
+  .game-button {
+    min-height: 48px;
+    padding-block: 4px;
+    border-bottom: 0;
+  }
+
+  .game-button__eyebrow,
+  .opening-stat {
+    display: none;
+  }
+
+  .game-button strong {
+    font-size: 1rem;
+  }
+
   #map-view > #venue-tray.venue-tray.tray--selected {
     position: absolute !important;
     inset:
