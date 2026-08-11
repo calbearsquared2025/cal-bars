@@ -88,8 +88,9 @@ function verifyLocalMap(venue) {
   const zoom = Number(mapNode?.dataset.zoom);
   check(zoom >= 16.5 && zoom <= 17.5, 'Detail local map should use a tight few-block zoom');
 
-  const maps = window.CGBMapLibreRuntimeMock?.maps || [];
-  const markers = window.CGBMapLibreRuntimeMock?.markers || [];
+  const maps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
+  const markers = (window.CGBMapLibreRuntimeMock?.markers || [])
+    .filter((candidate) => !candidate.removed && !candidate.map?.removed);
   const map = maps.at(-1);
   check(maps.length === 1, 'Detail route should create only the Venue-local map');
   check(map?.options?.interactive === false, 'Detail local map should be noninteractive');
