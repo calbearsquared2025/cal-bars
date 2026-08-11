@@ -32,7 +32,9 @@ function safeFilePath(requestUrl) {
   return candidate;
 }
 
-function sendProductionHarness(response) {
+function sendProductionHarness(response, requestUrl = '/') {
+  const harnessMode = new URL(requestUrl, 'http://127.0.0.1').searchParams.get('__cgb_harness') || 'main';
+  const detailHarness = harnessMode === 'direct' || harnessMode === 'desktop-direct';
   const prelude = `<script>
     const cgbPrejoinedReload = sessionStorage.getItem('cgb_prejoined_reload') === 'ready';
     if (!cgbPrejoinedReload) {
@@ -104,9 +106,12 @@ function sendProductionHarness(response) {
       };
     })();
   </script>`;
+  const driverScript = detailHarness
+    ? '/tests/browser/venue-detail-runtime-harness.mjs'
+    : '/tests/browser/production-runtime-harness.mjs';
   const driver = `
     <output id="cgb-production-runtime-result">CGB_PRODUCTION_RUNTIME_RUNNING</output>
-    <script type="module" src="/tests/browser/production-runtime-router.mjs"></script>
+    <script type="module" src="${driverScript}"></script>
   `;
   const html = productionIndex
     .replace(
@@ -125,7 +130,7 @@ function sendProductionHarness(response) {
 const server = createServer((request, response) => {
   const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
   if (pathname === '/__cgb_production_runtime__') {
-    sendProductionHarness(response);
+    sendProductionHarness(response, request.url || '/');
     return;
   }
 
