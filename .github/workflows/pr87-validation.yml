@@ -44,11 +44,14 @@ jobs:
           status=${PIPESTATUS[0]}
           set -e
           if [ "$status" -ne 0 ]; then
-            tail -120 /tmp/pr87-browser.log | while IFS= read -r line; do
-              escaped=${line//'%'/'%25'}
-              escaped=${escaped//$'\r'/'%0D'}
-              escaped=${escaped//$'\n'/'%0A'}
-              echo "::error title=PR87 browser harness::$escaped"
-            done
+            grep -E 'CGB_.*FAIL|^- |Timed out|TypeError|ReferenceError|Error:' /tmp/pr87-browser.log \
+              | grep -v 'dbus/' \
+              | tail -40 \
+              | while IFS= read -r line; do
+                  escaped=${line//'%'/'%25'}
+                  escaped=${escaped//$'\r'/'%0D'}
+                  escaped=${escaped//$'\n'/'%0A'}
+                  echo "::error title=PR87 browser harness::$escaped"
+                done
             exit "$status"
           fi
