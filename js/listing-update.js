@@ -40,7 +40,7 @@ export function renderListingUpdateEntry({
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = 'Report a problem with this listing.';
+  link.textContent = 'Report a problem with this listing';
 
   section.append(link);
   detail.append(section);
