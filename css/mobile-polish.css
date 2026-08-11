@@ -114,57 +114,57 @@
 
 @media (max-width: 899px) {
   @media (orientation: portrait) {
-    /* Secondary destinations keep game context while reclaiming vertical space. */
-    body[data-command-surface="search"],
-    body[data-command-surface="add"],
-    body[data-command-surface="list"] {
-      --header-height: calc(82px + env(safe-area-inset-top, 0px));
-    }
+  /* Secondary destinations keep game context while reclaiming vertical space. */
+  body[data-command-surface="search"],
+  body[data-command-surface="add"],
+  body[data-command-surface="list"] {
+    --header-height: calc(82px + env(safe-area-inset-top, 0px));
+  }
 
-    body[data-command-surface="search"] .site-header,
-    body[data-command-surface="add"] .site-header,
-    body[data-command-surface="list"] .site-header {
-      height: var(--header-height);
-      min-height: var(--header-height);
-      display: block;
-      padding: calc(env(safe-area-inset-top, 0px) + 8px) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px));
-    }
+  body[data-command-surface="search"] .site-header,
+  body[data-command-surface="add"] .site-header,
+  body[data-command-surface="list"] .site-header {
+    height: var(--header-height);
+    min-height: var(--header-height);
+    display: block;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px));
+  }
 
-    body[data-command-surface="search"] .site-header__brand-row,
-    body[data-command-surface="add"] .site-header__brand-row,
-    body[data-command-surface="list"] .site-header__brand-row,
-    body[data-command-surface="search"] .opening-stat,
-    body[data-command-surface="add"] .opening-stat,
-    body[data-command-surface="list"] .opening-stat {
-      display: none;
-    }
+  body[data-command-surface="search"] .site-header__brand-row,
+  body[data-command-surface="add"] .site-header__brand-row,
+  body[data-command-surface="list"] .site-header__brand-row,
+  body[data-command-surface="search"] .opening-stat,
+  body[data-command-surface="add"] .opening-stat,
+  body[data-command-surface="list"] .opening-stat {
+    display: none;
+  }
 
-    body[data-command-surface="search"] .game-button,
-    body[data-command-surface="add"] .game-button,
-    body[data-command-surface="list"] .game-button {
-      min-height: 64px;
-      grid-template-rows: auto auto;
-      padding: 7px 34px 7px 0;
-      border-bottom: 0;
-    }
+  body[data-command-surface="search"] .game-button,
+  body[data-command-surface="add"] .game-button,
+  body[data-command-surface="list"] .game-button {
+    min-height: 64px;
+    grid-template-rows: auto auto;
+    padding: 7px 34px 7px 0;
+    border-bottom: 0;
+  }
 
-    body[data-command-surface="search"] .game-button__eyebrow,
-    body[data-command-surface="add"] .game-button__eyebrow,
-    body[data-command-surface="list"] .game-button__eyebrow {
-      display: none;
-    }
+  body[data-command-surface="search"] .game-button__eyebrow,
+  body[data-command-surface="add"] .game-button__eyebrow,
+  body[data-command-surface="list"] .game-button__eyebrow {
+    display: none;
+  }
 
-    body[data-command-surface="search"] #header-game-label,
-    body[data-command-surface="add"] #header-game-label,
-    body[data-command-surface="list"] #header-game-label {
-      font-size: 1.08rem;
-    }
+  body[data-command-surface="search"] #header-game-label,
+  body[data-command-surface="add"] #header-game-label,
+  body[data-command-surface="list"] #header-game-label {
+    font-size: 1.08rem;
+  }
 
-    body[data-command-surface="search"] #header-kickoff,
-    body[data-command-surface="add"] #header-kickoff,
-    body[data-command-surface="list"] #header-kickoff {
-      font-size: .72rem;
-    }
+  body[data-command-surface="search"] #header-kickoff,
+  body[data-command-surface="add"] #header-kickoff,
+  body[data-command-surface="list"] #header-kickoff {
+    font-size: .72rem;
+  }
   }
 
   /* Preserve descenders such as the g in Wagner. */
