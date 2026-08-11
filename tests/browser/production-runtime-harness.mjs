@@ -134,13 +134,16 @@ function invitationHeading(surface = '#tray-selected') {
 
 function checkPostJoinInvitationLayout(label, surface = '#tray-selected') {
   const panel = postJoinInvitation(surface);
-  const row = panel?.closest('.action-row');
+  const detail = surface === '#venue-detail';
+  const row = detail
+    ? panel?.parentElement?.querySelector(':scope > .action-row.detail-primary-actions')
+    : panel?.closest('.action-row');
   const intent = row?.querySelector(':scope > .intent-button');
-  const share = row?.querySelector(':scope > .selected-card__share');
+  const share = row?.querySelector(detail ? ':scope > .detail-share' : ':scope > .selected-card__share');
   const details = row?.querySelector(':scope > .selected-card__details');
   check(isVisible(panel), `${label} should be visible inline`);
   check(Boolean(row?.classList.contains('has-post-join-invitation')), `${label} should use the selected action row`);
-  check(intent?.nextElementSibling === panel, `${label} should immediately follow the RSVP state`);
+  check(detail ? panel?.nextElementSibling === row : intent?.nextElementSibling === panel, `${label} should immediately precede its action row`);
   check(!share || Boolean(panel.compareDocumentPosition(share) & Node.DOCUMENT_POSITION_FOLLOWING), `${label} should precede Share`);
   check(!details || Boolean(panel.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING), `${label} should precede Details`);
 }
@@ -235,8 +238,8 @@ async function runDirectRouteCheck() {
   check(element('#detail-view')?.hidden === false, 'Direct venue URL should render the venue detail view');
   check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Direct venue detail should preserve venue identity');
   const game = state()?.snapshot?.games?.find((candidate) => candidate.game_id === requestedGame);
-  const gameHeading = element('#venue-detail .detail-game-context h2')?.textContent?.trim() || '';
-  const kickoff = element('#venue-detail .detail-game-context p')?.textContent?.trim() || '';
+  const gameHeading = element('#header-game-label')?.textContent?.trim() || '';
+  const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
   check(gameHeading.includes('Cal') && gameHeading.includes(game?.opponent_name || ''), 'Direct venue detail should identify Cal and the selected opponent');
   check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Direct venue detail should preserve known or TBD kickoff context');
   check(element('#venue-detail .detail-address')?.textContent?.includes(venue?.address_line_1 || ''), 'Direct venue detail should preserve the useful street address');
@@ -278,8 +281,8 @@ async function runDesktopDirectRouteCheck() {
   check(isVisible('#detail-view'), 'Desktop direct venue URL should visibly render the venue detail view');
   check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Desktop direct venue detail should preserve venue identity');
   const game = state()?.snapshot?.games?.find((candidate) => candidate.game_id === requestedGame);
-  const gameHeading = element('#venue-detail .detail-game-context h2')?.textContent?.trim() || '';
-  const kickoff = element('#venue-detail .detail-game-context p')?.textContent?.trim() || '';
+  const gameHeading = element('#header-game-label')?.textContent?.trim() || '';
+  const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
   check(gameHeading.includes('Cal') && gameHeading.includes(game?.opponent_name || ''), 'Desktop direct venue detail should identify Cal and the selected opponent');
   check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Desktop direct venue detail should preserve known or TBD kickoff context');
   check(element('#venue-detail .detail-address')?.textContent?.includes(venue?.address_line_1 || ''), 'Desktop direct venue detail should preserve the useful street address');

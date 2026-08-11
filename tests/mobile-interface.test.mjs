@@ -95,7 +95,7 @@ test('marker counts and accessible labels retain the approved Bear-count copy', 
 test('every rendered list and detail current-game count has explicit Bear meaning', () => {
   assert.match(app, /countLine\.textContent = bearCountCopy\(count\)/);
   assert.match(app, /count\.textContent = bearCountCopy\(fanCount\)/);
-  assert.match(app, /current\.textContent = bearCountCopy\(count\)/);
+  assert.match(app, /renderDetailAttendanceCopy\(current, activityPresentation\.primary\)/);
   assert.doesNotMatch(app, /count\.textContent = String\(fanCount\)/);
 });
 

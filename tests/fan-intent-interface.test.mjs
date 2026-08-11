@@ -125,10 +125,11 @@ test('completed activity publishes cumulative season counts and standardized cop
 });
 
 test('standardized activity presentation covers detail, selected-card, and list surfaces', () => {
-  assert.match(client, /function renderDetailActivity/);
+  assert.doesNotMatch(client, /function renderDetailActivity/);
+  assert.match(app, /venueActivityPresentation/);
   assert.match(client, /function renderSelectedCardActivity/);
   assert.match(client, /function renderLocationCardActivity/);
-  assert.match(client, /\.detail-description/);
+  assert.match(app, /className = 'detail-description'/);
   assert.match(client, /\.venue-description/);
   assert.match(client, /\.location-card__description/);
   assert.match(client, /venue-activity-history/);

@@ -195,25 +195,6 @@ function activityPresentation(game, venue, currentCopy) {
   });
 }
 
-function renderDetailActivity(game) {
-  const activity = document.querySelector('#venue-detail > .activity-card');
-  const venue = selectedVenue();
-  if (!activity || !venue) return;
-
-  const primary = activity.querySelector('strong');
-  const secondary = activity.querySelector('p');
-  if (!primary || !secondary) return;
-
-  const migratedHistory = Boolean(legacyActivitySeason(venue));
-  const description = document.querySelector('.detail-description');
-  if (description && migratedHistory) description.hidden = true;
-
-  const presentation = activityPresentation(game, venue, primary.textContent);
-  primary.textContent = presentation.primary;
-  secondary.hidden = presentation.secondary.length === 0;
-  replaceTextLines(secondary, presentation.secondary);
-}
-
 function renderSelectedCardActivity(game) {
   const card = document.querySelector('.selected-card[data-venue-id]');
   const venue = venueById(card?.dataset.venueId);
@@ -278,7 +259,6 @@ function renderLocationCardActivity(game) {
 function renderVenueActivity() {
   const game = currentGame();
   if (!game || !appState.snapshot) return;
-  renderDetailActivity(game);
   renderSelectedCardActivity(game);
   renderLocationCardActivity(game);
 }
@@ -339,7 +319,12 @@ function renderPostJoinInvitation() {
   share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
   panel.append(heading, copy, share);
   row.classList.add('has-post-join-invitation');
-  intent.insertAdjacentElement('afterend', panel);
+  if (appState.detailMode) {
+    panel.classList.add('detail-post-join-invitation');
+    row.insertAdjacentElement('beforebegin', panel);
+  } else {
+    intent.insertAdjacentElement('afterend', panel);
+  }
 }
 
 async function handleDocumentClick(event) {

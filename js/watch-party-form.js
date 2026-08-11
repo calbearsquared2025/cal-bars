@@ -33,6 +33,15 @@ function removeExistingEntryPoint(detail) {
   detail.querySelector('.preview-note')?.remove();
 }
 
+function detailContributionActions(detail) {
+  return detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
+}
+
+function syncDetailContributionVisibility(detail) {
+  const section = detail.querySelector(':scope > .detail-contribution');
+  if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
+}
+
 export function renderWatchPartyFormEntryPoint({
   app = window.CGBApp,
   documentObject = document
@@ -54,7 +63,10 @@ export function renderWatchPartyFormEntryPoint({
     context
   );
 
-  if (!href) return '';
+  if (!href) {
+    syncDetailContributionVisibility(detail);
+    return '';
+  }
 
   const existingParty = getWatchParty(
     state?.snapshot,
@@ -62,18 +74,9 @@ export function renderWatchPartyFormEntryPoint({
     context?.venueId
   );
 
-  const section = documentObject.createElement('section');
-  section.className = 'watch-party-contribution';
-  section.dataset.watchPartyFormEntryPoint = 'true';
-
-  const prompt = documentObject.createElement('p');
-  prompt.className = 'watch-party-contribution__prompt';
-  prompt.textContent = existingParty
-    ? 'Is there another watch party going on?'
-    : 'Is there a watch party going on?';
-
   const link = documentObject.createElement('a');
-  link.className = 'primary-button watch-party-contribution__action';
+  link.className = 'detail-contribution__action';
+  link.dataset.watchPartyFormEntryPoint = 'true';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
@@ -81,8 +84,10 @@ export function renderWatchPartyFormEntryPoint({
     ? 'Add Another Watch Party'
     : 'Submit a Watch Party';
 
-  section.append(prompt, link);
-  detail.append(section);
+  const actions = detailContributionActions(detail);
+  if (!actions) return '';
+  actions.append(link);
+  syncDetailContributionVisibility(detail);
   return href;
 }
 

@@ -503,9 +503,9 @@ function createDetailLocalMarker(venue, state) {
 }
 
 function syncDetailLocalMap(hero, venue, state) {
-  if (!hero?.classList.contains('detail-hero--no-photo') || venue.photo_url) {
+  const container = hero?.querySelector('.detail-local-map');
+  if (!container || venue.photo_url) {
     destroyDetailLocalMap();
-    hero?.querySelector('.detail-local-map')?.remove();
     return;
   }
 
@@ -514,19 +514,6 @@ function syncDetailLocalMap(hero, venue, state) {
   if (![latitude, longitude].every(Number.isFinite)) {
     destroyDetailLocalMap();
     return;
-  }
-
-  let container = hero.querySelector('.detail-local-map');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'detail-local-map';
-    container.dataset.venueId = venue.venue_id;
-    container.dataset.latitude = String(latitude);
-    container.dataset.longitude = String(longitude);
-    container.dataset.zoom = String(DETAIL_MAP_ZOOM);
-    container.setAttribute('role', 'img');
-    container.setAttribute('aria-label', `Local map centered on ${venue.name}`);
-    hero.prepend(container);
   }
 
   if (detailLocalMap && detailLocalMapContainer === container && detailLocalMapVenueId === venue.venue_id) {
@@ -565,167 +552,6 @@ function syncDetailLocalMap(hero, venue, state) {
   requestAnimationFrame(() => detailLocalMap?.resize?.());
 }
 
-function refineDetailBadges(detail, venue) {
-  const badges = detail.querySelector('.detail-hero .venue-badges');
-  if (!badges) return;
-  Array.from(badges.children).forEach((badge) => {
-    if (/community location/i.test(badge.textContent)) badge.remove();
-  });
-  badges.querySelector('.badge--fan-added')?.remove();
-  const fanAdded = venue.venue_type !== 'cal_bar' && venue.verification_status === 'user_added';
-  if (!fanAdded) return;
-  const badge = document.createElement('span');
-  badge.className = 'venue-badge badge--fan-added';
-  badge.textContent = 'FAN-ADDED';
-  badges.append(badge);
-}
-
-function refineDetailIdentity(detail, venue) {
-  const hero = detail.querySelector('.detail-hero');
-  const address = hero?.querySelector('.detail-address');
-  const actionRow = detail.querySelector(':scope > .action-row');
-  if (!hero || !address || !actionRow) return hero;
-
-  let addressActions = hero.querySelector('.detail-address-actions');
-  if (!addressActions) {
-    addressActions = document.createElement('div');
-    addressActions.className = 'detail-address-actions';
-    address.insertAdjacentElement('afterend', addressActions);
-  }
-
-  const directions = Array.from(actionRow.querySelectorAll(':scope > a'))
-    .find((link) => /^Directions$/i.test(link.textContent.trim()));
-  if (directions) {
-    directions.className = 'detail-directions-inline';
-    directions.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
-    directions.replaceChildren(createIcon('directions'), document.createTextNode('Directions'));
-    addressActions.append(directions);
-  }
-
-  const website = detail.querySelector(':scope > .venue-website');
-  if (website) {
-    website.classList.add('detail-website-inline');
-    website.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
-    website.replaceChildren(createIcon('external'), document.createTextNode('Visit venue website'));
-    addressActions.append(website);
-  }
-
-  const description = detail.querySelector(':scope > .detail-description');
-  if (description) {
-    description.hidden = false;
-    addressActions.insertAdjacentElement('afterend', description);
-  }
-
-  refineDetailBadges(detail, venue);
-  return hero;
-}
-
-function refineDetailAttendance(detail) {
-  const primary = detail.querySelector(':scope > .activity-card > strong');
-  if (!primary) return;
-  const raw = primary.getAttribute('aria-label') || primary.textContent.trim();
-  const match = raw.match(/^(\d+)\s+Bear(?:s)?\s+watching here/i);
-  if (!match) return;
-  const number = Number(match[1]);
-  const numeral = document.createElement('span');
-  numeral.className = 'bear-count__number';
-  numeral.textContent = String(number);
-  const label = document.createElement('span');
-  label.className = 'bear-count__label';
-  label.textContent = number === 1 ? 'Bear watching here' : 'Bears watching here';
-  primary.setAttribute('aria-label', raw);
-  primary.replaceChildren(numeral, label);
-}
-
-function refineDetailPartyLinks(detail) {
-  detail.querySelectorAll(':scope > .party-module a[target="_blank"]:not(.party-module__report)').forEach((link) => {
-    const icon = link.querySelector('.ui-icon') || createIcon('external');
-    link.replaceChildren(document.createTextNode('External event details'), icon);
-  });
-}
-
-function refineDetailContribution(detail, actionRow) {
-  const existing = detail.querySelector(':scope > .detail-contribution');
-  const sources = Array.from(detail.querySelectorAll(
-    ':scope > [data-watch-party-form-entry-point], :scope > [data-cal-bar-nomination-entry], :scope > [data-listing-update-entry]'
-  ));
-  if (!sources.length) return existing;
-  existing?.remove();
-
-  const links = [];
-  sources.forEach((source) => {
-    const link = source.querySelector('a[href]');
-    if (link) links.push(link);
-    source.remove();
-  });
-  if (!links.length) return null;
-
-  const section = document.createElement('section');
-  section.className = 'detail-contribution';
-  const heading = document.createElement('h2');
-  heading.textContent = 'Help improve this listing';
-  const actions = document.createElement('div');
-  actions.className = 'detail-contribution__actions';
-
-  links.forEach((link) => {
-    link.className = 'detail-contribution__action';
-    link.textContent = link.textContent.trim().replace(/\.$/, '');
-    actions.append(link);
-  });
-  section.append(heading, actions);
-  detail.insertBefore(section, actionRow || null);
-  return section;
-}
-
-function refineDetailPrimaryActions(detail) {
-  const row = detail.querySelector(':scope > .action-row');
-  if (!row) return null;
-  row.classList.add('detail-primary-actions');
-
-  Array.from(row.querySelectorAll(':scope > a, :scope > button')).forEach((action) => {
-    if (action.classList.contains('intent-button')) return;
-    if (/^Share(?: Watch Party)?$/i.test(action.textContent.trim())) return;
-    if (/^Directions$/i.test(action.textContent.trim())) return;
-    action.remove();
-  });
-
-  const share = Array.from(row.querySelectorAll(':scope > button'))
-    .find((button) => /^Share(?: Watch Party)?$/i.test(button.textContent.trim()));
-  if (share) {
-    share.classList.add('detail-share');
-    share.replaceChildren(createIcon('share'), document.createTextNode('Share'));
-  }
-
-  const invitation = row.querySelector(':scope > .post-join-invitation');
-  if (invitation) {
-    invitation.classList.add('detail-post-join-invitation');
-    detail.insertBefore(invitation, row);
-  }
-  return row;
-}
-
-function refineVenueDetail(root = document) {
-  const detail = root.querySelector('#venue-detail');
-  const state = window.CGBApp?.getState?.();
-  const venue = detailVenue(state);
-  if (!detail || !state?.detailMode || !venue) {
-    destroyDetailLocalMap();
-    return;
-  }
-
-  detail.querySelector(':scope > .detail-game-context')?.remove();
-  const hero = refineDetailIdentity(detail, venue);
-  refineDetailAttendance(detail);
-  refineDetailPartyLinks(detail);
-  const actionRow = refineDetailPrimaryActions(detail);
-  const contribution = refineDetailContribution(detail, actionRow);
-
-  const invitation = detail.querySelector(':scope > .detail-post-join-invitation');
-  if (invitation && contribution) detail.insertBefore(invitation, contribution);
-  if (actionRow) detail.append(actionRow);
-  syncDetailLocalMap(hero, venue, state);
-}
-
 export function upgradeRenderedIcons(root = document) {
   inlineSpriteIcons(root);
 
@@ -754,13 +580,16 @@ export function upgradeRenderedIcons(root = document) {
 
 function runRefinements() {
   upgradeRenderedIcons();
-  refineVenueDetail();
+  const state = window.CGBApp?.getState?.();
+  const venue = detailVenue(state);
+  const hero = document.querySelector('#venue-detail .detail-hero');
+  if (!state?.detailMode || !venue || !hero) destroyDetailLocalMap();
+  else syncDetailLocalMap(hero, venue, state);
 }
 
 function scheduleUpgrade() {
   requestAnimationFrame(() => {
     runRefinements();
-    requestAnimationFrame(runRefinements);
   });
 }
 

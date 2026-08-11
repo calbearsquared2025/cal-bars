@@ -140,6 +140,10 @@ function verifyAttendance() {
 function verifyWatchParty(hasParty) {
   const parties = Array.from(document.querySelectorAll('#venue-detail > .party-module'));
   check((parties.length > 0) === hasParty, 'Detail should render Watch Party modules only when applicable');
+  const contribution = element('#venue-detail > .detail-contribution');
+  if (parties.length && contribution) {
+    check(Boolean(parties.at(-1).compareDocumentPosition(contribution) & Node.DOCUMENT_POSITION_FOLLOWING), 'Detail Watch Parties should precede listing-improvement links');
+  }
   parties.forEach((party) => {
     const style = getComputedStyle(party);
     check(style.overflowY !== 'auto' && style.overflowY !== 'scroll', 'Detail Watch Party should use page scroll instead of an internal scroll container');
@@ -173,11 +177,27 @@ function verifyStickyActions() {
   check(!labels.includes('Directions') && !labels.some((label) => /Details/.test(label)), 'Detail sticky row should exclude Directions and Details');
 }
 
+function verifyImmediateSingleOwnerRerender(venue, hasParty) {
+  window.CGBApp?.render?.();
+  check(!element('#venue-detail .detail-game-context'), 'Base rerender should not recreate the superseded selected-game module');
+  check(Boolean(element('#venue-detail .detail-local-map')) === !venue.photo_url, 'Base rerender should immediately retain the accepted no-photo map structure');
+  verifyIdentity(venue, hasParty);
+  verifyHierarchy(venue);
+  verifyAttendance();
+  verifyWatchParty(hasParty);
+  verifyContribution();
+  verifyStickyActions();
+}
+
 async function main() {
-  await waitFor(() => document.querySelector('#app')?.getAttribute('aria-busy') === 'false' && state()?.snapshot, 'application ready');
   const params = new URLSearchParams(location.search);
   const requestedSlug = params.get('venue');
   const requestedGame = params.get('game');
+  await waitFor(() =>
+    document.querySelector('#app')?.getAttribute('aria-busy') === 'false' &&
+    state()?.dataSource === 'live' &&
+    state()?.snapshot?.venues?.some((candidate) => candidate.slug === requestedSlug),
+  'live direct-route fixture');
   const currentState = state();
   const routeVenue = currentState?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug);
   const selectedRouteVenue = currentState?.snapshot?.venues?.find((candidate) => candidate.venue_id === currentState.selectedVenueId);
@@ -208,6 +228,9 @@ async function main() {
   const game = settledState?.snapshot?.games?.find((candidate) => candidate.game_id === settledState.gameId);
   const selectedVenueId = settledState?.selectedVenueId;
   const hasParty = Boolean(partyFor(selectedVenueId, settledState?.gameId));
+
+  verifyImmediateSingleOwnerRerender(venue, hasParty);
+  await sleep(50);
 
   check(routeVenue?.venue_id === venue.venue_id, 'Direct Venue URL should resolve the requested Venue slug');
   check(settledState?.detailMode === true, 'Direct Venue URL should enter Detail mode');
