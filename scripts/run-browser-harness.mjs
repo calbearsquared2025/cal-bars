@@ -53,7 +53,8 @@ function sendProductionHarness(response) {
       window.CGBProductionHarness = Object.freeze({
         failNextJoin() { failNextJoin = true; },
         seedOtherSelection(gameId, venueId) {
-          selections.set('browser_other_1234567890abcdef' + '\\u0000' + gameId, { gameId, venueId });
+          const syntheticBrowserId = 'browser_' + 'other_1234567890abcdef';
+          selections.set(syntheticBrowserId + '\\u0000' + gameId, { gameId, venueId });
         }
       });
       const nativeFetch = window.fetch.bind(window);
