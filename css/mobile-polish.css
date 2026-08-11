@@ -113,6 +113,7 @@
 }
 
 @media (max-width: 899px) {
+  @media (orientation: portrait) {
   /* Secondary destinations keep game context while reclaiming vertical space. */
   body[data-command-surface="search"],
   body[data-command-surface="add"],
@@ -163,6 +164,7 @@
   body[data-command-surface="add"] #header-kickoff,
   body[data-command-surface="list"] #header-kickoff {
     font-size: .72rem;
+  }
   }
 
   /* Preserve descenders such as the g in Wagner. */
@@ -255,6 +257,11 @@
     grid-template-columns: 36px minmax(0, 1fr);
     gap: 10px;
     padding-bottom: 11px;
+  }
+
+  body[data-command-surface="search"] .command-surface__header,
+  body[data-command-surface="add"] .command-surface__header {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .command-surface__header h2 {
@@ -537,5 +544,26 @@
   body[data-command-surface="list"] .location-card__description {
     margin-top: 3px;
     font-size: .68rem;
+  }
+}
+
+/* Short landscape keeps the selected venue beside the map instead of covering it. */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 650px) {
+  #map-view > #venue-tray.venue-tray.tray--selected {
+    position: absolute !important;
+    inset:
+      8px
+      max(8px, env(safe-area-inset-right, 0px))
+      calc(var(--footer-height) + 8px)
+      auto !important;
+    width: min(46vw, 430px) !important;
+    max-width: 430px !important;
+    max-height: none;
+    border-radius: var(--radius-lg) !important;
+    box-shadow: var(--shadow-lg);
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
+    height: 18px;
   }
 }

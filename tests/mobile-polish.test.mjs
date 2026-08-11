@@ -74,6 +74,18 @@ test('header corrections preserve game-title descenders and pin the menu to the 
   assert.match(css, /#near-me-button \.ui-icon[\s\S]*translate\(-1px, 1px\)/);
 });
 
+test('secondary header compaction stays portrait-only and hidden back controls do not compress headings', async () => {
+  const css = await source('css/mobile-polish.css');
+  assert.match(css, /@media \(orientation: portrait\)[\s\S]*Secondary destinations keep game context/);
+  assert.match(css, /body\[data-command-surface="search"\] \.command-surface__header,[\s\S]*body\[data-command-surface="add"\] \.command-surface__header[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
+});
+
+test('short landscape keeps the game selector compact at the right edge', async () => {
+  const css = await source('css/design-board-4.css');
+  assert.match(css, /Short iPhone landscape[\s\S]*grid-template-columns: minmax\(190px, 1fr\) minmax\(260px, 320px\)/);
+  assert.match(css, /Short iPhone landscape[\s\S]*gap: 12px/);
+});
+
 test('polish layer stays event-driven and removes runtime correction stylesheet injection', async () => {
   const html = await source('index.html');
   const script = await source('js/mobile-polish.mjs');

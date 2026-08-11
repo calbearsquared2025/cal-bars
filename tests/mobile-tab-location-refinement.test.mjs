@@ -14,6 +14,10 @@ test('Search Add and List hide the map and Search does not show a selected tray'
   assert.match(source, /data-command-surface="search"[\s\S]*#venue-tray[\s\S]*display: none !important/);
 });
 
+test('Search Add and List keep their large top inset in portrait only', () => {
+  assert.match(source, /@media \(max-width: 899px\) and \(orientation: portrait\)[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*padding-top: 48px !important[\s\S]*data-command-surface="list"[\s\S]*padding-top: 46px !important/);
+});
+
 test('Add shows the current selected game as a context card', () => {
   assert.match(source, /Current game/);
   assert.match(source, /gameTitle\(game\)/);

@@ -42,11 +42,6 @@ function installStyles() {
         background: var(--cgb-warm-50) !important;
       }
 
-      body[data-command-surface="search"] .command-surface__shell,
-      body[data-command-surface="add"] .command-surface__shell {
-        padding-top: 48px !important;
-      }
-
       body[data-command-surface="search"] .command-surface__back,
       body[data-command-surface="add"] .command-surface__back {
         display: none !important;
@@ -59,10 +54,6 @@ function installStyles() {
 
       body[data-command-surface="list"] #map-view > #venue-tray.venue-tray.tray--full {
         inset: var(--header-height) 0 var(--footer-height) 0 !important;
-      }
-
-      body[data-command-surface="list"] .tray-list__header {
-        padding-top: 46px !important;
       }
 
       body[data-command-surface="list"] #close-list-button {
@@ -116,6 +107,17 @@ function installStyles() {
         border: 1px solid var(--cgb-neutral-300);
         border-radius: 999px;
         background: var(--cgb-white);
+      }
+    }
+
+    @media (max-width: 899px) and (orientation: portrait) {
+      body[data-command-surface="search"] .command-surface__shell,
+      body[data-command-surface="add"] .command-surface__shell {
+        padding-top: 48px !important;
+      }
+
+      body[data-command-surface="list"] .tray-list__header {
+        padding-top: 46px !important;
       }
     }
 
