@@ -24,7 +24,7 @@ test('collapsed preview uses the selected Venue and otherwise returns to guidanc
   assert.doesNotMatch(source, /rankNearbyVenues/);
   assert.doesNotMatch(source, /mode: 'nearby'/);
   assert.match(source, /Find your Cal crowd/);
-  assert.match(source, /Watch Parties first, then Cal Bars and Community Locations\./);
+  assert.match(source, /Explore Watch Parties, Cal Bars, and places where other Bears are planning to watch\./);
 });
 
 test('selected mini profile opens the existing full selected profile directly', () => {
