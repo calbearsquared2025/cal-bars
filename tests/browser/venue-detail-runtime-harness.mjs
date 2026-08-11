@@ -178,30 +178,42 @@ async function main() {
   const params = new URLSearchParams(location.search);
   const requestedSlug = params.get('venue');
   const requestedGame = params.get('game');
-  const venue = state()?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug);
+  const currentState = state();
+  const routeVenue = currentState?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug);
+  const selectedRouteVenue = currentState?.snapshot?.venues?.find((candidate) => candidate.venue_id === currentState.selectedVenueId);
+  const venue = routeVenue || selectedRouteVenue || null;
+
+  if (!venue) {
+    failures.push(`Direct-route fixture Venue should exist for ${requestedSlug || '(missing slug)'}`);
+    const marker = params.get('__cgb_harness') === 'desktop-direct'
+      ? 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE'
+      : 'CGB_PRODUCTION_DIRECT_ROUTE';
+    result.textContent = `${marker}_FAIL\n${failures.map((failure) => `- ${failure}`).join('\n')}`;
+    return;
+  }
 
   if (params.get('__cgb_prejoined') === '1' && sessionStorage.getItem('cgb_prejoined_reload') !== 'ready') {
     localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
-    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [requestedGame]: venue?.venue_id }));
+    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [requestedGame]: venue.venue_id }));
     sessionStorage.setItem('cgb_prejoined_reload', 'ready');
     location.reload();
     return;
   }
 
   await waitFor(() => document.body.dataset.view === 'detail' && !element('#venue-detail .detail-game-context'), 'resolved Detail refinement');
-  await waitFor(() => venue?.photo_url || Boolean(element('#venue-detail .detail-local-map')), 'Venue-local map');
+  await waitFor(() => venue.photo_url || Boolean(element('#venue-detail .detail-local-map')), 'Venue-local map');
   await waitFor(() => Boolean(element('#venue-detail > .detail-contribution')), 'compact contribution section');
 
-  const currentState = state();
-  const game = currentState?.snapshot?.games?.find((candidate) => candidate.game_id === currentState.gameId);
-  const selectedVenueId = currentState?.selectedVenueId;
-  const hasParty = Boolean(partyFor(selectedVenueId, currentState?.gameId));
+  const settledState = state();
+  const game = settledState?.snapshot?.games?.find((candidate) => candidate.game_id === settledState.gameId);
+  const selectedVenueId = settledState?.selectedVenueId;
+  const hasParty = Boolean(partyFor(selectedVenueId, settledState?.gameId));
 
-  check(Boolean(venue), 'Direct-route fixture Venue should exist');
-  check(currentState?.detailMode === true, 'Direct Venue URL should enter Detail mode');
-  check(currentState?.gameId === requestedGame, 'Direct Venue URL should preserve the selected game');
-  check(selectedVenueId === venue?.venue_id, 'Direct Venue URL should preserve Venue identity');
-  check(element('#venue-detail')?.dataset.venueId === venue?.venue_id, 'Detail DOM should preserve Venue identity');
+  check(routeVenue?.venue_id === venue.venue_id, 'Direct Venue URL should resolve the requested Venue slug');
+  check(settledState?.detailMode === true, 'Direct Venue URL should enter Detail mode');
+  check(settledState?.gameId === requestedGame, 'Direct Venue URL should preserve the selected game');
+  check(selectedVenueId === venue.venue_id, 'Direct Venue URL should preserve Venue identity');
+  check(element('#venue-detail')?.dataset.venueId === venue.venue_id, 'Detail DOM should preserve Venue identity');
   check(visible('.site-header'), 'Global Cal Golden Bars header should remain visible on Detail');
   check(visible('#game-button'), 'Global game selector should remain visible and functional on Detail');
   check(!visible('.opening-stat'), 'Opening Watch Party/location stats should be absent on Detail');
