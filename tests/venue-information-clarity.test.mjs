@@ -67,6 +67,15 @@ test('Detail route and presentation are established before asynchronous applicat
   assert.match(shellControls, /pendingDirectDetail[\s\S]*aria-busy[\s\S]*has\('venue'\)[\s\S]*detailVisible = !dom\.detailView\?\.hidden \|\| pendingDirectDetail/);
 });
 
+test('initial Detail render waits for contribution adapters to register', () => {
+  const applicationModule = html.indexOf('src="js/app.js"');
+  const contributionModule = html.indexOf('src="js/watch-party-form.js"');
+  assert.ok(applicationModule > -1 && contributionModule > applicationModule);
+  assert.match(app, /document\.addEventListener\('DOMContentLoaded', boot, \{ once: true \}\)/);
+  assert.match(watchPartyForm, /app\.subscribe\('rendered', render\)[\s\S]*initializeCalBarNominationEntry[\s\S]*initializeListingUpdateEntry/);
+  assert.match(detailHarness, /verifyImmediateSingleOwnerRerender[\s\S]*verifyContribution\(\)/);
+});
+
 test('app.js is the single structural owner for Venue Detail on every render', () => {
   assert.match(app, /function renderDetailView\(\)[\s\S]*createDetailLocalMap\(venue\)[\s\S]*createDetailBadges\(venue, party\)/);
   assert.match(app, /function renderDetailView\(\)[\s\S]*createDetailContribution\(\)[\s\S]*createDetailActionRow\(venue\)/);
