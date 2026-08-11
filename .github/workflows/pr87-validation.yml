@@ -55,3 +55,30 @@ jobs:
                 done
             exit "$status"
           fi
+
+  baseline-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 62e3997deaf15d8b09990e068e4421a307bbee3f
+      - name: Starting-HEAD production runtime browser harness
+        shell: bash
+        run: |
+          set +e
+          npm run test:browser 2>&1 | tee /tmp/pr87-baseline-browser.log
+          status=${PIPESTATUS[0]}
+          set -e
+          if [ "$status" -ne 0 ]; then
+            grep -E 'CGB_.*FAIL|^- |Timed out|TypeError|ReferenceError|Error:' /tmp/pr87-baseline-browser.log \
+              | grep -v 'dbus/' \
+              | tail -40 \
+              | while IFS= read -r line; do
+                  escaped=${line//'%'/'%25'}
+                  escaped=${escaped//$'\r'/'%0D'}
+                  escaped=${escaped//$'\n'/'%0A'}
+                  echo "::error title=PR87 baseline browser::$escaped"
+                done
+            exit "$status"
+          fi
