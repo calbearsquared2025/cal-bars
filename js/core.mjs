@@ -70,7 +70,7 @@ export function haversineMiles(lat1, lon1, lat2, lon2) {
   const dLat = toRad(bLat - aLat);
   const dLon = toRad(bLon - aLon);
   const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(toRad(bLon - aLon) / 2) ** 2;
   return 2 * radius * Math.asin(Math.sqrt(a));
 }
 
@@ -193,6 +193,21 @@ export function buildVenueUrl(slug, gameId, baseHref) {
   return url.toString();
 }
 
+export function buildVenueShareMessage({
+  venueName,
+  opponentName,
+  hasWatchParty = false,
+  url
+} = {}) {
+  const venue = String(venueName || '').trim();
+  const opponent = String(opponentName || '').trim();
+  const link = String(url || '').trim();
+  if (!venue || !opponent || !link) return '';
+  return hasWatchParty
+    ? `I’ll be at ${venue} for a Cal vs. ${opponent} watch party. Join me: ${link}`
+    : `I’ll be at ${venue} for Cal vs. ${opponent}. Join me: ${link}`;
+}
+
 function clamp(value, minimum, maximum) {
   return Math.min(Math.max(value, minimum), maximum);
 }
@@ -234,7 +249,8 @@ export function calculateMinimalPan({
   };
 }
 
-export async function shareOrCopy({ payload, url, share, writeClipboard, legacyCopy } = {}) {
+export async function shareOrCopy({ payload, url, copyText, share, writeClipboard, legacyCopy } = {}) {
+  const fallbackText = copyText ?? url;
   if (typeof share === 'function') {
     try {
       await share(payload);
@@ -246,17 +262,18 @@ export async function shareOrCopy({ payload, url, share, writeClipboard, legacyC
 
   if (typeof writeClipboard === 'function') {
     try {
-      await writeClipboard(url);
+      await writeClipboard(fallbackText);
       return { method: 'clipboard' };
     } catch (_) {}
   }
 
   if (typeof legacyCopy === 'function') {
     try {
-      if (await legacyCopy(url)) return { method: 'legacy-copy' };
+      if (await legacyCopy(fallbackText)) return { method: 'legacy-copy' };
     } catch (_) {}
   }
 
+  if (copyText !== undefined) return { method: 'manual', text: fallbackText };
   return { method: 'manual', url };
 }
 
