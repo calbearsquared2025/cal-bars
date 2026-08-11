@@ -62,7 +62,7 @@ function renderParty(party, index, total, snapshot) {
     link.href = party.official_event_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = 'Open event information';
+    link.textContent = 'External event details';
     module.append(link);
   }
 
