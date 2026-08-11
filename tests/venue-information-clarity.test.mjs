@@ -96,7 +96,7 @@ test('direct route and refresh coverage retains game and Venue identity for know
 test('no-photo Detail creates one noninteractive Venue-local MapLibre map from canonical coordinates', () => {
   assert.match(app, /venue\.photo_url \? '' : ' detail-hero--no-photo'/);
   assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*dataset\.latitude = String\(latitude\)[\s\S]*dataset\.longitude = String\(longitude\)[\s\S]*dataset\.zoom = '17'/);
-  assert.match(detailRefinement, /const DETAIL_MAP_ZOOM = 17/);
+  assert.match(detailRefinement, /const DETAIL_MAP_ZOOM = 16\.75/);
   assert.match(detailRefinement, /const latitude = Number\(venue\.latitude\)/);
   assert.match(detailRefinement, /const longitude = Number\(venue\.longitude\)/);
   assert.match(detailRefinement, /center: \[longitude, latitude\]/);
