@@ -68,6 +68,29 @@ test('join, move, and undo commit authoritative selections and aggregates', asyn
   assert.deepEqual(state.snapshot.fanCounts, []);
 });
 
+test('ensure attendance joins or moves but never toggles an existing selection', async () => {
+  const state = makeState(null, []);
+  const operations = [];
+  const h = harness(state, async (operation) => {
+    operations.push(operation);
+    return response(operation.action, operation.venueId, [
+      { game_id: 'game_1', venue_id: operation.venueId, count: 1 }
+    ]);
+  });
+
+  assert.equal(await h.controller.ensureIntent('ven_1'), true);
+  assert.equal(operations[0].action, 'join');
+  assert.deepEqual(state.fanIntent.selections, { game_1: 'ven_1' });
+
+  assert.equal(await h.controller.ensureIntent('ven_1'), true);
+  assert.equal(operations.length, 1);
+  assert.deepEqual(state.fanIntent.selections, { game_1: 'ven_1' });
+
+  assert.equal(await h.controller.ensureIntent('ven_2'), true);
+  assert.equal(operations[1].action, 'move');
+  assert.deepEqual(state.fanIntent.selections, { game_1: 'ven_2' });
+});
+
 for (const scenario of [
   {
     name: 'join',

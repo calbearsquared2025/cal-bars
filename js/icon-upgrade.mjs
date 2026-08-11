@@ -5,7 +5,6 @@ import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
-import './watch-party-attendance-commitment.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
 
 let appConnected = false;

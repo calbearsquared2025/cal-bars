@@ -339,11 +339,6 @@ function addPlanWatchPartyAction(card) {
   button.type = 'button';
   button.className = 'selected-card__plan-party';
   button.textContent = 'Plan a Watch Party';
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    document.querySelector('#add-watch-party-button')?.click();
-  });
 
   const attendance = card.querySelector('.bear-count');
   if (attendance) attendance.after(button);

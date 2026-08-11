@@ -126,10 +126,10 @@ function missingLocationUrl() {
   });
 }
 
-function contributionUrl(intent, venueId) {
-  if (intent === CONTRIBUTION_INTENTS.watchParty) return watchPartyUrl(venueId);
-  if (intent === CONTRIBUTION_INTENTS.calBar) return calBarNominationUrl(venueId);
-  if (intent === CONTRIBUTION_INTENTS.report) return listingUpdateUrl(venueId);
+function contributionUrl(intent, venueId, state = appState()) {
+  if (intent === CONTRIBUTION_INTENTS.watchParty) return watchPartyUrl(venueId, state);
+  if (intent === CONTRIBUTION_INTENTS.calBar) return calBarNominationUrl(venueId, state);
+  if (intent === CONTRIBUTION_INTENTS.report) return listingUpdateUrl(venueId, state);
   return '';
 }
 
@@ -254,10 +254,16 @@ function showAdd() {
   setSurface('add');
 }
 
-function beginContribution(intent) {
-  const venue = selectedVenue();
+function beginContribution(intent, {
+  venueId: requestedVenueId = '',
+  ensureAttendance = false
+} = {}) {
+  const state = appState();
+  const venue = requestedVenueId
+    ? state?.snapshot?.venues?.find((item) => item.venue_id === requestedVenueId) || null
+    : selectedVenue(state);
   const venueId = venue?.venue_id || '';
-  const href = venueId ? contributionUrl(intent, venueId) : '';
+  const href = venueId ? contributionUrl(intent, venueId, state) : '';
 
   if (intent === CONTRIBUTION_INTENTS.report && venueId) {
     const partyHref = watchPartyIssueUrl(venueId);
@@ -275,15 +281,33 @@ function beginContribution(intent) {
   }
 
   if (href) {
-    openExternalUrl(href);
+    const opened = openExternalUrl(href);
+    if (opened && ensureAttendance && intent === CONTRIBUTION_INTENTS.watchParty) {
+      void window.CGBFanIntent?.ensureAttendance?.(venueId, selectedGame(state)?.game_id);
+    }
     setSurface('map');
-    return;
+    return opened;
   }
 
-  if (intent === CONTRIBUTION_INTENTS.watchParty && selectedGame()?.game_status !== 'upcoming') {
+  if (intent === CONTRIBUTION_INTENTS.watchParty && selectedGame(state)?.game_status !== 'upcoming') {
     showStatus('Watch Parties can be submitted for an upcoming game. Choose another game first.');
   }
   showSearch(intent);
+  return false;
+}
+
+function handleSelectedVenueWatchParty(event) {
+  const button = event.target.closest?.('.selected-card__plan-party');
+  if (!button) return;
+
+  const venueId = button.closest('.selected-card[data-venue-id]')?.dataset.venueId || '';
+  if (!venueId) return;
+
+  event.preventDefault();
+  beginContribution(CONTRIBUTION_INTENTS.watchParty, {
+    venueId,
+    ensureAttendance: true
+  });
 }
 
 function handleSearchResultClick(event) {
@@ -412,6 +436,7 @@ function initializeShellControls() {
   document.querySelector('#mobile-list-button')?.addEventListener('click', showList);
   document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
 
+  document.addEventListener('click', handleSelectedVenueWatchParty);
   document.querySelector('#add-watch-party-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.watchParty));
   document.querySelector('#add-cal-bar-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.calBar));
   document.querySelector('#add-report-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.report));
