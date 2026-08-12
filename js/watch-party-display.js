@@ -3,6 +3,7 @@ import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
+import { createIcon } from './icons.mjs';
 
 function issueConfig() {
   const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
@@ -22,7 +23,7 @@ function appendText(container, text, className = '') {
   container.append(line);
 }
 
-function renderParty(party, index, total, snapshot) {
+function renderParty(party, index, total, snapshot, { detail = false } = {}) {
   const module = document.createElement('section');
   module.className = 'party-module party-module--multiple';
   module.dataset.watchPartyId = party.watch_party_id;
@@ -62,7 +63,8 @@ function renderParty(party, index, total, snapshot) {
     link.href = party.official_event_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = 'Open event information';
+    if (detail) link.append(createIcon('external'), document.createTextNode('External event details'));
+    else link.textContent = 'Open event information';
     module.append(link);
   }
 
@@ -89,9 +91,18 @@ function replaceRenderedParties(container, parties, snapshot) {
   container.querySelectorAll('.party-module').forEach((module) => module.remove());
   if (!parties.length) return;
 
-  const anchor = container.querySelector('.action-row, .venue-website, .watch-party-contribution, .preview-note');
+  const detail = container.id === 'venue-detail';
+  const anchor = detail
+    ? container.querySelector(':scope > .detail-contribution, :scope > .action-row')
+    : container.querySelector('.action-row, .venue-website, .watch-party-contribution, .preview-note');
   const fragment = document.createDocumentFragment();
-  parties.forEach((party, index) => fragment.append(renderParty(party, index, parties.length, snapshot)));
+  parties.forEach((party, index) => fragment.append(renderParty(
+    party,
+    index,
+    parties.length,
+    snapshot,
+    { detail }
+  )));
   container.insertBefore(fragment, anchor || null);
 }
 

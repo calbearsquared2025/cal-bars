@@ -1,4 +1,7 @@
 (() => {
+  const maps = [];
+  const markers = [];
+
   class LngLatBoundsMock {
     constructor() {
       this.points = [];
@@ -15,10 +18,18 @@
   }
 
   class MapMock {
-    constructor() {
+    constructor(options = {}) {
+      this.options = options;
       this.handlers = new globalThis.Map();
-      this.center = { lng: -98.5795, lat: 39.8283 };
-      this.zoom = 3.2;
+      const center = options.center || [-98.5795, 39.8283];
+      this.center = {
+        lng: Number(center?.lng ?? center?.[0] ?? -98.5795),
+        lat: Number(center?.lat ?? center?.[1] ?? 39.8283)
+      };
+      this.zoom = Number.isFinite(options.zoom) ? options.zoom : 3.2;
+      this.controls = [];
+      this.removed = false;
+      maps.push(this);
       queueMicrotask(() => this.emit('load'));
     }
 
@@ -41,7 +52,8 @@
       return this;
     }
 
-    addControl() {
+    addControl(control) {
+      this.controls.push(control);
       return this;
     }
 
@@ -49,7 +61,9 @@
       return this;
     }
 
-    remove() {}
+    remove() {
+      this.removed = true;
+    }
 
     getStyle() {
       return { sources: {} };
@@ -90,17 +104,30 @@
   }
 
   class MarkerMock {
-    setLngLat() {
+    constructor(options = {}) {
+      this.options = options;
+      this.lngLat = null;
+      this.map = null;
+      this.removed = false;
+      markers.push(this);
+    }
+
+    setLngLat(value) {
+      this.lngLat = value;
       return this;
     }
 
-    addTo() {
+    addTo(map) {
+      this.map = map;
       return this;
     }
 
-    remove() {}
+    remove() {
+      this.removed = true;
+    }
   }
 
+  window.CGBMapLibreRuntimeMock = Object.freeze({ maps, markers });
   window.maplibregl = {
     Map: MapMock,
     Marker: MarkerMock,

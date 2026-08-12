@@ -32,7 +32,9 @@ function safeFilePath(requestUrl) {
   return candidate;
 }
 
-function sendProductionHarness(response) {
+function sendProductionHarness(response, requestUrl = '/') {
+  const harnessMode = new URL(requestUrl, 'http://127.0.0.1').searchParams.get('__cgb_harness') || 'main';
+  const detailHarness = harnessMode === 'direct' || harnessMode === 'desktop-direct';
   const prelude = `<script>
     const cgbPrejoinedReload = sessionStorage.getItem('cgb_prejoined_reload') === 'ready';
     if (!cgbPrejoinedReload) {
@@ -53,7 +55,8 @@ function sendProductionHarness(response) {
       window.CGBProductionHarness = Object.freeze({
         failNextJoin() { failNextJoin = true; },
         seedOtherSelection(gameId, venueId) {
-          selections.set('browser_other_1234567890abcdef' + '\\u0000' + gameId, { gameId, venueId });
+          const syntheticBrowserId = 'browser_' + 'other_1234567890abcdef';
+          selections.set(syntheticBrowserId + '\\u0000' + gameId, { gameId, venueId });
         }
       });
       const nativeFetch = window.fetch.bind(window);
@@ -103,9 +106,12 @@ function sendProductionHarness(response) {
       };
     })();
   </script>`;
+  const driverScript = detailHarness
+    ? '/tests/browser/venue-detail-runtime-harness.mjs'
+    : '/tests/browser/production-runtime-harness.mjs';
   const driver = `
     <output id="cgb-production-runtime-result">CGB_PRODUCTION_RUNTIME_RUNNING</output>
-    <script type="module" src="/tests/browser/production-runtime-harness.mjs"></script>
+    <script type="module" src="${driverScript}"></script>
   `;
   const html = productionIndex
     .replace(
@@ -124,7 +130,7 @@ function sendProductionHarness(response) {
 const server = createServer((request, response) => {
   const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
   if (pathname === '/__cgb_production_runtime__') {
-    sendProductionHarness(response);
+    sendProductionHarness(response, request.url || '/');
     return;
   }
 
@@ -213,6 +219,13 @@ try {
   }) && passed;
 
   passed = await runHarness({
+    path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_64902a48440e55522742d631&__cgb_prejoined=1&__cgb_harness=direct',
+    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+    label: 'Production TBD direct-route refresh harness',
+    virtualTimeBudget: 30000
+  }) && passed;
+
+  passed = await runHarness({
     path: '/__cgb_production_runtime__?__cgb_harness=main',
     marker: 'CGB_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Production runtime regression harness',
@@ -220,10 +233,34 @@ try {
   }) && passed;
 
   passed = await runHarness({
+    path: '/__cgb_production_runtime__?__cgb_harness=landscape',
+    marker: 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS_PASS',
+    label: 'Short landscape production runtime regression harness',
+    virtualTimeBudget: 30000,
+    windowSize: '844,390'
+  }) && passed;
+
+  passed = await runHarness({
     path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_prejoined=1&__cgb_harness=direct',
     marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Production direct-route refresh harness',
     virtualTimeBudget: 30000
+  }) && passed;
+
+  passed = await runHarness({
+    path: '/__cgb_production_runtime__?venue=bear-territory-test-cafe-alameda&game=game_9e8f4860c6a256c0fae6007d&__cgb_harness=direct',
+    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+    label: 'Small-portrait fan-added Watch Party Detail harness',
+    virtualTimeBudget: 30000,
+    windowSize: '320,700'
+  }) && passed;
+
+  passed = await runHarness({
+    path: '/__cgb_production_runtime__?venue=california-test-grill-san-francisco&game=game_64902a48440e55522742d631&__cgb_harness=direct',
+    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+    label: 'Short-landscape plain fan-added Detail harness',
+    virtualTimeBudget: 30000,
+    windowSize: '844,390'
   }) && passed;
 
   passed = await runHarness({
@@ -247,4 +284,4 @@ try {
 
 if (!passed) process.exit(1);
 
-console.log('Browser harnesses passed: reduced external-venue fixture plus the real index.html production module graph, high-risk mobile and desktop state transitions, and direct venue cold-load/refresh behavior.');
+console.log('Browser harnesses passed: reduced external-venue fixture plus the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');

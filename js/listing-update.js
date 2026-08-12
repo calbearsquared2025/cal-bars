@@ -22,7 +22,13 @@ export function renderListingUpdateEntry({
   app = window.CGBApp,
   documentObject = document
 } = {}) {
-  documentObject.querySelector(SELECTOR)?.remove();
+  const existing = documentObject.querySelector(SELECTOR);
+  const existingDetail = existing?.closest?.('#venue-detail');
+  existing?.remove();
+  if (existingDetail) {
+    const section = existingDetail.querySelector(':scope > .detail-contribution');
+    if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
+  }
   const state = app?.getState?.();
   if (!state?.detailMode) return '';
   const venue = resolveListingUpdateVenue(state.snapshot, state.selectedVenueId);
@@ -31,19 +37,18 @@ export function renderListingUpdateEntry({
 
   const detail = documentObject.querySelector('#venue-detail');
   if (!detail) return '';
-  const section = documentObject.createElement('section');
-  section.className = 'watch-party-contribution';
-  section.dataset.listingUpdateEntry = 'true';
-
   const link = documentObject.createElement('a');
-  link.className = 'secondary-button watch-party-contribution__action';
+  link.className = 'detail-contribution__action';
+  link.dataset.listingUpdateEntry = 'true';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = 'Report a problem with this listing.';
+  link.textContent = 'Report a problem with this listing';
 
-  section.append(link);
-  detail.append(section);
+  const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
+  if (!actions) return '';
+  actions.append(link);
+  detail.querySelector(':scope > .detail-contribution').hidden = false;
   return href;
 }
 

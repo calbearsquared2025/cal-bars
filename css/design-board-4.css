@@ -369,6 +369,18 @@ body[data-view="detail"] #app {
   body[data-view="detail"] .venue-detail > .action-row {
     align-self: end;
   }
+
+  body[data-view="detail"] .detail-hero.detail-hero--no-photo {
+    grid-row: 1 / span 4;
+    min-height: 0;
+    padding: 96px 40px 34px;
+  }
+
+  body[data-view="detail"] .detail-hero.detail-hero--no-photo .venue-badges {
+    top: 56px;
+    bottom: auto;
+    left: 34px;
+  }
 }
 
 /* ---------- Desktop: map remains dominant, tray floats as a separate plane ---------- */
@@ -737,4 +749,14 @@ body[data-view="detail"] #app {
     animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }
+}
+
+/* Launch default: do not reserve a photo plane when no public photo is present. */
+.detail-hero.detail-hero--no-photo {
+  min-height: 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 76px);
+}
+
+.detail-hero.detail-hero--no-photo .venue-badges {
+  top: calc(env(safe-area-inset-top, 0px) + 44px);
 }

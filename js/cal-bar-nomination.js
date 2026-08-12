@@ -19,7 +19,13 @@ function readConfig(documentObject = document) {
 }
 
 export function renderCalBarNominationEntry({ app = window.CGBApp, documentObject = document } = {}) {
-  documentObject.querySelector(SELECTOR)?.remove();
+  const existing = documentObject.querySelector(SELECTOR);
+  const existingDetail = existing?.closest?.('#venue-detail');
+  existing?.remove();
+  if (existingDetail) {
+    const section = existingDetail.querySelector(':scope > .detail-contribution');
+    if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
+  }
   const state = app?.getState?.();
   if (!state?.detailMode) return '';
   const venue = resolveCalBarNominationVenue(state.snapshot, state.selectedVenueId);
@@ -28,23 +34,18 @@ export function renderCalBarNominationEntry({ app = window.CGBApp, documentObjec
 
   const detail = documentObject.querySelector('#venue-detail');
   if (!detail) return '';
-  const section = documentObject.createElement('section');
-  section.className = 'watch-party-contribution';
-  section.dataset.calBarNominationEntry = 'true';
-
-  const prompt = documentObject.createElement('p');
-  prompt.className = 'watch-party-contribution__prompt';
-  prompt.textContent = 'Does this place feel like a Cal Bar? Tell us why.';
-
   const link = documentObject.createElement('a');
-  link.className = 'secondary-button watch-party-contribution__action';
+  link.className = 'detail-contribution__action';
+  link.dataset.calBarNominationEntry = 'true';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
   link.textContent = 'Nominate as a Cal Bar';
 
-  section.append(prompt, link);
-  detail.append(section);
+  const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
+  if (!actions) return '';
+  actions.append(link);
+  detail.querySelector(':scope > .detail-contribution').hidden = false;
   return href;
 }
 

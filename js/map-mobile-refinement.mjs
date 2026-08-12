@@ -1,14 +1,19 @@
 import {
   bearCountCopy,
+  buildVenueUrl,
+  compactVenueLocation,
   markerKind,
   rankVenues
 } from './core.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
+const SELECTED_DETAIL_SWIPE_THRESHOLD = 48;
 const STYLE_ID = 'cgb-map-mobile-refinement';
 
 let lastAutoFocusedVenueId = '';
+let selectedHandlePointer = null;
+let suppressSelectedHandleClick = false;
 let trayObserver = null;
 
 function isMobile() {
@@ -29,6 +34,23 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
+      /* Keep the map shell on one viewport plane. Owned inner surfaces still scroll independently. */
+      body[data-view="map"] {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100dvh !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+      }
+
+      @supports not (height: 100dvh) {
+        body[data-view="map"] {
+          height: 100vh !important;
+        }
+      }
+
       .maplibregl-ctrl-top-right {
         display: none !important;
       }
@@ -165,7 +187,7 @@ function updatePreviewIntent() {
       : 'Community Location';
   const context = mode === 'selected' ? 'Selected' : 'Nearby';
   title.textContent = venue.name;
-  copy.textContent = [context, type, formatDistance(distance)].filter(Boolean).join(' · ');
+  copy.textContent = [context, type, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   count.textContent = Number(fanCount) > 0 ? bearCountCopy(fanCount) : '';
   marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
   button.dataset.previewMode = mode;
@@ -186,6 +208,53 @@ function openPreviewVenue(event) {
   card.click();
 }
 
+function openSelectedVenueDetail(venueId) {
+  const state = appState();
+  const venue = selectedVenue(venueId, state);
+  if (!venue || !state?.gameId) return false;
+  window.location.assign(buildVenueUrl(venue.slug, state.gameId, window.location.href));
+  return true;
+}
+
+function trackSelectedHandleSwipe(event) {
+  const handle = event.target.closest?.('#tray-handle');
+  const state = appState();
+  const tray = document.querySelector('#venue-tray');
+  if (!handle || !isMobile() || document.body.dataset.commandSurface !== 'map' ||
+      tray?.dataset.state !== 'selected' || !state?.selectedVenueId) {
+    selectedHandlePointer = null;
+    return;
+  }
+  selectedHandlePointer = {
+    pointerId: event.pointerId,
+    startY: event.clientY,
+    venueId: state.selectedVenueId
+  };
+}
+
+function handleSelectedHandleSwipe(event) {
+  const gesture = selectedHandlePointer;
+  if (!gesture || event.pointerId !== gesture.pointerId) return;
+  selectedHandlePointer = null;
+
+  const delta = event.clientY - gesture.startY;
+  if (delta >= -SELECTED_DETAIL_SWIPE_THRESHOLD) return;
+
+  const tray = document.querySelector('#venue-tray');
+  if (!isMobile() || document.body.dataset.commandSurface !== 'map' || tray?.dataset.state !== 'selected') return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  suppressSelectedHandleClick = true;
+  window.setTimeout(() => { suppressSelectedHandleClick = false; }, 0);
+  openSelectedVenueDetail(gesture.venueId);
+}
+
+function resetSelectedHandleSwipe(event) {
+  if (event?.pointerId != null && selectedHandlePointer?.pointerId !== event.pointerId) return;
+  selectedHandlePointer = null;
+}
+
 function handleTrayTopTap(event) {
   const handle = event.target.closest?.('#tray-handle');
   if (!handle || !isMobile() || document.body.dataset.commandSurface !== 'map') return;
@@ -194,6 +263,10 @@ function handleTrayTopTap(event) {
 
   event.preventDefault();
   event.stopImmediatePropagation();
+  if (suppressSelectedHandleClick) {
+    suppressSelectedHandleClick = false;
+    return;
+  }
   document.querySelector('#tray-selected .selected-card__header > .icon-button')?.click();
 }
 
@@ -283,6 +356,9 @@ function initialize() {
   observeTray();
 
   document.addEventListener('click', openPreviewVenue, { capture: true });
+  document.addEventListener('pointerdown', trackSelectedHandleSwipe, { capture: true });
+  document.addEventListener('pointerup', handleSelectedHandleSwipe, { capture: true });
+  document.addEventListener('pointercancel', resetSelectedHandleSwipe, { capture: true });
   document.addEventListener('click', handleTrayTopTap, { capture: true });
 
   document.addEventListener('click', (event) => {

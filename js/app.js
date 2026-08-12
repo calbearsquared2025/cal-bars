@@ -4,14 +4,13 @@ import {
   buildVenueShareMessage,
   buildVenueUrl,
   calculateMinimalPan,
+  compactVenueLocation,
   findExactVenueMatch,
   formatKickoff,
   gameTitle,
   getFanCount,
-  getHistoryCount,
   getWatchPartiesForGame,
   getWatchParty,
-  historyCountCopy,
   markerKind,
   NEARBY_RADIUS_MILES,
   normalizeSearchText,
@@ -33,6 +32,8 @@ import {
   setCanonicalSnapshot,
   subscribeAppEvent
 } from './app-state.mjs';
+import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
+import { createIcon } from './icons.mjs';
 
 const MAPTILER_KEY = 'jNqIsIVa4dP9qv7vQ8fy';
 const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98cc3dbf3d7c/style.json?key=${MAPTILER_KEY}`;
@@ -518,6 +519,50 @@ function createBadges(venue, party) {
   return badges;
 }
 
+function createDetailBadges(venue, party) {
+  const badges = createBadges(venue, party);
+  if (venue.venue_type !== 'cal_bar' && venue.verification_status === 'user_added') {
+    const badge = document.createElement('span');
+    badge.className = 'venue-badge badge--fan-added';
+    badge.textContent = 'FAN-ADDED';
+    badges.append(badge);
+  }
+  return badges;
+}
+
+function createDetailLocalMap(venue) {
+  const latitude = Number(venue.latitude);
+  const longitude = Number(venue.longitude);
+  if (venue.photo_url || ![latitude, longitude].every(Number.isFinite)) return null;
+  const map = document.createElement('div');
+  map.className = 'detail-local-map';
+  map.dataset.venueId = venue.venue_id;
+  map.dataset.latitude = String(latitude);
+  map.dataset.longitude = String(longitude);
+  map.dataset.zoom = '16.75';
+  map.setAttribute('role', 'img');
+  map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
+  return map;
+}
+
+function renderDetailAttendanceCopy(element, copy) {
+  const raw = String(copy || '').trim();
+  const match = raw.match(/^(\d+)\s+Bear(?:s)?\s+watching here/i);
+  element.setAttribute('aria-label', raw);
+  if (!match) {
+    element.textContent = raw;
+    return;
+  }
+  const number = Number(match[1]);
+  const numeral = document.createElement('span');
+  numeral.className = 'bear-count__number';
+  numeral.textContent = String(number);
+  const label = document.createElement('span');
+  label.className = 'bear-count__label';
+  label.textContent = number === 1 ? 'Bear watching here' : 'Bears watching here';
+  element.replaceChildren(numeral, label);
+}
+
 function appendWatchParty(container, party) {
   if (!party) return;
   const module = document.createElement('section');
@@ -612,6 +657,39 @@ function createActionRow(venue, { details = true } = {}) {
   share.addEventListener('click', () => shareVenue(venue));
   row.append(share);
   return row;
+}
+
+function createDetailActionRow(venue) {
+  const row = document.createElement('div');
+  row.className = 'action-row detail-primary-actions';
+  row.dataset.venueId = venue.venue_id;
+
+  const intent = document.createElement('button');
+  intent.type = 'button';
+  intent.className = 'primary-button intent-button';
+  intent.dataset.venueId = venue.venue_id;
+  intent.textContent = 'I’ll be here';
+  intent.disabled = true;
+
+  const share = document.createElement('button');
+  share.type = 'button';
+  share.className = 'secondary-button detail-share';
+  share.append(createIcon('share'), document.createTextNode('Share'));
+  share.addEventListener('click', () => shareVenue(venue));
+  row.append(intent, share);
+  return row;
+}
+
+function createDetailContribution() {
+  const section = document.createElement('section');
+  section.className = 'detail-contribution';
+  section.hidden = true;
+  const heading = document.createElement('h2');
+  heading.textContent = 'Help improve this listing';
+  const actions = document.createElement('div');
+  actions.className = 'detail-contribution__actions';
+  section.append(heading, actions);
+  return section;
 }
 
 function legacyCopyText(text) {
@@ -728,7 +806,7 @@ function renderSelectedCard() {
   heading.append(title);
   const locationLine = document.createElement('p');
   locationLine.className = 'venue-location';
-  locationLine.textContent = [venue.city, venue.region, formatDistance(distance)].filter(Boolean).join(' · ');
+  locationLine.textContent = [compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   heading.append(locationLine);
   header.append(heading);
   const collapse = document.createElement('button');
@@ -831,22 +909,44 @@ function renderTray() {
   renderLocationList();
 }
 
+function disposeMapForDetail() {
+  if (state.mapLayoutFrame !== null) {
+    cancelAnimationFrame(state.mapLayoutFrame);
+    state.mapLayoutFrame = null;
+  }
+  clearVenueVisibilitySchedule();
+  state.markers.forEach((marker) => marker.remove());
+  state.markers.clear();
+  state.userMarker?.remove();
+  state.userMarker = null;
+  state.map?.remove?.();
+  state.map = null;
+}
+
 function renderDetailView() {
   const venue = selectedVenue();
   if (!state.detailMode || !venue) return;
+  disposeMapForDetail();
   dom.mapView.hidden = true;
   dom.detailView.hidden = false;
   dom.detailBack.href = buildGameUrl(state.gameId, location.href);
   const game = selectedGame();
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
   const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
-  const history = getHistoryCount(state.snapshot, venue.venue_id);
+  const activityPresentation = venueActivityPresentation({
+    snapshot: state.snapshot,
+    game,
+    venue,
+    currentCopy: bearCountCopy(count)
+  });
 
   dom.venueDetail.replaceChildren();
   dom.venueDetail.dataset.venueId = venue.venue_id;
   const hero = document.createElement('header');
-  hero.className = 'detail-hero';
-  hero.append(createBadges(venue, party));
+  hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
+  const localMap = createDetailLocalMap(venue);
+  if (localMap) hero.append(localMap);
+  hero.append(createDetailBadges(venue, party));
   const title = document.createElement('h1');
   title.textContent = venue.name;
   hero.append(title);
@@ -859,56 +959,51 @@ function renderDetailView() {
   address.textContent = [venue.address_line_1, venue.address_line_2, venue.city, venue.region, venue.postal_code]
     .filter(Boolean).join(', ');
   hero.append(address);
-  dom.venueDetail.append(hero);
 
-  const gameContext = document.createElement('section');
-  gameContext.className = 'detail-game-context';
-  const eyebrow = document.createElement('span');
-  eyebrow.className = 'eyebrow';
-  eyebrow.textContent = 'Selected game';
-  gameContext.append(eyebrow);
-  const gameHeading = document.createElement('h2');
-  gameHeading.textContent = gameTitle(game);
-  gameContext.append(gameHeading);
-  const kickoff = document.createElement('p');
-  kickoff.textContent = formatKickoff(game);
-  gameContext.append(kickoff);
-  dom.venueDetail.append(gameContext);
+  const addressActions = document.createElement('div');
+  addressActions.className = 'detail-address-actions';
+  const directions = document.createElement('a');
+  directions.className = 'detail-directions-inline';
+  directions.href = directionsUrl(venue);
+  directions.target = '_blank';
+  directions.rel = 'noopener';
+  directions.append(createIcon('directions'), document.createTextNode('Directions'));
+  addressActions.append(directions);
+  if (venue.website_url) {
+    const website = document.createElement('a');
+    website.className = 'detail-website-inline';
+    website.href = venue.website_url;
+    website.target = '_blank';
+    website.rel = 'noopener';
+    website.append(createIcon('external'), document.createTextNode('Visit venue website'));
+    addressActions.append(website);
+  }
+  hero.append(addressActions);
+
+  if (venue.short_description && !legacyActivitySeason(venue)) {
+    const description = document.createElement('p');
+    description.className = 'detail-description';
+    description.textContent = venue.short_description;
+    hero.append(description);
+  }
+  dom.venueDetail.append(hero);
 
   const activity = document.createElement('section');
   activity.className = 'activity-card';
   const current = document.createElement('strong');
-  current.textContent = bearCountCopy(count);
+  renderDetailAttendanceCopy(current, activityPresentation.primary);
   activity.append(current);
   const historical = document.createElement('p');
-  historical.textContent = historyCountCopy(history);
+  historical.hidden = activityPresentation.secondary.length === 0;
+  activityPresentation.secondary.forEach((line, index) => {
+    if (index > 0) historical.append(document.createElement('br'));
+    historical.append(document.createTextNode(line));
+  });
   activity.append(historical);
   dom.venueDetail.append(activity);
 
-  if (venue.short_description) {
-    const description = document.createElement('p');
-    description.className = 'detail-description';
-    description.textContent = venue.short_description;
-    dom.venueDetail.append(description);
-  }
-
-  appendWatchParty(dom.venueDetail, party);
-  dom.venueDetail.append(createActionRow(venue, { details: false }));
-
-  if (venue.website_url) {
-    const website = document.createElement('a');
-    website.className = 'venue-website';
-    website.href = venue.website_url;
-    website.target = '_blank';
-    website.rel = 'noopener';
-    website.textContent = 'Visit venue website';
-    dom.venueDetail.append(website);
-  }
-
-  const note = document.createElement('p');
-  note.className = 'preview-note';
-  note.textContent = 'Preview: contribution tools are coming soon.';
-  dom.venueDetail.append(note);
+  dom.venueDetail.append(createDetailContribution());
+  dom.venueDetail.append(createDetailActionRow(venue));
 }
 
 function emitRendered() {
@@ -934,6 +1029,36 @@ function renderAll() {
     else initMap();
   }
   emitRendered();
+}
+
+function focusReturnedDetailVenue(venue) {
+  const longitude = Number(venue?.longitude);
+  const latitude = Number(venue?.latitude);
+  if (![longitude, latitude].every(Number.isFinite)) return;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (state.detailMode || state.selectedVenueId !== venue.venue_id || !state.map) return;
+      const currentZoom = Number(state.map.getZoom?.()) || 0;
+      state.map.easeTo({
+        center: [longitude, latitude],
+        zoom: Math.max(currentZoom, 11),
+        duration: REDUCED_MOTION ? 0 : 420,
+        essential: true
+      });
+    });
+  });
+}
+
+function returnToMapFromDetail(event) {
+  const venue = selectedVenue();
+  if (!state.detailMode || !venue) return;
+  event.preventDefault();
+  state.detailMode = false;
+  setTrayState('selected');
+  updateRouteForGame();
+  renderAll();
+  focusReturnedDetailVenue(venue);
 }
 
 function restoreSelection({ preserveCurrentWhenEmpty = false } = {}) {
@@ -1109,6 +1234,7 @@ function wireTrayDrag() {
 
 function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
+  dom.detailBack.addEventListener('click', returnToMapFromDetail);
   dom.browseButton.addEventListener('click', () => setTrayState('full'));
   dom.closeList.addEventListener('click', () => setTrayState(state.selectedVenueId ? 'selected' : 'peek'));
   dom.clearSearch.addEventListener('click', clearSearchResults);
@@ -1206,4 +1332,8 @@ window.CGBPreview = Object.freeze({
   }
 });
 
-boot();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot, { once: true });
+} else {
+  boot();
+}

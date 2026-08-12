@@ -41,7 +41,7 @@ test('Venue detail adapter exposes the exact CTA and separate live configuration
     readFile(new URL('../js/listing-update.js', import.meta.url), 'utf8'),
     readFile(new URL('../js/watch-party-form.js', import.meta.url), 'utf8')
   ]);
-  assert.match(adapter, /Report a problem with this listing\./);
+  assert.match(adapter, /Report a problem with this listing/);
   assert.match(adapter, /state\?\.detailMode/);
   assert.match(adapter, /target = '_blank'/);
   assert.match(bootstrap, /initializeListingUpdateEntry/);
