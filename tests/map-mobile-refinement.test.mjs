@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const source = await readFile(new URL('../js/map-mobile-refinement.mjs', import.meta.url), 'utf8');
+const firstPaintCss = await readFile(new URL('../css/mobile-first-paint.css', import.meta.url), 'utf8');
 
 test('selected venues focus the map at city scale with tray-aware offset', () => {
   assert.match(source, /const FOCUS_ZOOM = 11/);
@@ -12,7 +13,7 @@ test('selected venues focus the map at city scale with tray-aware offset', () =>
 });
 
 test('zoom controls are removed and hidden', () => {
-  assert.match(source, /maplibregl-ctrl-top-right/);
+  assert.match(firstPaintCss, /maplibregl-ctrl-top-right[\s\S]*display: none !important/);
   assert.match(source, /maplibregl-ctrl-zoom-in/);
   assert.match(source, /button\.remove\(\)/);
 });
@@ -54,7 +55,7 @@ test('selected profile uses content-driven height rather than a medium fixed-hei
 });
 
 test('attribution is placed left of the right-side map controls', () => {
-  assert.match(source, /maplibregl-ctrl-bottom-right[\s\S]*left: 8px !important/);
+  assert.match(firstPaintCss, /maplibregl-ctrl-bottom-right[\s\S]*left: 8px !important/);
   assert.match(source, /attribution\.style\.left = '8px'/);
   assert.match(source, /attribution\.style\.right = 'auto'/);
 });

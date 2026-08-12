@@ -59,6 +59,7 @@
   <link rel="stylesheet" href="css/mobile-command-navigation.css">
   <link rel="stylesheet" href="css/mobile-polish.css">
   <link rel="stylesheet" href="css/venue-detail.css">
+  <link rel="stylesheet" href="css/mobile-first-paint.css">
   <style>
     .map-view,
     .map {
@@ -74,7 +75,7 @@
     }
   </style>
 </head>
-<body>
+<body data-view="map" data-command-surface="map">
   <script>
     if (new URLSearchParams(window.location.search).has('venue')) {
       document.body.dataset.view = 'detail';
@@ -276,19 +277,19 @@
   </dialog>
 
   <nav class="mobile-command-bar" aria-label="Primary navigation">
-    <button id="mobile-map-button" class="mobile-command mobile-command--active" type="button">
+    <button id="mobile-map-button" class="mobile-command mobile-command--active" type="button" data-command="map" aria-current="page">
       <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-map"></use></svg>
       <span>Map</span>
     </button>
-    <button id="mobile-search-button" class="mobile-command" type="button">
+    <button id="mobile-search-button" class="mobile-command" type="button" data-command="search">
       <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg>
       <span>Search</span>
     </button>
-    <button id="mobile-add-button" class="mobile-command mobile-command--add" type="button">
+    <button id="mobile-add-button" class="mobile-command mobile-command--add" type="button" data-command="add">
       <span class="mobile-command__add-mark" aria-hidden="true">+</span>
       <span>Add</span>
     </button>
-    <button id="mobile-list-button" class="mobile-command" type="button">
+    <button id="mobile-list-button" class="mobile-command" type="button" data-command="list">
       <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-details"></use></svg>
       <span>List</span>
     </button>

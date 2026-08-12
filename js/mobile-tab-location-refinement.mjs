@@ -60,39 +60,6 @@ function installStyles() {
         display: none !important;
       }
 
-      /* Restore the compact Nearby sheet language used by the earlier map pass. */
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek {
-        height: 96px !important;
-        border-radius: 22px 22px 0 0 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle {
-        height: 18px !important;
-        display: grid !important;
-        background: var(--cgb-white) !important;
-        pointer-events: auto !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle span {
-        width: 34px !important;
-        height: 4px !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-peek {
-        padding: 0 10px 7px !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary {
-        min-height: 70px !important;
-        grid-template-columns: 26px minmax(0, 1fr) auto !important;
-        gap: 9px !important;
-        padding: 2px 12px 8px !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__chevron {
-        display: none !important;
-      }
-
       .add-game-context {
         display: grid !important;
       }

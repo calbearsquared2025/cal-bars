@@ -1,0 +1,56 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+const root = new URL('../', import.meta.url);
+const html = await readFile(new URL('index.html', root), 'utf8');
+const css = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
+const mapMobile = await readFile(new URL('js/map-mobile-refinement.mjs', root), 'utf8');
+const profileFirstPass = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
+const mobileTab = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
+
+function styleBlock(source) {
+  return source.match(/style\.textContent = `([\s\S]*?)`;/)?.[1] || '';
+}
+
+test('normal map state and active navigation exist in the initial HTML', () => {
+  assert.match(html, /<body data-view="map" data-command-surface="map">/);
+  assert.match(html, /id="mobile-map-button"[^>]*data-command="map"[^>]*aria-current="page"/);
+  assert.match(html, /id="mobile-search-button"[^>]*data-command="search"/);
+  assert.match(html, /id="mobile-add-button"[^>]*data-command="add"/);
+  assert.match(html, /id="mobile-list-button"[^>]*data-command="list"/);
+});
+
+test('settled portrait map geometry is available from static CSS before modules run', () => {
+  assert.match(html, /css\/mobile-first-paint\.css/);
+  assert.ok(
+    html.indexOf('css/mobile-first-paint.css') < html.indexOf('js/icon-upgrade.mjs'),
+    'first-paint CSS should load before the refinement module graph'
+  );
+  assert.match(css, /@media \(max-width: 899px\)/);
+  assert.match(css, /body\[data-view="map"\][\s\S]*position: fixed/);
+  assert.match(css, /data-command-surface="map"[\s\S]*--header-height: calc\(176px/);
+  assert.match(css, /\.site-header[\s\S]*height: var\(--header-height\) !important/);
+  assert.match(css, /tray--peek[\s\S]*width: 100% !important[\s\S]*height: 96px !important/);
+  assert.match(css, /tray--peek \.tray-handle[\s\S]*height: 18px !important[\s\S]*display: grid !important/);
+  assert.match(css, /tray-summary__chevron[\s\S]*display: none !important/);
+  assert.match(css, /maplibregl-ctrl-top-right[\s\S]*display: none !important/);
+});
+
+test('initial map geometry no longer has competing runtime style owners', () => {
+  const mapMobileStyles = styleBlock(mapMobile);
+  const profileStyles = styleBlock(profileFirstPass);
+  const mobileTabStyles = styleBlock(mobileTab);
+
+  assert.doesNotMatch(mapMobileStyles, /body\[data-view="map"\]/);
+  assert.doesNotMatch(mapMobileStyles, /maplibregl-ctrl-top-right/);
+  assert.doesNotMatch(mapMobileStyles, /tray--peek/);
+  assert.doesNotMatch(profileStyles, /#map-view > #venue-tray\.venue-tray::before/);
+  assert.doesNotMatch(profileStyles, /tray--peek \.tray-handle/);
+  assert.doesNotMatch(mobileTabStyles, /tray--peek/);
+});
+
+test('detail routing still overrides the safe initial map state synchronously', () => {
+  assert.match(html, /new URLSearchParams\(window\.location\.search\)\.has\('venue'\)/);
+  assert.match(html, /document\.body\.dataset\.view = 'detail'/);
+});

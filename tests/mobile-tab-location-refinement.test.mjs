@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
+const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
 const app = await readFile(new URL('js/app.js', root), 'utf8');
 const iconUpgrade = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
@@ -48,7 +49,7 @@ test('List toggles between Near me and All locations', () => {
 });
 
 test('Nearby sheet restores its handle without allowing it to open List', () => {
-  assert.match(source, /tray--peek \.tray-handle[\s\S]*display: grid !important/);
+  assert.match(firstPaintCss, /tray--peek \.tray-handle[\s\S]*display: grid !important/);
   assert.match(source, /disablePeekHandleNavigation/);
   assert.match(source, /event\.stopImmediatePropagation\(\)/);
 });
