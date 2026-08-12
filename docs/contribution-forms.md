@@ -1,21 +1,23 @@
 # Contribution and issue-report Forms
 
-California Golden Bars uses separate Google Forms for manually reviewed contributions and reports. These Forms do not write to canonical Venue or Watch Party records automatically. Responses and submitter details remain private.
+California Golden Bars uses separate Google Forms for manually reviewed contributions and reports. These Forms do not write to canonical Venue or Watch Party records automatically except where a separate accepted workflow explicitly says otherwise. Responses and submitter details remain private.
 
 ## Common settings
 
 For every Form in this document:
 
-- Publish for anyone with the link.
+- Publish for anyone with the link, subject to the photo-upload sign-in exception below.
 - Link responses to the existing private CGB workbook.
 - Keep response sheets and summaries private.
-- Do not require Google sign-in or limit users to one response.
-- Do not collect a verified Google email address automatically.
+- Do not limit users to one response.
+- Do not collect a verified Google email address automatically unless Google Forms requires account identity for file upload; that account identity remains private and is never a public credit.
 - Do not enable response editing, receipts, quizzes, shuffled questions, or public result summaries.
 - Do not install an Apps Script trigger unless a separate operating document explicitly requires one.
-- Never commit edit URLs, response-sheet identifiers, responses, names, email addresses, or reviewer notes.
+- Never commit edit URLs, response-sheet identifiers, responses, names, email addresses, uploaded files, Drive file IDs, or reviewer notes.
 
-After any Form question is recreated, reordered, or replaced, generate a new prefilled link and verify that the public entry IDs configured in `index.html` are still correct.
+All non-photo Forms should remain usable without Google sign-in. **Submit a Photo is the deliberate exception:** Google Forms file upload requires sign-in. The uploaded original remains private in Google Drive and is never served directly by the public site.
+
+After any Form question is recreated, reordered, or replaced, generate a new prefilled link and verify that the public entry IDs configured by the application are still correct.
 
 ## Nominate a Cal Bar
 
@@ -112,6 +114,52 @@ Confirmation text:
 
 A report never automatically edits, deletes, unpublishes, merges, relocates, or reclassifies a Watch Party or Venue.
 
+## Submit a Photo
+
+The dedicated photo Form is a manually reviewed intake workflow. It is not yet configured in the public application; until its public Form URL and two prefill entry IDs are supplied, Venue Detail hides only **Submit a Photo** and preserves the other contribution actions.
+
+Required application configuration after the Form exists:
+
+- Public Form URL → `PHOTO_FORM_CONFIG.formUrl` in `js/photo-form-config.mjs`
+- Venue ID entry → `PHOTO_FORM_CONFIG.venueIdEntry`
+- Venue name entry → `PHOTO_FORM_CONFIG.venueNameEntry`
+
+The runtime also accepts equivalent `cgb-photo-form-*` meta configuration if configuration is later centralized in `index.html`.
+
+Questions, in order:
+
+1. `Venue name` — required short answer; prefilled.
+2. `Upload a photo` — required file upload.
+3. `What’s happening in this photo?` — optional paragraph. Helper examples: `Cal–Louisville game, 2025` and `Regular Saturday watch party`. This is source material, not final published copy.
+4. `Photo credit / display name` — optional short answer. Example: `@oskistraw`.
+5. `Credit profile or website` — optional URL. May be X, Instagram, a photographer website, or another HTTP(S) profile.
+6. `Permission confirmation` — required checkbox with exactly: `I took this photo or have permission to share it, and I authorize Cal Golden Bars to display it on the website.`
+7. `Submitter email` — optional short answer with email validation when supported.
+8. `Venue ID` — required short answer; prefilled internal reference near the end.
+
+Settings and workflow:
+
+- File upload requires Google sign-in; this is intentional and applies only to this Form.
+- Do not enable response receipts, public results, editing after submission, contributor accounts, approval/rejection emails, or an Apps Script auto-publication trigger.
+- Responses remain private and are reviewed manually in `Photo_Submissions_Raw`/the linked Form response sheet.
+- The user-supplied context answer may be rewritten by CGB before becoming public `photo_caption`.
+- A submitted credit link is private source data until CGB deliberately copies an approved HTTP(S) value to public `photo_credit_url`.
+- A later approved photo may replace the Venue’s current public primary photo; there is no public gallery or photo history.
+
+Approval/publication is manual:
+
+```text
+Form upload
+→ private Google Drive original
+→ manual review
+→ optimize approved copy (prefer WebP, about 1200–1600 px max width, generally about 200–500 KB)
+→ commit under assets/venues/{venue-slug}.webp
+→ set Venue photo_url/photo_caption/photo_credit/photo_credit_url
+→ publish through the normal site/data deployment
+```
+
+Do not hotlink the Drive upload or commit the raw Form original.
+
 ## Suggest a missing location
 
 Public Form URL:
@@ -140,8 +188,9 @@ For each Form:
 
 1. Open the relevant action from the application on desktop and a physical iPhone in portrait.
 2. Confirm only the intended public context fields are prefilled.
-3. Confirm free-text issue, address, name, and email fields remain empty.
+3. Confirm free-text issue, context, address, name, and email fields remain empty unless the user enters them.
 4. Submit a clearly marked test response.
-5. Confirm the response appears only in the private response sheet.
-6. Confirm canonical records and the public snapshot remain unchanged.
-7. Remove the test response only according to the private operating policy; never commit it.
+5. Confirm the response and any file upload appear only in the private response storage.
+6. Confirm canonical records and the public snapshot remain unchanged until the applicable approved manual/automated workflow runs.
+7. For photo submissions, confirm the Drive original is private and no Drive file ID or raw response enters public data.
+8. Remove the test response only according to the private operating policy; never commit it.
