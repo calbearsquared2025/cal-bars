@@ -65,6 +65,7 @@ function ensureLocalMapFallback(hero, documentObject, venue) {
 function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const figure = documentObject.createElement('figure');
   figure.className = 'detail-photo';
+  figure.dataset.photoUrl = presentation.photoUrl;
 
   const frame = documentObject.createElement('div');
   frame.className = 'detail-photo__frame';
@@ -155,16 +156,20 @@ export function enhanceVenueProfile({
   const presentation = venuePhotoPresentation(venue);
   const failed = Boolean(presentation && failedPhotoKeys.has(photoKey(venue, presentation.photoUrl)));
   const showPhoto = Boolean(presentation && !failed);
+  const existingPhoto = hero.querySelector(':scope > .detail-photo');
 
   hero.classList.toggle('detail-hero--has-photo', showPhoto);
   hero.classList.toggle('detail-hero--no-photo', !showPhoto);
 
-  hero.querySelector(':scope > .detail-photo')?.remove();
   if (showPhoto) {
     hero.querySelector(':scope > .detail-local-map')?.remove();
-    hero.insertBefore(createPhotoFigure(documentObject, venue, presentation, onPhotoError), hero.firstChild);
-  } else if (clean(venue.photo_url)) {
-    ensureLocalMapFallback(hero, documentObject, venue);
+    if (existingPhoto?.dataset.photoUrl !== presentation.photoUrl) {
+      existingPhoto?.remove();
+      hero.insertBefore(createPhotoFigure(documentObject, venue, presentation, onPhotoError), hero.firstChild);
+    }
+  } else {
+    existingPhoto?.remove();
+    if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 
   moveEditorialDescription(detail, hero, documentObject);
