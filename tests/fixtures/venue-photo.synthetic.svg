@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="960" viewBox="0 0 1440 960" role="img" aria-label="Synthetic venue photo fixture">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#102955"/>
+      <stop offset="1" stop-color="#315b8c"/>
+    </linearGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d39b2a"/>
+      <stop offset="1" stop-color="#8b5c18"/>
+    </linearGradient>
+  </defs>
+  <rect width="1440" height="960" fill="url(#wall)"/>
+  <circle cx="230" cy="215" r="110" fill="#f4c95d" opacity=".9"/>
+  <circle cx="1185" cy="165" r="78" fill="#f4c95d" opacity=".72"/>
+  <rect x="0" y="610" width="1440" height="350" fill="url(#bar)"/>
+  <g fill="#f8f5ea" opacity=".94">
+    <circle cx="300" cy="500" r="72"/>
+    <circle cx="500" cy="470" r="82"/>
+    <circle cx="720" cy="505" r="76"/>
+    <circle cx="940" cy="465" r="84"/>
+    <circle cx="1160" cy="510" r="70"/>
+  </g>
+  <g fill="#1b2f57">
+    <path d="M185 700c20-120 210-120 230 0v110H185z"/>
+    <path d="M365 700c22-140 248-140 270 0v110H365z"/>
+    <path d="M605 700c20-126 210-126 230 0v110H605z"/>
+    <path d="M790 700c22-145 278-145 300 0v110H790z"/>
+    <path d="M1040 700c18-118 218-118 236 0v110h-236z"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="720" y="104" fill="#ffffff" font-size="44" font-weight="700" letter-spacing="5">CGB TEST FIXTURE</text>
+    <text x="720" y="170" fill="#f6cf65" font-size="31">Representative venue-photo layout only</text>
+  </g>
+</svg>
