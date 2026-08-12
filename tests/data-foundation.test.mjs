@@ -33,7 +33,6 @@ function canonicalizeFixture(snapshot) {
     row.game_id = gameMap[row.game_id];
   });
   copy.venueHistoryCounts.forEach((row) => { row.venue_id = venueMap[row.venue_id]; });
-  copy.idAliases = { venues: {}, games: {} };
   return copy;
 }
 
@@ -57,6 +56,13 @@ test('deprecated opponent short names are rejected recursively', () => {
   invalid.games[0].opponent_short_name = 'UCLA';
   const errors = validateSnapshot(invalid);
   assert.ok(errors.some((error) => error.includes('opponent_short_name is forbidden')));
+});
+
+test('legacy ID aliases are rejected from public snapshots', () => {
+  const invalid = structuredClone(fixture);
+  invalid.idAliases = { venues: {}, games: {} };
+  const errors = validateSnapshot(invalid);
+  assert.ok(errors.some((error) => error.includes('idAliases is forbidden')));
 });
 
 test('private browser identifiers are rejected recursively', () => {
