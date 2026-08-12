@@ -95,7 +95,7 @@ test('direct route and refresh coverage retains game and Venue identity for know
 
 test('no-photo Detail creates one noninteractive Venue-local MapLibre map from canonical coordinates', () => {
   assert.match(app, /venue\.photo_url \? '' : ' detail-hero--no-photo'/);
-  assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*dataset\.latitude = String\(latitude\)[\s\S]*dataset\.longitude = String\(longitude\)[\s\S]*dataset\.zoom = '17'/);
+  assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*dataset\.latitude = String\(latitude\)[\s\S]*dataset\.longitude = String\(longitude\)[\s\S]*dataset\.zoom = '16\.75'/);
   assert.match(detailRefinement, /const DETAIL_MAP_ZOOM = 16\.75/);
   assert.match(detailRefinement, /const latitude = Number\(venue\.latitude\)/);
   assert.match(detailRefinement, /const longitude = Number\(venue\.longitude\)/);
@@ -110,6 +110,13 @@ test('no-photo Detail creates one noninteractive Venue-local MapLibre map from c
   assert.match(detailCss, /@media \(max-width: 359px\)[\s\S]*height: 124px/);
   assert.match(detailCss, /orientation: landscape[\s\S]*height: 120px/);
   assert.match(css, /detail-hero\.detail-hero--no-photo[\s\S]*min-height: 0/);
+});
+
+test('mobile Detail reserves no duplicate space below the safe-area-aware sticky row', () => {
+  assert.match(detailCss, /body\[data-view="detail"\] \.venue-detail \{[\s\S]*padding-bottom: 0 !important/);
+  assert.match(detailCss, /@media \(max-width: 899px\)[\s\S]*\.detail-view \{[\s\S]*padding-bottom: 0 !important/);
+  assert.match(detailCss, /orientation: portrait[\s\S]*display: flex !important[\s\S]*flex-direction: column[\s\S]*margin-top: auto !important/);
+  assert.match(detailCss, /\.action-row\.detail-primary-actions[\s\S]*padding:[^;]*env\(safe-area-inset-bottom, 0px\)/);
 });
 
 test('photo-present Detail remains on the existing hero path and no photo workflow is invented', () => {
@@ -154,6 +161,7 @@ test('Detail Watch Party treatment reuses gold language, page scrolling, and sco
   assert.match(detailCss, /venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
   assert.match(detailCss, /max-height: none !important/);
   assert.match(detailCss, /overflow: visible !important/);
+  assert.match(detailCss, /party-module__report[\s\S]*justify-self: end[\s\S]*font-size: \.65rem !important/);
   assert.match(watchPartyDisplay, /party-module__report/);
 });
 

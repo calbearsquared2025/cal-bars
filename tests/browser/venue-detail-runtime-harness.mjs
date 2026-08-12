@@ -86,7 +86,7 @@ function verifyLocalMap(venue) {
   check(Number(mapNode?.dataset.latitude) === Number(venue.latitude), 'Detail local map should use canonical latitude');
   check(Number(mapNode?.dataset.longitude) === Number(venue.longitude), 'Detail local map should use canonical longitude');
   const zoom = Number(mapNode?.dataset.zoom);
-  check(zoom >= 16.5 && zoom <= 17.5, 'Detail local map should use a tight few-block zoom');
+  check(zoom === 16.75, 'Detail local map should use the approved slightly wider local zoom');
 
   const maps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
   const markers = (window.CGBMapLibreRuntimeMock?.markers || [])
@@ -95,6 +95,7 @@ function verifyLocalMap(venue) {
   check(maps.length === 1, 'Detail route should create only the Venue-local map');
   check(map?.options?.interactive === false, 'Detail local map should be noninteractive');
   check(map?.options?.attributionControl === false, 'Detail local map should add no map controls');
+  check(Number(map?.options?.zoom) === 16.75, 'Detail local map runtime should use the approved slightly wider local zoom');
   check((map?.controls || []).length === 0, 'Detail local map should not add navigation or geolocation controls');
   check(Number(map?.options?.center?.[0]) === Number(venue.longitude) && Number(map?.options?.center?.[1]) === Number(venue.latitude), 'Detail local map should center on canonical Venue coordinates');
   check(markers.length === 1, 'Detail local map should create only one CGB marker');
@@ -150,6 +151,12 @@ function verifyWatchParty(hasParty) {
     check(style.maxHeight === 'none' || !style.maxHeight, 'Detail Watch Party should not impose a max-height');
     const external = party.querySelector('a[target="_blank"]:not(.party-module__report)');
     if (external) check(external.textContent?.includes('External event details'), 'Watch Party external link should use the resolved copy');
+    const report = party.querySelector('.party-module__report');
+    if (report) {
+      const reportStyle = getComputedStyle(report);
+      check(reportStyle.justifySelf === 'end', 'Detail Report an Issue should align to the right edge');
+      check(Number.parseFloat(reportStyle.fontSize) <= 11, 'Detail Report an Issue should remain a small utility action');
+    }
   });
 }
 
@@ -175,6 +182,19 @@ function verifyStickyActions() {
   check(labels.some((label) => /I’ll be here|You’ll be here/.test(label)), 'Detail sticky row should retain Fan Intent');
   check(labels.includes('Share'), 'Detail sticky row should retain the updated Share action');
   check(!labels.includes('Directions') && !labels.some((label) => /Details/.test(label)), 'Detail sticky row should exclude Directions and Details');
+}
+
+async function verifyMobileBottomWhitespace() {
+  if (!window.matchMedia('(max-width: 899px)').matches) return;
+  const view = element('#detail-view');
+  const row = element('#venue-detail > .action-row.detail-primary-actions');
+  if (!view || !row) return;
+  window.scrollTo(0, document.documentElement.scrollHeight);
+  await sleep(30);
+  const trailingSpace = view.getBoundingClientRect().bottom - row.getBoundingClientRect().bottom;
+  check(trailingSpace <= 1, 'Mobile Detail should end at the sticky action row without blank trailing space');
+  window.scrollTo(0, 0);
+  await sleep(30);
 }
 
 function verifyImmediateSingleOwnerRerender(venue, hasParty) {
@@ -258,6 +278,7 @@ async function main() {
   verifyWatchParty(hasParty);
   verifyContribution();
   verifyStickyActions();
+  await verifyMobileBottomWhitespace();
 
   if (params.get('__cgb_prejoined') === '1') {
     await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent selection');

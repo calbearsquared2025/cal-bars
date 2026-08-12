@@ -33,7 +33,22 @@ body[data-view="detail"] .detail-shell {
 
 body[data-view="detail"] .venue-detail {
   min-height: calc(100dvh - var(--header-height)) !important;
-  padding-bottom: calc(126px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: 0 !important;
+}
+
+@media (max-width: 899px) {
+  body[data-view="detail"] .detail-view {
+    padding-bottom: 0 !important;
+  }
+}
+
+@media (max-width: 899px) and (orientation: portrait) {
+  body[data-view="detail"] .venue-detail {
+    min-height: calc(100dvh - var(--header-height) - 18px) !important;
+    display: flex !important;
+    flex-direction: column;
+  }
+
 }
 
 body[data-view="detail"] .detail-game-context {
@@ -216,6 +231,16 @@ body[data-view="detail"] .venue-detail > .party-module a {
   width: fit-content !important;
   color: var(--cgb-navy-900) !important;
   font-weight: 800 !important;
+}
+
+body[data-view="detail"] .venue-detail > .party-module .party-module__report {
+  justify-self: end;
+  margin: 3px 0 0 auto;
+  color: var(--cgb-ink-500) !important;
+  font-size: .65rem !important;
+  font-weight: 650 !important;
+  line-height: 1.2;
+  text-align: right;
 }
 
 body[data-view="detail"] .badge--fan-added {
@@ -416,5 +441,15 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
 
   body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
     align-self: end !important;
+  }
+}
+
+@media (max-width: 899px) and (orientation: portrait) {
+  body[data-view="detail"] .detail-contribution {
+    margin-bottom: 16px;
+  }
+
+  body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
+    margin-top: auto !important;
   }
 }
