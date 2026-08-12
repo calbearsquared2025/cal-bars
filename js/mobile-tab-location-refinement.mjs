@@ -121,18 +121,6 @@ function installStyles() {
       }
     }
 
-    @media (min-width: 900px) {
-      .selected-card .action-row {
-        grid-template-columns: minmax(0, 1fr) minmax(92px, auto) 96px !important;
-      }
-
-      .selected-card .action-row > .selected-card__details {
-        width: auto !important;
-        min-width: 92px !important;
-        padding-inline: 11px !important;
-        font-size: .76rem !important;
-      }
-    }
   `;
   document.head.append(style);
 }

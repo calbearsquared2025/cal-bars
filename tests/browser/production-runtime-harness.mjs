@@ -531,6 +531,13 @@ async function runMainChecks() {
   noPartyCard?.click();
   await waitFor(() => selectedVenueId() === noPartyVenue?.venue_id && trayState() === 'selected', 'venue selection');
   await waitFor(() => activeCommand() === 'map', 'selected venue returning to Map');
+  await waitFor(() =>
+    isVisible('#tray-selected .selected-card__plan-party') &&
+    isVisible('#tray-selected .intent-button') &&
+    isVisible('#tray-selected .selected-card__directions-inline') &&
+    isVisible('#tray-selected .selected-card__share') &&
+    isVisible('#tray-selected .selected-card__details'),
+  'selected profile refinements');
   check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Selected venue should not expose an intermediate density state');
   check(isVisible('#tray-selected .selected-card'), 'Selected venue should render the full selected card');
   check(!element('#tray-selected .party-module'), 'No-Watch-Party venue should not render a Watch Party module');
@@ -544,6 +551,10 @@ async function runMainChecks() {
   progress('selected-to-mini');
   click('#tray-handle');
   await waitFor(() => trayState() === 'peek' && selectedVenueId() === noPartyVenue?.venue_id, 'selected profile → mini profile');
+  await waitFor(() =>
+    element('#browse-locations-button')?.dataset?.directVenueId === noPartyVenue?.venue_id &&
+    element('#tray-summary-copy')?.textContent?.includes(noPartyVenue?.address_line_1 || ''),
+  'selected mini profile content');
   check(isVisible('#tray-peek'), 'Selected Venue mini profile should be visible');
   check(!isVisible('#tray-selected'), 'Full selected profile should be hidden in mini state');
   check(element('#browse-locations-button')?.dataset?.directVenueId === noPartyVenue?.venue_id, 'Mini profile should retain the selected Venue');
@@ -552,6 +563,10 @@ async function runMainChecks() {
   progress('mini-to-selected');
   click('#browse-locations-button');
   await waitFor(() => trayState() === 'selected' && selectedVenueId() === noPartyVenue?.venue_id, 'mini profile → full selected profile');
+  await waitFor(() =>
+    isVisible('#tray-selected .selected-card__details') &&
+    element('#tray-selected .venue-location')?.textContent?.includes(noPartyVenue?.address_line_1 || ''),
+  'full selected profile refinements after mini transition');
   check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Mini profile should open directly to the full selected profile');
   check(isVisible('#tray-selected .selected-card__details'), 'Direct mini-to-selected transition should expose full selected actions');
   check(element('#tray-selected .venue-location')?.textContent?.includes(noPartyVenue?.address_line_1 || ''), 'Full selected profile should show useful street information');
@@ -644,9 +659,18 @@ async function runMainChecks() {
     await waitFor(() => Boolean(element(`#search-suggestions button[data-venue-id="${partyVenue.venue_id}"]`)), 'existing Search result');
     element(`#search-suggestions button[data-venue-id="${partyVenue.venue_id}"]`)?.click();
     await waitFor(() => selectedVenueId() === partyVenue.venue_id && activeCommand() === 'map' && trayState() === 'selected', 'Search result → full selected Map state');
+    await waitFor(() =>
+      isVisible('#tray-selected .party-module__report') &&
+      isVisible('#tray-selected .selected-card__details'),
+    'Watch Party selected profile refinements');
     check(!element('#venue-tray')?.hasAttribute('data-selected-density'), 'Search result should open directly to the full selected profile');
     check(Boolean(element('#tray-selected .party-module')), 'Watch Party venue should render a Watch Party module in the selected card');
-    check(isVisible('#tray-selected .party-module__event'), 'Watch Party selected profile should preserve Event information');
+    const selectedParty = state()?.snapshot?.watchParties?.find((party) =>
+      party.game_id === state()?.gameId && party.venue_id === partyVenue.venue_id);
+    check(
+      isVisible('#tray-selected .party-module__event') === Boolean(selectedParty?.official_event_url),
+      'Watch Party selected profile should show Event information only when an official event URL exists'
+    );
     check(isVisible('#tray-selected .party-module__report'), 'Watch Party selected profile should preserve Report an Issue');
     check(isVisible('#tray-selected .selected-card__details'), 'Watch Party selected profile should preserve Details');
     const selectedPartyBadges = badgeTexts('#tray-selected .selected-card');

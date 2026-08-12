@@ -539,7 +539,7 @@ function createDetailLocalMap(venue) {
   map.dataset.venueId = venue.venue_id;
   map.dataset.latitude = String(latitude);
   map.dataset.longitude = String(longitude);
-  map.dataset.zoom = '16.75';
+  map.dataset.zoom = '16';
   map.setAttribute('role', 'img');
   map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
   return map;

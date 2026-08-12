@@ -18,6 +18,11 @@ test('Search Add and List keep their large top inset in portrait only', () => {
   assert.match(source, /@media \(max-width: 899px\) and \(orientation: portrait\)[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*padding-top: 48px !important[\s\S]*data-command-surface="list"[\s\S]*padding-top: 46px !important/);
 });
 
+test('mobile tab refinement does not override the accepted desktop selected-profile actions', () => {
+  assert.doesNotMatch(source, /@media \(min-width: 900px\)/);
+  assert.doesNotMatch(source, /selected-card__details/);
+});
+
 test('Add shows the current selected game as a context card', () => {
   assert.match(source, /Current game/);
   assert.match(source, /gameTitle\(game\)/);
