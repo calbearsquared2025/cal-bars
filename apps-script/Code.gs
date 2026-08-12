@@ -18,7 +18,7 @@ const CGB_TABS = Object.freeze({
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
     'short_description', 'photo_url', 'photo_credit', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at'
+    'source_submission_id', 'created_at', 'updated_at', 'photo_caption', 'photo_credit_url'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
@@ -55,7 +55,7 @@ const CGB_TABS = Object.freeze({
   Photo_Submissions_Raw: [
     'response_timestamp', 'submission_id', 'venue_id', 'venue_name', 'file_reference',
     'caption', 'photo_credit', 'permission_confirmed', 'submitter_name',
-    'submitter_email', 'review_status', 'reviewer_note', 'reviewed_at'
+    'submitter_email', 'review_status', 'reviewer_note', 'reviewed_at', 'photo_credit_url'
   ],
   Missing_Location_Suggestions_Raw: [
     'response_timestamp', 'submission_id', 'venue_name', 'address', 'website_url',
@@ -72,7 +72,7 @@ const CGB_PUBLIC_FIELDS = Object.freeze({
     'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'short_description', 'photo_url',
-    'photo_credit', 'updated_at'
+    'photo_caption', 'photo_credit', 'photo_credit_url', 'updated_at'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
