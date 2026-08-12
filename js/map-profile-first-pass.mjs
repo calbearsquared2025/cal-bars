@@ -16,11 +16,12 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) and (orientation: portrait) {
-      :root {
+      body[data-command-surface="search"],
+      body[data-command-surface="add"],
+      body[data-command-surface="list"] {
         --header-height: calc(176px + env(safe-area-inset-top, 0px)) !important;
       }
 
-      .site-header,
       body[data-command-surface="search"] .site-header,
       body[data-command-surface="add"] .site-header,
       body[data-command-surface="list"] .site-header {
@@ -97,30 +98,6 @@ function installStyles() {
         outline: 0 !important;
         border: 0 !important;
         box-shadow: none !important;
-      }
-
-      #map-view > #venue-tray.venue-tray::before {
-        content: none !important;
-        display: none !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--peek .tray-handle,
-      #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__chevron {
-        display: none !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--peek {
-        height: 78px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--peek .tray-peek {
-        padding: 5px 10px 7px !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--peek .tray-summary {
-        min-height: 66px !important;
-        grid-template-columns: 24px minmax(0, 1fr) auto !important;
-        padding: 4px 12px !important;
       }
 
       body[data-command-surface="search"] #map-view > #venue-tray.venue-tray.tray--peek,

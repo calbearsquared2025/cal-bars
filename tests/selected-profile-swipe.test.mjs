@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const mobileRefinement = await readFile(new URL('../js/map-mobile-refinement.mjs', import.meta.url), 'utf8');
+const firstPaintCss = await readFile(new URL('../css/mobile-first-paint.css', import.meta.url), 'utf8');
 
 test('mobile selected-profile upward handle swipe opens Venue Detail', () => {
   assert.match(mobileRefinement, /buildVenueUrl/);
@@ -20,7 +21,7 @@ test('selected-profile tap-to-collapse remains separate from swipe-to-detail', (
 });
 
 test('mobile map shell is viewport-locked while Detail remains outside the lock', () => {
-  assert.match(mobileRefinement, /body\[data-view="map"\][\s\S]*position: fixed !important[\s\S]*height: 100dvh !important[\s\S]*overflow: hidden !important[\s\S]*overscroll-behavior: none !important/);
-  assert.match(mobileRefinement, /@supports not \(height: 100dvh\)[\s\S]*body\[data-view="map"\][\s\S]*height: 100vh !important/);
-  assert.doesNotMatch(mobileRefinement, /body\[data-view="detail"\][\s\S]*position: fixed !important/);
+  assert.match(firstPaintCss, /body\[data-view="map"\][\s\S]*position: fixed[\s\S]*height: 100dvh[\s\S]*overflow: hidden[\s\S]*overscroll-behavior: none/);
+  assert.match(firstPaintCss, /@supports not \(height: 100dvh\)[\s\S]*body\[data-view="map"\][\s\S]*height: 100vh/);
+  assert.doesNotMatch(firstPaintCss, /body\[data-view="detail"\][\s\S]*position: fixed/);
 });

@@ -127,10 +127,66 @@ function sendProductionHarness(response, requestUrl = '/') {
   response.end(html);
 }
 
+function sendFirstPaintHarness(response) {
+  const zoomControls = `
+    <div class="maplibregl-ctrl-top-right" data-first-paint-controls>
+      <div class="maplibregl-ctrl maplibregl-ctrl-group">
+        <button class="maplibregl-ctrl-zoom-in" type="button">+</button>
+        <button class="maplibregl-ctrl-zoom-out" type="button">-</button>
+      </div>
+    </div>
+  `;
+  const driver = `
+    <output id="cgb-first-paint-result">CGB_FIRST_PAINT_RUNNING</output>
+    <script>
+      (() => {
+        const failures = [];
+        const bodyStyle = getComputedStyle(document.body);
+        const headerStyle = getComputedStyle(document.querySelector('.site-header'));
+        const tray = document.querySelector('#venue-tray');
+        const trayStyle = getComputedStyle(tray);
+        const trayRect = tray.getBoundingClientRect();
+        const handleStyle = getComputedStyle(document.querySelector('#tray-handle'));
+        const chevronStyle = getComputedStyle(document.querySelector('.tray-summary__chevron'));
+        const zoomIn = document.querySelector('.maplibregl-ctrl-zoom-in');
+
+        if (document.body.dataset.view !== 'map') failures.push('missing initial map view');
+        if (document.body.dataset.commandSurface !== 'map') failures.push('missing initial command surface');
+        if (bodyStyle.position !== 'fixed') failures.push('map shell is not fixed');
+        if (Math.abs(parseFloat(headerStyle.height) - 176) > 1) failures.push('header is not 176px');
+        if (Math.abs(trayRect.left) > 1 || Math.abs(trayRect.right - innerWidth) > 1) failures.push('tray is not full width');
+        if (Math.abs(parseFloat(trayStyle.height) - 96) > 1) failures.push('tray is not 96px');
+        if (trayStyle.borderTopLeftRadius !== '22px') failures.push('tray radius is not settled');
+        if (handleStyle.display !== 'grid' || Math.abs(parseFloat(handleStyle.height) - 18) > 1) failures.push('compact handle is not settled');
+        if (chevronStyle.display !== 'none') failures.push('obsolete chevron is visible');
+        if (zoomIn.getClientRects().length !== 0) failures.push('zoom controls are visible');
+        if (document.querySelector('style[id^="cgb-"]')) failures.push('runtime refinement style was injected');
+
+        document.querySelector('#cgb-first-paint-result').textContent = failures.length
+          ? 'CGB_FIRST_PAINT_FAIL: ' + failures.join('; ')
+          : 'CGB_STATIC_MOBILE_FIRST_PAINT_PASS';
+      })();
+    </script>
+  `;
+  const html = productionIndex
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .replace('<div id="map-fallback"', `${zoomControls}\n<div id="map-fallback"`)
+    .replace('</body>', `${driver}\n</body>`);
+  response.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Cache-Control': 'no-store'
+  });
+  response.end(html);
+}
+
 const server = createServer((request, response) => {
   const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
   if (pathname === '/__cgb_production_runtime__') {
     sendProductionHarness(response, request.url || '/');
+    return;
+  }
+  if (pathname === '/__cgb_first_paint__') {
+    sendFirstPaintHarness(response);
     return;
   }
 
@@ -212,6 +268,13 @@ async function runHarness({ path, marker, label, virtualTimeBudget, windowSize =
 let passed = true;
 try {
   passed = await runHarness({
+    path: '/__cgb_first_paint__',
+    marker: 'CGB_STATIC_MOBILE_FIRST_PAINT_PASS',
+    label: 'Static mobile first-paint harness',
+    virtualTimeBudget: 3000
+  }) && passed;
+
+  passed = await runHarness({
     path: '/tests/browser/external-venue-harness.html',
     marker: 'M4B_BROWSER_HARNESS_PASS',
     label: 'Milestone 4B browser harness',
@@ -284,4 +347,4 @@ try {
 
 if (!passed) process.exit(1);
 
-console.log('Browser harnesses passed: reduced external-venue fixture plus the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');
+console.log('Browser harnesses passed: static mobile first paint without refinement modules, the reduced external-venue fixture, the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');
