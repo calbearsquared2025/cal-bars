@@ -101,8 +101,8 @@ test('Detail Back returns to the focused map with the same Venue selected', () =
 
 test('no-photo Detail creates one noninteractive Venue-local MapLibre map from canonical coordinates', () => {
   assert.match(app, /venue\.photo_url \? '' : ' detail-hero--no-photo'/);
-  assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*dataset\.latitude = String\(latitude\)[\s\S]*dataset\.longitude = String\(longitude\)[\s\S]*dataset\.zoom = '16\.75'/);
-  assert.match(detailRefinement, /const DETAIL_MAP_ZOOM = 16\.75/);
+  assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*dataset\.latitude = String\(latitude\)[\s\S]*dataset\.longitude = String\(longitude\)[\s\S]*dataset\.zoom = '16'/);
+  assert.match(detailRefinement, /const DETAIL_MAP_ZOOM = 16\.0/);
   assert.match(detailRefinement, /const latitude = Number\(venue\.latitude\)/);
   assert.match(detailRefinement, /const longitude = Number\(venue\.longitude\)/);
   assert.match(detailRefinement, /center: \[longitude, latitude\]/);

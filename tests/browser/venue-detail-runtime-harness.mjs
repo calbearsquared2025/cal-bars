@@ -86,7 +86,7 @@ function verifyLocalMap(venue) {
   check(Number(mapNode?.dataset.latitude) === Number(venue.latitude), 'Detail local map should use canonical latitude');
   check(Number(mapNode?.dataset.longitude) === Number(venue.longitude), 'Detail local map should use canonical longitude');
   const zoom = Number(mapNode?.dataset.zoom);
-  check(zoom === 16.75, 'Detail local map should use the approved slightly wider local zoom');
+  check(zoom === 16, 'Detail local map should use the approved wider local zoom');
 
   const maps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
   const markers = (window.CGBMapLibreRuntimeMock?.markers || [])
@@ -95,7 +95,7 @@ function verifyLocalMap(venue) {
   check(maps.length === 1, 'Detail route should create only the Venue-local map');
   check(map?.options?.interactive === false, 'Detail local map should be noninteractive');
   check(map?.options?.attributionControl === false, 'Detail local map should add no map controls');
-  check(Number(map?.options?.zoom) === 16.75, 'Detail local map runtime should use the approved slightly wider local zoom');
+  check(Number(map?.options?.zoom) === 16, 'Detail local map runtime should use the approved wider local zoom');
   check((map?.controls || []).length === 0, 'Detail local map should not add navigation or geolocation controls');
   check(Number(map?.options?.center?.[0]) === Number(venue.longitude) && Number(map?.options?.center?.[1]) === Number(venue.latitude), 'Detail local map should center on canonical Venue coordinates');
   check(markers.length === 1, 'Detail local map should create only one CGB marker');
