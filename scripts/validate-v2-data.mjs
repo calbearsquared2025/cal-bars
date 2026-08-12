@@ -2,7 +2,6 @@
 
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { canonicalizeSnapshotIds } from '../js/id-alias-core.mjs';
 
 const REQUIRED_TOP_LEVEL = [
   'schemaVersion', 'venues', 'games', 'watchParties',
@@ -14,7 +13,7 @@ const FORBIDDEN_KEYS = new Set([
   'source_submission_id', 'publication_status', 'created_at',
   'submitter_name', 'submitter_email', 'reviewer_note', 'permission_confirmed',
   'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
-  'opponent_short_name'
+  'opponent_short_name', 'idAliases'
 ]);
 
 const RELEASE_FIXTURE_MARKERS = Object.freeze([
@@ -35,7 +34,6 @@ const CANONICAL_ID_PATTERNS = Object.freeze({
   game: /^game_[a-f0-9]{24}$/,
   watchParty: /^wp_[a-f0-9]{24}$/
 });
-const SAFE_LEGACY_ID_PATTERN = /^[A-Za-z0-9_-]{3,80}$/;
 const VENUE_TYPES = new Set(['cal_bar', 'community_location']);
 const VERIFICATION_STATUSES = new Set(['cgb_reviewed', 'user_added']);
 const ALUMNI_OWNED = new Set(['yes', 'no', 'unknown']);
@@ -168,35 +166,6 @@ function validateWatchParty(party, index, venueIds, gameIds, errors) {
   if (!isIsoDateTime(party.updated_at)) errors.push(`${path}.updated_at must be an ISO-8601 datetime`);
 }
 
-function validateAliasGroup(aliases, entityType, canonicalIds, path, errors) {
-  if (!isObject(aliases)) {
-    errors.push(`${path} must be an object`);
-    return;
-  }
-  const pattern = CANONICAL_ID_PATTERNS[entityType];
-  const targets = new Set();
-  for (const [legacyId, canonicalId] of Object.entries(aliases)) {
-    if (!SAFE_LEGACY_ID_PATTERN.test(legacyId)) errors.push(`${path}.${legacyId} has an unsafe legacy ID`);
-    if (!pattern.test(canonicalId || '')) errors.push(`${path}.${legacyId} has an invalid canonical target`);
-    if (!canonicalIds.has(canonicalId)) errors.push(`${path}.${legacyId} targets an absent public record`);
-    if (targets.has(canonicalId)) errors.push(`${path} duplicates canonical target ${canonicalId}`);
-    targets.add(canonicalId);
-  }
-}
-
-function validateIdAliases(snapshot, venueIds, gameIds, errors, { required = false } = {}) {
-  if (snapshot.idAliases === undefined) {
-    if (required) errors.push('missing top-level key: idAliases');
-    return;
-  }
-  if (!isObject(snapshot.idAliases)) {
-    errors.push('idAliases must be an object');
-    return;
-  }
-  validateAliasGroup(snapshot.idAliases.venues, 'venue', venueIds, 'idAliases.venues', errors);
-  validateAliasGroup(snapshot.idAliases.games, 'game', gameIds, 'idAliases.games', errors);
-}
-
 export function validateSnapshot(snapshot) {
   const errors = [];
   if (!isObject(snapshot)) return ['snapshot must be an object'];
@@ -263,20 +232,11 @@ export function validateSnapshot(snapshot) {
     seasonPairs.add(pair);
   });
 
-  validateIdAliases(snapshot, venueIds, gameIds, errors);
   return errors;
 }
 
 export function validateReleaseFallback(snapshot) {
-  const canonicalSnapshot = canonicalizeSnapshotIds(snapshot);
-  const errors = validateSnapshot(canonicalSnapshot);
-  const venueIds = new Set(Array.isArray(canonicalSnapshot?.venues)
-    ? canonicalSnapshot.venues.map((venue) => venue.venue_id)
-    : []);
-  const gameIds = new Set(Array.isArray(canonicalSnapshot?.games)
-    ? canonicalSnapshot.games.map((game) => game.game_id)
-    : []);
-  validateIdAliases(canonicalSnapshot, venueIds, gameIds, errors, { required: true });
+  const errors = validateSnapshot(snapshot);
 
   const serialized = JSON.stringify(snapshot).toLowerCase();
   for (const marker of RELEASE_FIXTURE_MARKERS) {
@@ -312,9 +272,8 @@ async function main() {
     return;
   }
 
-  const canonicalSnapshot = canonicalizeSnapshotIds(snapshot);
   console.log(`Valid CGB v2 public release fallback: ${path}`);
-  console.log(`${canonicalSnapshot.venues.length} venues, ${canonicalSnapshot.games.length} games, ${canonicalSnapshot.watchParties.length} watch parties`);
+  console.log(`${snapshot.venues.length} venues, ${snapshot.games.length} games, ${snapshot.watchParties.length} watch parties`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
