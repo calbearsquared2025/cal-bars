@@ -93,6 +93,12 @@ test('direct route and refresh coverage retains game and Venue identity for know
   assert.match(runner, /Production direct-route refresh harness/);
 });
 
+test('Detail Back returns to the focused map with the same Venue selected', () => {
+  assert.match(app, /function returnToMapFromDetail\(event\)[\s\S]*event\.preventDefault\(\)[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('selected'\)[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)[\s\S]*focusReturnedDetailVenue\(venue\)/);
+  assert.match(app, /function focusReturnedDetailVenue\(venue\)[\s\S]*center: \[longitude, latitude\][\s\S]*zoom: Math\.max\(currentZoom, 11\)/);
+  assert.match(app, /dom\.detailBack\.addEventListener\('click', returnToMapFromDetail\)/);
+});
+
 test('no-photo Detail creates one noninteractive Venue-local MapLibre map from canonical coordinates', () => {
   assert.match(app, /venue\.photo_url \? '' : ' detail-hero--no-photo'/);
   assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*dataset\.latitude = String\(latitude\)[\s\S]*dataset\.longitude = String\(longitude\)[\s\S]*dataset\.zoom = '16\.75'/);
