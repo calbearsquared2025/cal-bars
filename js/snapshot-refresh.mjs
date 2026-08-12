@@ -1,5 +1,4 @@
 import { validateSnapshotShape } from './core.mjs';
-import { canonicalizeSnapshotIds, rewriteLegacyGameQuery } from './id-alias-core.mjs';
 
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
@@ -14,8 +13,7 @@ const PUBLIC_SNAPSHOT_KEYS = [
   'watchParties',
   'fanCounts',
   'venueHistoryCounts',
-  'venueSeasonCounts',
-  'idAliases'
+  'venueSeasonCounts'
 ];
 
 let browserRefreshController = null;
@@ -166,18 +164,13 @@ function applyPublicSnapshot(app, snapshot, dataSource = 'live') {
   const state = app.getState?.();
   if (!state?.snapshot) return false;
 
-  const canonical = canonicalizeSnapshotIds(snapshot);
-  const changed = !publicSnapshotsEqual(state.snapshot, canonical);
+  const changed = !publicSnapshotsEqual(state.snapshot, snapshot);
   PUBLIC_SNAPSHOT_KEYS.forEach((key) => {
-    state.snapshot[key] = canonical[key];
+    state.snapshot[key] = snapshot[key];
   });
-  if ('schemaVersion' in canonical) state.snapshot.schemaVersion = canonical.schemaVersion;
-  if ('generatedAt' in canonical) state.snapshot.generatedAt = canonical.generatedAt;
+  if ('schemaVersion' in snapshot) state.snapshot.schemaVersion = snapshot.schemaVersion;
+  if ('generatedAt' in snapshot) state.snapshot.generatedAt = snapshot.generatedAt;
   state.dataSource = dataSource;
-
-  if (typeof window !== 'undefined') {
-    rewriteLegacyGameQuery(state.snapshot, window.location, window.history);
-  }
   return changed;
 }
 

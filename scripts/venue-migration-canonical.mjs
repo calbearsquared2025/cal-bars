@@ -1,12 +1,10 @@
-import { PUBLIC_ID_ALIASES } from '../js/id-aliases.mjs';
 import { deterministicCanonicalId, isCanonicalId } from './canonical-id-contract.mjs';
 import { migrateRows as migrateRowsLegacy, buildPublicSnapshot as buildPublicSnapshotLegacy } from './venue-migration-core.mjs';
 
 function canonicalEntityId(entityType, value) {
   const candidate = String(value || '');
   if (isCanonicalId(entityType, candidate)) return candidate;
-  const aliases = entityType === 'game' ? PUBLIC_ID_ALIASES.games : PUBLIC_ID_ALIASES.venues;
-  return aliases[candidate] || deterministicCanonicalId(entityType, candidate);
+  return deterministicCanonicalId(entityType, candidate);
 }
 
 export function canonicalizeMigrationResult(result) {
