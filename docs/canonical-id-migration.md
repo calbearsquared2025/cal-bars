@@ -1,7 +1,8 @@
 # Canonical ID migration
 
-**Status:** Approved contract; private workbook migrated; runtime integration remains under review
+**Status:** Completed; legacy compatibility retired
 **Decision date:** August 3, 2026
+**Compatibility retirement:** August 12, 2026
 
 ## Contract
 
@@ -17,9 +18,9 @@ Canonical entity IDs are opaque, immutable relationship keys. They do not encode
 
 Private submission workflows may use other approved entity-specific prefixes, but every generated token must use 24 lowercase hexadecimal characters.
 
-## One-time migration
+## Completed one-time migration
 
-The private `CGBv2` workbook was backed up before mutation. The migration then reassigned:
+The private `CGBv2` workbook was backed up before mutation. The migration reassigned:
 
 - 35 Venue IDs;
 - 12 Game IDs;
@@ -27,38 +28,35 @@ The private `CGBv2` workbook was backed up before mutation. The migration then r
 
 The two existing Watch Party IDs and their source submission IDs already matched the approved format and were preserved.
 
-A private `ID_Aliases` tab records all 47 old-to-new mappings using mapping version `sha256-v1`. The mapping is deterministic:
+The migration used the deterministic mapping:
 
 ```text
 sha256("cgb:v2:<entity>:<legacy_id>") → first 24 hex characters
 ```
 
-The public-safe mapping is mirrored in `data/id-aliases.json`. It contains identifiers only and no workbook identifier, contact information, browser identifier, raw response, or administrative note.
+The migration is complete. Canonical IDs are now the only supported runtime Venue and Game identifiers.
 
-## Compatibility requirement
+## Retired compatibility layer
 
-Legacy Venue and Game IDs remain permanent aliases. Runtime entry points must resolve them before canonical lookup so these continue to work:
+The temporary compatibility layer used during migration has been retired. The public application no longer:
 
-- old prefilled Google Form links;
-- browser-stored game/venue selections;
-- direct links or cached public snapshots containing an old ID;
-- delayed form submissions created before the migration.
+- publishes or loads an ID alias map;
+- rewrites legacy Venue or Game IDs in snapshots;
+- rewrites legacy `?game=` query parameters;
+- remaps legacy browser-stored selections.
 
-All new writes must store only canonical IDs. Alias values must never be written as new primary or foreign keys.
+Public snapshots, direct links, browser state, and new writes are expected to contain canonical IDs already. Invalid or obsolete stored selections are pruned rather than migrated.
 
-## Validation requirements
+The former public alias ledger and frontend alias modules were removed after the migration was accepted. The private workbook alias tab may be deleted once the corresponding Apps Script compatibility code has also been retired.
 
-Before merging runtime integration:
+## Current validation requirements
 
-1. Validate the 47-entry alias manifest against deterministic `sha256-v1` output.
-2. Require canonical primary IDs in Venues, Games, Watch Parties, and Fan Intent.
-3. Resolve aliases at all public and Form write boundaries.
-4. Confirm every Watch Party and Fan Intent foreign key references a canonical Venue and Game.
-5. Canonicalize the deployable fallback and synthetic fixtures.
-6. Remap browser-stored selections without losing a valid choice.
-7. Run the complete unit, data, browser, migration, and private-value test suites.
-8. Run the owner-only workbook integrity helper against the staged or production-bound workbook.
+1. Require canonical primary IDs in Venues, Games, Watch Parties, and Fan Intent.
+2. Confirm every Watch Party and Fan Intent foreign key references a canonical Venue and Game.
+3. Require deployable fallback data to contain canonical IDs directly.
+4. Reject `idAliases` from the public snapshot contract.
+5. Run the normal unit, data, and browser validation suites before release.
 
 ## Rollback
 
-The pre-migration workbook copy is the data rollback boundary. `Live-1003`, the immutable v1 rollback branch, GitHub Pages production settings, DNS, MapTiler settings, and production deployment were not changed by the workbook migration.
+The pre-migration workbook copy remains the historical data rollback boundary. `Live-1003`, the immutable v1 rollback branch, GitHub Pages production settings, DNS, MapTiler settings, and production deployment were not changed by the workbook migration.

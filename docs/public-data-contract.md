@@ -16,10 +16,6 @@ This contract defines the only data shape the public website may receive from th
   "fanCounts": [],
   "venueHistoryCounts": [],
   "venueSeasonCounts": [],
-  "idAliases": {
-    "venues": {},
-    "games": {}
-  },
   "generatedAt": "2026-08-03T20:04:00Z"
 }
 ```
@@ -40,7 +36,7 @@ Canonical IDs are opaque, immutable relationship keys. They must not encode date
 
 Venue names are never identifiers. Venue slugs use lowercase kebab case, are unique, and remain stable after publication unless a collision must be corrected.
 
-The August 3, 2026 migration reassigned the initial Venue and Game IDs. `idAliases` contains identifier-only permanent compatibility mappings for old Venue and Game IDs. The client and write services resolve an alias before canonical lookup. New records and relationships must store only canonical IDs.
+The August 3, 2026 canonical-ID migration is complete. Public snapshots, browser state, direct links, and new writes now use canonical IDs only. Legacy Venue and Game alias mappings are retired and are not part of the public contract.
 
 ## Public Venue fields
 
@@ -148,23 +144,6 @@ The client displays the selected season total as **12 Bears watched Cal games he
 
 No browser-level Fan Intent record may appear in the public response.
 
-## Public alias fields
-
-`idAliases.venues` and `idAliases.games` may expose only legacy-to-canonical identifier pairs. They must not contain names, addresses, contact information, browser identifiers, timestamps, workbook identifiers, raw responses, or administrative state.
-
-Example:
-
-```json
-{
-  "venues": {
-    "ven_1360954160984546": "venue_7cbf6f0f2c33a2462d3da467"
-  },
-  "games": {
-    "game_2026_01": "game_9e8f4860c6a256c0fae6007d"
-  }
-}
-```
-
 ## Forbidden public fields and content
 
 The public response must not include:
@@ -179,5 +158,6 @@ The public response must not include:
 - `source_submission_id`
 - `publication_status`
 - `created_at`
+- `idAliases`
 
-Validation is performed by `scripts/validate-v2-data.mjs`. The static fallback is canonicalized through the permanent public alias map before release validation and application state initialization.
+Validation is performed by `scripts/validate-v2-data.mjs`. The deployable fallback and runtime state must already contain canonical IDs; the client does not rewrite legacy identifiers.

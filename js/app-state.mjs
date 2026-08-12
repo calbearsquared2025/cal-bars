@@ -1,13 +1,10 @@
-import { canonicalizeSnapshotIds, rewriteLegacyGameQuery } from './id-alias-core.mjs';
-
 const PUBLIC_SNAPSHOT_KEYS = [
   'venues',
   'games',
   'watchParties',
   'fanCounts',
   'venueHistoryCounts',
-  'venueSeasonCounts',
-  'idAliases'
+  'venueSeasonCounts'
 ];
 
 export const appState = {
@@ -51,21 +48,17 @@ const readyPromise = new Promise((resolve) => { resolveReady = resolve; });
 
 export function setCanonicalSnapshot(snapshot, dataSource = appState.dataSource) {
   if (!snapshot || typeof snapshot !== 'object') throw new Error('invalid_snapshot');
-  const canonicalSnapshot = canonicalizeSnapshotIds(snapshot);
 
   if (!appState.snapshot) {
-    appState.snapshot = canonicalSnapshot;
-  } else if (appState.snapshot !== canonicalSnapshot) {
+    appState.snapshot = snapshot;
+  } else if (appState.snapshot !== snapshot) {
     PUBLIC_SNAPSHOT_KEYS.forEach((key) => {
-      appState.snapshot[key] = canonicalSnapshot[key];
+      appState.snapshot[key] = snapshot[key];
     });
-    if ('schemaVersion' in canonicalSnapshot) appState.snapshot.schemaVersion = canonicalSnapshot.schemaVersion;
-    if ('generatedAt' in canonicalSnapshot) appState.snapshot.generatedAt = canonicalSnapshot.generatedAt;
+    if ('schemaVersion' in snapshot) appState.snapshot.schemaVersion = snapshot.schemaVersion;
+    if ('generatedAt' in snapshot) appState.snapshot.generatedAt = snapshot.generatedAt;
   }
 
-  if (typeof window !== 'undefined') {
-    rewriteLegacyGameQuery(appState.snapshot, window.location, window.history);
-  }
   appState.dataSource = dataSource;
   return appState.snapshot;
 }

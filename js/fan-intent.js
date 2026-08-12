@@ -10,7 +10,6 @@ import {
   validateFanIntentResponse
 } from './fan-intent-core.mjs';
 import { createFanIntentController } from './fan-intent-controller.mjs';
-import { canonicalizeStoredSelections } from './id-alias-core.mjs';
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
@@ -47,15 +46,11 @@ function persistSelections(selections = appState.fanIntent.selections) {
 }
 
 function pruneSelections() {
-  const canonicalSelections = canonicalizeStoredSelections(
-    appState.snapshot,
-    appState.fanIntent.selections
-  );
   const venueIds = new Set(appState.snapshot.venues.map((venue) => venue.venue_id));
   const openGameIds = new Set(appState.snapshot.games
     .filter((game) => game.game_status === 'upcoming')
     .map((game) => game.game_id));
-  const next = Object.fromEntries(Object.entries(canonicalSelections)
+  const next = Object.fromEntries(Object.entries(appState.fanIntent.selections)
     .filter(([gameId, venueId]) => openGameIds.has(gameId) && venueIds.has(venueId)));
   if (JSON.stringify(next) !== JSON.stringify(appState.fanIntent.selections)) {
     appState.fanIntent.selections = next;

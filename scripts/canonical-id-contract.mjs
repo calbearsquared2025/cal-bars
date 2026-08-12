@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 export const CANONICAL_ID_PATTERNS = Object.freeze({
@@ -12,6 +12,10 @@ export const CANONICAL_ID_PATTERNS = Object.freeze({
   watchPartySubmission: /^wps_[a-f0-9]{24}$/
 });
 
+/**
+ * Retained only for deterministic legacy data migration tooling. Runtime
+ * compatibility aliases are retired and are not read by the application.
+ */
 export function deterministicCanonicalId(entityType, legacyId) {
   const prefixes = { venue: 'venue_', game: 'game_' };
   const prefix = prefixes[entityType];
@@ -28,75 +32,6 @@ export function deterministicCanonicalId(entityType, legacyId) {
 export function isCanonicalId(entityType, value) {
   const pattern = CANONICAL_ID_PATTERNS[entityType];
   return Boolean(pattern && pattern.test(String(value || '')));
-}
-
-export function validateAliasManifest(manifest) {
-  const errors = [];
-  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
-    return ['alias manifest must be an object'];
-  }
-  if (manifest.mappingVersion !== 'sha256-v1') errors.push('mappingVersion must equal sha256-v1');
-
-  for (const [plural, entityType] of [['venues', 'venue'], ['games', 'game']]) {
-    const aliases = manifest[plural];
-    if (!aliases || typeof aliases !== 'object' || Array.isArray(aliases)) {
-      errors.push(`${plural} aliases must be an object`);
-      continue;
-    }
-    const targets = new Set();
-    for (const [legacyId, canonicalId] of Object.entries(aliases)) {
-      if (!legacyId) errors.push(`${plural} contains an empty legacy ID`);
-      if (!isCanonicalId(entityType, canonicalId)) {
-        errors.push(`${plural}.${legacyId} has invalid canonical target ${canonicalId}`);
-      }
-      if (targets.has(canonicalId)) errors.push(`${plural} duplicates canonical target ${canonicalId}`);
-      targets.add(canonicalId);
-      const expected = deterministicCanonicalId(entityType, legacyId);
-      if (canonicalId !== expected) {
-        errors.push(`${plural}.${legacyId} does not match deterministic sha256-v1 mapping`);
-      }
-    }
-  }
-  return errors;
-}
-
-export function canonicalizeSnapshot(snapshot, manifest) {
-  const errors = validateAliasManifest(manifest);
-  if (errors.length) throw new Error(errors.join('\n'));
-  const copy = structuredClone(snapshot);
-  const venueAliases = manifest.venues;
-  const gameAliases = manifest.games;
-  const resolveVenue = (value) => venueAliases[value] || value;
-  const resolveGame = (value) => gameAliases[value] || value;
-
-  copy.venues = (copy.venues || []).map((venue) => ({
-    ...venue,
-    venue_id: resolveVenue(venue.venue_id)
-  }));
-  copy.games = (copy.games || []).map((game) => ({
-    ...game,
-    game_id: resolveGame(game.game_id)
-  }));
-  copy.watchParties = (copy.watchParties || []).map((party) => ({
-    ...party,
-    venue_id: resolveVenue(party.venue_id),
-    game_id: resolveGame(party.game_id)
-  }));
-  copy.fanCounts = (copy.fanCounts || []).map((row) => ({
-    ...row,
-    venue_id: resolveVenue(row.venue_id),
-    game_id: resolveGame(row.game_id)
-  }));
-  copy.venueHistoryCounts = (copy.venueHistoryCounts || []).map((row) => ({
-    ...row,
-    venue_id: resolveVenue(row.venue_id)
-  }));
-  copy.idAliases = {
-    venues: { ...venueAliases },
-    games: { ...gameAliases }
-  };
-  copy.generatedAt = manifest.migratedAt || copy.generatedAt;
-  return copy;
 }
 
 export function validateCanonicalSnapshotIds(snapshot) {
@@ -127,30 +62,29 @@ export function validateCanonicalSnapshotIds(snapshot) {
   for (const [index, row] of (snapshot.venueHistoryCounts || []).entries()) {
     if (!venueIds.has(row.venue_id)) errors.push(`venueHistoryCounts[${index}].venue_id is unresolved`);
   }
+  for (const [index, row] of (snapshot.venueSeasonCounts || []).entries()) {
+    if (!venueIds.has(row.venue_id)) errors.push(`venueSeasonCounts[${index}].venue_id is unresolved`);
+  }
   return errors;
 }
 
 async function main() {
-  const [inputPath, aliasPath, outputPath] = process.argv.slice(2);
-  if (!inputPath || !aliasPath) {
-    console.error('Usage: node scripts/canonical-id-contract.mjs <snapshot.json> <id-aliases.json> [output.json]');
+  const inputPath = process.argv[2];
+  if (!inputPath) {
+    console.error('Usage: node scripts/canonical-id-contract.mjs <snapshot.json>');
     process.exitCode = 2;
     return;
   }
+
   const snapshot = JSON.parse(await readFile(inputPath, 'utf8'));
-  const aliases = JSON.parse(await readFile(aliasPath, 'utf8'));
-  const canonical = canonicalizeSnapshot(snapshot, aliases);
-  const errors = validateCanonicalSnapshotIds(canonical);
+  const errors = validateCanonicalSnapshotIds(snapshot);
   if (errors.length) {
     console.error(`Canonical ID validation failed with ${errors.length} error(s):`);
     errors.forEach((error) => console.error(`- ${error}`));
     process.exitCode = 1;
     return;
   }
-  const serialized = `${JSON.stringify(canonical, null, 2)}\n`;
-  if (outputPath) await writeFile(outputPath, serialized, 'utf8');
-  else process.stdout.write(serialized);
-  console.error(`Canonical ID contract passed: ${canonical.venues.length} venues, ${canonical.games.length} games`);
+  console.log(`Canonical ID contract passed: ${snapshot.venues.length} venues, ${snapshot.games.length} games`);
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
