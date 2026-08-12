@@ -66,10 +66,14 @@ Optional public fields:
 - `postal_code`
 - `website_url`
 - `short_description`
-- `photo_url` — reserved for post-launch use
-- `photo_credit` — reserved for post-launch use
+- `photo_url` — approved primary venue photo; use the stable public site asset URL, normally under `assets/venues/`
+- `photo_caption` — edited public caption; source Form text does not publish automatically
+- `photo_credit` — optional public attribution identity
+- `photo_credit_url` — optional HTTP(S) profile or website for the credited identity
 
-Only rows with `publication_status = published` enter the public response. `publication_status` itself is not returned.
+A Venue supports one public primary photo. A later approved photo may replace it. Approved public images are optimized static GitHub Pages assets; raw Google Form/Drive uploads are intake-only and must not be hotlinked or exposed through this contract.
+
+Only rows with `publication_status = published` enter the public response. `publication_status` itself is not returned. The read layer intentionally returns an empty string for an approved optional field when that column has not yet been added during a controlled rollout, so adding the two new optional photo columns does not make the deployed read endpoint fail.
 
 ## Public Game fields
 
@@ -166,9 +170,10 @@ Example:
 The public response must not include:
 
 - `browser_id` or `fan_intent_id`
-- raw form responses
-- names or emails supplied only for administration
-- reviewer notes or photo permission records
+- raw form responses or `Photo_Submissions_Raw` rows
+- raw photo file references or Google Drive file IDs
+- submitter names or emails supplied only for administration
+- reviewer notes, review state, or photo permission records
 - workbook IDs, workbook URLs, or Apps Script configuration values
 - `external_source` or `external_place_id`
 - `source_submission_id`
