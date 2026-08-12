@@ -1031,6 +1031,36 @@ function renderAll() {
   emitRendered();
 }
 
+function focusReturnedDetailVenue(venue) {
+  const longitude = Number(venue?.longitude);
+  const latitude = Number(venue?.latitude);
+  if (![longitude, latitude].every(Number.isFinite)) return;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (state.detailMode || state.selectedVenueId !== venue.venue_id || !state.map) return;
+      const currentZoom = Number(state.map.getZoom?.()) || 0;
+      state.map.easeTo({
+        center: [longitude, latitude],
+        zoom: Math.max(currentZoom, 11),
+        duration: REDUCED_MOTION ? 0 : 420,
+        essential: true
+      });
+    });
+  });
+}
+
+function returnToMapFromDetail(event) {
+  const venue = selectedVenue();
+  if (!state.detailMode || !venue) return;
+  event.preventDefault();
+  state.detailMode = false;
+  setTrayState('selected');
+  updateRouteForGame();
+  renderAll();
+  focusReturnedDetailVenue(venue);
+}
+
 function restoreSelection({ preserveCurrentWhenEmpty = false } = {}) {
   const before = state.selectedVenueId;
   restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty });
@@ -1204,6 +1234,7 @@ function wireTrayDrag() {
 
 function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
+  dom.detailBack.addEventListener('click', returnToMapFromDetail);
   dom.browseButton.addEventListener('click', () => setTrayState('full'));
   dom.closeList.addEventListener('click', () => setTrayState(state.selectedVenueId ? 'selected' : 'peek'));
   dom.clearSearch.addEventListener('click', clearSearchResults);
