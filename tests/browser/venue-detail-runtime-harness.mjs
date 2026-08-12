@@ -52,6 +52,52 @@ function partyFor(venueId, gameId) {
     party.venue_id === venueId && party.game_id === gameId && party.event_status === 'active') || null;
 }
 
+function safeExternalUrl(value) {
+  try {
+    const url = new URL(String(value || ''));
+    return ['http:', 'https:'].includes(url.protocol) ? url.toString() : '';
+  } catch (_) {
+    return '';
+  }
+}
+
+function ensurePhotoFormMeta() {
+  const fields = {
+    'cgb-photo-form-url': 'https://docs.google.com/forms/d/e/cgb-photo-test/viewform',
+    'cgb-photo-form-venue-id-entry': 'entry.101',
+    'cgb-photo-form-venue-name-entry': 'entry.202'
+  };
+  for (const [name, content] of Object.entries(fields)) {
+    let meta = document.querySelector(`meta[name="${name}"]`);
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = name;
+      document.head.append(meta);
+    }
+    meta.content = content;
+  }
+}
+
+function configureVenuePhotoFixture(venue) {
+  if (!venue) return 'none';
+  if (venue.slug === 'golden-bear-test-pub-berkeley') {
+    venue.photo_url = `${location.origin}/tests/fixtures/venue-photo.synthetic.svg`;
+    venue.photo_caption = 'Synthetic Cal gathering fixture for responsive Venue Detail testing.';
+    venue.photo_credit = '@cgb-test-fixture';
+    venue.photo_credit_url = 'https://example.com/cgb-test-fixture';
+    ensurePhotoFormMeta();
+    return 'photo';
+  }
+  if (venue.slug === 'california-test-grill-san-francisco') {
+    venue.photo_url = `${location.origin}/tests/fixtures/missing-venue-photo.webp`;
+    venue.photo_caption = 'Broken photo fixture.';
+    venue.photo_credit = 'CGB test fixture';
+    venue.photo_credit_url = 'javascript:alert(1)';
+    return 'broken';
+  }
+  return 'none';
+}
+
 async function verifyGameSelectorRoundTrip(originalGameId, venueId) {
   const options = () => Array.from(document.querySelectorAll('#game-list .game-option'));
   element('#game-button')?.click();
@@ -75,14 +121,32 @@ async function verifyGameSelectorRoundTrip(originalGameId, venueId) {
   check(state()?.selectedVenueId === venueId, 'Restoring the game should preserve Venue identity');
 }
 
-function verifyLocalMap(venue) {
-  if (venue.photo_url) {
-    check(!element('#venue-detail .detail-local-map'), 'Photo-present Detail should not replace the existing hero with a local map');
+function verifyLocalMapOrPhoto(venue, fixtureMode) {
+  const photo = element('#venue-detail .detail-photo');
+  const mapNode = element('#venue-detail .detail-local-map');
+
+  if (fixtureMode === 'photo') {
+    check(Boolean(photo), 'Photo-present Detail should render the approved photo figure');
+    check(!mapNode, 'Photo-present Detail should replace the local map');
+    const image = photo?.querySelector('.detail-photo__image');
+    check(image?.src === safeExternalUrl(venue.photo_url), 'Venue photo should use the approved photo URL');
+    check(image?.alt === venue.photo_caption, 'Venue photo alt text should prefer the approved caption');
+    check(photo?.querySelector('.detail-photo__caption')?.textContent?.trim() === venue.photo_caption, 'Photo caption should render directly under the image');
+    const credit = photo?.querySelector('.detail-photo__credit');
+    check(credit?.textContent?.replace(/\s+/g, ' ').trim() === `Credit: ${venue.photo_credit}`, 'Photo credit should render as understated attribution');
+    const creditLink = credit?.querySelector('a');
+    check(creditLink?.textContent?.trim() === venue.photo_credit, 'Only the photo credit identity should be linkable');
+    check(creditLink?.href === safeExternalUrl(venue.photo_credit_url), 'Valid HTTP(S) photo credit URL should be used');
+    check(creditLink?.target === '_blank' && creditLink?.rel.includes('noopener'), 'Photo credit links should open externally and safely');
     return;
   }
 
-  const mapNode = element('#venue-detail .detail-local-map');
-  check(Boolean(mapNode), 'No-photo Detail should render a local map');
+  check(!photo, fixtureMode === 'broken'
+    ? 'Failed Venue photo should be removed rather than leaving broken-image UI'
+    : 'No-photo Detail should not render a photo figure');
+  check(Boolean(mapNode), fixtureMode === 'broken'
+    ? 'Failed Venue photo should restore the local-map fallback'
+    : 'No-photo Detail should render a local map');
   check(Number(mapNode?.dataset.latitude) === Number(venue.latitude), 'Detail local map should use canonical latitude');
   check(Number(mapNode?.dataset.longitude) === Number(venue.longitude), 'Detail local map should use canonical longitude');
   const zoom = Number(mapNode?.dataset.zoom);
@@ -112,19 +176,33 @@ function verifyIdentity(venue, hasParty) {
   check(badges.includes('FAN-ADDED') === shouldShowFanAdded, 'FAN-ADDED should reflect user_added provenance only for non-Cal-Bars');
 }
 
-function verifyHierarchy(venue) {
+function verifyBaseHierarchy(venue) {
   const hero = element('#venue-detail .detail-hero');
   const address = hero?.querySelector('.detail-address');
   const addressActions = hero?.querySelector('.detail-address-actions');
-  const directions = hero?.querySelector('.detail-directions-inline');
   const description = hero?.querySelector('.detail-description');
+  check(address?.textContent?.includes(venue.address_line_1 || ''), 'Detail should preserve the useful street address');
+  check(Boolean(hero?.querySelector('.detail-directions-inline')), 'Directions should appear inline in the identity/address area');
+  if (description) {
+    check(description.parentElement === hero, 'Base renderer should still emit eligible short_description in the hero before profile refinement');
+    check(addressActions?.nextElementSibling === description, 'Base short_description should immediately follow the address action area');
+  }
+}
+
+function verifyHierarchy(venue) {
+  const hero = element('#venue-detail .detail-hero');
+  const address = hero?.querySelector('.detail-address');
+  const directions = hero?.querySelector('.detail-directions-inline');
+  const editorial = element('#venue-detail > .detail-editorial');
   check(address?.textContent?.includes(venue.address_line_1 || ''), 'Detail should preserve the useful street address');
   check(Boolean(directions), 'Directions should appear inline in the identity/address area');
   check(!element('#venue-detail > .action-row > a[href*="google.com/maps"]'), 'Directions should not remain in the sticky action row');
-  if (venue.short_description) {
-    check(Boolean(description), 'Venue short description should render when present');
-    check(description?.parentElement === hero, 'Venue short description should live in the identity hierarchy');
-    check(addressActions?.nextElementSibling === description, 'Venue short description should immediately follow the address action area');
+  check(!hero?.querySelector('.detail-description'), 'Settled Venue Detail should not leave eligible editorial description inside the identity hero');
+  if (editorial) {
+    check(editorial.querySelector('h2')?.textContent?.trim() === 'CGB SAYS', 'Eligible Venue editorial section should use the CGB SAYS label');
+    check(editorial.querySelector('.detail-editorial__copy')?.textContent?.trim() === venue.short_description?.trim(), 'CGB SAYS should reuse the canonical short_description without creating another field');
+    const activity = element('#venue-detail > .activity-card');
+    if (activity) check(activity.nextElementSibling === editorial, 'CGB SAYS should follow Bear activity');
   }
 }
 
@@ -160,7 +238,7 @@ function verifyWatchParty(hasParty) {
   });
 }
 
-function verifyContribution() {
+function verifyContribution(venue, fixtureMode) {
   const sections = document.querySelectorAll('#venue-detail > .detail-contribution');
   check(sections.length === 1, 'Detail should render one compact contribution section');
   const section = sections[0];
@@ -171,6 +249,17 @@ function verifyContribution() {
   const labels = Array.from(section?.querySelectorAll('a') || []).map((link) => link.textContent?.trim() || '');
   check(labels.every((label) => !label.endsWith('.')), 'Contribution action labels should omit unnecessary terminal punctuation');
   check(labels.includes('Report a problem with this listing'), 'Listing report action should remain directly available');
+
+  const photoLink = section?.querySelector('[data-photo-form-entry]');
+  if (fixtureMode === 'photo') {
+    check(photoLink?.textContent?.trim() === 'Submit a Photo', 'Configured photo Form should add Submit a Photo to the contribution area');
+    const url = photoLink ? new URL(photoLink.href) : null;
+    check(url?.hostname === 'docs.google.com', 'Photo contribution should use the configured Google Form');
+    check(url?.searchParams.get('entry.101') === venue.venue_id, 'Photo Form should prefill the canonical Venue ID');
+    check(url?.searchParams.get('entry.202') === venue.name, 'Photo Form should prefill the Venue name');
+  } else {
+    check(!photoLink, 'Missing photo Form configuration should not expose a broken Submit a Photo link');
+  }
 }
 
 function verifyStickyActions() {
@@ -200,14 +289,13 @@ async function verifyMobileBottomWhitespace() {
 function verifyImmediateSingleOwnerRerender(venue, hasParty) {
   window.CGBApp?.render?.();
   check(!element('#venue-detail .detail-game-context'), 'Base rerender should not recreate the superseded selected-game module');
-  check(Boolean(element('#venue-detail .detail-local-map')) === !venue.photo_url, 'Base rerender should immediately retain the accepted no-photo map structure');
+  check(Boolean(element('#venue-detail .detail-local-map')) === !venue.photo_url, 'Base renderer should immediately retain the accepted no-photo map structure');
   check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Base renderer should emit the Detail Share icon without a later upgrade');
   check(Boolean(element('#venue-detail .detail-directions-inline .ui-icon')), 'Base renderer should emit the Detail Directions icon without a later upgrade');
   verifyIdentity(venue, hasParty);
-  verifyHierarchy(venue);
+  verifyBaseHierarchy(venue);
   verifyAttendance();
   verifyWatchParty(hasParty);
-  verifyContribution();
   verifyStickyActions();
 }
 
@@ -242,9 +330,13 @@ async function main() {
     return;
   }
 
+  const fixtureMode = configureVenuePhotoFixture(venue);
+  if (fixtureMode !== 'none') window.CGBApp?.render?.();
+
   await waitFor(() => document.body.dataset.view === 'detail' && !element('#venue-detail .detail-game-context'), 'resolved Detail refinement');
-  await waitFor(() => venue.photo_url || Boolean(element('#venue-detail .detail-local-map')), 'Venue-local map');
+  await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'Venue photo or local-map presentation');
   await waitFor(() => Boolean(element('#venue-detail > .detail-contribution')), 'compact contribution section');
+  if (fixtureMode === 'photo') await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry]')), 'configured Submit a Photo contribution');
 
   const settledState = state();
   const game = settledState?.snapshot?.games?.find((candidate) => candidate.game_id === settledState.gameId);
@@ -252,6 +344,7 @@ async function main() {
   const hasParty = Boolean(partyFor(selectedVenueId, settledState?.gameId));
 
   verifyImmediateSingleOwnerRerender(venue, hasParty);
+  await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'post-rerender Venue media refinement');
   await sleep(50);
 
   check(routeVenue?.venue_id === venue.venue_id, 'Direct Venue URL should resolve the requested Venue slug');
@@ -271,12 +364,12 @@ async function main() {
   check(visible('#detail-back'), 'Back to map should remain accessible');
   check(!visible('.mobile-command-bar'), 'Mobile bottom command bar should remain hidden on Detail');
 
-  verifyLocalMap(venue);
+  verifyLocalMapOrPhoto(venue, fixtureMode);
   verifyIdentity(venue, hasParty);
   verifyHierarchy(venue);
   verifyAttendance();
   verifyWatchParty(hasParty);
-  verifyContribution();
+  verifyContribution(venue, fixtureMode);
   verifyStickyActions();
   await verifyMobileBottomWhitespace();
 
