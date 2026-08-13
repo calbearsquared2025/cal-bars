@@ -70,10 +70,10 @@ test('public aggregate counts are resolved by game and venue', () => {
   assert.equal(getHistoryCount(snapshot, 'ven_000001'), 5);
 });
 
-test('Bear count copy is explicit for zero, singular, and plural counts', () => {
-  assert.equal(bearCountCopy(0), 'No Bears are watching here yet. Be the first.');
-  assert.equal(bearCountCopy(1), '1 Bear watching here');
-  assert.equal(bearCountCopy(3), '3 Bears watching here');
+test('Bear count copy is explicit for zero, singular, and plural planned attendance', () => {
+  assert.equal(bearCountCopy(0), 'No Bears planning to watch here yet. Be the first.');
+  assert.equal(bearCountCopy(1), '1 Bear planning to watch here');
+  assert.equal(bearCountCopy(3), '3 Bears planning to watch here');
 });
 
 test('consumer badges preserve Watch Party and Cal Bar treatments while suppressing Community Location', () => {
