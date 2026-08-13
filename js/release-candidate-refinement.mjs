@@ -60,10 +60,37 @@ function refineDetailLink(root = document) {
   link.replaceChildren(icon, document.createTextNode('View venue details'));
 }
 
+function refineDetailPartyOrder(root = document) {
+  const detail = root.querySelector('#venue-detail');
+  const activity = detail?.querySelector(':scope > .activity-card');
+  if (!detail || !activity) return;
+  detail.querySelectorAll(':scope > .party-module').forEach((party) => activity.before(party));
+}
+
+function refinePhotoContribution(root = document) {
+  root.querySelector('.detail-photo-contribution')?.remove();
+  const state = window.CGBApp?.getState?.();
+  if (!state?.detailMode) return;
+  const detail = root.querySelector('#venue-detail');
+  const localMap = detail?.querySelector(':scope > .detail-hero > .detail-local-map');
+  const source = detail?.querySelector(':scope > .detail-contribution [data-photo-form-entry]');
+  if (!localMap || !source) return;
+
+  const venue = state.snapshot?.venues?.find((item) => item.venue_id === state.selectedVenueId);
+  const button = root.createElement('button');
+  button.type = 'button';
+  button.className = 'detail-photo-contribution';
+  button.textContent = venue?.photo_url ? 'Add a photo' : 'Add the first photo';
+  button.addEventListener('click', () => source.click());
+  localMap.after(button);
+}
+
 function refine() {
   refineSelectedAttendance();
   refineDetailAttendance();
   refineDetailLink();
+  refineDetailPartyOrder();
+  refinePhotoContribution();
 }
 
 function schedule() {
@@ -72,6 +99,7 @@ function schedule() {
 
 function initialize() {
   schedule();
+  window.setTimeout(schedule, 80);
   window.CGBApp?.subscribe?.('rendered', schedule);
   window.CGBApp?.subscribe?.('ready', schedule);
 }
