@@ -116,47 +116,57 @@ A report never automatically edits, deletes, unpublishes, merges, relocates, or 
 
 ## Submit a Photo
 
-The dedicated photo Form is a manually reviewed intake workflow. It is not yet configured in the public application; until its public Form URL and two prefill entry IDs are supplied, Venue Detail hides only **Submit a Photo** and preserves the other contribution actions.
+The dedicated photo Form is a manually reviewed intake workflow. It is configured in the public application and Venue Detail generates a prefilled link for the selected Venue.
 
-Required application configuration after the Form exists:
+Public Form URL:
 
-- Public Form URL → `PHOTO_FORM_CONFIG.formUrl` in `js/photo-form-config.mjs`
-- Venue ID entry → `PHOTO_FORM_CONFIG.venueIdEntry`
-- Venue name entry → `PHOTO_FORM_CONFIG.venueNameEntry`
+`https://docs.google.com/forms/d/e/1FAIpQLSecvY5Pm73oPNRe4viSATCWYeERxwyDGYHwGpvPZHzQ03BmDg/viewform`
+
+Configured application fields in `js/photo-form-config.mjs`:
+
+- Venue name: `entry.1077046729`
+- Venue ID: `entry.893543394`
 
 The runtime also accepts equivalent `cgb-photo-form-*` meta configuration if configuration is later centralized in `index.html`.
 
 Questions, in order:
 
-1. `Venue name` — required short answer; prefilled.
-2. `Upload a photo` — required file upload.
-3. `What’s happening in this photo?` — optional paragraph. Helper examples: `Cal–Louisville game, 2025` and `Regular Saturday watch party`. This is source material, not final published copy.
-4. `Photo credit / display name` — optional short answer. Example: `@oskistraw`.
-5. `Credit profile or website` — optional URL. May be X, Instagram, a photographer website, or another HTTP(S) profile.
-6. `Permission confirmation` — required checkbox with exactly: `I took this photo or have permission to share it, and I authorize Cal Golden Bars to display it on the website.`
-7. `Submitter email` — optional short answer with email validation when supported.
-8. `Venue ID` — required short answer; prefilled internal reference near the end.
+1. `Venue Name` — required short answer; prefilled. Helper: `Pre-filled from the venue profile. Please don’t change this field.`
+2. `Upload a photo` — required file upload. Helper: `Upload a photo you took or have permission to share. Please do not submit inappropriate or offensive content.`
+3. `What's happening in this photo?` — optional paragraph. Helper: `Optional. Tell us what’s happening — for example, “Cal–Louisville game, 2025” or “Regular Saturday watch party with the Cal Alumni of Los Angeles.”` This is source material, not final published copy.
+4. `Photo credit/Display name` — optional short answer. Helper: `Enter the name or social handle you’d like displayed. If using a handle, specify the service, such as X or Instagram.`
+5. `Permission Confirmation` — required checkbox with exactly: `I took this photo or have permission to share it, and I authorize Cal Golden Bars to display it on the website.`
+6. `Venue ID` — required short answer; prefilled. Helper: `Pre-filled from the venue profile. Please don’t change this field.`
+
+There is no separate submitter-email question. Google Forms requires sign-in for the file upload and automatically collects the respondent account email; that email remains private and is never used as public credit.
+
+There is no separate credit-URL question. A reviewer may populate public `photo_credit_url` manually when the credited identity and service are unambiguous. Do not infer an X/Instagram URL from a bare `@handle` when the service is unknown.
 
 Settings and workflow:
 
 - File upload requires Google sign-in; this is intentional and applies only to this Form.
+- Automatically collected Google account email remains private.
 - Do not enable response receipts, public results, editing after submission, contributor accounts, approval/rejection emails, or an Apps Script auto-publication trigger.
 - Responses remain private and are reviewed manually in `Photo_Submissions_Raw`/the linked Form response sheet.
 - The user-supplied context answer may be rewritten by CGB before becoming public `photo_caption`.
-- A submitted credit link is private source data until CGB deliberately copies an approved HTTP(S) value to public `photo_credit_url`.
+- Public credit identity/link fields are curated manually and do not publish directly from Form responses.
 - A later approved photo may replace the Venue’s current public primary photo; there is no public gallery or photo history.
 
-Approval/publication is manual:
+Approval/publication remains human-controlled, with local processing automated:
 
 ```text
 Form upload
 → private Google Drive original
-→ manual review
-→ optimize approved copy (prefer WebP, about 1200–1600 px max width, generally about 200–500 KB)
-→ commit under assets/venues/{venue-slug}.webp
-→ set Venue photo_url/photo_caption/photo_credit/photo_credit_url
+→ manual review and approval
+→ download approved source outside the public asset folder
+→ run npm run photo:process -- --input <path> --slug <venue-slug>
+→ visually inspect assets/venues/<venue-slug>.webp
+→ commit the approved optimized public asset
+→ set Venue photo_url/photo_caption/photo_credit/photo_credit_url as applicable
 → publish through the normal site/data deployment
 ```
+
+The processor preserves source aspect ratio, caps width at 1600 px, converts to WebP, and compresses toward a 500 KB ceiling. Venue Detail owns the visible 3:2 presentation. See `docs/venue-photo-processing.md` for the operating command and options.
 
 Do not hotlink the Drive upload or commit the raw Form original.
 
