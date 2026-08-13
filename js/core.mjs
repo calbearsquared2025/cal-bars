@@ -1,4 +1,5 @@
 export const NEARBY_RADIUS_MILES = 25;
+export const TRAY_GUIDANCE_COPY = 'Explore Watch Parties, Cal Bars, and places where other Bears are planning to watch.';
 
 export function parseDateOnly(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;

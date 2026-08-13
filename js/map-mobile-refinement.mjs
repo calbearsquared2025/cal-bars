@@ -3,7 +3,8 @@ import {
   buildVenueUrl,
   compactVenueLocation,
   markerKind,
-  rankVenues
+  rankVenues,
+  TRAY_GUIDANCE_COPY
 } from './core.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
@@ -89,7 +90,7 @@ function updatePreviewIntent() {
   const candidate = previewCandidate(state);
   if (!candidate) {
     title.textContent = 'Find your Cal crowd';
-    copy.textContent = 'Explore Watch Parties, Cal Bars, and places where other Bears are planning to watch.';
+    copy.textContent = TRAY_GUIDANCE_COPY;
     count.textContent = '';
     marker.dataset.kind = 'community-location';
     button.dataset.previewMode = 'guidance';
