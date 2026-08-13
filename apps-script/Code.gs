@@ -18,7 +18,7 @@ const CGB_TABS = Object.freeze({
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
     'short_description', 'photo_url', 'photo_credit', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at'
+    'source_submission_id', 'created_at', 'updated_at', 'cgb_says'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
@@ -67,7 +67,7 @@ const CGB_PUBLIC_FIELDS = Object.freeze({
   Venues: [
     'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
-    'verification_status', 'alumni_owned', 'short_description', 'photo_url',
+    'verification_status', 'alumni_owned', 'short_description', 'cgb_says', 'photo_url',
     'photo_caption', 'photo_credit', 'photo_credit_url', 'updated_at'
   ],
   Games: [
