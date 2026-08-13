@@ -75,7 +75,6 @@ function parseJoinExternalVenuePayload_(payload) {
 
 function processJoinExternalVenueRequest_(request) {
   const workbook = getWorkbook_();
-  request.gameId = resolveCanonicalId_(workbook, 'game', request.gameId);
   const now = new Date().toISOString();
   archiveCompletedFanIntentRowsUnlocked_(workbook, now);
 

@@ -368,7 +368,7 @@ function normalizeMinimalWatchPartySubmission_(namedValues, workbook) {
     readMinimalWatchPartyFormField_(namedValues, 'venue_id'),
     80
   );
-  const venueId = resolveCanonicalId_(workbook, 'venue', submittedVenueId);
+  const venueId = submittedVenueId;
   const gameIds = resolveMinimalWatchPartyGameIds_(
     workbook,
     readMinimalWatchPartyFormField_(namedValues, 'game_ids')
@@ -553,8 +553,7 @@ function resolveMinimalWatchPartyGameIds_(workbook, value) {
 
   const seen = new Set();
   return selections.map(function(selection) {
-    const canonicalSelection = resolveCanonicalId_(workbook, 'game', selection);
-    const directGameId = gameIds.get(canonicalSelection);
+    const directGameId = gameIds.get(selection);
     const mappedGameId = directGameId || gameLabels.get(normalizeMinimalWatchPartyGameLabel_(selection));
     if (!mappedGameId) throw minimalWatchPartyError_('unknown_game_id');
     return mappedGameId;

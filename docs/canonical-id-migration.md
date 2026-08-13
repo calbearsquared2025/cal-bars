@@ -47,7 +47,7 @@ The temporary compatibility layer used during migration has been retired. The pu
 
 Public snapshots, direct links, browser state, and new writes are expected to contain canonical IDs already. Invalid or obsolete stored selections are pruned rather than migrated.
 
-The former public alias ledger and frontend alias modules were removed after the migration was accepted. The private workbook alias tab may be deleted once the corresponding Apps Script compatibility code has also been retired.
+The former public alias map, frontend compatibility modules, private workbook alias ledger, and Apps Script identifier-remapping code have all been retired. Runtime and Form write paths now use canonical identifiers directly.
 
 ## Current validation requirements
 

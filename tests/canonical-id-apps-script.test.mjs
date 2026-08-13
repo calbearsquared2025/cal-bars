@@ -27,9 +27,6 @@ const CGB_HEADERS = Object.freeze({
   Fan_Intent: [
     'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
     'created_at', 'updated_at', 'archived_at'
-  ],
-  ID_Aliases: [
-    'entity_type', 'legacy_id', 'canonical_id', 'mapping_version', 'migrated_at'
   ]
 });
 
@@ -104,23 +101,7 @@ function buildHarness() {
       created_at: '2026-08-03T20:04:00Z',
       updated_at: '2026-08-03T20:04:00Z'
     }]),
-    new SheetMock('Fan_Intent', CGB_HEADERS.Fan_Intent, []),
-    new SheetMock('ID_Aliases', CGB_HEADERS.ID_Aliases, [
-      {
-        entity_type: 'venue',
-        legacy_id: 'ven_1360954160984546',
-        canonical_id: canonicalVenueId,
-        mapping_version: 'sha256-v1',
-        migrated_at: '2026-08-03T20:04:00Z'
-      },
-      {
-        entity_type: 'game',
-        legacy_id: 'game_2026_01',
-        canonical_id: canonicalGameId,
-        mapping_version: 'sha256-v1',
-        migrated_at: '2026-08-03T20:04:00Z'
-      }
-    ])
+    new SheetMock('Fan_Intent', CGB_HEADERS.Fan_Intent, [])
   ]);
 
   let uuid = 0;
@@ -149,26 +130,18 @@ function buildHarness() {
 
   vm.runInContext(
     `${code}\n${canonicalIds}\ngetWorkbook_ = function(){ return __workbook; };\n` +
-    `globalThis.__api = { resolveCanonicalId_, buildPublicIdAliases_, ` +
-    `validateCanonicalIdWorkbook, createCanonicalEntityId_ };`,
+    `globalThis.__api = { isCanonicalEntityId_, validateCanonicalIdWorkbook, createCanonicalEntityId_ };`,
     context
   );
   return { api: context.__api, workbook };
 }
 
-test('Apps Script resolves permanent Venue and Game aliases', () => {
-  const { api, workbook } = buildHarness();
-  assert.equal(api.resolveCanonicalId_(workbook, 'venue', 'ven_1360954160984546'), canonicalVenueId);
-  assert.equal(api.resolveCanonicalId_(workbook, 'game', 'game_2026_01'), canonicalGameId);
-  assert.equal(api.resolveCanonicalId_(workbook, 'venue', canonicalVenueId), canonicalVenueId);
-});
-
-test('public alias builder exposes identifiers only', () => {
-  const { api, workbook } = buildHarness();
-  assert.deepEqual(JSON.parse(JSON.stringify(api.buildPublicIdAliases_(workbook))), {
-    venues: { ven_1360954160984546: canonicalVenueId },
-    games: { game_2026_01: canonicalGameId }
-  });
+test('Apps Script accepts only exact canonical entity IDs', () => {
+  const { api } = buildHarness();
+  assert.equal(api.isCanonicalEntityId_('venue', canonicalVenueId), true);
+  assert.equal(api.isCanonicalEntityId_('game', canonicalGameId), true);
+  assert.equal(api.isCanonicalEntityId_('venue', 'ven_1360954160984546'), false);
+  assert.equal(api.isCanonicalEntityId_('game', 'game_2026_01'), false);
 });
 
 test('owner-only workbook integrity check reconciles canonical relationships', () => {
@@ -178,8 +151,7 @@ test('owner-only workbook integrity check reconciles canonical relationships', (
     venues: 1,
     games: 1,
     watchParties: 1,
-    fanIntent: 0,
-    aliases: 2
+    fanIntent: 0
   });
 });
 

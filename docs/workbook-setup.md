@@ -47,8 +47,6 @@ Use zero or one `published` row per canonical Venue ID. Allowed status values ar
 
 The legacy physical `Venues.photo_url` and `Venues.photo_credit` columns remain for workbook compatibility, but Apps Script ignores them for publication. Do not add `photo_caption` or `photo_credit_url` to `Venues`, and do not maintain photo metadata in both places.
 
-The private `ID_Aliases` tab remains an internal compatibility ledger for current Apps Script write paths. It is not public, canonical, raw-intake, or photo-publication data; do not treat it as part of the Venue-photo workflow or expose it publicly.
-
 The workbook column definitions are encoded in `apps-script/Code.gs`. The private canonical data/privacy planning specification must also be updated to record `Venue_Photos` as a publication-control/admin tab, not a core product entity.
 
 ## Owner actions
