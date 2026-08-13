@@ -4,7 +4,13 @@ Approved Venue photos remain a manual-review workflow. The Google Form/Drive ori
 
 ## First-time setup
 
-From the repository root:
+The pinned `sharp` version requires Node.js 20.9 or newer. Check first:
+
+```powershell
+node --version
+```
+
+Then, from the repository root:
 
 ```powershell
 npm install
