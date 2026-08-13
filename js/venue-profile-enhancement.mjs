@@ -54,12 +54,16 @@ function createLocalMapFallback(documentObject, venue) {
   return map;
 }
 
-function ensureLocalMapFallback(hero, documentObject, venue) {
-  if (hero.querySelector(':scope > .detail-local-map')) return true;
-  const map = createLocalMapFallback(documentObject, venue);
-  if (!map) return false;
-  hero.insertBefore(map, hero.firstChild);
-  return true;
+function ensureLocalMap(hero, documentObject, venue) {
+  let map = hero.querySelector(':scope > .detail-local-map');
+  if (!map) {
+    map = createLocalMapFallback(documentObject, venue);
+    if (!map) return null;
+    hero.append(map);
+  }
+  const addressActions = hero.querySelector(':scope > .detail-address-actions');
+  if (addressActions && map.previousElementSibling !== addressActions) addressActions.after(map);
+  return map;
 }
 
 function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
@@ -82,7 +86,7 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
     if (!hero) return;
     hero.classList.remove('detail-hero--has-photo');
     hero.classList.add('detail-hero--no-photo');
-    ensureLocalMapFallback(hero, documentObject, venue);
+    ensureLocalMap(hero, documentObject, venue);
     onPhotoError?.();
   }, { once: true });
   frame.append(image);
@@ -121,24 +125,60 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   return figure;
 }
 
-function moveEditorialDescription(detail, hero, documentObject) {
-  const description = hero.querySelector(':scope > .detail-description');
-  if (!description) return false;
-
-  let section = detail.querySelector(':scope > .detail-editorial');
+function ensureSection(detail, className, headingText, documentObject) {
+  let section = detail.querySelector(`:scope > .${className}`);
   if (!section) {
     section = documentObject.createElement('section');
-    section.className = 'detail-editorial';
+    section.className = className;
     const heading = documentObject.createElement('h2');
-    heading.textContent = 'CGB SAYS';
+    heading.textContent = headingText;
     section.append(heading);
   }
-  description.className = 'detail-editorial__copy';
-  section.append(description);
+  return section;
+}
 
+function placeAfterActivity(detail, section) {
   const activity = detail.querySelector(':scope > .activity-card');
-  if (activity) activity.after(section);
-  else hero.after(section);
+  const about = detail.querySelector(':scope > .detail-about');
+  if (section.classList.contains('detail-about')) {
+    if (activity) activity.after(section);
+    else detail.querySelector(':scope > .detail-hero')?.after(section);
+    return;
+  }
+  if (about) about.after(section);
+  else if (activity) activity.after(section);
+  else detail.querySelector(':scope > .detail-hero')?.after(section);
+}
+
+function moveNeutralDescription(detail, hero, documentObject) {
+  const description = hero.querySelector(':scope > .detail-description');
+  if (!description) {
+    detail.querySelector(':scope > .detail-about')?.remove();
+    return false;
+  }
+  const section = ensureSection(detail, 'detail-about', 'About this location', documentObject);
+  description.className = 'detail-about__copy';
+  section.append(description);
+  placeAfterActivity(detail, section);
+  return true;
+}
+
+function renderCgbEditorial(detail, venue, documentObject) {
+  const copy = clean(venue?.cgb_says);
+  const existing = detail.querySelector(':scope > .detail-editorial');
+  if (!copy) {
+    existing?.remove();
+    return false;
+  }
+  const section = ensureSection(detail, 'detail-editorial', 'CGB SAYS', documentObject);
+  let paragraph = section.querySelector(':scope > .detail-editorial__copy');
+  if (!paragraph) {
+    paragraph = documentObject.createElement('p');
+    paragraph.className = 'detail-editorial__copy';
+    section.append(paragraph);
+  }
+  paragraph.textContent = copy;
+  placeAfterActivity(detail, section);
   return true;
 }
 
@@ -161,17 +201,18 @@ export function enhanceVenueProfile({
   hero.classList.toggle('detail-hero--has-photo', showPhoto);
   hero.classList.toggle('detail-hero--no-photo', !showPhoto);
 
+  ensureLocalMap(hero, documentObject, venue);
+
   if (showPhoto) {
-    hero.querySelector(':scope > .detail-local-map')?.remove();
     if (existingPhoto?.dataset.photoUrl !== presentation.photoUrl) {
       existingPhoto?.remove();
       hero.insertBefore(createPhotoFigure(documentObject, venue, presentation, onPhotoError), hero.firstChild);
     }
   } else {
     existingPhoto?.remove();
-    if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 
-  moveEditorialDescription(detail, hero, documentObject);
+  moveNeutralDescription(detail, hero, documentObject);
+  renderCgbEditorial(detail, venue, documentObject);
   return true;
 }
