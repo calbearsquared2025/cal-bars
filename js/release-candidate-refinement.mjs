@@ -1,5 +1,59 @@
 import { createIcon } from './icons.mjs';
 
+const STYLE_ID = 'cgb-release-candidate-styles';
+
+function installStyles(root = document) {
+  if (root.getElementById(STYLE_ID)) return;
+  const style = root.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = `
+    body[data-view="detail"] .detail-hero .detail-local-map {
+      margin-top: 10px !important;
+    }
+
+    body[data-view="detail"] .detail-photo-contribution {
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      margin: 3px 0 0;
+      padding: 4px 0;
+      color: var(--cgb-navy-900);
+      background: transparent;
+      border: 0;
+      font: inherit;
+      font-size: var(--text-xs);
+      font-weight: 800;
+      line-height: 1.2;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    body[data-view="detail"] .detail-about {
+      margin: 14px 16px 0;
+      padding: 0 1px;
+    }
+
+    body[data-view="detail"] .detail-about h2 {
+      margin: 0 0 5px;
+      color: var(--cgb-navy-950);
+      font-family: var(--font-display);
+      font-size: .78rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    body[data-view="detail"] .detail-about__copy {
+      margin: 0;
+      color: var(--cgb-ink-700);
+      font-size: var(--text-sm);
+      line-height: 1.48;
+    }
+  `;
+  root.head.append(style);
+}
+
 function parsePlannedCount(copy) {
   const raw = String(copy || '').trim();
   const match = raw.match(/^(\d+)\s+Bear(?:s)?\s+planning to watch here/i);
@@ -98,6 +152,7 @@ function schedule() {
 }
 
 function initialize() {
+  installStyles();
   schedule();
   window.setTimeout(schedule, 80);
   window.CGBApp?.subscribe?.('rendered', schedule);
