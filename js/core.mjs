@@ -99,9 +99,9 @@ export function getHistoryCount(snapshot, venueId) {
 
 export function bearCountCopy(count) {
   const total = Number(count);
-  if (total === 1) return '1 Bear watching here';
-  if (total > 1) return `${total} Bears watching here`;
-  return 'No Bears are watching here yet. Be the first.';
+  if (total === 1) return '1 Bear planning to watch here';
+  if (total > 1) return `${total} Bears planning to watch here`;
+  return 'No Bears planning to watch here yet. Be the first.';
 }
 
 export function historyCountCopy(count) {
@@ -200,19 +200,38 @@ export function buildVenueUrl(slug, gameId, baseHref) {
   return url.toString();
 }
 
+function inferCurrentVenueCommitment() {
+  try {
+    const current = globalThis.window?.CGBApp?.getState?.();
+    if (!current?.gameId || !current?.selectedVenueId) return false;
+    return current.fanIntent?.selections?.[current.gameId] === current.selectedVenueId;
+  } catch (_) {
+    return false;
+  }
+}
+
 export function buildVenueShareMessage({
   venueName,
   opponentName,
   hasWatchParty = false,
+  committed,
   url
 } = {}) {
   const venue = String(venueName || '').trim();
   const opponent = String(opponentName || '').trim();
   const link = String(url || '').trim();
   if (!venue || !opponent || !link) return '';
+  const isCommitted = typeof committed === 'boolean' ? committed : inferCurrentVenueCommitment();
+
+  if (isCommitted) {
+    return hasWatchParty
+      ? `I’ll be at ${venue} for the Cal vs. ${opponent} Watch Party. Join me: ${link}`
+      : `I’ll be at ${venue} for Cal vs. ${opponent}. Join me: ${link}`;
+  }
+
   return hasWatchParty
-    ? `I’ll be at ${venue} for a Cal vs. ${opponent} watch party. Join me: ${link}`
-    : `I’ll be at ${venue} for Cal vs. ${opponent}. Join me: ${link}`;
+    ? `There’s a Cal vs. ${opponent} Watch Party at ${venue}. Details: ${link}`
+    : `Cal vs. ${opponent} at ${venue} — see who’s planning to watch here: ${link}`;
 }
 
 function clamp(value, minimum, maximum) {
