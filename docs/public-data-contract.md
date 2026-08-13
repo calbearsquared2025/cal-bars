@@ -61,11 +61,14 @@ Optional public fields:
 - `address_line_2`
 - `postal_code`
 - `website_url`
-- `short_description`
+- `short_description` — concise factual/general Venue description; may appear on compact surfaces and as neutral **About this location** copy on Venue Detail
+- `cgb_says` — optional CGB-authored editorial shown only on Venue Detail under **CGB SAYS**; it is independent of `short_description` and is not technically restricted to Cal Bars
 - `photo_url` — approved primary venue photo; use the stable public site asset URL, normally under `assets/venues/`
 - `photo_caption` — edited public caption; source Form text does not publish automatically
 - `photo_credit` — optional public attribution identity
 - `photo_credit_url` — optional HTTP(S) profile or website for the credited identity
+
+`cgb_says` is maintained directly on the private `Venues` tab. A blank value publishes as an empty string and produces no CGB SAYS section. The initial operating convention is to curate this field primarily for Cal Bars, but the public schema does not encode that editorial policy.
 
 A Venue supports one public primary photo. A later approved photo may replace it. Approved public images are optimized static GitHub Pages assets; raw Google Form/Drive uploads are intake-only and must not be hotlinked or exposed through this contract.
 
@@ -73,9 +76,9 @@ The private workbook's `Venue_Photos` publication-control tab is the sole source
 
 Each row relates to an existing Venue by canonical `venue_id`; names are never relationship keys. Only a single `published` row may apply to a Venue. `draft` and `archived` rows do not affect public output. A published row requires an HTTP(S) `photo_url`; `photo_credit_url` must be empty or HTTP(S), and caption and credit are optional strings. Unknown Venue IDs, malformed URLs, or duplicate published rows are omitted safely, leaving the Venue public with empty photo fields and its normal no-photo fallback.
 
-The existing physical `Venues.photo_url` and `Venues.photo_credit` columns remain temporarily for workbook compatibility, but the public read layer ignores their values and operators do not maintain them. `Venue_Photos` has precedence and is the only editable publication source; `photo_caption` and `photo_credit_url` are not added to the physical `Venues` schema.
+The existing physical `Venues.photo_url` and `Venues.photo_credit` columns remain temporarily for workbook compatibility, but the public read layer ignores their values and operators do not maintain them. `Venue_Photos` has precedence and is the only editable publication source for photo data; `photo_caption` and `photo_credit_url` are not added to the physical `Venues` schema.
 
-Only Venue rows with `publication_status = published` enter the public response. Venue and photo `publication_status` values are not returned. The read layer always returns the four optional photo properties, using empty strings when no valid published photo row applies.
+Only Venue rows with `publication_status = published` enter the public response. Venue and photo `publication_status` values are not returned. The read layer always returns the four optional photo properties and `cgb_says`, using empty strings when no value applies.
 
 ## Public Game fields
 
