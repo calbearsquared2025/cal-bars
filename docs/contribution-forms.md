@@ -147,7 +147,7 @@ Settings and workflow:
 - File upload requires Google sign-in; this is intentional and applies only to this Form.
 - Automatically collected Google account email remains private.
 - Do not enable response receipts, public results, editing after submission, contributor accounts, approval/rejection emails, or an Apps Script auto-publication trigger.
-- Responses remain private and are reviewed manually in `Photo_Submissions_Raw`/the linked Form response sheet.
+- Responses remain private and are reviewed manually in the Form-owned `photo_submission` response sheet.
 - The user-supplied context answer may be rewritten by CGB before becoming public `photo_caption`.
 - Public credit identity/link fields are curated manually and do not publish directly from Form responses.
 - A later approved photo may replace the Venue’s current public primary photo; there is no public gallery or photo history.

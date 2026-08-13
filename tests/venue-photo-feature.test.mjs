@@ -56,7 +56,6 @@ test('Apps Script joins the Venue_Photos publication tab into approved public Ve
   assert.doesNotMatch(publicVenueFields, /file_reference|submitter_email|permission_confirmed|reviewer_note/);
   assert.match(code, /Venue_Photos: \[[\s\S]*?'venue_id', 'photo_url', 'photo_caption', 'photo_credit', 'photo_credit_url'/);
   assert.match(code, /mergePublishedVenuePhotos_\(venuesRaw, venuePhotosRaw\)/);
-  assert.match(code, /Photo_Submissions_Raw:[\s\S]*photo_credit_url/);
 });
 
 test('public validator accepts only safe public photo URLs and rejects raw photo fields', async () => {
@@ -82,5 +81,6 @@ test('implementation docs describe static approved assets and the Google sign-in
   assert.match(forms, /Google Forms file upload requires sign-in/);
   assert.match(forms, /I took this photo or have permission to share it, and I authorize Cal Golden Bars to display it on the website\./);
   assert.match(forms, /private Google Drive original/);
+  assert.match(forms, /Form-owned `photo_submission` response sheet/);
   assert.doesNotMatch(forms, /photo:process|venue-photo-processing\.md/);
 });

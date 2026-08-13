@@ -56,11 +56,6 @@ const CGB_TABS = Object.freeze({
     'update_category', 'proposed_change', 'supporting_url', 'submitter_role',
     'submitter_name', 'submitter_email', 'review_status', 'reviewer_note', 'reviewed_at'
   ],
-  Photo_Submissions_Raw: [
-    'response_timestamp', 'submission_id', 'venue_id', 'venue_name', 'file_reference',
-    'caption', 'photo_credit', 'permission_confirmed', 'submitter_name',
-    'submitter_email', 'review_status', 'reviewer_note', 'reviewed_at', 'photo_credit_url'
-  ],
   Missing_Location_Suggestions_Raw: [
     'response_timestamp', 'submission_id', 'venue_name', 'address', 'website_url',
     'selected_game_id', 'note', 'submitter_email', 'review_status',

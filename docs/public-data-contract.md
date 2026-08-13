@@ -155,7 +155,7 @@ No browser-level Fan Intent record may appear in the public response.
 The public response must not include:
 
 - `browser_id` or `fan_intent_id`
-- raw form responses or `Photo_Submissions_Raw` rows
+- raw Form responses or `photo_submission` rows
 - raw photo file references or Google Drive file IDs
 - submitter names or emails supplied only for administration
 - reviewer notes, review state, or photo permission records
