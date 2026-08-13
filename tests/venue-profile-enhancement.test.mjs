@@ -11,13 +11,13 @@ test('Venue photo presentation accepts safe http(s) asset and optional metadata'
     name: 'Molly O’s',
     photo_url: 'https://calgoldenbars.com/assets/venues/molly-os.webp',
     photo_caption: 'Cal fans at Molly O’s for the 2025 Louisville game.',
-    photo_credit: '@oskistraw',
-    photo_credit_url: 'https://x.com/oskistraw'
+    photo_credit: 'Oski’s Drinking Straw',
+    photo_credit_url: 'https://x.com/Oskisstraw'
   });
   assert.equal(model.photoUrl, 'https://calgoldenbars.com/assets/venues/molly-os.webp');
   assert.equal(model.caption, 'Cal fans at Molly O’s for the 2025 Louisville game.');
-  assert.equal(model.credit, '@oskistraw');
-  assert.equal(model.creditUrl, 'https://x.com/oskistraw');
+  assert.equal(model.credit, 'Oski’s Drinking Straw');
+  assert.equal(model.creditUrl, 'https://x.com/Oskisstraw');
   assert.equal(model.alt, model.caption);
 });
 

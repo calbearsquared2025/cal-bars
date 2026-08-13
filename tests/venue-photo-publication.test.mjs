@@ -95,8 +95,8 @@ function publishedPhoto(overrides = {}) {
     venue_id: VENUE_ID,
     photo_url: 'https://calgoldenbars.com/assets/venues/molly-o-s-san-carlos.webp',
     photo_caption: "Cal fans at Molly O's for the 2025 Louisville game.",
-    photo_credit: '@oskistraw',
-    photo_credit_url: 'https://x.com/oskistraw',
+    photo_credit: 'Oski’s Drinking Straw',
+    photo_credit_url: 'https://x.com/Oskisstraw',
     publication_status: 'published',
     updated_at: '2026-08-12T12:00:00Z',
     ...overrides
@@ -107,8 +107,8 @@ test('published Venue_Photos metadata joins into the matching public Venue', () 
   const venue = buildSnapshot([publishedPhoto()]).venues[0];
   assert.equal(venue.photo_url, 'https://calgoldenbars.com/assets/venues/molly-o-s-san-carlos.webp');
   assert.equal(venue.photo_caption, "Cal fans at Molly O's for the 2025 Louisville game.");
-  assert.equal(venue.photo_credit, '@oskistraw');
-  assert.equal(venue.photo_credit_url, 'https://x.com/oskistraw');
+  assert.equal(venue.photo_credit, 'Oski’s Drinking Straw');
+  assert.equal(venue.photo_credit_url, 'https://x.com/Oskisstraw');
 });
 
 test('draft and archived Venue_Photos rows do not publish or fall back to legacy Venue values', () => {

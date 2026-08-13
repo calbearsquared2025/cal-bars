@@ -40,7 +40,7 @@ venue_id	photo_url	photo_caption	photo_credit	photo_credit_url	publication_statu
 Example Molly O's row (replace `updated_at` with the actual review time when publishing):
 
 ```text
-venue_5977e35a58d8b18f22a51f1e	https://calgoldenbars.com/assets/venues/molly-o-s-san-carlos.webp	Cal fans at Molly O's for the 2025 Louisville game.	@oskistraw	https://x.com/oskistraw	published	2026-08-12T12:00:00Z
+venue_5977e35a58d8b18f22a51f1e	https://calgoldenbars.com/assets/venues/molly-o-s-san-carlos.webp	Cal fans at Molly O's for the 2025 Louisville game.	Oski’s Drinking Straw	https://x.com/Oskisstraw	published	2026-08-12T12:00:00Z
 ```
 
 Use zero or one `published` row per canonical Venue ID. Allowed status values are `published`, `draft`, and `archived`. Only `published` rows can supply public Venue photo properties. Never put Form response contents, Drive file IDs, respondent emails, permission records, or reviewer notes in this tab.
