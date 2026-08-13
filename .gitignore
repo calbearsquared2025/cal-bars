@@ -11,3 +11,4 @@ migration-source/
 migration-output/
 migration-private/
 *.production-source.csv
+node_modules/
