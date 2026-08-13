@@ -36,24 +36,21 @@ function appendIcon(element, iconName) {
 function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
-  if (label === 'view details' || label === 'details') return 'details';
-  if (label === 'share' || label === 'share watch party') return 'share';
+  if (label === 'view details' || label === 'view venue details' || label === 'details') return 'details';
+  if (label === 'share' || label === 'share watch party' || label === 'invite bears') return 'share';
   return null;
 }
 
 function clarifyShareLabels(root = document) {
   root.querySelectorAll('.action-row').forEach((row) => {
-    const share = Array.from(row.querySelectorAll(':scope > button'))
-      .find((button) => /^Share(?: Watch Party)?$/i.test(button.textContent.trim()));
+    const share = row.querySelector(':scope > .selected-card__share, :scope > .detail-share') ||
+      Array.from(row.querySelectorAll(':scope > button'))
+        .find((button) => /^(?:Share(?: Watch Party)?|Invite Bears)$/i.test(button.textContent.trim()));
     if (!share) return;
-    const container = row.parentElement;
-    const detail = Boolean(row.closest('#venue-detail'));
-    if (detail && share.classList.contains('detail-share')) return;
-    const hasWatchParty = Boolean(container?.querySelector(':scope > .party-module'));
-    const icon = share.querySelector('.ui-icon');
-    share.replaceChildren();
-    if (icon) share.append(icon);
-    share.append(document.createTextNode(detail ? 'Share' : hasWatchParty ? 'Share Watch Party' : 'Share'));
+    const committed = row.querySelector(':scope > .intent-button')?.getAttribute('aria-pressed') === 'true';
+    const icon = share.querySelector('.ui-icon') || createIcon('share');
+    share.replaceChildren(icon, document.createTextNode(committed ? 'Invite Bears' : 'Share'));
+    share.setAttribute('aria-label', committed ? 'Invite Bears' : 'Share');
   });
 }
 
