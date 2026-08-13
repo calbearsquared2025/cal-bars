@@ -81,6 +81,14 @@ test('implementation docs describe static approved assets and the Google sign-in
   assert.match(forms, /Google Forms file upload requires sign-in/);
   assert.match(forms, /I took this photo or have permission to share it, and I authorize Cal Golden Bars to display it on the website\./);
   assert.match(forms, /private Google Drive original/);
-  assert.match(forms, /Form-owned `photo_submission` response sheet/);
+  assert.match(forms, /Form-owned `Photo_Submission` response sheet/);
   assert.doesNotMatch(forms, /photo:process|venue-photo-processing\.md/);
+});
+
+test('owner snapshot review clears the public cache before rebuilding', async () => {
+  const code = await source('apps-script/Code.gs');
+  assert.match(
+    code,
+    /function buildPublicSnapshotForReview\(\) \{\s*clearPublicSnapshotCache_\(\);\s*const snapshot = buildPublicSnapshot_\(\);/
+  );
 });

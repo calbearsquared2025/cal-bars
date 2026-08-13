@@ -121,6 +121,7 @@ function doGet(event) {
 }
 
 function buildPublicSnapshotForReview() {
+  clearPublicSnapshotCache_();
   const snapshot = buildPublicSnapshot_();
   console.log(JSON.stringify(snapshot, null, 2));
   return snapshot;

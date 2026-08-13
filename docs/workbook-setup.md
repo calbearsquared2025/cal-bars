@@ -25,7 +25,7 @@ Private/raw workflows use:
 3. `Listing_Updates_Raw`
 4. `Missing_Location_Suggestions_Raw`
 
-The Photo Form writes to its existing Form-owned `photo_submission` response sheet. It is private raw intake, but `setupWorkbook()` does not create, rename, re-header, or otherwise manage it.
+The Photo Form writes to its existing Form-owned `Photo_Submission` response sheet. It is private raw intake, but `setupWorkbook()` does not create, rename, re-header, or otherwise manage it.
 
 Photo publication control uses one admin tab:
 
