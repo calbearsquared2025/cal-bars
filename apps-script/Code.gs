@@ -18,7 +18,7 @@ const CGB_TABS = Object.freeze({
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
     'short_description', 'photo_url', 'photo_credit', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at', 'photo_caption', 'photo_credit_url'
+    'source_submission_id', 'created_at', 'updated_at'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
@@ -33,6 +33,10 @@ const CGB_TABS = Object.freeze({
   Fan_Intent: [
     'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
     'created_at', 'updated_at', 'archived_at'
+  ],
+  Venue_Photos: [
+    'venue_id', 'photo_url', 'photo_caption', 'photo_credit', 'photo_credit_url',
+    'publication_status', 'updated_at'
   ],
   Cal_Bar_Nominations_Raw: [
     'response_timestamp', 'submission_id', 'venue_id', 'venue_name', 'reason',
@@ -147,11 +151,12 @@ function buildPublicSnapshot_() {
   const workbook = getWorkbook_();
   archiveCompletedFanIntent_(workbook);
   const venuesRaw = readSheetObjects_(workbook, 'Venues');
+  const venuePhotosRaw = readSheetObjects_(workbook, 'Venue_Photos');
   const gamesRaw = readSheetObjects_(workbook, 'Games');
   const partiesRaw = readSheetObjects_(workbook, 'Watch_Parties');
   const intentRaw = readSheetObjects_(workbook, 'Fan_Intent');
 
-  const venues = venuesRaw
+  const venues = mergePublishedVenuePhotos_(venuesRaw, venuePhotosRaw)
     .filter(function(row) {
       return row.publication_status === 'published' && hasValidVenueCoordinates_(row);
     })
@@ -181,9 +186,63 @@ function buildPublicSnapshot_() {
     fanCounts: buildFanCounts_(intentRaw, publishedVenueIds, gameIds),
     venueHistoryCounts: buildVenueHistoryCounts_(intentRaw, publishedVenueIds, gameIds),
     venueSeasonCounts: buildVenueSeasonCounts_(intentRaw, publishedVenueIds, games),
-    idAliases: buildPublicIdAliases_(workbook),
     generatedAt: new Date().toISOString()
   };
+}
+
+function mergePublishedVenuePhotos_(venues, photoRows) {
+  const venueIds = new Set(venues.map(function(row) {
+    return String((row && row.venue_id) || '').trim();
+  }).filter(Boolean));
+  const seenPublishedVenueIds = new Set();
+  const duplicateVenueIds = new Set();
+  const photosByVenueId = Object.create(null);
+
+  photoRows.forEach(function(row) {
+    if (String((row && row.publication_status) || '').trim() !== 'published') return;
+
+    const venueId = String((row && row.venue_id) || '').trim();
+    if (!/^venue_[a-f0-9]{24}$/.test(venueId) || !venueIds.has(venueId)) {
+      console.warn('Skipping published Venue_Photos row for unknown venue_id: ' + (venueId || '(missing venue_id)'));
+      return;
+    }
+    if (seenPublishedVenueIds.has(venueId)) {
+      duplicateVenueIds.add(venueId);
+      delete photosByVenueId[venueId];
+      console.warn('Skipping duplicate published Venue_Photos rows for venue_id: ' + venueId);
+      return;
+    }
+    seenPublishedVenueIds.add(venueId);
+
+    if (!hasValidPublishedVenuePhoto_(row)) {
+      console.warn('Skipping malformed published Venue_Photos row for venue_id: ' + venueId);
+      return;
+    }
+    photosByVenueId[venueId] = row;
+  });
+
+  return venues.map(function(row) {
+    const venueId = String((row && row.venue_id) || '').trim();
+    const photo = duplicateVenueIds.has(venueId) ? null : photosByVenueId[venueId];
+    return Object.assign({}, row, {
+      photo_url: photo ? String(photo.photo_url).trim() : '',
+      photo_caption: photo ? String(photo.photo_caption || '').trim() : '',
+      photo_credit: photo ? String(photo.photo_credit || '').trim() : '',
+      photo_credit_url: photo ? String(photo.photo_credit_url || '').trim() : ''
+    });
+  });
+}
+
+function hasValidPublishedVenuePhoto_(row) {
+  if (!row || typeof row.photo_url !== 'string' || !isHttpUrl_(row.photo_url)) return false;
+  if (typeof row.photo_caption !== 'string' || typeof row.photo_credit !== 'string') return false;
+  if (typeof row.photo_credit_url !== 'string') return false;
+  return !String(row.photo_credit_url).trim() || isHttpUrl_(row.photo_credit_url);
+}
+
+function isHttpUrl_(value) {
+  const raw = String(value || '').trim();
+  return /^https?:\/\/(?:[^@\s/]+@)?(?:\[[0-9a-f:.]+\]|[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?)(?::\d{1,5})?(?:[/?#][^\s]*)?$/i.test(raw);
 }
 
 function buildFanCounts_(rows, venueIds, gameIds) {

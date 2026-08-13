@@ -55,7 +55,11 @@ test('public snapshot rejects unsafe credit profile URLs', () => {
 });
 
 test('public snapshot rejects private/raw photo submission fields', () => {
-  for (const field of ['file_reference', 'caption', 'permission_confirmed', 'submitter_email', 'reviewer_note']) {
+  for (const field of [
+    'file_reference', 'drive_file_id', 'caption', 'permission_confirmed',
+    'permission_record', 'submitter_email', 'respondent_email', 'reviewer_note',
+    'raw_submission_contents'
+  ]) {
     const errors = validateSnapshot(snapshotWithVenue({ [field]: 'private-test-value' }));
     assert.ok(errors.some((error) => error.includes(`.${field} is forbidden in public data`)), field);
   }

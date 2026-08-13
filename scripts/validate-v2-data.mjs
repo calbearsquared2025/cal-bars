@@ -11,8 +11,9 @@ const REQUIRED_TOP_LEVEL = [
 const FORBIDDEN_KEYS = new Set([
   'browser_id', 'fan_intent_id', 'external_source', 'external_place_id',
   'source_submission_id', 'publication_status', 'created_at',
-  'submitter_name', 'submitter_email', 'reviewer_note', 'permission_confirmed',
-  'file_reference', 'caption', 'review_status', 'reviewed_at',
+  'submitter_name', 'submitter_email', 'respondent_email', 'reviewer_note',
+  'permission_confirmed', 'permission_record', 'file_reference', 'drive_file_id',
+  'drive_file_reference', 'raw_submission_contents', 'caption', 'review_status', 'reviewed_at',
   'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
   'opponent_short_name', 'idAliases'
 ]);

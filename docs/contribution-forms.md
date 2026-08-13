@@ -152,21 +152,20 @@ Settings and workflow:
 - Public credit identity/link fields are curated manually and do not publish directly from Form responses.
 - A later approved photo may replace the Venue’s current public primary photo; there is no public gallery or photo history.
 
-Approval/publication remains human-controlled, with local processing automated:
+Approval/publication is fully human-controlled:
 
 ```text
 Form upload
 → private Google Drive original
 → manual review and approval
-→ download approved source outside the public asset folder
-→ run npm run photo:process -- --input <path> --slug <venue-slug>
-→ visually inspect assets/venues/<venue-slug>.webp
-→ commit the approved optimized public asset
-→ set Venue photo_url/photo_caption/photo_credit/photo_credit_url as applicable
+→ create and visually inspect an optimized WebP outside the repository
+→ manually upload the approved file under assets/venues/<venue-slug>.webp in GitHub
+→ confirm the GitHub Pages image URL returns the approved image
+→ add or update the Venue_Photos publication row for the canonical venue_id
 → publish through the normal site/data deployment
 ```
 
-The processor preserves source aspect ratio, caps width at 1600 px, converts to WebP, and compresses toward a 500 KB ceiling. Venue Detail owns the visible 3:2 presentation. See `docs/venue-photo-processing.md` for the operating command and options.
+Prefer WebP at about 1200–1600 px maximum width and generally about 200–500 KB. Preserve the source aspect ratio; Venue Detail owns the visible 3:2 presentation. `Venue_Photos` is the only publication source for `photo_url`, `photo_caption`, `photo_credit`, and `photo_credit_url`. Add only curated public metadata to that tab—never a Drive file ID, respondent email, permission record, reviewer note, or raw submission content.
 
 Do not hotlink the Drive upload or commit the raw Form original.
 

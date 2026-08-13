@@ -9,10 +9,6 @@
     "test:browser": "node scripts/run-browser-harness.mjs",
     "validate:data": "node scripts/validate-v2-data.mjs data/fallback-v2.json",
     "validate:venue-load": "node scripts/validate-venue-load.mjs",
-    "migration:dry-run": "node scripts/migrate-v1-venues.mjs",
-    "photo:process": "node scripts/process-venue-photo.mjs"
-  },
-  "dependencies": {
-    "sharp": "0.35.3"
+    "migration:dry-run": "node scripts/migrate-v1-venues.mjs"
   }
 }

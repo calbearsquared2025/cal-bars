@@ -40,11 +40,13 @@ test('Submit a Photo is contextual, prefilled, and omitted when configuration is
   assert.match(adapter, /buildPhotoFormPrefillUrl/);
   assert.match(adapter, /if \(!href\)/);
   assert.match(adapter, /target = '_blank'/);
-  assert.match(config, /formUrl: ''/);
+  assert.match(config, /1FAIpQLSecvY5Pm73oPNRe4viSATCWYeERxwyDGYHwGpvPZHzQ03BmDg/);
+  assert.match(config, /venueNameEntry: 'entry\.1077046729'/);
+  assert.match(config, /venueIdEntry: 'entry\.893543394'/);
   assert.match(bootstrap, /initializePhotoFormEntry/);
 });
 
-test('Apps Script exposes only approved Venue photo fields and keeps raw photo intake private', async () => {
+test('Apps Script joins the Venue_Photos publication tab into approved public Venue fields', async () => {
   const code = await source('apps-script/Code.gs');
   const publicVenueFields = code.match(/const CGB_PUBLIC_FIELDS[\s\S]*?Venues: \[([\s\S]*?)\]/)?.[1] || '';
   assert.match(publicVenueFields, /photo_url/);
@@ -52,13 +54,19 @@ test('Apps Script exposes only approved Venue photo fields and keeps raw photo i
   assert.match(publicVenueFields, /photo_credit/);
   assert.match(publicVenueFields, /photo_credit_url/);
   assert.doesNotMatch(publicVenueFields, /file_reference|submitter_email|permission_confirmed|reviewer_note/);
+  assert.match(code, /Venue_Photos: \[[\s\S]*?'venue_id', 'photo_url', 'photo_caption', 'photo_credit', 'photo_credit_url'/);
+  assert.match(code, /mergePublishedVenuePhotos_\(venuesRaw, venuePhotosRaw\)/);
   assert.match(code, /Photo_Submissions_Raw:[\s\S]*photo_credit_url/);
 });
 
 test('public validator accepts only safe public photo URLs and rejects raw photo fields', async () => {
   const validator = await source('scripts/validate-v2-data.mjs');
   assert.match(validator, /photo_credit_url.*must be empty or http\(s\)/);
-  assert.match(validator, /'file_reference', 'caption', 'review_status', 'reviewed_at'/);
+  assert.match(validator, /'file_reference'/);
+  assert.match(validator, /'drive_file_id'/);
+  assert.match(validator, /'respondent_email'/);
+  assert.match(validator, /'permission_record'/);
+  assert.match(validator, /'raw_submission_contents'/);
 });
 
 test('implementation docs describe static approved assets and the Google sign-in exception', async () => {
@@ -74,4 +82,5 @@ test('implementation docs describe static approved assets and the Google sign-in
   assert.match(forms, /Google Forms file upload requires sign-in/);
   assert.match(forms, /I took this photo or have permission to share it, and I authorize Cal Golden Bars to display it on the website\./);
   assert.match(forms, /private Google Drive original/);
+  assert.doesNotMatch(forms, /photo:process|venue-photo-processing\.md/);
 });
