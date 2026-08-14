@@ -17,6 +17,9 @@ test('Venue Detail photo/profile enhancement is wired into existing render refin
   assert.match(profile, /detail-local-map/);
   assert.match(profile, /CGB SAYS/);
   assert.match(profile, /detail-description/);
+  assert.match(profile, /detailIdentityAnchor/);
+  assert.match(profile, /detail-address-actions/);
+  assert.match(profile, /placeMediaAfterIdentity/);
   assert.match(css, /detail-hero--has-photo/);
   assert.match(css, /aspect-ratio/);
 });
@@ -27,6 +30,18 @@ test('existing no-photo local map and compact description behavior remain in app
   assert.match(app, /location-card__description/);
   assert.match(app, /else if \(venue\.short_description\)/);
   assert.match(app, /venue\.short_description && !legacyActivitySeason\(venue\)/);
+});
+
+test('Detail finishing treatment uses the approved two-column contribution grid and contextual Invite Bears action', async () => {
+  const [detailCss, fanIntent] = await Promise.all([
+    source('css/venue-detail.css'),
+    source('js/fan-intent.js')
+  ]);
+  assert.match(detailCss, /\.detail-contribution__actions\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(detailCss, /body\[data-view="detail"\] \.mobile-command-bar\s*\{\s*display: grid !important;/);
+  assert.match(detailCss, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
+  assert.match(fanIntent, /const label = isSelected \? 'Invite Bears' : 'Share'/);
+  assert.match(fanIntent, /if \(!detailMode\) \{/);
 });
 
 test('Submit a Photo is contextual, prefilled, and omitted when configuration is absent', async () => {
