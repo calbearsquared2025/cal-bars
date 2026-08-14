@@ -38,7 +38,15 @@ test('mobile styling removes the permanent map search and presents full command 
   assert.match(css, /\.mobile-command__add-mark/);
 });
 
-test('navigation delegates to existing search, tray, and contribution contracts', async () => {
+test('mobile Detail reuses the global command bar and removes the redundant back overlay', async () => {
+  const css = await source('css/venue-detail.css');
+  const mobile = css.slice(css.indexOf('@media (max-width: 899px)'));
+  assert.match(mobile, /body\[data-view="detail"\] \.mobile-command-bar\s*\{\s*display: grid !important;/);
+  assert.match(mobile, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
+  assert.match(mobile, /body\[data-view="detail"\] \.venue-detail > \.action-row\.detail-primary-actions\s*\{[^}]*bottom: var\(--footer-height\) !important;/);
+});
+
+test('navigation delegates to existing search, tray, contribution, and Detail-return contracts', async () => {
   const script = await source('js/shell-controls.mjs');
   assert.match(script, /buildWatchPartyPrefillUrl/);
   assert.match(script, /buildCalBarNominationPrefillUrl/);
@@ -47,6 +55,13 @@ test('navigation delegates to existing search, tray, and contribution contracts'
   assert.match(script, /dom\.searchSlot\.append\(dom\.searchForm\)/);
   assert.match(script, /dom\.trayHandle\?\.click\(\)/);
   assert.match(script, /dom\.addContext\.hidden = !venue/);
+  assert.match(script, /function leaveDetailForCommand\(\)/);
+  assert.match(script, /document\.querySelector\('#detail-back'\)/);
+  assert.match(script, /back\.click\(\)/);
+  assert.match(script, /function showMap\(\) \{\s*leaveDetailForCommand\(\);/);
+  assert.match(script, /function showList\(\) \{\s*leaveDetailForCommand\(\);/);
+  assert.match(script, /function showSearch\(intent = ''\) \{\s*leaveDetailForCommand\(\);/);
+  assert.match(script, /function showAdd\(\) \{\s*leaveDetailForCommand\(\);/);
   assert.match(script, /import \{ subscribeAppEvent \} from '\.\/app-state\.mjs'/);
   assert.match(script, /subscribeAppEvent\('rendered', syncViewState\)/);
   assert.match(script, /subscribeAppEvent\('ready', syncViewState\)/);
