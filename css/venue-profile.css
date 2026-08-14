@@ -18,7 +18,7 @@ body[data-view="detail"] .detail-hero.detail-hero--has-photo > * {
 }
 
 body[data-view="detail"] .detail-photo {
-  margin: 0;
+  margin: 10px 0 0;
 }
 
 body[data-view="detail"] .detail-photo__frame {
