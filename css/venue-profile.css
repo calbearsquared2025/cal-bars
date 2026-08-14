@@ -18,21 +18,17 @@ body[data-view="detail"] .detail-hero.detail-hero--has-photo > * {
 }
 
 body[data-view="detail"] .detail-photo {
-  margin: 10px 0 0;
+  width: min(100%, 520px);
+  margin: 10px auto 0;
 }
 
 body[data-view="detail"] .detail-photo__frame {
   width: 100%;
-  aspect-ratio: var(--detail-photo-aspect, 3 / 2);
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   background: var(--cgb-neutral-100);
   border: 1px solid var(--cgb-neutral-200);
   border-radius: 14px;
-}
-
-body[data-view="detail"] .detail-photo[data-photo-orientation="portrait"] {
-  width: min(82%, 340px);
-  margin-inline: auto;
 }
 
 body[data-view="detail"] .detail-photo__image {
@@ -40,6 +36,7 @@ body[data-view="detail"] .detail-photo__image {
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center;
 }
 
 body[data-view="detail"] .detail-photo__metadata {
@@ -109,15 +106,6 @@ body[data-view="detail"] .detail-editorial__copy {
   body[data-view="detail"] .detail-hero.detail-hero--has-photo {
     padding: 10px 14px 14px !important;
   }
-
-  body[data-view="detail"] .detail-photo {
-    width: min(100%, 520px);
-    margin-inline: auto;
-  }
-
-  body[data-view="detail"] .detail-photo[data-photo-orientation="portrait"] {
-    width: min(40vw, 220px);
-  }
 }
 
 @media (min-width: 900px) {
@@ -126,9 +114,5 @@ body[data-view="detail"] .detail-editorial__copy {
     grid-row: 1 / span 8 !important;
     min-height: 0 !important;
     padding: 18px 20px 22px !important;
-  }
-
-  body[data-view="detail"] .detail-photo[data-photo-orientation="portrait"] {
-    width: min(72%, 340px);
   }
 }

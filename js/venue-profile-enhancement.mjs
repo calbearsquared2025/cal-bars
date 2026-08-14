@@ -35,15 +35,6 @@ export function venuePhotoPresentation(venue = {}) {
   });
 }
 
-export function venuePhotoOrientation(width, height) {
-  const normalizedWidth = Number(width);
-  const normalizedHeight = Number(height);
-  if (![normalizedWidth, normalizedHeight].every(Number.isFinite) || normalizedWidth <= 0 || normalizedHeight <= 0) {
-    return '';
-  }
-  return normalizedHeight > normalizedWidth ? 'portrait' : 'landscape';
-}
-
 function photoKey(venue, photoUrl) {
   return `${clean(venue?.venue_id)}::${photoUrl}`;
 }
@@ -85,29 +76,28 @@ function ensureLocalMapFallback(hero, documentObject, venue) {
   return placeMediaAfterIdentity(hero, map);
 }
 
-function applyPhotoDimensions(figure, image) {
-  const width = Number(image?.naturalWidth);
-  const height = Number(image?.naturalHeight);
-  const orientation = venuePhotoOrientation(width, height);
-  if (!orientation) return false;
-  figure.dataset.photoOrientation = orientation;
-  figure.style.setProperty('--detail-photo-aspect', `${width} / ${height}`);
-  return true;
-}
-
 function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const figure = documentObject.createElement('figure');
   figure.className = 'detail-photo';
   figure.dataset.photoUrl = presentation.photoUrl;
+  figure.style.width = 'min(100%, 520px)';
+  figure.style.margin = '10px auto 0';
 
   const frame = documentObject.createElement('div');
   frame.className = 'detail-photo__frame';
+  frame.style.width = '100%';
+  frame.style.aspectRatio = '1 / 1';
+  frame.style.overflow = 'hidden';
   const image = documentObject.createElement('img');
   image.className = 'detail-photo__image';
   image.alt = presentation.alt;
+  image.style.width = '100%';
+  image.style.height = '100%';
+  image.style.display = 'block';
+  image.style.objectFit = 'cover';
+  image.style.objectPosition = 'center';
   image.decoding = 'async';
   image.loading = 'eager';
-  image.addEventListener('load', () => applyPhotoDimensions(figure, image), { once: true });
   image.addEventListener('error', () => {
     failedPhotoKeys.add(photoKey(venue, presentation.photoUrl));
     figure.remove();

@@ -6,7 +6,7 @@ async function source(path) {
   return readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 }
 
-test('Venue Detail photo/profile enhancement is wired into existing render refinements', async () => {
+test('Venue Detail photo/profile enhancement uses one fixed square crop', async () => {
   const [icons, profile, css] = await Promise.all([
     source('js/icon-upgrade.mjs'),
     source('js/venue-profile-enhancement.mjs'),
@@ -20,12 +20,13 @@ test('Venue Detail photo/profile enhancement is wired into existing render refin
   assert.match(profile, /detailIdentityAnchor/);
   assert.match(profile, /detail-address-actions/);
   assert.match(profile, /placeMediaAfterIdentity/);
-  assert.match(profile, /venuePhotoOrientation/);
-  assert.match(profile, /data.*photoOrientation|dataset\.photoOrientation/);
-  assert.match(profile, /--detail-photo-aspect/);
+  assert.match(profile, /frame\.style\.aspectRatio = '1 \/ 1'/);
+  assert.match(profile, /image\.style\.objectFit = 'cover'/);
+  assert.doesNotMatch(profile, /venuePhotoOrientation|naturalWidth|naturalHeight|photoOrientation|--detail-photo-aspect/);
   assert.match(css, /detail-hero--has-photo/);
-  assert.match(css, /aspect-ratio: var\(--detail-photo-aspect, 3 \/ 2\)/);
-  assert.match(css, /detail-photo\[data-photo-orientation="portrait"\]/);
+  assert.match(css, /aspect-ratio: 1 \/ 1/);
+  assert.match(css, /object-fit: cover/);
+  assert.doesNotMatch(css, /data-photo-orientation|--detail-photo-aspect/);
 });
 
 test('existing no-photo local map and compact description behavior remain in app renderer', async () => {
