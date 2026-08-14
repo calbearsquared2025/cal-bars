@@ -1,5 +1,3 @@
-@import url("venue-profile-runtime.css");
-
 /* Settled mobile map geometry required before deferred modules initialize. */
 @media (max-width: 899px) {
   body[data-view="map"] {
