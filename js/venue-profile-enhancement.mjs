@@ -35,6 +35,15 @@ export function venuePhotoPresentation(venue = {}) {
   });
 }
 
+export function venuePhotoOrientation(width, height) {
+  const normalizedWidth = Number(width);
+  const normalizedHeight = Number(height);
+  if (![normalizedWidth, normalizedHeight].every(Number.isFinite) || normalizedWidth <= 0 || normalizedHeight <= 0) {
+    return '';
+  }
+  return normalizedHeight > normalizedWidth ? 'portrait' : 'landscape';
+}
+
 function photoKey(venue, photoUrl) {
   return `${clean(venue?.venue_id)}::${photoUrl}`;
 }
@@ -76,6 +85,16 @@ function ensureLocalMapFallback(hero, documentObject, venue) {
   return placeMediaAfterIdentity(hero, map);
 }
 
+function applyPhotoDimensions(figure, image) {
+  const width = Number(image?.naturalWidth);
+  const height = Number(image?.naturalHeight);
+  const orientation = venuePhotoOrientation(width, height);
+  if (!orientation) return false;
+  figure.dataset.photoOrientation = orientation;
+  figure.style.setProperty('--detail-photo-aspect', `${width} / ${height}`);
+  return true;
+}
+
 function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const figure = documentObject.createElement('figure');
   figure.className = 'detail-photo';
@@ -85,10 +104,10 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   frame.className = 'detail-photo__frame';
   const image = documentObject.createElement('img');
   image.className = 'detail-photo__image';
-  image.src = presentation.photoUrl;
   image.alt = presentation.alt;
   image.decoding = 'async';
   image.loading = 'eager';
+  image.addEventListener('load', () => applyPhotoDimensions(figure, image), { once: true });
   image.addEventListener('error', () => {
     failedPhotoKeys.add(photoKey(venue, presentation.photoUrl));
     figure.remove();
@@ -99,6 +118,7 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
     ensureLocalMapFallback(hero, documentObject, venue);
     onPhotoError?.();
   }, { once: true });
+  image.src = presentation.photoUrl;
   frame.append(image);
   figure.append(frame);
 

@@ -20,8 +20,12 @@ test('Venue Detail photo/profile enhancement is wired into existing render refin
   assert.match(profile, /detailIdentityAnchor/);
   assert.match(profile, /detail-address-actions/);
   assert.match(profile, /placeMediaAfterIdentity/);
+  assert.match(profile, /venuePhotoOrientation/);
+  assert.match(profile, /data.*photoOrientation|dataset\.photoOrientation/);
+  assert.match(profile, /--detail-photo-aspect/);
   assert.match(css, /detail-hero--has-photo/);
-  assert.match(css, /aspect-ratio/);
+  assert.match(css, /aspect-ratio: var\(--detail-photo-aspect, 3 \/ 2\)/);
+  assert.match(css, /detail-photo\[data-photo-orientation="portrait"\]/);
 });
 
 test('existing no-photo local map and compact description behavior remain in app renderer', async () => {

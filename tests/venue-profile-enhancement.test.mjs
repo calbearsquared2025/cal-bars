@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   safeHttpUrl,
   venuePhotoAltText,
+  venuePhotoOrientation,
   venuePhotoPresentation
 } from '../js/venue-profile-enhancement.mjs';
 
@@ -41,4 +42,12 @@ test('alt text uses caption first and Venue name fallback', () => {
 test('unsafe or absent photo URL does not produce an image presentation', () => {
   assert.equal(venuePhotoPresentation({ photo_url: '' }), null);
   assert.equal(venuePhotoPresentation({ photo_url: 'file:///tmp/photo.webp' }), null);
+});
+
+test('Venue photo orientation is derived from the one loaded image dimensions', () => {
+  assert.equal(venuePhotoOrientation(1600, 1067), 'landscape');
+  assert.equal(venuePhotoOrientation(900, 1350), 'portrait');
+  assert.equal(venuePhotoOrientation(1000, 1000), 'landscape');
+  assert.equal(venuePhotoOrientation(0, 1200), '');
+  assert.equal(venuePhotoOrientation('bad', 1200), '');
 });
