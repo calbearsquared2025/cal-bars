@@ -195,7 +195,17 @@ function moveSearchForm() {
   }
 }
 
+function leaveDetailForCommand() {
+  const state = appState();
+  if (!state?.detailMode) return false;
+  const back = document.querySelector('#detail-back');
+  if (!back) return false;
+  back.click();
+  return true;
+}
+
 function showMap() {
+  leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
   setSurface('map');
@@ -205,6 +215,7 @@ function showMap() {
 }
 
 function showList() {
+  leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
   setSurface('map');
@@ -225,6 +236,7 @@ function updateSearchIntent() {
 }
 
 function showSearch(intent = '') {
+  leaveDetailForCommand();
   contributionIntent = intent;
   updateSearchIntent();
   setSurface('search', { focus: true });
@@ -248,6 +260,7 @@ function updateAddContext() {
 }
 
 function showAdd() {
+  leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
   updateAddContext();
