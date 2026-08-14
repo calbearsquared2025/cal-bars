@@ -151,6 +151,17 @@ function createRetryPanel(button, venueId) {
   panel.append(message, retryButton);
 }
 
+function syncDetailShareAction(button, isSelected) {
+  const row = button.closest('.detail-primary-actions');
+  const share = row?.querySelector(':scope > .detail-share');
+  if (!share) return;
+  const label = isSelected ? 'Invite Bears' : 'Share';
+  const textNode = Array.from(share.childNodes).find((node) => node.nodeType === 3);
+  if (textNode) textNode.textContent = label;
+  else share.append(document.createTextNode(label));
+  share.setAttribute('aria-label', label);
+}
+
 function renderIntentButton(button) {
   const venueId = button.dataset.venueId;
   if (!venueId) return;
@@ -170,6 +181,7 @@ function renderIntentButton(button) {
       : gameAllowsIntent()
         ? 'I’ll be here'
         : 'Selections closed';
+  syncDetailShareAction(button, isSelected);
   createRetryPanel(button, venueId);
 }
 
@@ -288,7 +300,8 @@ function renderPostJoinInvitation() {
   ) return;
 
   const venue = venueById(venueId);
-  const surface = appState.detailMode
+  const detailMode = appState.detailMode;
+  const surface = detailMode
     ? document.querySelector('#venue-detail')
     : document.querySelector('#tray-selected');
   const row = surface?.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
@@ -307,14 +320,19 @@ function renderPostJoinInvitation() {
   copy.textContent = firstBear
     ? 'Invite other Bears to join you.'
     : 'Share this spot so other Cal fans can find you.';
-  const share = document.createElement('button');
-  share.type = 'button';
-  share.className = 'secondary-button post-join-share';
-  share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
-  share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
-  panel.append(heading, copy, share);
+  panel.append(heading, copy);
+
+  if (!detailMode) {
+    const share = document.createElement('button');
+    share.type = 'button';
+    share.className = 'secondary-button post-join-share';
+    share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
+    share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
+    panel.append(share);
+  }
+
   row.classList.add('has-post-join-invitation');
-  if (appState.detailMode) {
+  if (detailMode) {
     panel.classList.add('detail-post-join-invitation');
     row.insertAdjacentElement('beforebegin', panel);
   } else {
