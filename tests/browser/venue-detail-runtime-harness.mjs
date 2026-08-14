@@ -122,12 +122,15 @@ async function verifyGameSelectorRoundTrip(originalGameId, venueId) {
 }
 
 function verifyLocalMapOrPhoto(venue, fixtureMode) {
+  const hero = element('#venue-detail .detail-hero');
+  const identityAnchor = hero?.querySelector(':scope > .detail-address-actions');
   const photo = element('#venue-detail .detail-photo');
   const mapNode = element('#venue-detail .detail-local-map');
 
   if (fixtureMode === 'photo') {
     check(Boolean(photo), 'Photo-present Detail should render the approved photo figure');
     check(!mapNode, 'Photo-present Detail should replace the local map');
+    check(identityAnchor?.nextElementSibling === photo, 'Venue identity and address actions should precede the approved photo');
     const image = photo?.querySelector('.detail-photo__image');
     check(image?.src === safeExternalUrl(venue.photo_url), 'Venue photo should use the approved photo URL');
     check(image?.alt === venue.photo_caption, 'Venue photo alt text should prefer the approved caption');
@@ -147,6 +150,7 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
   check(Boolean(mapNode), fixtureMode === 'broken'
     ? 'Failed Venue photo should restore the local-map fallback'
     : 'No-photo Detail should render a local map');
+  check(identityAnchor?.nextElementSibling === mapNode, 'Venue identity and address actions should precede the local-map fallback');
   check(Number(mapNode?.dataset.latitude) === Number(venue.latitude), 'Detail local map should use canonical latitude');
   check(Number(mapNode?.dataset.longitude) === Number(venue.longitude), 'Detail local map should use canonical longitude');
   const zoom = Number(mapNode?.dataset.zoom);
@@ -249,6 +253,13 @@ function verifyContribution(venue, fixtureMode) {
   const labels = Array.from(section?.querySelectorAll('a') || []).map((link) => link.textContent?.trim() || '');
   check(labels.every((label) => !label.endsWith('.')), 'Contribution action labels should omit unnecessary terminal punctuation');
   check(labels.includes('Report a problem with this listing'), 'Listing report action should remain directly available');
+  const actionGrid = section?.querySelector('.detail-contribution__actions');
+  const actionGridStyle = actionGrid ? getComputedStyle(actionGrid) : null;
+  check(actionGridStyle?.display === 'grid', 'Contribution actions should use the finished grid treatment');
+  if (window.innerWidth >= 360) {
+    const columns = String(actionGridStyle?.gridTemplateColumns || '').split(' ').filter(Boolean);
+    check(columns.length === 2, 'Contribution actions should use two columns at normal mobile widths');
+  }
 
   const photoLink = section?.querySelector('[data-photo-form-entry]');
   if (fixtureMode === 'photo') {
@@ -269,19 +280,21 @@ function verifyStickyActions() {
   check((row?.children?.length || 0) === 2, 'Detail sticky action row should contain exactly two direct children');
   check(labels.length === 2, 'Detail sticky action row should contain exactly two primary actions');
   check(labels.some((label) => /I’ll be here|You’ll be here/.test(label)), 'Detail sticky row should retain Fan Intent');
-  check(labels.includes('Share'), 'Detail sticky row should retain the updated Share action');
+  check(labels.includes('Share') || labels.includes('Invite Bears'), 'Detail sticky row should retain the contextual share action');
   check(!labels.includes('Directions') && !labels.some((label) => /Details/.test(label)), 'Detail sticky row should exclude Directions and Details');
 }
 
 async function verifyMobileBottomWhitespace() {
   if (!window.matchMedia('(max-width: 899px)').matches) return;
-  const view = element('#detail-view');
   const row = element('#venue-detail > .action-row.detail-primary-actions');
-  if (!view || !row) return;
+  const nav = element('.mobile-command-bar');
+  if (!row || !nav) return;
   window.scrollTo(0, document.documentElement.scrollHeight);
   await sleep(30);
-  const trailingSpace = view.getBoundingClientRect().bottom - row.getBoundingClientRect().bottom;
-  check(trailingSpace <= 1, 'Mobile Detail should end at the sticky action row without blank trailing space');
+  const rowRect = row.getBoundingClientRect();
+  const navRect = nav.getBoundingClientRect();
+  check(rowRect.bottom <= navRect.top + 1, 'Mobile Detail sticky actions should remain above the global bottom navigation');
+  check(navRect.bottom <= window.innerHeight + 1, 'Mobile Detail navigation should remain anchored to the viewport bottom');
   window.scrollTo(0, 0);
   await sleep(30);
 }
@@ -342,6 +355,7 @@ async function main() {
   const game = settledState?.snapshot?.games?.find((candidate) => candidate.game_id === settledState.gameId);
   const selectedVenueId = settledState?.selectedVenueId;
   const hasParty = Boolean(partyFor(selectedVenueId, settledState?.gameId));
+  const mobile = window.matchMedia('(max-width: 899px)').matches;
 
   verifyImmediateSingleOwnerRerender(venue, hasParty);
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'post-rerender Venue media refinement');
@@ -361,8 +375,13 @@ async function main() {
   check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), 'Global game selector should identify the selected opponent');
   const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
   check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Global game selector should preserve known or TBD kickoff behavior');
-  check(visible('#detail-back'), 'Back to map should remain accessible');
-  check(!visible('.mobile-command-bar'), 'Mobile bottom command bar should remain hidden on Detail');
+  if (mobile) {
+    check(!visible('#detail-back'), 'Mobile Detail should rely on the global navigation instead of a redundant Back to map overlay');
+    check(visible('.mobile-command-bar'), 'Mobile Detail should preserve the global Map / Search / Add / List navigation');
+  } else {
+    check(visible('#detail-back'), 'Desktop Detail should retain Back to map');
+    check(!visible('.mobile-command-bar'), 'Desktop Detail should not expose the mobile bottom navigation');
+  }
 
   verifyLocalMapOrPhoto(venue, fixtureMode);
   verifyIdentity(venue, hasParty);
@@ -376,11 +395,24 @@ async function main() {
   if (params.get('__cgb_prejoined') === '1') {
     await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent selection');
     check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh should restore Fan Intent state');
+    await waitFor(() => actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite Bears'), 'contextual Invite Bears action');
+    check(actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite Bears'), 'Selected Detail should use Invite Bears for the contextual share action');
+    check(!element('#venue-detail .detail-post-join-invitation .post-join-share'), 'Detail should not duplicate the Invite Bears action inside the post-join message');
     verifyStickyActions();
   }
 
   check(document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1, 'Detail should not create horizontal document overflow');
   await verifyGameSelectorRoundTrip(requestedGame, selectedVenueId);
+
+  if (mobile) {
+    element('#mobile-list-button')?.click();
+    await waitFor(() =>
+      state()?.detailMode === false &&
+      document.body.dataset.view === 'map' &&
+      element('#venue-tray')?.dataset?.state === 'full',
+    'Detail List navigation');
+    check(state()?.selectedVenueId === selectedVenueId, 'Leaving Detail through bottom navigation should preserve the selected Venue');
+  }
 
   const marker = params.get('__cgb_harness') === 'desktop-direct'
     ? 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE'
