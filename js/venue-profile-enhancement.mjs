@@ -39,6 +39,20 @@ function photoKey(venue, photoUrl) {
   return `${clean(venue?.venue_id)}::${photoUrl}`;
 }
 
+function detailIdentityAnchor(hero) {
+  return hero.querySelector(':scope > .detail-address-actions') ||
+    hero.querySelector(':scope > .detail-address') ||
+    hero.querySelector(':scope > h1');
+}
+
+function placeMediaAfterIdentity(hero, media) {
+  if (!hero || !media) return false;
+  const anchor = detailIdentityAnchor(hero);
+  if (anchor) anchor.after(media);
+  else hero.append(media);
+  return true;
+}
+
 function createLocalMapFallback(documentObject, venue) {
   const latitude = Number(venue?.latitude);
   const longitude = Number(venue?.longitude);
@@ -55,11 +69,11 @@ function createLocalMapFallback(documentObject, venue) {
 }
 
 function ensureLocalMapFallback(hero, documentObject, venue) {
-  if (hero.querySelector(':scope > .detail-local-map')) return true;
+  const existing = hero.querySelector(':scope > .detail-local-map');
+  if (existing) return placeMediaAfterIdentity(hero, existing);
   const map = createLocalMapFallback(documentObject, venue);
   if (!map) return false;
-  hero.insertBefore(map, hero.firstChild);
-  return true;
+  return placeMediaAfterIdentity(hero, map);
 }
 
 function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
@@ -163,13 +177,17 @@ export function enhanceVenueProfile({
 
   if (showPhoto) {
     hero.querySelector(':scope > .detail-local-map')?.remove();
+    let photo = existingPhoto;
     if (existingPhoto?.dataset.photoUrl !== presentation.photoUrl) {
       existingPhoto?.remove();
-      hero.insertBefore(createPhotoFigure(documentObject, venue, presentation, onPhotoError), hero.firstChild);
+      photo = createPhotoFigure(documentObject, venue, presentation, onPhotoError);
     }
+    placeMediaAfterIdentity(hero, photo);
   } else {
     existingPhoto?.remove();
-    if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
+    const localMap = hero.querySelector(':scope > .detail-local-map');
+    if (localMap) placeMediaAfterIdentity(hero, localMap);
+    else if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 
   moveEditorialDescription(detail, hero, documentObject);
