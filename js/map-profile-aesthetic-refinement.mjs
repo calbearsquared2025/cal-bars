@@ -110,15 +110,15 @@ function refinePlanWatchPartyAction(root = document) {
   if (!button || button.dataset.aestheticRefined === 'true') return;
 
   button.dataset.aestheticRefined = 'true';
-  button.setAttribute('aria-label', 'No Watch Party for this game. Plan a Watch Party');
+  button.setAttribute('aria-label', 'No listed Watch Party for this game. Add a Watch Party');
 
   const status = document.createElement('span');
   status.className = 'selected-card__plan-party-status';
-  status.textContent = 'No Watch Party for this game.';
+  status.textContent = 'No listed Watch Party for this game.';
 
   const action = document.createElement('span');
   action.className = 'selected-card__plan-party-action';
-  action.textContent = '+ Plan a Watch Party';
+  action.textContent = '+ Add a Watch Party';
 
   button.replaceChildren(status, action);
 }
