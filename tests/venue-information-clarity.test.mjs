@@ -73,7 +73,8 @@ test('initial Detail render waits for contribution adapters to register', () => 
   assert.ok(applicationModule > -1 && contributionModule > applicationModule);
   assert.match(app, /document\.addEventListener\('DOMContentLoaded', boot, \{ once: true \}\)/);
   assert.match(watchPartyForm, /app\.subscribe\('rendered', render\)[\s\S]*initializeCalBarNominationEntry[\s\S]*initializeListingUpdateEntry/);
-  assert.match(detailHarness, /verifyImmediateSingleOwnerRerender[\s\S]*verifyContribution\(\)/);
+  assert.match(detailHarness, /await waitFor\(\(\) => Boolean\(element\('#venue-detail > \.detail-contribution'\)\), 'compact contribution section'\)/);
+  assert.match(detailHarness, /verifyImmediateSingleOwnerRerender\(venue, hasParty\)[\s\S]*verifyContribution\(venue, fixtureMode\)/);
 });
 
 test('app.js is the single structural owner for Venue Detail on every render', () => {
@@ -118,17 +119,18 @@ test('no-photo Detail creates one noninteractive Venue-local MapLibre map from c
   assert.match(css, /detail-hero\.detail-hero--no-photo[\s\S]*min-height: 0/);
 });
 
-test('mobile Detail reserves no duplicate space below the safe-area-aware sticky row', () => {
+test('mobile Detail reserves only the fixed-action footprint above the global navigation', () => {
   assert.match(detailCss, /body\[data-view="detail"\] \.venue-detail \{[\s\S]*padding-bottom: 0 !important/);
   assert.match(detailCss, /@media \(max-width: 899px\)[\s\S]*\.detail-view \{[\s\S]*padding-bottom: 0 !important/);
-  assert.match(detailCss, /orientation: portrait[\s\S]*display: flex !important[\s\S]*flex-direction: column[\s\S]*margin-top: auto !important/);
+  assert.match(detailCss, /@media \(max-width: 899px\)[\s\S]*body\[data-view="detail"\] \.venue-detail \{[^}]*padding-bottom: calc\(var\(--footer-height\) \+ 78px\) !important;/);
+  assert.match(detailCss, /body\[data-view="detail"\] \.venue-detail > \.action-row\.detail-primary-actions \{[^}]*position: fixed !important;[^}]*bottom: var\(--footer-height\) !important;/);
   assert.match(detailCss, /\.action-row\.detail-primary-actions[\s\S]*padding:[^;]*env\(safe-area-inset-bottom, 0px\)/);
 });
 
-test('photo-present Detail remains on the existing hero path and no photo workflow is invented', () => {
+test('photo-present Detail uses profile enhancement and tears down the local-map fallback', () => {
   assert.match(app, /venue\.photo_url \? '' : ' detail-hero--no-photo'/);
-  assert.match(detailRefinement, /venue\.photo_url[\s\S]*destroyDetailLocalMap/);
-  assert.doesNotMatch(`${html}\n${detailRefinement}`, /photo-submission|photo submission|add a photo/i);
+  assert.match(detailRefinement, /enhanceVenueProfile\(\{ state, documentObject: document, onPhotoError: scheduleUpgrade \}\)[\s\S]*syncDetailLocalMap\(hero, venue, state\)/);
+  assert.match(detailRefinement, /function syncDetailLocalMap\(hero, venue, state\)[\s\S]*const container = hero\?\.querySelector\('\.detail-local-map'\)[\s\S]*if \(!container\) \{[\s\S]*destroyDetailLocalMap\(\)/);
 });
 
 test('Detail identity moves Directions and short description into the address hierarchy', () => {
@@ -171,7 +173,7 @@ test('Detail Watch Party treatment reuses gold language, page scrolling, and sco
   assert.match(watchPartyDisplay, /party-module__report/);
 });
 
-test('Detail sticky row resolves to Fan Intent and Share while Directions moves out of it', () => {
+test('Detail persistent action row resolves to Fan Intent and Share while Directions moves out of it', () => {
   const detailActionSource = app.match(/function createDetailActionRow\(venue\)[\s\S]*?function createDetailContribution/)?.[0] || '';
   assert.match(app, /row\.className = 'action-row detail-primary-actions'/);
   assert.match(app, /share\.className = 'secondary-button detail-share'/);
