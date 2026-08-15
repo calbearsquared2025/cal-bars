@@ -280,7 +280,7 @@ function verifyStickyActions() {
   check((row?.children?.length || 0) === 2, 'Detail sticky action row should contain exactly two direct children');
   check(labels.length === 2, 'Detail sticky action row should contain exactly two primary actions');
   check(labels.some((label) => /I’ll be here|You’ll be here/.test(label)), 'Detail sticky row should retain Fan Intent');
-  check(labels.includes('Share') || labels.includes('Invite Bears'), 'Detail sticky row should retain the contextual share action');
+  check(labels.includes('Share') || labels.includes('Invite more'), 'Detail sticky row should retain the contextual share action');
   check(!labels.includes('Directions') && !labels.some((label) => /Details/.test(label)), 'Detail sticky row should exclude Directions and Details');
 }
 
@@ -395,9 +395,10 @@ async function main() {
   if (params.get('__cgb_prejoined') === '1') {
     await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent selection');
     check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh should restore Fan Intent state');
-    await waitFor(() => actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite Bears'), 'contextual Invite Bears action');
-    check(actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite Bears'), 'Selected Detail should use Invite Bears for the contextual share action');
-    check(!element('#venue-detail .detail-post-join-invitation .post-join-share'), 'Detail should not duplicate the Invite Bears action inside the post-join message');
+    await waitFor(() => actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite more'), 'contextual Invite more action');
+    check(actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite more'), 'Selected Detail should use Invite more for the contextual share action');
+    check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Contextual Invite more action should retain the share icon');
+    check(!element('#venue-detail .detail-post-join-invitation .post-join-share'), 'Detail should not duplicate the contextual share action inside a post-join message');
     verifyStickyActions();
   }
 
