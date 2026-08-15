@@ -151,17 +151,6 @@ function createRetryPanel(button, venueId) {
   panel.append(message, retryButton);
 }
 
-function syncDetailShareAction(button, isSelected) {
-  const row = button.closest('.detail-primary-actions');
-  const share = row?.querySelector(':scope > .detail-share');
-  if (!share) return;
-  const label = isSelected ? 'Invite more' : 'Share';
-  const textNode = Array.from(share.childNodes).find((node) => node.nodeType === 3);
-  if (textNode) textNode.textContent = label;
-  else share.append(document.createTextNode(label));
-  share.setAttribute('aria-label', label);
-}
-
 function syncDetailPresence(venueId, isSelected) {
   if (!appState.detailMode || appState.selectedVenueId !== venueId) return;
   const card = document.querySelector('#venue-detail > .activity-card');
@@ -203,7 +192,14 @@ function renderIntentButton(button) {
       : gameAllowsIntent()
         ? 'I’ll be here'
         : 'Selections closed';
-  syncDetailShareAction(button, isSelected);
+
+  const share = button.closest('.detail-primary-actions')?.querySelector(':scope > .detail-share');
+  if (share) {
+    const label = isSelected ? 'Invite more' : 'Share';
+    const icon = share.querySelector('.ui-icon');
+    share.replaceChildren(...(icon ? [icon] : []), label);
+  }
+
   syncDetailPresence(venueId, isSelected);
   createRetryPanel(button, venueId);
 }
