@@ -92,11 +92,14 @@
   }
 
   body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
+    position: fixed !important;
+    z-index: 47 !important;
     left: 0 !important;
     right: 0 !important;
-    width: auto !important;
-    max-width: 680px !important;
-    margin: 0 auto !important;
+    bottom: var(--footer-height) !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
     transform: none !important;
   }
 }
