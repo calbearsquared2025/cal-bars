@@ -20,8 +20,9 @@ test('selected-profile tap-to-collapse remains separate from swipe-to-detail', (
   assert.doesNotMatch(mobileRefinement, /setTrayState\('full'\)/);
 });
 
-test('mobile map shell is viewport-locked while Detail remains outside the lock', () => {
+test('mobile map shell is viewport-locked while Detail shell remains scrollable', () => {
   assert.match(firstPaintCss, /body\[data-view="map"\][\s\S]*position: fixed[\s\S]*height: 100dvh[\s\S]*overflow: hidden[\s\S]*overscroll-behavior: none/);
   assert.match(firstPaintCss, /@supports not \(height: 100dvh\)[\s\S]*body\[data-view="map"\][\s\S]*height: 100vh/);
-  assert.doesNotMatch(firstPaintCss, /body\[data-view="detail"\][\s\S]*position: fixed/);
+  assert.doesNotMatch(firstPaintCss, /body\[data-view="detail"\]\s*\{[^}]*position:\s*fixed/);
+  assert.match(firstPaintCss, /body\[data-view="detail"\] \.venue-detail > \.action-row\.detail-primary-actions\s*\{[^}]*position: fixed !important;/);
 });
