@@ -1,7 +1,12 @@
+body[data-view="detail"] .venue-detail {
+  background: var(--cgb-white) !important;
+  border-radius: 16px !important;
+}
+
 body[data-view="detail"] .detail-hero.detail-hero--no-photo,
 body[data-view="detail"] .detail-hero.detail-hero--has-photo {
   background: var(--cgb-white) !important;
-  border-radius: 16px !important;
+  border-radius: 16px 16px 0 0 !important;
   overflow: hidden !important;
   box-shadow: none !important;
 }
@@ -102,12 +107,26 @@ body[data-view="detail"] .detail-hero.detail-hero--has-photo .venue-badges {
   margin: 12px 0 0 !important;
 }
 
+body[data-view="detail"] .detail-hero .venue-badges + h1 {
+  margin-top: 5px !important;
+}
+
+body[data-view="detail"] .activity-card {
+  margin-top: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--cgb-neutral-200) !important;
+  border-radius: 0 !important;
+}
+
 body[data-view="detail"] .detail-editorial {
-  margin: 14px 16px 0;
-  padding: 13px 14px;
+  margin: 0 !important;
+  padding: 16px;
   background: var(--cgb-gold-50);
-  border: 1px solid var(--cgb-gold-200);
-  border-radius: 14px;
+  border: 0;
+  border-top: 1px solid var(--cgb-gold-200);
+  border-bottom: 1px solid var(--cgb-gold-200);
+  border-radius: 0;
 }
 
 body[data-view="detail"] .detail-editorial h2 {
@@ -125,6 +144,14 @@ body[data-view="detail"] .detail-editorial__copy {
   color: var(--cgb-ink-700);
   font-size: var(--text-sm);
   line-height: 1.48;
+}
+
+body[data-view="detail"] .detail-contribution {
+  margin-top: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-top: 1px solid var(--cgb-neutral-200) !important;
+  border-radius: 0 !important;
 }
 
 @media (max-width: 359px) {
