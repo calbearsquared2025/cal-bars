@@ -375,11 +375,10 @@ async function main() {
   check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), 'Global game selector should identify the selected opponent');
   const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
   check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Global game selector should preserve known or TBD kickoff behavior');
+  check(visible('#detail-back'), 'Venue Detail should retain Back to map on mobile and desktop');
   if (mobile) {
-    check(!visible('#detail-back'), 'Mobile Detail should rely on the global navigation instead of a redundant Back to map overlay');
     check(visible('.mobile-command-bar'), 'Mobile Detail should preserve the global Map / Search / Add / List navigation');
   } else {
-    check(visible('#detail-back'), 'Desktop Detail should retain Back to map');
     check(!visible('.mobile-command-bar'), 'Desktop Detail should not expose the mobile bottom navigation');
   }
 
