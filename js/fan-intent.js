@@ -155,11 +155,33 @@ function syncDetailShareAction(button, isSelected) {
   const row = button.closest('.detail-primary-actions');
   const share = row?.querySelector(':scope > .detail-share');
   if (!share) return;
-  const label = isSelected ? 'Invite Bears' : 'Share';
+  const label = isSelected ? 'Invite more' : 'Share';
   const textNode = Array.from(share.childNodes).find((node) => node.nodeType === 3);
   if (textNode) textNode.textContent = label;
   else share.append(document.createTextNode(label));
   share.setAttribute('aria-label', label);
+}
+
+function syncDetailPresence(venueId, isSelected) {
+  if (!appState.detailMode || appState.selectedVenueId !== venueId) return;
+  const card = document.querySelector('#venue-detail > .activity-card');
+  if (!card) return;
+  let presence = card.querySelector(':scope > .activity-card__presence');
+  if (!isSelected) {
+    presence?.remove();
+    return;
+  }
+  if (!presence) {
+    presence = document.createElement('p');
+    presence.className = 'activity-card__presence';
+    const current = card.querySelector(':scope > strong');
+    if (current) current.insertAdjacentElement('afterend', presence);
+    else card.prepend(presence);
+  }
+  const count = getFanCount(appState.snapshot, appState.gameId, venueId);
+  presence.textContent = count === 1
+    ? 'You’re the first Bear here.'
+    : 'You’re one of them.';
 }
 
 function renderIntentButton(button) {
@@ -182,6 +204,7 @@ function renderIntentButton(button) {
         ? 'I’ll be here'
         : 'Selections closed';
   syncDetailShareAction(button, isSelected);
+  syncDetailPresence(venueId, isSelected);
   createRetryPanel(button, venueId);
 }
 
@@ -296,14 +319,12 @@ function renderPostJoinInvitation() {
   if (
     !venueId ||
     appState.fanIntent.pending ||
-    appState.selectedVenueId !== venueId
+    appState.selectedVenueId !== venueId ||
+    appState.detailMode
   ) return;
 
   const venue = venueById(venueId);
-  const detailMode = appState.detailMode;
-  const surface = detailMode
-    ? document.querySelector('#venue-detail')
-    : document.querySelector('#tray-selected');
+  const surface = document.querySelector('#tray-selected');
   const row = surface?.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
   const intent = row?.querySelector(':scope > .intent-button');
   if (!venue || !row || !intent) return;
@@ -322,22 +343,15 @@ function renderPostJoinInvitation() {
     : 'Share this spot so other Cal fans can find you.';
   panel.append(heading, copy);
 
-  if (!detailMode) {
-    const share = document.createElement('button');
-    share.type = 'button';
-    share.className = 'secondary-button post-join-share';
-    share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
-    share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
-    panel.append(share);
-  }
+  const share = document.createElement('button');
+  share.type = 'button';
+  share.className = 'secondary-button post-join-share';
+  share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
+  share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
+  panel.append(share);
 
   row.classList.add('has-post-join-invitation');
-  if (detailMode) {
-    panel.classList.add('detail-post-join-invitation');
-    row.insertAdjacentElement('beforebegin', panel);
-  } else {
-    intent.insertAdjacentElement('afterend', panel);
-  }
+  intent.insertAdjacentElement('afterend', panel);
 }
 
 async function handleDocumentClick(event) {
