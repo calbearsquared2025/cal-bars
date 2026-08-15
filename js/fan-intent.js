@@ -193,11 +193,13 @@ function renderIntentButton(button) {
         ? 'I’ll be here'
         : 'Selections closed';
 
-  const share = button.closest('.detail-primary-actions')?.querySelector(':scope > .detail-share');
+  const row = button.closest('.action-row');
+  const share = row?.querySelector(':scope > button.secondary-button');
   if (share) {
     const label = isSelected ? 'Invite more' : 'Share';
     const icon = share.querySelector('.ui-icon');
     share.replaceChildren(...(icon ? [icon] : []), label);
+    share.setAttribute('aria-label', label);
   }
 
   syncDetailPresence(venueId, isSelected);
@@ -303,53 +305,6 @@ async function refreshAggregates() {
   return window.CGBSnapshotRefresh?.refresh?.() || false;
 }
 
-function removePostJoinInvitation() {
-  document.querySelectorAll('.post-join-invitation').forEach((panel) => panel.remove());
-  document.querySelectorAll('.action-row.has-post-join-invitation')
-    .forEach((row) => row.classList.remove('has-post-join-invitation'));
-}
-
-function renderPostJoinInvitation() {
-  removePostJoinInvitation();
-  const venueId = activeVenueId();
-  if (
-    !venueId ||
-    appState.fanIntent.pending ||
-    appState.selectedVenueId !== venueId ||
-    appState.detailMode
-  ) return;
-
-  const venue = venueById(venueId);
-  const surface = document.querySelector('#tray-selected');
-  const row = surface?.querySelector(`.action-row[data-venue-id="${CSS.escape(venueId)}"]`);
-  const intent = row?.querySelector(':scope > .intent-button');
-  if (!venue || !row || !intent) return;
-  const firstBear = getFanCount(appState.snapshot, appState.gameId, venueId) === 1;
-
-  const panel = document.createElement('section');
-  panel.className = 'post-join-invitation';
-  panel.setAttribute('aria-live', 'polite');
-  const heading = document.createElement('strong');
-  heading.textContent = firstBear
-    ? "You're starting the Cal crowd here."
-    : "You're in. Bring more Bears.";
-  const copy = document.createElement('p');
-  copy.textContent = firstBear
-    ? 'Invite other Bears to join you.'
-    : 'Share this spot so other Cal fans can find you.';
-  panel.append(heading, copy);
-
-  const share = document.createElement('button');
-  share.type = 'button';
-  share.className = 'secondary-button post-join-share';
-  share.textContent = firstBear ? 'Invite other Bears' : 'Share this location';
-  share.addEventListener('click', () => window.CGBApp?.shareVenue?.(venue));
-  panel.append(share);
-
-  row.classList.add('has-post-join-invitation');
-  intent.insertAdjacentElement('afterend', panel);
-}
-
 async function handleDocumentClick(event) {
   const retryButton = event.target.closest('.intent-retry[data-venue-id]');
   if (retryButton) {
@@ -400,7 +355,6 @@ async function bootFanIntent() {
   });
 
   subscribeAppEvent('rendered', renderIntentButtons);
-  subscribeAppEvent('rendered', renderPostJoinInvitation);
   document.addEventListener('click', handleDocumentClick);
   startSynchronization();
 
