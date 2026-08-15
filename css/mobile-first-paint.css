@@ -103,6 +103,16 @@
     transform: none !important;
   }
 
+  body[data-view="detail"] .detail-hero.detail-hero--no-photo,
+  body[data-view="detail"] .detail-hero.detail-hero--has-photo {
+    padding-bottom: 6px !important;
+  }
+
+  body[data-view="detail"] .detail-directions-inline,
+  body[data-view="detail"] .detail-website-inline {
+    min-height: 28px !important;
+  }
+
   body[data-view="detail"] .activity-card {
     display: flex !important;
     flex-wrap: wrap !important;
