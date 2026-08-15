@@ -47,7 +47,7 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.match(detailCss, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
   assert.match(fanIntent, /const label = isSelected \? 'Invite more' : 'Share'/);
   assert.match(fanIntent, /share\.replaceChildren/);
-  assert.doesNotMatch(fanIntent, /function syncDetailShareAction/);
+  assert.doesNotMatch(fanIntent, /syncDetailShareAction/);
   assert.match(fanIntent, /You’re the first Bear here\./);
   assert.match(fanIntent, /You’re one of them\./);
   assert.match(fanIntent, /appState\.detailMode\s*\) return;/);
