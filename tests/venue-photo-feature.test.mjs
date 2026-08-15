@@ -44,7 +44,8 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   ]);
   assert.match(detailCss, /\.detail-contribution__actions\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(detailCss, /body\[data-view="detail"\] \.mobile-command-bar\s*\{\s*display: grid !important;/);
-  assert.match(detailCss, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
+  assert.doesNotMatch(detailCss, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
+  assert.match(detailCss, /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\] \.back-link/);
   assert.match(fanIntent, /const share = row\?\.querySelector\(':scope > button\.secondary-button'\)/);
   assert.match(fanIntent, /const label = isSelected \? 'Invite more' : 'Share'/);
   assert.match(fanIntent, /share\.replaceChildren/);
