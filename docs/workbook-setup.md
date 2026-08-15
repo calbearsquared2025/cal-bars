@@ -11,19 +11,43 @@ This is an owner-run setup procedure for the confirmed private v2 Google Spreads
 
 ## Tabs
 
-The read-only foundation expects these tabs:
+The workbook architecture has four canonical core tabs:
 
 1. `Venues`
 2. `Games`
 3. `Watch_Parties`
 4. `Fan_Intent`
-5. `Cal_Bar_Nominations_Raw`
-6. `Watch_Party_Submissions_Raw`
-7. `Listing_Updates_Raw`
-8. `Photo_Submissions_Raw` — reserved; may remain inactive until post-launch
-9. `Missing_Location_Suggestions_Raw`
 
-The canonical column definitions are encoded in `apps-script/Code.gs` and mirrored in the private Data Dictionary.
+Private/raw workflows use:
+
+1. `Cal_Bar_Nominations_Raw`
+2. `Watch_Party_Submissions_Raw`
+3. `Listing_Updates_Raw`
+4. `Missing_Location_Suggestions_Raw`
+
+The Photo Form writes to its existing Form-owned `Photo_Submission` response sheet. It is private raw intake, but `setupWorkbook()` does not create, rename, re-header, or otherwise manage it.
+
+Photo publication control uses one admin tab:
+
+1. `Venue_Photos`
+
+`Venue_Photos` is not a fifth core entity. Its exact header row is:
+
+```text
+venue_id	photo_url	photo_caption	photo_credit	photo_credit_url	publication_status	updated_at
+```
+
+Example Molly O's row (replace `updated_at` with the actual review time when publishing):
+
+```text
+venue_5977e35a58d8b18f22a51f1e	https://calgoldenbars.com/assets/venues/molly-o-s-san-carlos.webp	Cal fans at Molly O's for the 2025 Louisville game.	Oski’s Drinking Straw	https://x.com/Oskisstraw	published	2026-08-12T12:00:00Z
+```
+
+Use zero or one `published` row per canonical Venue ID. Allowed status values are `published`, `draft`, and `archived`. Only `published` rows can supply public Venue photo properties. Never put Form response contents, Drive file IDs, respondent emails, permission records, or reviewer notes in this tab.
+
+The legacy physical `Venues.photo_url` and `Venues.photo_credit` columns remain for workbook compatibility, but Apps Script ignores them for publication. Do not add `photo_caption` or `photo_credit_url` to `Venues`, and do not maintain photo metadata in both places.
+
+The workbook column definitions are encoded in `apps-script/Code.gs`. The private canonical data/privacy planning specification must also be updated to record `Venue_Photos` as a publication-control/admin tab, not a core product entity.
 
 ## Owner actions
 
@@ -34,14 +58,15 @@ The canonical column definitions are encoded in `apps-script/Code.gs` and mirror
 5. Add a third script file named `ColumnFormats.gs` and copy `apps-script/ColumnFormats.gs` into it.
 6. Apply the settings from `apps-script/appsscript.json`.
 7. Run `configureBoundWorkbook()` once and authorize it. This stores the workbook ID in private Apps Script properties.
-8. Run `setupWorkbook()` once. It creates missing tabs and header rows but does not overwrite existing data.
-9. Run `normalizeCanonicalTextColumns()` once. It stores `Venues.postal_code` and `Games.game_date` as text and corrects Sheet-coerced values.
-10. Run `seedTestData()` to add the Milestone 1 synthetic records. The function refuses to run when any canonical data tab contains a non-test row.
-11. Run `buildPublicSnapshotForReview()` and inspect the log output for private fields or malformed records.
-12. Deploy as a Web app only when ready to test the read endpoint:
+8. Run `setupWorkbook()` once. It creates missing tabs and header rows, including `Venue_Photos`, but does not overwrite existing data.
+9. Confirm that `Venue_Photos` has the exact seven-column header above before adding a row.
+10. Run `normalizeCanonicalTextColumns()` once. It stores `Venues.postal_code` and `Games.game_date` as text and corrects Sheet-coerced values.
+11. Run `seedTestData()` to add the Milestone 1 synthetic records. The function refuses to run when any canonical data tab contains a non-test row.
+12. Run `buildPublicSnapshotForReview()` and inspect the log output for private fields or malformed records.
+13. Deploy as a Web app only when ready to test the read endpoint:
     - Execute as: **Me**
     - Who has access: the minimum setting that permits the public frontend to read the snapshot
-13. Keep the deployment URL out of committed source until a later milestone defines the non-production configuration mechanism.
+14. Keep the deployment URL out of committed source until a later milestone defines the non-production configuration mechanism.
 
 ## Canonical text-column normalization
 
@@ -80,6 +105,8 @@ The endpoint is read-only in Milestone 1. It does not accept Fan Intent, externa
 - `normalizeCanonicalTextColumns()` returns postal codes as strings and game dates as `YYYY-MM-DD`.
 - `seedTestData()` creates synthetic rows only when the canonical data tabs are empty or contain only prior test rows.
 - A draft Venue row does not appear publicly.
+- Draft, archived, malformed, unknown-Venue, or duplicate-published `Venue_Photos` rows do not prevent the Venue from publishing and do not expose a photo.
+- One valid published `Venue_Photos` row supplies the four photo properties on its matching public Venue; no top-level photo collection appears.
 - A cancelled or draft Watch Party does not appear publicly.
 - Browser IDs and raw form fields do not appear in the snapshot.
 - `clearTestData()` removes only the synthetic rows.

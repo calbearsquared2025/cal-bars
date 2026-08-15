@@ -85,31 +85,31 @@ Do not add a start-time question. Canonical `event_start_at` remains blank for t
 
 ## Readable game labels
 
-| Canonical Game ID | Form choice | Permanent legacy alias |
-|---|---|---|
-| `game_9e8f4860c6a256c0fae6007d` | `Sep 5 — Cal vs. UCLA` | `game_2026_01` |
-| `game_64902a48440e55522742d631` | `Sep 12 — Cal at Syracuse` | `game_2026_02` |
-| `game_98623ba154f59012256c39ac` | `Sep 19 — Cal vs. Wagner` | `game_2026_03` |
-| `game_bf8616724877adc20fb78ac9` | `Sep 25 — Cal vs. Clemson` | `game_2026_04` |
-| `game_416f957fa7bbd325fa2d9b13` | `Oct 3 — Cal at UNLV` | `game_2026_05` |
-| `game_d865a3e1eac52bbbd848d545` | `Oct 10 — Cal vs. Virginia Tech` | `game_2026_06` |
-| `game_2d86d2a1538503a070d1ee68` | `Oct 17 — Cal vs. Wake Forest` | `game_2026_07` |
-| `game_5f8281482583c43917f6f2a5` | `Oct 24 — Cal at SMU` | `game_2026_08` |
-| `game_6bc7b90491088cca24f8ca52` | `Oct 31 — Cal at NC State` | `game_2026_09` |
-| `game_f4ebc4f05457bb40f3bc66ab` | `Nov 14 — Cal at Virginia` | `game_2026_10` |
-| `game_ca62dd014907c6fdcc7520bd` | `Nov 21 — Cal vs. Stanford` | `game_2026_11` |
-| `game_1535f732d3d1061b8e8cf07e` | `Nov 28 — Cal vs. Pittsburgh` | `game_2026_12` |
+| Canonical Game ID | Form choice |
+|---|---|
+| `game_9e8f4860c6a256c0fae6007d` | `Sep 5 — Cal vs. UCLA` |
+| `game_64902a48440e55522742d631` | `Sep 12 — Cal at Syracuse` |
+| `game_98623ba154f59012256c39ac` | `Sep 19 — Cal vs. Wagner` |
+| `game_bf8616724877adc20fb78ac9` | `Sep 25 — Cal vs. Clemson` |
+| `game_416f957fa7bbd325fa2d9b13` | `Oct 3 — Cal at UNLV` |
+| `game_d865a3e1eac52bbbd848d545` | `Oct 10 — Cal vs. Virginia Tech` |
+| `game_2d86d2a1538503a070d1ee68` | `Oct 17 — Cal vs. Wake Forest` |
+| `game_5f8281482583c43917f6f2a5` | `Oct 24 — Cal at SMU` |
+| `game_6bc7b90491088cca24f8ca52` | `Oct 31 — Cal at NC State` |
+| `game_f4ebc4f05457bb40f3bc66ab` | `Nov 14 — Cal at Virginia` |
+| `game_ca62dd014907c6fdcc7520bd` | `Nov 21 — Cal vs. Stanford` |
+| `game_1535f732d3d1061b8e8cf07e` | `Nov 28 — Cal vs. Pittsburgh` |
 
-Frontend and Apps Script derive the label from canonical `game_date`, `home_away`, and `opponent_name`. Kickoff time is deliberately excluded. Apps Script accepts these readable labels, canonical Game IDs, and the permanent legacy aliases listed above. Unknown labels and games that are not upcoming fail before publication.
+Frontend and Apps Script derive the label from canonical `game_date`, `home_away`, and `opponent_name`. Kickoff time is deliberately excluded. Apps Script accepts these readable labels and canonical Game IDs. Unknown labels and games that are not upcoming fail before publication.
 
 ## Processing behavior
 
 On a valid submission, Apps Script:
 
 1. Preserves the original Form response in `Watch_Party_Submissions_Raw`.
-2. Recognizes finalized friendly titles before legacy question-title aliases.
-3. Resolves readable game choices and legacy Game IDs to canonical `game_id` values.
-4. Resolves a legacy Venue ID to its canonical `venue_id` before lookup.
+2. Recognizes finalized friendly titles before historical question-title variants.
+3. Resolves readable game choices and canonical Game IDs to canonical `game_id` values.
+4. Requires the submitted canonical `venue_id` to match an existing Venue.
 5. Validates the existing published venue, upcoming games, and required structured fields.
 6. Normalizes organizer type, submitter relationship, age, audio, and optional event URL.
 7. Creates one canonical Watch Party per selected game.
@@ -118,7 +118,7 @@ On a valid submission, Apps Script:
 10. Keeps Contact Email only in the private raw response.
 11. Marks the raw response processed and clears the public snapshot cache only after canonical publication succeeds.
 
-Google Forms may retain columns from deleted or renamed questions. Do not delete historical response columns or manually rename Form-owned headers. The processor trims header whitespace and supports legacy titles and legacy Venue/Game identifiers through the permanent `ID_Aliases` ledger.
+Google Forms may retain columns from deleted or renamed questions. Do not delete historical response columns or manually rename Form-owned headers. The processor trims header whitespace and supports historical question titles, but Venue and Game identifiers must be canonical.
 
 ## Event-link validation
 
@@ -176,15 +176,14 @@ Required after deploying the canonical-ID branch:
 
 1. Confirm the spreadsheet **On form submit** trigger still targets `onWatchPartyFormSubmit`.
 2. Open a venue detail for canonical game `game_9e8f4860c6a256c0fae6007d` and confirm the real Form preselects `Sep 5 — Cal vs. UCLA` plus the correct canonical Venue ID and name.
-3. Open the same flow through legacy alias `game_2026_01` and confirm it resolves to the same canonical game.
-4. Select a second game and submit.
-5. Confirm the private raw row preserves readable labels and optional Contact Email.
-6. Confirm one canonical Watch Party exists per selected game, with no contact email and blank `event_start_at`.
-7. Test a bare-domain event link and confirm the canonical URL begins with `https://`.
-8. Confirm the public snapshot and website show the new Watch Parties without private fields.
-9. Repeat the entry-point test in responsive desktop and physical iPhone portrait mode.
+3. Select a second game and submit.
+4. Confirm the private raw row preserves readable labels and optional Contact Email.
+5. Confirm one canonical Watch Party exists per selected game, with no contact email and blank `event_start_at`.
+6. Test a bare-domain event link and confirm the canonical URL begins with `https://`.
+7. Confirm the public snapshot and website show the new Watch Parties without private fields.
+8. Repeat the entry-point test in responsive desktop and physical iPhone portrait mode.
 
-No contribution-sheet schema change is required. The private workbook adds only the `ID_Aliases` tab used by all affected compatibility boundaries.
+No contribution-sheet schema change is required.
 
 ## Weekly maintenance
 

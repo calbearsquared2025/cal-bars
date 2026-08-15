@@ -8,6 +8,7 @@ import {
   resolveDirectEntryVenueId,
   shouldRefreshSnapshot
 } from '../js/snapshot-refresh.mjs';
+import { TRAY_GUIDANCE_COPY } from '../js/core.mjs';
 
 function snapshot(overrides = {}) {
   return {
@@ -96,7 +97,7 @@ test('saved snapshots disclose background refresh and failed refresh states', ()
 test('live data restores the normal tray description', () => {
   assert.equal(
     dataAvailabilityCopy({ dataSource: 'live', venueCount: 3 }).trayCopy,
-    'Watch Parties first, then Cal Bars and Community Locations.'
+    TRAY_GUIDANCE_COPY
   );
 });
 

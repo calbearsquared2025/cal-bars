@@ -11,7 +11,9 @@ const REQUIRED_TOP_LEVEL = [
 const FORBIDDEN_KEYS = new Set([
   'browser_id', 'fan_intent_id', 'external_source', 'external_place_id',
   'source_submission_id', 'publication_status', 'created_at',
-  'submitter_name', 'submitter_email', 'reviewer_note', 'permission_confirmed',
+  'submitter_name', 'submitter_email', 'respondent_email', 'reviewer_note',
+  'permission_confirmed', 'permission_record', 'file_reference', 'drive_file_id',
+  'drive_file_reference', 'raw_submission_contents', 'caption', 'review_status', 'reviewed_at',
   'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
   'opponent_short_name', 'idAliases'
 ]);
@@ -74,6 +76,13 @@ function requireString(record, field, path, errors, { allowEmpty = false } = {})
   }
 }
 
+function validateOptionalString(record, field, path, errors) {
+  const value = record[field];
+  if (value !== undefined && value !== null && typeof value !== 'string') {
+    errors.push(`${path}.${field} must be a string when present`);
+  }
+}
+
 function requireEnum(record, field, allowed, path, errors) {
   if (!allowed.has(record[field])) {
     errors.push(`${path}.${field} has unsupported value: ${JSON.stringify(record[field])}`);
@@ -122,6 +131,9 @@ function validateVenue(venue, index, errors) {
   requireEnum(venue, 'alumni_owned', ALUMNI_OWNED, path, errors);
   if (!isOptionalUrl(venue.website_url)) errors.push(`${path}.website_url must be empty or http(s)`);
   if (!isOptionalUrl(venue.photo_url)) errors.push(`${path}.photo_url must be empty or http(s)`);
+  if (!isOptionalUrl(venue.photo_credit_url)) errors.push(`${path}.photo_credit_url must be empty or http(s)`);
+  validateOptionalString(venue, 'photo_caption', path, errors);
+  validateOptionalString(venue, 'photo_credit', path, errors);
   if (!isIsoDateTime(venue.updated_at)) errors.push(`${path}.updated_at must be an ISO-8601 datetime`);
 }
 

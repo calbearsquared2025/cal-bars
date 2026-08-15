@@ -39,20 +39,19 @@ test('Fan Intent integration uses explicit application lifecycle and render func
   assert.match(app, /restoreSelection/);
 });
 
-test('attendance invitations are render-owned and derived from confirmed attendance', () => {
-  assert.match(client, /subscribeAppEvent\('rendered', renderPostJoinInvitation\)/);
-  assert.match(client, /const venueId = activeVenueId\(\)/);
-  assert.match(client, /appState\.fanIntent\.pending/);
-  assert.match(client, /getFanCount\(appState\.snapshot, appState\.gameId, venueId\) === 1/);
-  assert.match(client, /intent\.insertAdjacentElement\('afterend', panel\)/);
-  assert.doesNotMatch(client, /let postJoinInvitation|showPostJoinInvitation|clearPostJoinInvitation/);
-  assert.doesNotMatch(client, /storageSet\([^\n]*postJoin|localStorage[^\n]*postJoin/i);
+test('confirmed attendance reuses the existing share action instead of rendering a second invitation control', () => {
+  assert.match(client, /const share = row\?\.querySelector\(':scope > button\.secondary-button'\)/);
+  assert.match(client, /const label = isSelected \? 'Invite more' : 'Share'/);
+  assert.match(client, /share\.replaceChildren/);
+  assert.match(client, /share\.setAttribute\('aria-label', label\)/);
+  assert.doesNotMatch(client, /renderPostJoinInvitation|post-join-invitation|post-join-share|has-post-join-invitation/);
+  assert.doesNotMatch(css, /post-join-invitation|post-join-share|has-post-join-invitation/);
 });
 
-test('join, move, retry, and refresh share the same attendance-derived invitation rule', () => {
+test('join, move, retry, and refresh share the same attendance-derived share state', () => {
   assert.match(client, /controller\?\.performIntent\(intentButton\.dataset\.venueId\)/);
   assert.match(client, /controller\?\.retryIntent\(\)/);
-  assert.match(client, /appState\.selectedVenueId !== venueId/);
+  assert.match(client, /const isSelected = activeVenueId\(\) === venueId/);
   assert.doesNotMatch(client, /wasJoin|wasCommitment|retry\?\.action === 'join'|notifySuccessfulCommit/);
 });
 

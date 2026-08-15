@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import { TRAY_GUIDANCE_COPY } from '../js/core.mjs';
 
 const source = await readFile(new URL('../js/map-mobile-refinement.mjs', import.meta.url), 'utf8');
 const firstPaintCss = await readFile(new URL('../css/mobile-first-paint.css', import.meta.url), 'utf8');
+const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
 test('selected venues focus the map at city scale with tray-aware offset', () => {
   assert.match(source, /const FOCUS_ZOOM = 11/);
@@ -25,7 +27,8 @@ test('collapsed preview uses the selected Venue and otherwise returns to guidanc
   assert.doesNotMatch(source, /rankNearbyVenues/);
   assert.doesNotMatch(source, /mode: 'nearby'/);
   assert.match(source, /Find your Cal crowd/);
-  assert.match(source, /Explore Watch Parties, Cal Bars, and places where other Bears are planning to watch\./);
+  assert.match(source, /copy\.textContent = TRAY_GUIDANCE_COPY/);
+  assert.match(html, new RegExp(TRAY_GUIDANCE_COPY.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 
 test('selected mini profile opens the existing full selected profile directly', () => {

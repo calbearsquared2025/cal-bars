@@ -1,4 +1,4 @@
-import { validateSnapshotShape } from './core.mjs';
+import { TRAY_GUIDANCE_COPY, validateSnapshotShape } from './core.mjs';
 
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
@@ -6,7 +6,6 @@ export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const REFRESH_TIMEOUT_MS = 10000;
-const DEFAULT_TRAY_COPY = 'Watch Parties first, then Cal Bars and Community Locations.';
 const PUBLIC_SNAPSHOT_KEYS = [
   'venues',
   'games',
@@ -109,7 +108,7 @@ export function dataAvailabilityCopy({ dataSource, venueCount, refreshFailed = f
     unavailable: false,
     partyStat: '',
     locationStat: '',
-    trayCopy: DEFAULT_TRAY_COPY,
+    trayCopy: TRAY_GUIDANCE_COPY,
     emptyHeading: '',
     emptyGuidance: ''
   };

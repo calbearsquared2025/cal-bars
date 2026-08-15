@@ -7,6 +7,7 @@ import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
 import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
+import { enhanceVenueProfile } from './venue-profile-enhancement.mjs';
 
 let appConnected = false;
 let appConnectAttempts = 0;
@@ -36,7 +37,7 @@ function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
   if (label === 'view details' || label === 'details') return 'details';
-  if (label === 'share' || label === 'share watch party') return 'share';
+  if (label === 'share' || label === 'share watch party' || label === 'invite more') return 'share';
   return null;
 }
 
@@ -83,7 +84,7 @@ function createDetailLocalMarker(venue, state) {
 
 function syncDetailLocalMap(hero, venue, state) {
   const container = hero?.querySelector('.detail-local-map');
-  if (!container || venue.photo_url) {
+  if (!container) {
     destroyDetailLocalMap();
     return;
   }
@@ -158,8 +159,9 @@ export function upgradeRenderedIcons(root = document) {
 }
 
 function runRefinements() {
-  upgradeRenderedIcons();
   const state = window.CGBApp?.getState?.();
+  enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
+  upgradeRenderedIcons();
   const venue = detailVenue(state);
   const hero = document.querySelector('#venue-detail .detail-hero');
   if (!state?.detailMode || !venue || !hero) destroyDetailLocalMap();

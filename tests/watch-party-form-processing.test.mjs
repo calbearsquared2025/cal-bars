@@ -229,7 +229,7 @@ test('one checkbox submission with two readable labels creates one row per game'
   );
 });
 
-test('legacy canonical game IDs remain accepted for older form responses', () => {
+test('direct game ID selections remain accepted for stored Form responses', () => {
   const { api, event, watchPartySheet } = buildHarness({ gameSelections: ['game_2026_02'] });
   const result = api.process(event);
   assert.equal(result.ok, true);

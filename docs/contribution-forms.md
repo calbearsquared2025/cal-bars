@@ -1,21 +1,23 @@
 # Contribution and issue-report Forms
 
-California Golden Bars uses separate Google Forms for manually reviewed contributions and reports. These Forms do not write to canonical Venue or Watch Party records automatically. Responses and submitter details remain private.
+California Golden Bars uses separate Google Forms for manually reviewed contributions and reports. These Forms do not write to canonical Venue or Watch Party records automatically except where a separate accepted workflow explicitly says otherwise. Responses and submitter details remain private.
 
 ## Common settings
 
 For every Form in this document:
 
-- Publish for anyone with the link.
+- Publish for anyone with the link, subject to the photo-upload sign-in exception below.
 - Link responses to the existing private CGB workbook.
 - Keep response sheets and summaries private.
-- Do not require Google sign-in or limit users to one response.
-- Do not collect a verified Google email address automatically.
+- Do not limit users to one response.
+- Do not collect a verified Google email address automatically unless Google Forms requires account identity for file upload; that account identity remains private and is never a public credit.
 - Do not enable response editing, receipts, quizzes, shuffled questions, or public result summaries.
 - Do not install an Apps Script trigger unless a separate operating document explicitly requires one.
-- Never commit edit URLs, response-sheet identifiers, responses, names, email addresses, or reviewer notes.
+- Never commit edit URLs, response-sheet identifiers, responses, names, email addresses, uploaded files, Drive file IDs, or reviewer notes.
 
-After any Form question is recreated, reordered, or replaced, generate a new prefilled link and verify that the public entry IDs configured in `index.html` are still correct.
+All non-photo Forms should remain usable without Google sign-in. **Submit a Photo is the deliberate exception:** Google Forms file upload requires sign-in. The uploaded original remains private in Google Drive and is never served directly by the public site.
+
+After any Form question is recreated, reordered, or replaced, generate a new prefilled link and verify that the public entry IDs configured by the application are still correct.
 
 ## Nominate a Cal Bar
 
@@ -112,6 +114,79 @@ Confirmation text:
 
 A report never automatically edits, deletes, unpublishes, merges, relocates, or reclassifies a Watch Party or Venue.
 
+## Submit a Photo
+
+The dedicated photo Form is a manually reviewed intake workflow. It is configured in the public application and Venue Detail generates a prefilled link for the selected Venue.
+
+Public Form URL:
+
+`https://docs.google.com/forms/d/e/1FAIpQLSecvY5Pm73oPNRe4viSATCWYeERxwyDGYHwGpvPZHzQ03BmDg/viewform`
+
+Configured application fields in `js/photo-form-config.mjs`:
+
+- Venue name: `entry.1077046729`
+- Venue ID: `entry.893543394`
+
+The runtime also accepts equivalent `cgb-photo-form-*` meta configuration if configuration is later centralized in `index.html`.
+
+Questions, in order:
+
+1. `Venue Name` — required short answer; prefilled. Helper: `Pre-filled from the venue profile. Please don’t change this field.`
+2. `Upload a photo` — required file upload. Helper: `Upload a photo you took or have permission to share. Please do not submit inappropriate or offensive content.`
+3. `What's happening in this photo?` — optional paragraph. Helper: `Optional. Tell us what’s happening — for example, “Cal–Louisville game, 2025” or “Regular Saturday watch party with the Cal Alumni of Los Angeles.”` This is source material, not final published copy.
+4. `Photo credit/Display name` — optional short answer. Helper: `Enter the name or social handle you’d like displayed. If using a handle, specify the service, such as X or Instagram.`
+5. `Permission Confirmation` — required checkbox with exactly: `I took this photo or have permission to share it, and I authorize Cal Golden Bars to display it on the website.`
+6. `Venue ID` — required short answer; prefilled. Helper: `Pre-filled from the venue profile. Please don’t change this field.`
+
+There is no separate submitter-email question. Google Forms requires sign-in for the file upload and automatically collects the respondent account email; that email remains private and is never used as public credit.
+
+There is no separate credit-URL question. A reviewer may populate public `photo_credit_url` manually when the credited identity and service are unambiguous. Do not infer an X/Instagram URL from a bare `@handle` when the service is unknown.
+
+Settings and workflow:
+
+- File upload requires Google sign-in; this is intentional and applies only to this Form.
+- Automatically collected Google account email remains private.
+- Do not enable response receipts, public results, editing after submission, contributor accounts, approval/rejection emails, or an Apps Script auto-publication trigger.
+- Responses remain private and are reviewed manually in the Form-owned `Photo_Submission` response sheet.
+- The user-supplied context answer may be rewritten by CGB before becoming public `photo_caption`.
+- Public credit identity/link fields are curated manually and do not publish directly from Form responses.
+- A later approved photo may replace the Venue’s current public primary photo; there is no public gallery or photo history.
+
+Approval/publication is fully human-controlled:
+
+```text
+Form upload
+→ private Google Drive original
+→ manual review and approval
+→ create and visually inspect an optimized WebP outside the repository
+→ manually upload the approved file under assets/venues/<venue-slug>.webp in GitHub
+→ confirm the GitHub Pages image URL returns the approved image
+→ add or update the Venue_Photos publication row for the canonical venue_id
+→ publish through the normal site/data deployment
+```
+
+Prefer WebP at about 1200–1600 px maximum width and generally about 200–500 KB. Preserve the source aspect ratio; Venue Detail owns the visible 3:2 presentation. `Venue_Photos` is the only publication source for `photo_url`, `photo_caption`, `photo_credit`, and `photo_credit_url`. Add only curated public metadata to that tab—never a Drive file ID, respondent email, permission record, reviewer note, or raw submission content.
+
+Do not hotlink the Drive upload or commit the raw Form original.
+
+### Photo publication runbook
+
+1. In the private `Photo_Submission` sheet, verify that the Venue name and canonical Venue ID agree, the uploaded image is appropriate for the Venue, and the permission checkbox was affirmatively selected. Treat the context and credit answers as editorial source material, not automatically approved public copy.
+2. Open the private Drive upload and inspect it at full size. Reject or follow up on images that are blurry, misleading, offensive, visibly copyrighted by an unapproved third party, or too tightly composed for the Venue Detail 3:2 crop.
+3. Download the approved original to a private working folder. Never add that raw original to the public repository.
+4. Auto-orient the image, preserve its aspect ratio, and resize only when its longest dimension exceeds 1600 px. Do not upscale smaller originals. Export an sRGB WebP at roughly quality 80–85 and strip EXIF/location metadata. Aim for 200–500 KB, but accept a smaller file when it remains visually clean.
+5. Name the output `assets/venues/<venue-slug>.webp`. Open the WebP itself and inspect faces, text, shadows, gradients, and the approximate center-cropped 3:2 composition before committing it.
+6. Add only the optimized WebP to the feature/release branch, run the photo tests and data validator, and merge it through the normal reviewed release process. Confirm the final `https://calgoldenbars.com/assets/venues/<venue-slug>.webp` URL loads the approved image before changing the workbook row to `published`.
+7. Add or update exactly one `Venue_Photos` row for the canonical Venue ID. Use `draft` while the asset or copy is still under review; use `published` only after the public asset URL works. Curate the caption, display credit, optional credit URL, and an ISO-8601 UTC `updated_at` value. Archive a superseded row or replace the existing row; never leave two `published` rows for one Venue.
+8. In Apps Script, run `buildPublicSnapshotForReview()`. It clears the endpoint cache, rebuilds the snapshot, and logs the review copy. Confirm the matching Venue contains only the approved `photo_url`, `photo_caption`, `photo_credit`, and `photo_credit_url`, with no Form upload link, Drive ID, account email, permission response, or reviewer data.
+9. Load the Venue Detail from the release candidate on desktop and a physical iPhone in portrait. Confirm the image crop, caption, credit link, map fallback behavior, and `Submit a Photo` action. After release, reload once after the endpoint refresh and repeat the production check.
+
+Free conversion options:
+
+- [Squoosh](https://squoosh.app/) works in a browser: enable **Resize**, set the longest dimension to at most `1600`, choose **WebP**, start near quality `82`, compare the preview, and download the result.
+- [GIMP](https://www.gimp.org/) is a free desktop editor: use **Image → Scale Image**, set width or height to at most `1600` with the chain linked, then **File → Export As**, choose `.webp`, and use quality `80–85`.
+- [ImageMagick](https://imagemagick.org/) is a free command-line option: `magick input.jpg -auto-orient -resize "1600x1600>" -strip -quality 82 output.webp`. The `>` prevents upscaling; quote the geometry in PowerShell so it is not interpreted as redirection.
+
 ## Suggest a missing location
 
 Public Form URL:
@@ -140,8 +215,9 @@ For each Form:
 
 1. Open the relevant action from the application on desktop and a physical iPhone in portrait.
 2. Confirm only the intended public context fields are prefilled.
-3. Confirm free-text issue, address, name, and email fields remain empty.
+3. Confirm free-text issue, context, address, name, and email fields remain empty unless the user enters them.
 4. Submit a clearly marked test response.
-5. Confirm the response appears only in the private response sheet.
-6. Confirm canonical records and the public snapshot remain unchanged.
-7. Remove the test response only according to the private operating policy; never commit it.
+5. Confirm the response and any file upload appear only in the private response storage.
+6. Confirm canonical records and the public snapshot remain unchanged until the applicable approved manual/automated workflow runs.
+7. For photo submissions, confirm the Drive original is private and no Drive file ID or raw response enters public data.
+8. Remove the test response only according to the private operating policy; never commit it.

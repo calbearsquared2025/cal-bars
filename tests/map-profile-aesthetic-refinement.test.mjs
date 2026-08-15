@@ -24,8 +24,8 @@ test('Watch Party visual treatment is shared across mobile and desktop', () => {
 });
 
 test('empty Watch Party prompt includes the approved period and secondary action', () => {
-  assert.match(source, /No Watch Party for this game\./);
-  assert.match(source, /\+ Plan a Watch Party/);
+  assert.match(source, /No listed Watch Party for this game\./);
+  assert.match(source, /\+ Add a Watch Party/);
   assert.match(source, /selected-card__plan-party-status/);
   assert.match(source, /selected-card__plan-party-action/);
 });

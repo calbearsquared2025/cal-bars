@@ -1,5 +1,6 @@
 import { initializeCalBarNominationEntry } from './cal-bar-nomination.js';
 import { initializeListingUpdateEntry } from './listing-update.js';
+import { initializePhotoFormEntry } from './photo-form.js';
 import './external-watch-party-cta.js';
 import { getWatchParty } from './core.mjs';
 import {
@@ -101,6 +102,7 @@ function initializeWatchPartyFormEntryPoint() {
   render();
   initializeCalBarNominationEntry({ app, documentObject: document });
   initializeListingUpdateEntry({ app, documentObject: document });
+  initializePhotoFormEntry({ app, documentObject: document });
 }
 
 initializeWatchPartyFormEntryPoint();

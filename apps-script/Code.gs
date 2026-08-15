@@ -34,6 +34,10 @@ const CGB_TABS = Object.freeze({
     'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
     'created_at', 'updated_at', 'archived_at'
   ],
+  Venue_Photos: [
+    'venue_id', 'photo_url', 'photo_caption', 'photo_credit', 'photo_credit_url',
+    'publication_status', 'updated_at'
+  ],
   Cal_Bar_Nominations_Raw: [
     'response_timestamp', 'submission_id', 'venue_id', 'venue_name', 'reason',
     'gathering_frequency', 'supporting_url', 'submitter_role', 'submitter_name',
@@ -52,18 +56,10 @@ const CGB_TABS = Object.freeze({
     'update_category', 'proposed_change', 'supporting_url', 'submitter_role',
     'submitter_name', 'submitter_email', 'review_status', 'reviewer_note', 'reviewed_at'
   ],
-  Photo_Submissions_Raw: [
-    'response_timestamp', 'submission_id', 'venue_id', 'venue_name', 'file_reference',
-    'caption', 'photo_credit', 'permission_confirmed', 'submitter_name',
-    'submitter_email', 'review_status', 'reviewer_note', 'reviewed_at'
-  ],
   Missing_Location_Suggestions_Raw: [
     'response_timestamp', 'submission_id', 'venue_name', 'address', 'website_url',
     'selected_game_id', 'note', 'submitter_email', 'review_status',
     'created_venue_id', 'reviewed_at'
-  ],
-  ID_Aliases: [
-    'entity_type', 'legacy_id', 'canonical_id', 'mapping_version', 'migrated_at'
   ]
 });
 
@@ -72,7 +68,7 @@ const CGB_PUBLIC_FIELDS = Object.freeze({
     'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'short_description', 'photo_url',
-    'photo_credit', 'updated_at'
+    'photo_caption', 'photo_credit', 'photo_credit_url', 'updated_at'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
@@ -125,6 +121,7 @@ function doGet(event) {
 }
 
 function buildPublicSnapshotForReview() {
+  clearPublicSnapshotCache_();
   const snapshot = buildPublicSnapshot_();
   console.log(JSON.stringify(snapshot, null, 2));
   return snapshot;
@@ -147,11 +144,12 @@ function buildPublicSnapshot_() {
   const workbook = getWorkbook_();
   archiveCompletedFanIntent_(workbook);
   const venuesRaw = readSheetObjects_(workbook, 'Venues');
+  const venuePhotosRaw = readSheetObjects_(workbook, 'Venue_Photos');
   const gamesRaw = readSheetObjects_(workbook, 'Games');
   const partiesRaw = readSheetObjects_(workbook, 'Watch_Parties');
   const intentRaw = readSheetObjects_(workbook, 'Fan_Intent');
 
-  const venues = venuesRaw
+  const venues = mergePublishedVenuePhotos_(venuesRaw, venuePhotosRaw)
     .filter(function(row) {
       return row.publication_status === 'published' && hasValidVenueCoordinates_(row);
     })
@@ -181,9 +179,63 @@ function buildPublicSnapshot_() {
     fanCounts: buildFanCounts_(intentRaw, publishedVenueIds, gameIds),
     venueHistoryCounts: buildVenueHistoryCounts_(intentRaw, publishedVenueIds, gameIds),
     venueSeasonCounts: buildVenueSeasonCounts_(intentRaw, publishedVenueIds, games),
-    idAliases: buildPublicIdAliases_(workbook),
     generatedAt: new Date().toISOString()
   };
+}
+
+function mergePublishedVenuePhotos_(venues, photoRows) {
+  const venueIds = new Set(venues.map(function(row) {
+    return String((row && row.venue_id) || '').trim();
+  }).filter(Boolean));
+  const seenPublishedVenueIds = new Set();
+  const duplicateVenueIds = new Set();
+  const photosByVenueId = Object.create(null);
+
+  photoRows.forEach(function(row) {
+    if (String((row && row.publication_status) || '').trim() !== 'published') return;
+
+    const venueId = String((row && row.venue_id) || '').trim();
+    if (!/^venue_[a-f0-9]{24}$/.test(venueId) || !venueIds.has(venueId)) {
+      console.warn('Skipping published Venue_Photos row for unknown venue_id: ' + (venueId || '(missing venue_id)'));
+      return;
+    }
+    if (seenPublishedVenueIds.has(venueId)) {
+      duplicateVenueIds.add(venueId);
+      delete photosByVenueId[venueId];
+      console.warn('Skipping duplicate published Venue_Photos rows for venue_id: ' + venueId);
+      return;
+    }
+    seenPublishedVenueIds.add(venueId);
+
+    if (!hasValidPublishedVenuePhoto_(row)) {
+      console.warn('Skipping malformed published Venue_Photos row for venue_id: ' + venueId);
+      return;
+    }
+    photosByVenueId[venueId] = row;
+  });
+
+  return venues.map(function(row) {
+    const venueId = String((row && row.venue_id) || '').trim();
+    const photo = duplicateVenueIds.has(venueId) ? null : photosByVenueId[venueId];
+    return Object.assign({}, row, {
+      photo_url: photo ? String(photo.photo_url).trim() : '',
+      photo_caption: photo ? String(photo.photo_caption || '').trim() : '',
+      photo_credit: photo ? String(photo.photo_credit || '').trim() : '',
+      photo_credit_url: photo ? String(photo.photo_credit_url || '').trim() : ''
+    });
+  });
+}
+
+function hasValidPublishedVenuePhoto_(row) {
+  if (!row || typeof row.photo_url !== 'string' || !isHttpUrl_(row.photo_url)) return false;
+  if (typeof row.photo_caption !== 'string' || typeof row.photo_credit !== 'string') return false;
+  if (typeof row.photo_credit_url !== 'string') return false;
+  return !String(row.photo_credit_url).trim() || isHttpUrl_(row.photo_credit_url);
+}
+
+function isHttpUrl_(value) {
+  const raw = String(value || '').trim();
+  return /^https?:\/\/(?:[^@\s/]+@)?(?:\[[0-9a-f:.]+\]|[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?)(?::\d{1,5})?(?:[/?#][^\s]*)?$/i.test(raw);
 }
 
 function buildFanCounts_(rows, venueIds, gameIds) {

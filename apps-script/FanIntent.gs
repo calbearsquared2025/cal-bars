@@ -82,8 +82,6 @@ function parseFanIntentRequest_(event) {
 
 function processFanIntentRequest_(request) {
   const workbook = getWorkbook_();
-  request.gameId = resolveCanonicalId_(workbook, 'game', request.gameId);
-  if (request.venueId) request.venueId = resolveCanonicalId_(workbook, 'venue', request.venueId);
   const now = new Date().toISOString();
   archiveCompletedFanIntentRowsUnlocked_(workbook, now);
 

@@ -51,7 +51,7 @@
   min-width: 0;
 }
 
-.action-row > .secondary-button {
+#map-view .selected-card .action-row > .secondary-button {
   width: 44px;
   min-width: 44px;
   padding: 0;

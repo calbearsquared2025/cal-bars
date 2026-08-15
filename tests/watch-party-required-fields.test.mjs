@@ -6,8 +6,10 @@ import { readFile } from 'node:fs/promises';
 const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 const automation = await readFile(new URL('../apps-script/WatchPartyAutomation.gs', import.meta.url), 'utf8');
 
+const CANONICAL_GAME_ID = 'game_9e8f4860c6a256c0fae6007d';
+const CANONICAL_VENUE_ID = 'venue_7cbf6f0f2c33a2462d3da467';
 const games = [{
-  game_id: 'game_2026_01',
+  game_id: CANONICAL_GAME_ID,
   season: 2026,
   schedule_order: 1,
   opponent_name: 'UCLA',
@@ -43,7 +45,7 @@ const normalize = (namedValues) => context.__normalize(namedValues, workbook);
 
 function validNamedValues() {
   return {
-    'Venue ID (existing)': ['ven_1'],
+    'Venue ID (existing)': [CANONICAL_VENUE_ID],
     'Which game or games will have a Watch Party here?': ['Sep 5 — Cal vs. UCLA'],
     'Organizer or host name': ['Cal Alumni Club'],
     'What is your relationship to this Watch Party?': [
@@ -80,4 +82,14 @@ test('blank optional age and audio fields normalize to public unknown values', (
   assert.equal(submission.organizer_type, 'alumni_group');
   assert.equal(submission.age_policy, 'unknown');
   assert.equal(submission.sound_status, 'unknown');
+});
+
+test('canonical Game IDs are accepted and retired legacy IDs are not remapped', () => {
+  const canonical = validNamedValues();
+  canonical['Which game or games will have a Watch Party here?'] = [CANONICAL_GAME_ID];
+  assert.deepEqual(Array.from(normalize(canonical).game_ids), [CANONICAL_GAME_ID]);
+
+  const legacy = validNamedValues();
+  legacy['Which game or games will have a Watch Party here?'] = ['game_2026_01'];
+  assert.throws(() => normalize(legacy), /unknown_game_id/);
 });
