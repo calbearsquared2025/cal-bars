@@ -39,20 +39,6 @@ function photoKey(venue, photoUrl) {
   return `${clean(venue?.venue_id)}::${photoUrl}`;
 }
 
-function detailIdentityAnchor(hero) {
-  return hero.querySelector(':scope > .detail-address-actions') ||
-    hero.querySelector(':scope > .detail-address') ||
-    hero.querySelector(':scope > h1');
-}
-
-function placeMediaAfterIdentity(hero, media) {
-  if (!hero || !media) return false;
-  const anchor = detailIdentityAnchor(hero);
-  if (anchor) anchor.after(media);
-  else hero.append(media);
-  return true;
-}
-
 function createLocalMapFallback(documentObject, venue) {
   const latitude = Number(venue?.latitude);
   const longitude = Number(venue?.longitude);
@@ -70,10 +56,14 @@ function createLocalMapFallback(documentObject, venue) {
 
 function ensureLocalMapFallback(hero, documentObject, venue) {
   const existing = hero.querySelector(':scope > .detail-local-map');
-  if (existing) return placeMediaAfterIdentity(hero, existing);
+  if (existing) {
+    hero.prepend(existing);
+    return true;
+  }
   const map = createLocalMapFallback(documentObject, venue);
   if (!map) return false;
-  return placeMediaAfterIdentity(hero, map);
+  hero.prepend(map);
+  return true;
 }
 
 function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
@@ -192,11 +182,11 @@ export function enhanceVenueProfile({
       existingPhoto?.remove();
       photo = createPhotoFigure(documentObject, venue, presentation, onPhotoError);
     }
-    placeMediaAfterIdentity(hero, photo);
+    hero.prepend(photo);
   } else {
     existingPhoto?.remove();
     const localMap = hero.querySelector(':scope > .detail-local-map');
-    if (localMap) placeMediaAfterIdentity(hero, localMap);
+    if (localMap) hero.prepend(localMap);
     else if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 
