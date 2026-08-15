@@ -46,12 +46,19 @@ body[data-view="detail"] .venue-detail {
   }
 
   body[data-view="detail"] .venue-detail {
-    padding-bottom: calc(var(--footer-height) + 8px) !important;
+    padding-bottom: calc(var(--footer-height) + 78px) !important;
   }
 
   body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
+    position: fixed !important;
+    z-index: 47 !important;
+    left: 50% !important;
+    right: auto !important;
     bottom: var(--footer-height) !important;
+    width: min(100%, 680px) !important;
+    margin: 0 !important;
     padding-bottom: 10px !important;
+    transform: translateX(-50%) !important;
   }
 }
 
