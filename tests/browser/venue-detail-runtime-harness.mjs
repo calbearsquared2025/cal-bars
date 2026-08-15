@@ -123,14 +123,13 @@ async function verifyGameSelectorRoundTrip(originalGameId, venueId) {
 
 function verifyLocalMapOrPhoto(venue, fixtureMode) {
   const hero = element('#venue-detail .detail-hero');
-  const identityAnchor = hero?.querySelector(':scope > .detail-address-actions');
   const photo = element('#venue-detail .detail-photo');
   const mapNode = element('#venue-detail .detail-local-map');
 
   if (fixtureMode === 'photo') {
     check(Boolean(photo), 'Photo-present Detail should render the approved photo figure');
     check(!mapNode, 'Photo-present Detail should replace the local map');
-    check(identityAnchor?.nextElementSibling === photo, 'Venue identity and address actions should precede the approved photo');
+    check(hero?.firstElementChild === photo, 'Approved Venue photo should lead the cohesive Detail identity card');
     const image = photo?.querySelector('.detail-photo__image');
     check(image?.src === safeExternalUrl(venue.photo_url), 'Venue photo should use the approved photo URL');
     check(image?.alt === venue.photo_caption, 'Venue photo alt text should prefer the approved caption');
@@ -150,7 +149,7 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
   check(Boolean(mapNode), fixtureMode === 'broken'
     ? 'Failed Venue photo should restore the local-map fallback'
     : 'No-photo Detail should render a local map');
-  check(identityAnchor?.nextElementSibling === mapNode, 'Venue identity and address actions should precede the local-map fallback');
+  check(hero?.firstElementChild === mapNode, 'Venue local map should lead the cohesive Detail identity card');
   check(Number(mapNode?.dataset.latitude) === Number(venue.latitude), 'Detail local map should use canonical latitude');
   check(Number(mapNode?.dataset.longitude) === Number(venue.longitude), 'Detail local map should use canonical longitude');
   const zoom = Number(mapNode?.dataset.zoom);
@@ -375,7 +374,7 @@ async function main() {
   check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), 'Global game selector should identify the selected opponent');
   const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
   check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Global game selector should preserve known or TBD kickoff behavior');
-  check(visible('#detail-back'), 'Venue Detail should retain Back to map on mobile and desktop');
+  check(visible('#detail-back'), 'Venue Detail should keep Back to map visible');
   if (mobile) {
     check(visible('.mobile-command-bar'), 'Mobile Detail should preserve the global Map / Search / Add / List navigation');
   } else {
