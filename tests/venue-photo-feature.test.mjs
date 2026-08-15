@@ -6,7 +6,7 @@ async function source(path) {
   return readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 }
 
-test('Venue Detail photo/profile enhancement uses one fixed square crop', async () => {
+test('Venue Detail photo/profile enhancement uses one fixed square crop with media first', async () => {
   const [icons, profile, css] = await Promise.all([
     source('js/icon-upgrade.mjs'),
     source('js/venue-profile-enhancement.mjs'),
@@ -17,15 +17,18 @@ test('Venue Detail photo/profile enhancement uses one fixed square crop', async 
   assert.match(profile, /detail-local-map/);
   assert.match(profile, /CGB SAYS/);
   assert.match(profile, /detail-description/);
-  assert.match(profile, /detailIdentityAnchor/);
-  assert.match(profile, /detail-address-actions/);
-  assert.match(profile, /placeMediaAfterIdentity/);
+  assert.match(profile, /hero\.prepend\(photo\)/);
+  assert.match(profile, /hero\.prepend\(localMap\)/);
+  assert.doesNotMatch(profile, /detailIdentityAnchor|placeMediaAfterIdentity/);
   assert.match(profile, /frame\.style\.aspectRatio = '1 \/ 1'/);
   assert.match(profile, /image\.style\.objectFit = 'cover'/);
   assert.doesNotMatch(profile, /venuePhotoOrientation|naturalWidth|naturalHeight|photoOrientation|--detail-photo-aspect/);
   assert.match(css, /detail-hero--has-photo/);
   assert.match(css, /aspect-ratio: 1 \/ 1/);
   assert.match(css, /object-fit: cover/);
+  assert.match(css, /body\[data-view="detail"\] \.back-link[\s\S]*min-height: 32px !important/);
+  assert.match(css, /background: rgba\(255, 255, 255, \.92\) !important/);
+  assert.match(css, /detail-hero--no-photo,[\s\S]*detail-hero--has-photo[\s\S]*background: var\(--cgb-white\) !important/);
   assert.doesNotMatch(css, /data-photo-orientation|--detail-photo-aspect/);
 });
 
