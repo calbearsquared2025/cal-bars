@@ -45,13 +45,13 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.match(detailCss, /\.detail-contribution__actions\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(detailCss, /body\[data-view="detail"\] \.mobile-command-bar\s*\{\s*display: grid !important;/);
   assert.match(detailCss, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
+  assert.match(fanIntent, /const share = row\?\.querySelector\(':scope > button\.secondary-button'\)/);
   assert.match(fanIntent, /const label = isSelected \? 'Invite more' : 'Share'/);
   assert.match(fanIntent, /share\.replaceChildren/);
   assert.doesNotMatch(fanIntent, /syncDetailShareAction/);
   assert.match(fanIntent, /You’re the first Bear here\./);
   assert.match(fanIntent, /You’re one of them\./);
-  assert.match(fanIntent, /appState\.detailMode\s*\) return;/);
-  assert.doesNotMatch(fanIntent, /panel\.classList\.add\('detail-post-join-invitation'\)/);
+  assert.doesNotMatch(fanIntent, /renderPostJoinInvitation|post-join-invitation|post-join-share/);
 });
 
 test('Submit a Photo is contextual, prefilled, and omitted when configuration is absent', async () => {
