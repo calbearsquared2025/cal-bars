@@ -38,12 +38,12 @@ test('mobile styling removes the permanent map search and presents full command 
   assert.match(css, /\.mobile-command__add-mark/);
 });
 
-test('mobile Detail reuses the global command bar and removes the redundant back overlay', async () => {
+test('mobile Detail reuses the global command bar, keeps Back to map, and anchors primary actions above navigation', async () => {
   const css = await source('css/venue-detail.css');
   const mobile = css.slice(css.indexOf('@media (max-width: 899px)'));
   assert.match(mobile, /body\[data-view="detail"\] \.mobile-command-bar\s*\{\s*display: grid !important;/);
-  assert.match(mobile, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
-  assert.match(mobile, /body\[data-view="detail"\] \.venue-detail > \.action-row\.detail-primary-actions\s*\{[^}]*bottom: var\(--footer-height\) !important;/);
+  assert.doesNotMatch(mobile, /body\[data-view="detail"\] \.back-link\s*\{[^}]*display: none !important;/);
+  assert.match(mobile, /body\[data-view="detail"\] \.venue-detail > \.action-row\.detail-primary-actions\s*\{[^}]*position: fixed !important;[^}]*bottom: var\(--footer-height\) !important;/);
 });
 
 test('navigation delegates to existing search, tray, contribution, and Detail-return contracts', async () => {
