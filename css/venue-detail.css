@@ -41,10 +41,6 @@ body[data-view="detail"] .venue-detail {
     display: grid !important;
   }
 
-  body[data-view="detail"] .back-link {
-    display: none !important;
-  }
-
   body[data-view="detail"] .detail-view {
     padding-bottom: 0 !important;
   }
