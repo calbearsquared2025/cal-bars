@@ -160,7 +160,7 @@
 
 .location-card__party {
   color: var(--cgb-gold-600) !important;
-  font-weight: 750 !important;
+  font-weight: 750;
 }
 
 .empty-state {
