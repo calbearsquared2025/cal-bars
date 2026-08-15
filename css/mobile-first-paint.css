@@ -90,6 +90,15 @@
   body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__chevron {
     display: none !important;
   }
+
+  body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    transform: none !important;
+  }
 }
 
 @media (max-width: 899px) and (orientation: portrait) {
