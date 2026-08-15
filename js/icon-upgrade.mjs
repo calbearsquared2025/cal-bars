@@ -37,7 +37,7 @@ function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
   if (label === 'view details' || label === 'details') return 'details';
-  if (label === 'share' || label === 'share watch party') return 'share';
+  if (label === 'share' || label === 'share watch party' || label === 'invite more') return 'share';
   return null;
 }
 
