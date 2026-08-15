@@ -9,6 +9,8 @@ For every Form in this document:
 - Publish for anyone with the link.
 - Link responses to the existing private CGB workbook.
 - Keep response sheets and summaries private.
+- Treat each Form's linked response sheet as that Form's private raw response log unless a separate processing workflow explicitly says otherwise.
+- Do not copy Form responses into a duplicate `_Raw` tab unless an implemented workflow requires it.
 - Do not require Google sign-in or limit users to one response.
 - Do not collect a verified Google email address automatically.
 - Do not enable response editing, receipts, quizzes, shuffled questions, or public result summaries.
@@ -55,6 +57,8 @@ Questions, in order:
 Confirmation text:
 
 `Your nomination was received for private review. The public listing will not change automatically.`
+
+The Google Form's linked response sheet is the authoritative private raw log for Cal Bar nominations. The former `Cal_Bar_Nominations_Raw` workbook tab is not required and should not be recreated or used as a second copy of the same responses.
 
 Manual review may result in a deliberate canonical Venue update. Multiple nominations for the same Venue are permitted and may provide corroborating evidence.
 
@@ -142,6 +146,6 @@ For each Form:
 2. Confirm only the intended public context fields are prefilled.
 3. Confirm free-text issue, address, name, and email fields remain empty.
 4. Submit a clearly marked test response.
-5. Confirm the response appears only in the private response sheet.
+5. Confirm the response appears only in that Form's linked private response sheet.
 6. Confirm canonical records and the public snapshot remain unchanged.
 7. Remove the test response only according to the private operating policy; never commit it.
