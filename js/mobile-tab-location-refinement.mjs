@@ -253,14 +253,6 @@ function handleListLocationClick(event) {
   else requestLocation('list');
 }
 
-function disablePeekHandleNavigation(event) {
-  const handle = event.target.closest?.('#tray-handle');
-  const tray = document.querySelector('#venue-tray');
-  if (!handle || !isMobile() || document.body.dataset.commandSurface !== 'map' || tray?.dataset.state !== 'peek') return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-}
-
 function sync() {
   installStyles();
   syncCalBarNominationAction();
@@ -272,7 +264,6 @@ function initialize() {
   installStyles();
   document.addEventListener('click', handleLocateClick, { capture: true });
   document.addEventListener('click', handleListLocationClick, { capture: true });
-  document.addEventListener('click', disablePeekHandleNavigation, { capture: true });
   document.querySelector('#mobile-add-button')?.addEventListener('click', () => requestAnimationFrame(syncCalBarNominationAction));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
