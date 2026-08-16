@@ -55,25 +55,49 @@ test('Google Analytics migration preserves the existing GA4 property and initial
   assert.equal(windowObject.dataLayer.length, 2);
 });
 
-test('event schema aliases legacy calls, adds game context, and drops private or high-risk parameters', () => {
+test('global gtag remains a standard passthrough and does not filter non-CGB parameters', () => {
   const { documentObject } = analyticsDocumentStub();
+  const windowObject = {};
+  const callback = () => {};
+  initializeGoogleAnalytics({ windowObject, documentObject });
+
+  windowObject.gtag('event', 'third_party_event', {
+    send_to: 'G-OTHER',
+    event_callback: callback,
+    arbitrary_parameter: 'kept'
+  });
+
+  const call = Array.from(windowObject.dataLayer.at(-1));
+  assert.equal(call[0], 'event');
+  assert.equal(call[1], 'third_party_event');
+  assert.deepEqual(call[2], {
+    send_to: 'G-OTHER',
+    event_callback: callback,
+    arbitrary_parameter: 'kept'
+  });
+});
+
+test('CGB event helper aliases legacy names, adds context, and drops private or high-risk parameters', () => {
+  const sent = [];
   const windowObject = {
     CGBApp: {
       getState() {
         return { gameId: '2026-ucla' };
       }
+    },
+    gtag(...args) {
+      sent.push(args);
     }
   };
-  initializeGoogleAnalytics({ windowObject, documentObject });
 
-  windowObject.gtag('event', 'external_place_result_selected', {
+  assert.equal(trackCgbEvent('external_place_result_selected', {
     place_type: 'poi',
     browser_id: 'private-browser-id',
     latitude: 37.8,
     search_term: 'raw user search'
-  });
+  }, windowObject), true);
 
-  assert.deepEqual(windowObject.dataLayer.at(-1), [
+  assert.deepEqual(sent, [[
     'event',
     'external_place_selected',
     {
@@ -82,7 +106,7 @@ test('event schema aliases legacy calls, adds game context, and drops private or
       result_type: 'external',
       place_type: 'poi'
     }
-  ]);
+  ]]);
 });
 
 test('CGB event helper only sends approved flow parameters', () => {
