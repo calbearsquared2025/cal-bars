@@ -40,6 +40,7 @@ test('desktop Venue Detail is one white surface instead of independent column ca
   assert.ok(css.includes('box-shadow: 0 12px 30px rgba(1, 1, 51, .06) !important'));
   assert.match(css, /detail-hero\.detail-hero--has-photo[\s\S]*background: transparent !important[\s\S]*border: 0 !important[\s\S]*box-shadow: none !important/);
   assert.match(css, /detail-desktop-game-context,[\s\S]*activity-card,[\s\S]*action-row\.detail-primary-actions[\s\S]*background: transparent !important/);
+  assert.match(css, /detail-desktop-game-context[\s\S]*border-left: 1px solid var\(--cgb-neutral-200\) !important/);
   assert.match(css, /detail-contribution[\s\S]*margin-top: 0 !important[\s\S]*padding: 14px 22px 20px !important/);
 });
 
