@@ -12,14 +12,14 @@
   }
 
   html body[data-view="detail"] .back-link {
-    top: 10px !important;
+    top: 8px !important;
     left: 46px !important;
-    min-height: 30px !important;
+    min-height: 28px !important;
   }
 
   html body[data-view="detail"] .detail-hero.detail-hero--no-photo,
   html body[data-view="detail"] .detail-hero.detail-hero--has-photo {
-    padding: 48px 28px 28px !important;
+    padding: 42px 28px 28px !important;
     background: transparent !important;
     border: 0 !important;
     border-radius: 0 !important;
