@@ -136,7 +136,8 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
 }
 
 function moveEditorialDescription(detail, hero, documentObject) {
-  const description = hero.querySelector(':scope > .detail-description');
+  const description = hero.querySelector(':scope > .detail-description')
+    || detail.querySelector(':scope > .detail-editorial .detail-editorial__copy');
   if (!description) return false;
 
   let section = detail.querySelector(':scope > .detail-editorial');
@@ -153,6 +154,65 @@ function moveEditorialDescription(detail, hero, documentObject) {
   const activity = detail.querySelector(':scope > .activity-card');
   if (activity) activity.after(section);
   else hero.after(section);
+  return true;
+}
+
+function ensureDesktopEditorial(detail, hero, documentObject) {
+  const source = detail.querySelector(':scope > .detail-editorial .detail-editorial__copy');
+  const text = clean(source?.textContent);
+  let section = hero.querySelector(':scope > .detail-desktop-editorial');
+  if (!text) {
+    section?.remove();
+    return false;
+  }
+
+  if (!section) {
+    section = documentObject.createElement('section');
+    section.className = 'detail-desktop-editorial';
+    const heading = documentObject.createElement('h2');
+    heading.textContent = 'CGB SAYS';
+    const copy = documentObject.createElement('p');
+    copy.className = 'detail-desktop-editorial__copy';
+    section.append(heading, copy);
+    hero.append(section);
+  }
+  section.querySelector('.detail-desktop-editorial__copy').textContent = text;
+  return true;
+}
+
+function ensureDesktopGameContext(detail, documentObject) {
+  const activity = detail.querySelector(':scope > .activity-card');
+  if (!activity) return false;
+
+  let context = detail.querySelector(':scope > .detail-desktop-game-context');
+  if (!context) {
+    context = documentObject.createElement('section');
+    context.className = 'detail-desktop-game-context';
+    context.setAttribute('aria-label', 'Selected game activity');
+
+    const eyebrow = documentObject.createElement('span');
+    eyebrow.className = 'eyebrow';
+    eyebrow.textContent = 'Selected game';
+    const title = documentObject.createElement('strong');
+    title.className = 'detail-desktop-game-context__title';
+    const kickoff = documentObject.createElement('span');
+    kickoff.className = 'detail-desktop-game-context__kickoff';
+    context.append(eyebrow, title, kickoff);
+  }
+
+  const title = context.querySelector('.detail-desktop-game-context__title');
+  const kickoff = context.querySelector('.detail-desktop-game-context__kickoff');
+  if (title) title.textContent = clean(documentObject.querySelector('#header-game-label')?.textContent) || 'Selected game';
+  if (kickoff) kickoff.textContent = clean(documentObject.querySelector('#header-kickoff')?.textContent);
+  activity.before(context);
+  return true;
+}
+
+function placeContributionAfterPrimaryActions(detail) {
+  const actions = detail.querySelector(':scope > .action-row.detail-primary-actions');
+  const contribution = detail.querySelector(':scope > .detail-contribution');
+  if (!actions || !contribution || actions.nextElementSibling === contribution) return false;
+  actions.after(contribution);
   return true;
 }
 
@@ -191,5 +251,8 @@ export function enhanceVenueProfile({
   }
 
   moveEditorialDescription(detail, hero, documentObject);
+  ensureDesktopEditorial(detail, hero, documentObject);
+  ensureDesktopGameContext(detail, documentObject);
+  placeContributionAfterPrimaryActions(detail);
   return true;
 }
