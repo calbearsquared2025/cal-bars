@@ -1,5 +1,6 @@
 @import url('./venue-profile.css');
 @import url('./desktop-venue-detail.css');
+@import url('./desktop-venue-detail-unified.css');
 
 .watch-party-contribution {
   display: grid;
