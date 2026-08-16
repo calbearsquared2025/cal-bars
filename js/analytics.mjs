@@ -86,17 +86,6 @@ function eventDefaults(eventName, windowObject) {
   return defaults;
 }
 
-function normalizeEventArguments(args, windowObject) {
-  if (args[0] !== 'event') return args;
-  const eventName = canonicalEventName(args[1]);
-  const parameters = sanitizeEventParameters({
-    ...eventDefaults(eventName, windowObject),
-    ...(args[2] || {})
-  });
-  if (eventName.startsWith('fan_intent_')) pendingIntentSurface = '';
-  return ['event', eventName, parameters];
-}
-
 export function trackCgbEvent(eventName, parameters = {}, windowObject = globalThis.window) {
   if (!windowObject || typeof windowObject.gtag !== 'function') return false;
   const normalizedName = canonicalEventName(eventName);
@@ -119,8 +108,8 @@ export function initializeGoogleAnalytics({
 
   windowObject[INITIALIZED_FLAG] = true;
   windowObject.dataLayer = windowObject.dataLayer || [];
-  windowObject.gtag = windowObject.gtag || function gtag(...args) {
-    windowObject.dataLayer.push(normalizeEventArguments(args, windowObject));
+  windowObject.gtag = windowObject.gtag || function gtag() {
+    windowObject.dataLayer.push(arguments);
   };
 
   if (!documentObject.getElementById(SCRIPT_ID)) {
