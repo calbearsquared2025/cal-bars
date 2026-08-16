@@ -1,3 +1,4 @@
+import './analytics.mjs';
 import { TRAY_GUIDANCE_COPY, validateSnapshotShape } from './core.mjs';
 
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
