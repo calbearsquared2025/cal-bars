@@ -203,10 +203,17 @@ function handleFlowClick(event, windowObject) {
   }
 
   if (element.matches('[data-watch-party-form-entry-point], [data-external-watch-party-form-retry], #external-venue-plan-watch-party')) {
-    trackCgbEvent('watch_party_form_started', venueContext(state, venueId, {
-      action_surface: surface,
-      form_type: 'watch_party'
-    }), windowObject);
+    const formContext = element.matches('#external-venue-plan-watch-party')
+      ? {
+          game_id: state?.gameId || '',
+          action_surface: surface,
+          form_type: 'watch_party'
+        }
+      : venueContext(state, venueId, {
+          action_surface: surface,
+          form_type: 'watch_party'
+        });
+    trackCgbEvent('watch_party_form_started', formContext, windowObject);
   }
 
   if (element.matches('[data-cal-bar-nomination-entry]')) {
@@ -256,7 +263,7 @@ function handleRendered(windowObject) {
     lastVenueSignature = '';
     return;
   }
-  if (signature === lastVenueSignature) return;
+  if (signature === lastVenueSignature && !pendingVenueEntrySurface) return;
 
   if (pendingVenueEntrySurface || state.detailMode) {
     trackCgbEvent('venue_view', venueContext(state, venue.venue_id, {
