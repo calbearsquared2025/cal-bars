@@ -121,3 +121,7 @@ test('CGB event helper only sends approved flow parameters', () => {
     }
   ]]);
 });
+
+test('CGB event helper is a no-op outside a browser instead of throwing', () => {
+  assert.equal(trackCgbEvent('fan_intent_joined', { game_id: 'game_1' }), false);
+});
