@@ -43,6 +43,17 @@ test('settled portrait map geometry is available from static CSS before modules 
   );
 });
 
+test('selected Map hides the global stats card and reclaims the attribution slot', () => {
+  assert.match(
+    css,
+    /data-command-surface="map"\]:has\(#venue-tray\.tray--selected\) \.opening-stat[\s\S]*display: none !important/
+  );
+  assert.match(
+    css,
+    /data-command-surface="map"\]:has\(#venue-tray\.tray--selected\) \.maplibregl-ctrl-bottom-right[\s\S]*top: 10px !important/
+  );
+});
+
 test('Search Add and List keep CGB branding with a compact selected-game header', () => {
   assert.match(css, /data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(112px/);
   assert.match(css, /site-header__brand-row[\s\S]*display: flex !important/);
