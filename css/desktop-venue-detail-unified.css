@@ -26,12 +26,15 @@
     box-shadow: none !important;
   }
 
+  html body[data-view="detail"] #venue-detail > :not(.detail-hero) {
+    border-left-color: var(--cgb-neutral-200) !important;
+  }
+
   html body[data-view="detail"] .detail-desktop-game-context,
   html body[data-view="detail"] #venue-detail > .activity-card,
   html body[data-view="detail"] #venue-detail > .action-row.detail-primary-actions {
     background: transparent !important;
     border-right: 0 !important;
-    border-left: 0 !important;
     border-radius: 0 !important;
   }
 
@@ -39,11 +42,13 @@
     padding-top: 20px !important;
     border-top: 0 !important;
     border-bottom: 0 !important;
+    border-left: 1px solid var(--cgb-neutral-200) !important;
   }
 
   html body[data-view="detail"] #venue-detail > .activity-card {
     border-top: 0 !important;
     border-bottom: 0 !important;
+    border-left: 1px solid var(--cgb-neutral-200) !important;
   }
 
   html body[data-view="detail"] #venue-detail > .party-module {
@@ -55,11 +60,13 @@
   html body[data-view="detail"] #venue-detail > .action-row.detail-primary-actions {
     border-top: 1px solid var(--cgb-neutral-200) !important;
     border-bottom: 0 !important;
+    border-left: 1px solid var(--cgb-neutral-200) !important;
   }
 
   html body[data-view="detail"] #venue-detail > .detail-contribution {
     margin-top: 0 !important;
     padding: 14px 22px 20px !important;
     border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-left: 1px solid var(--cgb-neutral-200) !important;
   }
 }
