@@ -4,6 +4,7 @@ const MOBILE_QUERY = '(max-width: 899px)';
 const VALID_VIEWS = new Set(['map', 'search', 'add', 'list']);
 let activeView = 'map';
 let openingList = false;
+let trayResizeObserver = null;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -58,6 +59,28 @@ function normalizeSearchLabels() {
     .forEach((note) => { note.textContent = 'Not yet listed in Cal Golden Bars.'; });
 }
 
+function syncMapActionTrayOffset() {
+  if (!isMobile()) return;
+  const tray = document.querySelector('#venue-tray');
+  const mapView = document.querySelector('#map-view');
+  if (!tray || !mapView) return;
+  const height = Math.max(0, Math.round(tray.getBoundingClientRect().height));
+  if (height > 0) mapView.style.setProperty('--cgb-mobile-tray-height', `${height}px`);
+}
+
+function observeTraySize() {
+  const tray = document.querySelector('#venue-tray');
+  trayResizeObserver?.disconnect();
+  trayResizeObserver = null;
+  if (!tray || typeof ResizeObserver !== 'function') {
+    syncMapActionTrayOffset();
+    return;
+  }
+  trayResizeObserver = new ResizeObserver(syncMapActionTrayOffset);
+  trayResizeObserver.observe(tray);
+  syncMapActionTrayOffset();
+}
+
 function setActiveView(next) {
   if (!isMobile() || !VALID_VIEWS.has(next)) return;
   activeView = next;
@@ -107,6 +130,7 @@ function sync() {
   updateStatistics();
   updateListHeading();
   normalizeSearchLabels();
+  syncMapActionTrayOffset();
 }
 
 function initializeNavigation() {
@@ -132,6 +156,7 @@ function initializeNavigation() {
 
 function initialize() {
   initializeNavigation();
+  observeTraySize();
   document.querySelector('#location-query')?.addEventListener('input', () => requestAnimationFrame(normalizeSearchLabels));
   document.querySelector('#location-search')?.addEventListener('submit', () => requestAnimationFrame(normalizeSearchLabels));
 
