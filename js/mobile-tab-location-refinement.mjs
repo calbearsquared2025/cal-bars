@@ -1,6 +1,4 @@
 import {
-  formatKickoff,
-  gameTitle,
   NEARBY_RADIUS_MILES,
   rankNearbyVenues
 } from './core.mjs';
@@ -60,10 +58,6 @@ function installStyles() {
         display: none !important;
       }
 
-      .add-game-context {
-        display: grid !important;
-      }
-
       body[data-command-surface="list"] #clear-search-button {
         display: inline-flex !important;
         align-items: center;
@@ -80,11 +74,11 @@ function installStyles() {
     @media (max-width: 899px) and (orientation: portrait) {
       body[data-command-surface="search"] .command-surface__shell,
       body[data-command-surface="add"] .command-surface__shell {
-        padding-top: 48px !important;
+        padding-top: 18px !important;
       }
 
       body[data-command-surface="list"] .tray-list__header {
-        padding-top: 46px !important;
+        padding-top: 16px !important;
       }
     }
 
@@ -120,37 +114,29 @@ function setTrayState(next) {
   if (list) list.hidden = next !== 'full';
 }
 
-function selectedGame(state = appState()) {
-  return state?.snapshot?.games?.find((game) => game.game_id === state.gameId) || null;
+function selectedVenue(state = appState()) {
+  if (!state?.snapshot?.venues || !state.selectedVenueId) return null;
+  return state.snapshot.venues.find((venue) => venue.venue_id === state.selectedVenueId) || null;
 }
 
-function syncAddGameContext() {
-  const addSurface = document.querySelector('#add-surface .command-surface__shell');
-  const placeContext = document.querySelector('#add-surface .add-context:not(.add-game-context)');
-  if (!addSurface || !placeContext) return;
+function syncCalBarNominationAction() {
+  const button = document.querySelector('#add-cal-bar-button');
+  const label = document.querySelector('#add-cal-bar-label');
+  const copy = document.querySelector('#add-cal-bar-copy');
+  if (!button || !label || !copy) return;
 
-  let context = document.querySelector('#add-game-context');
-  if (!context) {
-    context = document.createElement('section');
-    context.id = 'add-game-context';
-    context.className = 'add-context add-game-context';
-    context.setAttribute('aria-live', 'polite');
-    const eyebrow = document.createElement('span');
-    eyebrow.className = 'eyebrow';
-    eyebrow.textContent = 'Current game';
-    const name = document.createElement('strong');
-    name.id = 'add-game-context-name';
-    const copy = document.createElement('p');
-    copy.id = 'add-game-context-copy';
-    context.append(eyebrow, name, copy);
-    placeContext.before(context);
+  const venue = selectedVenue();
+  const canNominate = !venue || venue.venue_type === 'community_location';
+  button.hidden = !canNominate;
+
+  if (!venue) {
+    label.textContent = 'Nominate a Cal Bar';
+    copy.textContent = 'Find a Community Location that is a regular Cal gathering place.';
+    return;
   }
 
-  const game = selectedGame();
-  const name = context.querySelector('#add-game-context-name');
-  const copy = context.querySelector('#add-game-context-copy');
-  if (name) name.textContent = gameTitle(game);
-  if (copy) copy.textContent = formatKickoff(game);
+  label.textContent = 'Nominate as a Cal Bar';
+  copy.textContent = 'Think Cal fans gather here regularly? Tell us why it should be recognized.';
 }
 
 function syncCorrectionLanguage() {
@@ -273,7 +259,7 @@ function disablePeekHandleNavigation(event) {
 
 function sync() {
   installStyles();
-  syncAddGameContext();
+  syncCalBarNominationAction();
   syncCorrectionLanguage();
   syncListLocationControl();
 }
@@ -283,6 +269,7 @@ function initialize() {
   document.addEventListener('click', handleLocateClick, { capture: true });
   document.addEventListener('click', handleListLocationClick, { capture: true });
   document.addEventListener('click', disablePeekHandleNavigation, { capture: true });
+  document.querySelector('#mobile-add-button')?.addEventListener('click', () => requestAnimationFrame(syncCalBarNominationAction));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
   window.CGBApp?.subscribe?.('ready', sync);
