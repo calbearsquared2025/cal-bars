@@ -1,3 +1,5 @@
+import { formatKickoff, gameTitle } from './core.mjs';
+
 function clean(value) {
   return String(value ?? '').trim();
 }
@@ -156,6 +158,56 @@ function moveEditorialDescription(detail, hero, documentObject) {
   return true;
 }
 
+function syncDesktopDescription(detail, hero, documentObject) {
+  const source = detail.querySelector(':scope > .detail-editorial > .detail-editorial__copy');
+  const copy = clean(source?.textContent);
+  let section = hero.querySelector(':scope > .detail-desktop-description');
+  if (!copy) {
+    section?.remove();
+    return false;
+  }
+
+  if (!section) {
+    section = documentObject.createElement('section');
+    section.className = 'detail-desktop-description';
+    const heading = documentObject.createElement('h2');
+    heading.textContent = 'CGB SAYS';
+    const body = documentObject.createElement('p');
+    section.append(heading, body);
+    hero.append(section);
+  }
+  section.querySelector('p').textContent = copy;
+  return true;
+}
+
+function syncDesktopGameSummary(detail, state, documentObject) {
+  const game = state.snapshot?.games?.find((item) => clean(item?.game_id) === clean(state.gameId));
+  let section = detail.querySelector(':scope > .detail-desktop-game-summary');
+  if (!game) {
+    section?.remove();
+    return false;
+  }
+
+  if (!section) {
+    section = documentObject.createElement('section');
+    section.className = 'detail-desktop-game-summary';
+    const eyebrow = documentObject.createElement('span');
+    eyebrow.className = 'eyebrow';
+    eyebrow.textContent = 'Selected game';
+    const title = documentObject.createElement('h2');
+    const kickoff = documentObject.createElement('p');
+    kickoff.className = 'detail-desktop-game-summary__kickoff';
+    section.append(eyebrow, title, kickoff);
+  }
+
+  section.querySelector('h2').textContent = gameTitle(game);
+  section.querySelector('.detail-desktop-game-summary__kickoff').textContent = formatKickoff(game);
+  const activity = detail.querySelector(':scope > .activity-card');
+  if (activity) detail.insertBefore(section, activity);
+  else detail.append(section);
+  return true;
+}
+
 export function enhanceVenueProfile({
   state = globalThis.window?.CGBApp?.getState?.(),
   documentObject = globalThis.document,
@@ -191,5 +243,7 @@ export function enhanceVenueProfile({
   }
 
   moveEditorialDescription(detail, hero, documentObject);
+  syncDesktopDescription(detail, hero, documentObject);
+  syncDesktopGameSummary(detail, state, documentObject);
   return true;
 }
