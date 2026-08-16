@@ -121,9 +121,13 @@ function selectedVenue(state = appState()) {
 
 function syncCalBarNominationAction() {
   const button = document.querySelector('#add-cal-bar-button');
-  const label = document.querySelector('#add-cal-bar-label');
-  const copy = document.querySelector('#add-cal-bar-copy');
-  if (!button || !label || !copy) return;
+  if (!button) return;
+  const label = button.querySelector('strong');
+  const copy = button.querySelector('small');
+  const iconUse = button.querySelector('.add-action__icon use');
+  if (!label || !copy) return;
+
+  if (iconUse) iconUse.setAttribute('href', 'assets/icons.svg#icon-cal-bar');
 
   const venue = selectedVenue();
   const canNominate = !venue || venue.venue_type === 'community_location';
