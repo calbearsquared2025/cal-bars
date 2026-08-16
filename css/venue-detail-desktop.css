@@ -1,0 +1,261 @@
+.detail-desktop-description,
+.detail-desktop-game-summary {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  html body[data-view="detail"] .detail-shell {
+    max-width: 1180px !important;
+    padding: 18px 20px 32px !important;
+  }
+
+  html body[data-view="detail"] .back-link {
+    position: static !important;
+    width: fit-content !important;
+    min-height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 0 14px !important;
+    padding: 0 !important;
+    color: var(--cgb-navy-900) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    font-size: var(--text-sm) !important;
+    font-weight: 800 !important;
+    text-decoration: none !important;
+    backdrop-filter: none !important;
+    transform: none !important;
+  }
+
+  html body[data-view="detail"] .back-link:hover,
+  html body[data-view="detail"] .back-link:focus-visible {
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+  }
+
+  html body[data-view="detail"] .venue-detail {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1.04fr) minmax(390px, .96fr) !important;
+    align-items: start !important;
+    gap: 32px !important;
+    overflow: visible !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="detail"] .detail-hero,
+  html body[data-view="detail"] .detail-hero.detail-hero--has-photo,
+  html body[data-view="detail"] .detail-hero.detail-hero--no-photo {
+    grid-column: 1 !important;
+    grid-row: 1 / span 8 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 26px 28px 28px !important;
+    background: var(--cgb-white) !important;
+    border: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+  }
+
+  html body[data-view="detail"] .detail-hero .venue-badges {
+    order: 1;
+    margin: 0 0 8px !important;
+  }
+
+  html body[data-view="detail"] .detail-hero h1 {
+    order: 2;
+    margin: 0 !important;
+    font-size: clamp(2rem, 3vw, 3rem) !important;
+    line-height: .98 !important;
+  }
+
+  html body[data-view="detail"] .detail-hero .detail-city {
+    order: 3;
+    margin: 10px 0 0 !important;
+  }
+
+  html body[data-view="detail"] .detail-hero .detail-address {
+    order: 4;
+    margin: 5px 0 0 !important;
+  }
+
+  html body[data-view="detail"] .detail-hero .detail-address-actions {
+    order: 5;
+    margin-top: 8px !important;
+  }
+
+  html body[data-view="detail"] .detail-desktop-description {
+    order: 6;
+    display: block !important;
+    margin: 22px 0 0 !important;
+    padding: 18px 0 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200);
+  }
+
+  html body[data-view="detail"] .detail-desktop-description h2 {
+    margin: 0 0 6px;
+    color: var(--cgb-navy-950);
+    font-family: var(--font-display);
+    font-size: .72rem;
+    font-weight: 850;
+    letter-spacing: .09em;
+    line-height: 1.15;
+  }
+
+  html body[data-view="detail"] .detail-desktop-description p {
+    margin: 0;
+    color: var(--cgb-ink-700);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+
+  html body[data-view="detail"] .detail-hero .detail-photo,
+  html body[data-view="detail"] .detail-hero .detail-local-map {
+    order: 7;
+    width: 100% !important;
+    margin: 24px 0 0 !important;
+  }
+
+  html body[data-view="detail"] .detail-hero .detail-photo__frame {
+    border-radius: 14px !important;
+  }
+
+  html body[data-view="detail"] .detail-editorial {
+    display: none !important;
+  }
+
+  html body[data-view="detail"] .detail-desktop-game-summary {
+    grid-column: 2 !important;
+    order: 1;
+    display: block !important;
+    margin: 0 !important;
+    padding: 20px 22px 16px !important;
+    background: var(--cgb-white) !important;
+    border: 1px solid var(--cgb-neutral-200) !important;
+    border-bottom: 0 !important;
+    border-radius: 18px 18px 0 0 !important;
+  }
+
+  html body[data-view="detail"] .detail-desktop-game-summary .eyebrow {
+    margin-bottom: 5px;
+  }
+
+  html body[data-view="detail"] .detail-desktop-game-summary h2 {
+    margin: 0;
+    color: var(--cgb-navy-950);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    line-height: 1.08;
+  }
+
+  html body[data-view="detail"] .detail-desktop-game-summary__kickoff {
+    margin: 5px 0 0;
+    color: var(--cgb-ink-500);
+    font-size: var(--text-sm);
+    line-height: 1.3;
+  }
+
+  html body[data-view="detail"] .venue-detail > .party-module {
+    grid-column: 2 !important;
+    order: 2;
+    margin: 0 !important;
+    padding: 14px 22px !important;
+    border-right: 1px solid var(--cgb-neutral-200) !important;
+    border-left-width: 4px !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="detail"] .activity-card {
+    grid-column: 2 !important;
+    order: 3;
+    margin: 0 !important;
+    padding: 18px 22px !important;
+    background: var(--cgb-white) !important;
+    border: 1px solid var(--cgb-neutral-200) !important;
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
+    grid-column: 2 !important;
+    order: 4;
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(132px, .42fr) !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    padding: 4px 22px 20px !important;
+    background: var(--cgb-white) !important;
+    border: 1px solid var(--cgb-neutral-200) !important;
+    border-top: 0 !important;
+    border-radius: 0 0 18px 18px !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .intent-button {
+    min-height: 52px !important;
+  }
+
+  html body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .detail-share {
+    min-height: 46px !important;
+    align-self: center;
+    background: transparent !important;
+    border-color: var(--cgb-neutral-300) !important;
+  }
+
+  html body[data-view="detail"] .detail-contribution {
+    grid-column: 2 !important;
+    order: 5;
+    margin: 18px 0 0 !important;
+    padding: 16px 2px 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="detail"] .detail-contribution h2 {
+    margin: 0 0 7px !important;
+    color: var(--cgb-ink-700) !important;
+    font-size: .9rem !important;
+  }
+
+  html body[data-view="detail"] .detail-contribution__actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0 18px !important;
+  }
+
+  html body[data-view="detail"] .detail-contribution__action {
+    min-height: 32px !important;
+    justify-content: flex-start !important;
+    padding: 4px 0 !important;
+    color: var(--cgb-navy-900) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    font-size: var(--text-xs) !important;
+    font-weight: 750 !important;
+    text-decoration: underline !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 3px !important;
+  }
+
+  html body[data-view="detail"] .detail-contribution__action:hover,
+  html body[data-view="detail"] .detail-contribution__action:focus-visible {
+    color: var(--cgb-navy-700) !important;
+    background: transparent !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  html body[data-view="detail"] .venue-detail {
+    grid-template-columns: minmax(0, 1.08fr) minmax(420px, .92fr) !important;
+    gap: 40px !important;
+  }
+}
