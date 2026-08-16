@@ -408,8 +408,6 @@ function buildExternalVenueRecord_(existingRows, place, now) {
     external_source: place.source,
     external_place_id: place.placeId,
     short_description: '',
-    photo_url: '',
-    photo_credit: '',
     publication_status: 'published',
     source_submission_id: '',
     created_at: now,
