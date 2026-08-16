@@ -39,9 +39,18 @@ test('settled portrait map geometry is available from static CSS before modules 
     css,
     /maplibregl-ctrl-bottom-right[\s\S]*top: 38px !important[\s\S]*bottom: auto !important[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/
   );
+  assert.doesNotMatch(css, /:has\(#venue-tray\.tray--selected\)/);
 });
 
-test('initial map geometry no longer has competing runtime style owners', () => {
+test('Search Add and List keep CGB branding with a compact selected-game header', () => {
+  assert.match(css, /data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(112px/);
+  assert.match(css, /site-header__brand-row[\s\S]*display: flex !important/);
+  assert.match(css, /opening-stat[\s\S]*display: none !important/);
+  assert.match(css, /game-button__eyebrow[\s\S]*display: none !important/);
+  assert.match(css, /#header-game-label[\s\S]*font-size: 1\.08rem !important/);
+});
+
+test('initial map and secondary header geometry no longer have competing runtime style owners', () => {
   const mapMobileStyles = styleBlock(mapMobile);
   const profileStyles = styleBlock(profileFirstPass);
   const mobileTabStyles = styleBlock(mobileTab);
@@ -51,6 +60,8 @@ test('initial map geometry no longer has competing runtime style owners', () => 
   assert.doesNotMatch(mapMobileStyles, /tray--peek/);
   assert.doesNotMatch(profileStyles, /#map-view > #venue-tray\.venue-tray::before/);
   assert.doesNotMatch(profileStyles, /tray--peek \.tray-handle/);
+  assert.doesNotMatch(profileStyles, /data-command-surface="search"[\s\S]*site-header/);
+  assert.doesNotMatch(profileStyles, /header-game-label/);
   assert.doesNotMatch(mobileTabStyles, /tray--peek/);
 });
 

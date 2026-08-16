@@ -191,4 +191,62 @@
     gap: 12px !important;
     padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right, 0px)) 25px max(16px, env(safe-area-inset-left, 0px)) !important;
   }
+
+  body[data-command-surface="search"],
+  body[data-command-surface="add"],
+  body[data-command-surface="list"] {
+    --header-height: calc(112px + env(safe-area-inset-top, 0px));
+  }
+
+  body[data-command-surface="search"] .site-header,
+  body[data-command-surface="add"] .site-header,
+  body[data-command-surface="list"] .site-header {
+    height: var(--header-height) !important;
+    min-height: var(--header-height) !important;
+    display: grid !important;
+    grid-template-rows: 36px 56px !important;
+    align-content: start !important;
+    gap: 4px !important;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) max(14px, env(safe-area-inset-right, 0px)) 8px max(14px, env(safe-area-inset-left, 0px)) !important;
+  }
+
+  body[data-command-surface="search"] .site-header__brand-row,
+  body[data-command-surface="add"] .site-header__brand-row,
+  body[data-command-surface="list"] .site-header__brand-row {
+    min-height: 36px !important;
+    display: flex !important;
+  }
+
+  body[data-command-surface="search"] .opening-stat,
+  body[data-command-surface="add"] .opening-stat,
+  body[data-command-surface="list"] .opening-stat {
+    display: none !important;
+  }
+
+  body[data-command-surface="search"] .game-button,
+  body[data-command-surface="add"] .game-button,
+  body[data-command-surface="list"] .game-button {
+    min-height: 56px !important;
+    grid-template-rows: auto auto !important;
+    padding: 4px 34px 4px 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  body[data-command-surface="search"] .game-button__eyebrow,
+  body[data-command-surface="add"] .game-button__eyebrow,
+  body[data-command-surface="list"] .game-button__eyebrow {
+    display: none !important;
+  }
+
+  body[data-command-surface="search"] #header-game-label,
+  body[data-command-surface="add"] #header-game-label,
+  body[data-command-surface="list"] #header-game-label {
+    font-size: 1.08rem !important;
+  }
+
+  body[data-command-surface="search"] #header-kickoff,
+  body[data-command-surface="add"] #header-kickoff,
+  body[data-command-surface="list"] #header-kickoff {
+    font-size: .72rem !important;
+  }
 }

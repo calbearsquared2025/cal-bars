@@ -6,18 +6,19 @@ const root = new URL('../', import.meta.url);
 const profile = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('portrait mobile header keeps the taller geometry without overriding landscape', () => {
-  assert.match(profile, /@media \(max-width: 899px\) and \(orientation: portrait\)[\s\S]*--header-height: calc\(176px/);
-  assert.match(profile, /HEADER_OVERHANG = 31/);
-  assert.match(profile, /data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"/);
-  assert.match(profile, /opening-stat[\s\S]*display: grid !important/);
+test('profile pass no longer overrides the shared Search Add and List header', () => {
+  assert.doesNotMatch(profile, /HEADER_OVERHANG/);
+  assert.doesNotMatch(profile, /--header-height: calc\(176px/);
+  assert.doesNotMatch(profile, /site-header__brand-row/);
+  assert.doesNotMatch(profile, /opening-stat[\s\S]*display: grid !important/);
+  assert.doesNotMatch(profile, /header-game-label/);
   assert.match(profile, /@media \(max-width: 899px\) \{[\s\S]*search-field:focus-within/);
 });
 
-test('List fully replaces the map below the shared header', () => {
+test('List fully replaces the map directly below the shared header', () => {
   assert.match(profile, /data-command-surface="list"\] #map[\s\S]*visibility: hidden !important/);
   assert.match(profile, /tray--full[\s\S]*position: fixed !important/);
-  assert.match(profile, /inset: calc\(var\(--header-height\) \+ \$\{HEADER_OVERHANG\}px\) 0 var\(--footer-height\) 0/);
+  assert.match(profile, /inset: var\(--header-height\) 0 var\(--footer-height\) 0 !important/);
   assert.match(profile, /border-radius: 0 !important/);
 });
 
