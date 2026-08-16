@@ -42,6 +42,7 @@ test('Locate Me stays on Map and restores Nearby preview', () => {
   assert.match(source, /setTrayState\('peek'\)/);
   assert.match(source, /setCommandActive\('map'\)/);
   assert.match(source, /rankNearbyVenues/);
+  assert.match(source, /CGBApp\?\.focusLocation/);
   assert.match(app, /function focusLocation[\s\S]*fitBounds/);
 });
 
