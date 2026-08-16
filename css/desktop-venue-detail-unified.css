@@ -26,10 +26,6 @@
     box-shadow: none !important;
   }
 
-  html body[data-view="detail"] #venue-detail > :not(.detail-hero) {
-    border-left-color: var(--cgb-neutral-200) !important;
-  }
-
   html body[data-view="detail"] .detail-desktop-game-context,
   html body[data-view="detail"] #venue-detail > .activity-card,
   html body[data-view="detail"] #venue-detail > .action-row.detail-primary-actions {
