@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
+const mobilePolish = await readFile(new URL('js/mobile-polish.mjs', root), 'utf8');
 const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
 const app = await readFile(new URL('js/app.js', root), 'utf8');
 const iconUpgrade = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
@@ -46,6 +47,14 @@ test('Locate Me stays on Map and restores Nearby preview', () => {
   assert.match(app, /function focusLocation[\s\S]*fitBounds/);
 });
 
+test('Locate Me tracks the rendered tray height in portrait instead of sitting behind it', () => {
+  assert.match(mobilePolish, /function syncMapActionTrayOffset/);
+  assert.match(mobilePolish, /getBoundingClientRect\(\)\.height/);
+  assert.match(mobilePolish, /--cgb-mobile-tray-height/);
+  assert.match(mobilePolish, /new ResizeObserver\(syncMapActionTrayOffset\)/);
+  assert.match(firstPaintCss, /orientation: portrait[\s\S]*\.map-actions[\s\S]*top: auto !important[\s\S]*bottom: calc\(var\(--footer-height\) \+ var\(--cgb-mobile-tray-height, 96px\) \+ 12px\) !important/);
+});
+
 test('List toggles between Near me and All locations', () => {
   assert.match(source, /button\.textContent = usingLocation \? 'All locations' : 'Near me'/);
   assert.match(source, /requestLocation\('list'\)/);
@@ -53,8 +62,9 @@ test('List toggles between Near me and All locations', () => {
   assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
 });
 
-test('Nearby sheet restores its handle without allowing it to open List', () => {
+test('Nearby sheet handle remains tappable to open the List destination', () => {
   assert.match(firstPaintCss, /tray--peek \.tray-handle[\s\S]*display: grid !important/);
-  assert.match(source, /disablePeekHandleNavigation/);
-  assert.match(source, /event\.stopImmediatePropagation\(\)/);
+  assert.match(mobilePolish, /function handleTrayControl[\s\S]*openListFromMap\(event\)/);
+  assert.match(mobilePolish, /trayHandle\?\.addEventListener\('click', handleTrayControl, \{ capture: true \}\)/);
+  assert.doesNotMatch(source, /disablePeekHandleNavigation/);
 });
