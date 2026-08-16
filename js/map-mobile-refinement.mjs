@@ -190,6 +190,21 @@ function handleTrayTopTap(event) {
   document.querySelector('#tray-selected .selected-card__header > .icon-button')?.click();
 }
 
+function handleMapBackgroundTap(event) {
+  if (!isMobile() || document.body.dataset.commandSurface !== 'map') return;
+  const map = event.target.closest?.('#map');
+  if (!map) return;
+  if (event.target.closest?.('.cgb-marker, .user-marker, .maplibregl-ctrl')) return;
+
+  const state = appState();
+  if (!state?.selectedVenueId) return;
+
+  state.selectedVenueId = null;
+  state.locationFocusVenueId = null;
+  lastAutoFocusedVenueId = '';
+  window.CGBApp?.render?.();
+}
+
 function focusVenue(venueId, { force = false } = {}) {
   if (!isMobile()) return;
   const state = appState();
@@ -280,6 +295,7 @@ function initialize() {
   document.addEventListener('pointerup', handleSelectedHandleSwipe, { capture: true });
   document.addEventListener('pointercancel', resetSelectedHandleSwipe, { capture: true });
   document.addEventListener('click', handleTrayTopTap, { capture: true });
+  document.addEventListener('click', handleMapBackgroundTap, { capture: true });
 
   document.addEventListener('click', (event) => {
     const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
