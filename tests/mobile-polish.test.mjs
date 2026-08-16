@@ -74,6 +74,17 @@ test('header corrections preserve game-title descenders and pin the menu to the 
   assert.match(css, /#near-me-button \.ui-icon[\s\S]*translate\(-1px, 1px\)/);
 });
 
+test('mobile locate action tracks tray height instead of being covered by the bottom sheet', async () => {
+  const [script, firstPaint] = await Promise.all([
+    source('js/mobile-polish.mjs'),
+    source('css/mobile-first-paint.css')
+  ]);
+  assert.match(script, /syncMapActionTrayOffset/);
+  assert.match(script, /--cgb-mobile-tray-height/);
+  assert.match(script, /ResizeObserver\(syncMapActionTrayOffset\)/);
+  assert.match(firstPaint, /\.map-actions[\s\S]*bottom: calc\(var\(--footer-height\) \+ var\(--cgb-mobile-tray-height, 96px\) \+ 12px\) !important/);
+});
+
 test('secondary header compaction stays portrait-only and hidden back controls do not compress headings', async () => {
   const css = await source('css/mobile-polish.css');
   assert.match(css, /@media \(orientation: portrait\)[\s\S]*Secondary destinations keep game context/);
