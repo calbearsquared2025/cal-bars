@@ -35,6 +35,10 @@ test('settled portrait map geometry is available from static CSS before modules 
   assert.match(css, /tray--peek \.tray-handle[\s\S]*height: 18px !important[\s\S]*display: grid !important/);
   assert.match(css, /tray-summary__chevron[\s\S]*display: none !important/);
   assert.match(css, /maplibregl-ctrl-top-right[\s\S]*display: none !important/);
+  assert.match(
+    css,
+    /maplibregl-ctrl-bottom-right[\s\S]*top: 38px !important[\s\S]*bottom: auto !important[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/
+  );
 });
 
 test('initial map geometry no longer has competing runtime style owners', () => {
