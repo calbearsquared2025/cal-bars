@@ -182,6 +182,11 @@
     --header-height: calc(176px + env(safe-area-inset-top, 0px));
   }
 
+  body[data-view="map"][data-command-surface="map"] .map-actions {
+    top: auto !important;
+    bottom: calc(var(--footer-height) + var(--cgb-mobile-tray-height, 96px) + 12px) !important;
+  }
+
   body[data-view="map"][data-command-surface="map"] .site-header {
     height: var(--header-height) !important;
     min-height: var(--header-height) !important;
