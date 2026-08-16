@@ -17,8 +17,8 @@ const CGB_TABS = Object.freeze({
     'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
-    'short_description', 'photo_url', 'photo_credit', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at'
+    'short_description', 'publication_status', 'source_submission_id', 'created_at',
+    'updated_at'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',

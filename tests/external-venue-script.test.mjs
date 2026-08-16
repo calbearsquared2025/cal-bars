@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { validateJoinExternalVenueResponse } from '../js/external-venue-core.mjs';
 
 const code = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
 const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
@@ -13,8 +14,8 @@ const VENUE_HEADERS = [
   'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
   'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
   'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
-  'short_description', 'photo_url', 'photo_credit', 'publication_status',
-  'source_submission_id', 'created_at', 'updated_at'
+  'short_description', 'publication_status', 'source_submission_id', 'created_at',
+  'updated_at'
 ];
 const GAME_HEADERS = [
   'game_id', 'season', 'schedule_order', 'opponent_name', 'opponent_short_name',
@@ -372,6 +373,73 @@ test('sparse Albany Bulb ID verification is enriched by exact provider ID and st
   assert.match(harness.mapTilerRequests[0].url, /\/geocoding\/poi\.55162381\.json\?/);
   assert.match(harness.mapTilerRequests[1].url, /\/geocoding\/Albany%20Bulb\.json\?/);
   assert.match(harness.mapTilerRequests[1].url, /autocomplete=false/);
+});
+
+test('real Drugstore Cowboy result verifies, creates once, records Fan Intent, and returns only public fields', () => {
+  const placeId = 'poi.65271146';
+  const sparseFeature = {
+    id: placeId,
+    place_type: ['poi'],
+    text: 'Drugstore Cowboy',
+    place_name: 'Drugstore Cowboy, ',
+    center: [-118.28372843563557, 34.0951711080311],
+    properties: {
+      ref: 'osm:n11391069621',
+      country_code: 'us',
+      feature_tags: { amenity: 'bar' },
+      categories: ['bar']
+    }
+  };
+  const enrichedFeature = {
+    ...sparseFeature,
+    place_name: 'Drugstore Cowboy, 4330 1/2 West Sunset Boulevard, Los Angeles, California 90029, United States',
+    context: [
+      { id: 'address.27318902', text: 'West Sunset Boulevard', country_code: 'us', kind: 'street' },
+      { id: 'postal_code.3135845', text: '90029', country_code: 'us' },
+      {
+        id: 'place.4882691',
+        text: 'Sunset Junction',
+        country_code: 'us',
+        place_designation: 'neighbourhood'
+      },
+      {
+        id: 'municipality.251981',
+        text: 'Los Angeles',
+        country_code: 'us',
+        place_designation: 'city'
+      },
+      { id: 'county.22068', text: 'Los Angeles', country_code: 'us' },
+      { id: 'region.2166', text: 'California', country_code: 'us' },
+      { id: 'country.213', text: 'United States', country_code: 'us' }
+    ]
+  };
+  const harness = buildHarness({ mapTilerFeatures: new Map([
+    [placeId, sparseFeature],
+    ['Drugstore Cowboy', enrichedFeature]
+  ]) });
+
+  const first = joinExternal(harness.api, minimalExternalPlace({ placeId }));
+  const second = joinExternal(harness.api, minimalExternalPlace({ placeId }));
+  const created = sheetObjects(harness.venueSheet, VENUE_HEADERS)
+    .filter((venue) => venue.external_place_id === placeId);
+
+  assert.equal(first.ok, true);
+  assert.equal(validateJoinExternalVenueResponse(first), true);
+  assert.equal(first.venue.name, 'Drugstore Cowboy');
+  assert.equal(first.venue.address_line_1, '4330 1/2 West Sunset Boulevard');
+  assert.equal(first.venue.city, 'Los Angeles');
+  assert.equal(first.venue.region, 'CA');
+  assert.equal(first.venue.postal_code, '90029');
+  assert.equal(first.venue.country_code, 'US');
+  assert.equal(first.venue.venue_type, 'community_location');
+  assert.equal(first.venue.verification_status, 'user_added');
+  assert.equal(second.venue.venue_id, first.venue.venue_id);
+  assert.equal(created.length, 1);
+  assert.equal(activeFanRows(harness.fanSheet).length, 1);
+  assert.equal(activeFanRows(harness.fanSheet)[0].venue_id, first.venue.venue_id);
+  assert.equal(harness.mapTilerRequests.length, 2);
+  assert.match(harness.mapTilerRequests[0].url, /\/geocoding\/poi\.65271146\.json\?/);
+  assert.match(harness.mapTilerRequests[1].url, /\/geocoding\/Drugstore%20Cowboy\.json\?/);
 });
 
 test('legacy full request is accepted but forged browser venue metadata is ignored', () => {
