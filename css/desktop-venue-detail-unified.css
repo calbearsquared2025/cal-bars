@@ -1,0 +1,65 @@
+@media (min-width: 900px) {
+  html body[data-view="detail"] .detail-view {
+    padding-top: 8px !important;
+  }
+
+  html body[data-view="detail"] .venue-detail {
+    background: var(--cgb-white) !important;
+    border: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 12px 30px rgba(1, 1, 51, .06) !important;
+    overflow: hidden !important;
+  }
+
+  html body[data-view="detail"] .back-link {
+    top: 10px !important;
+    left: 46px !important;
+    min-height: 30px !important;
+  }
+
+  html body[data-view="detail"] .detail-hero.detail-hero--no-photo,
+  html body[data-view="detail"] .detail-hero.detail-hero--has-photo {
+    padding: 48px 28px 28px !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body[data-view="detail"] .detail-desktop-game-context,
+  html body[data-view="detail"] #venue-detail > .activity-card,
+  html body[data-view="detail"] #venue-detail > .action-row.detail-primary-actions {
+    background: transparent !important;
+    border-right: 0 !important;
+    border-left: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="detail"] .detail-desktop-game-context {
+    padding-top: 20px !important;
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  html body[data-view="detail"] #venue-detail > .activity-card {
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  html body[data-view="detail"] #venue-detail > .party-module {
+    border-right: 0 !important;
+    border-left-width: 4px !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="detail"] #venue-detail > .action-row.detail-primary-actions {
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-bottom: 0 !important;
+  }
+
+  html body[data-view="detail"] #venue-detail > .detail-contribution {
+    margin-top: 0 !important;
+    padding: 14px 22px 20px !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+  }
+}
