@@ -13,8 +13,13 @@ test('desktop venue detail layout keeps navigation and hierarchy desktop-specifi
     source('js/venue-profile-enhancement.mjs')
   ]);
   assert.ok(loader.includes("@import url('./desktop-venue-detail.css')"));
+  assert.ok(css.includes('html body[data-view="detail"] .detail-view'));
+  assert.ok(css.includes('padding-top: 10px !important'));
   assert.ok(css.includes('html body[data-view="detail"] .back-link'));
-  assert.ok(css.includes('position: static !important'));
+  assert.ok(css.includes('position: absolute !important'));
+  assert.ok(css.includes('top: 16px !important'));
+  assert.ok(css.includes('left: 52px !important'));
+  assert.ok(css.includes('padding: 64px 28px 28px !important'));
   assert.ok(css.includes('display: flow-root !important'));
   assert.ok(css.includes('float: left !important'));
   assert.ok(css.includes('width: 56% !important'));
