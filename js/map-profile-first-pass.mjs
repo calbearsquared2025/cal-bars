@@ -1,6 +1,5 @@
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
-const HEADER_OVERHANG = 31;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -15,72 +14,6 @@ function installStyles() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
-    @media (max-width: 899px) and (orientation: portrait) {
-      body[data-command-surface="search"],
-      body[data-command-surface="add"],
-      body[data-command-surface="list"] {
-        --header-height: calc(176px + env(safe-area-inset-top, 0px)) !important;
-      }
-
-      body[data-command-surface="search"] .site-header,
-      body[data-command-surface="add"] .site-header,
-      body[data-command-surface="list"] .site-header {
-        height: var(--header-height) !important;
-        min-height: var(--header-height) !important;
-        display: grid !important;
-        grid-template-rows: auto 1fr !important;
-        align-content: start !important;
-        gap: 12px !important;
-        padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right, 0px)) 25px max(16px, env(safe-area-inset-left, 0px)) !important;
-      }
-
-      body[data-command-surface="search"] .site-header__brand-row,
-      body[data-command-surface="add"] .site-header__brand-row,
-      body[data-command-surface="list"] .site-header__brand-row {
-        min-height: 38px !important;
-        display: flex !important;
-      }
-
-      body[data-command-surface="search"] .opening-stat,
-      body[data-command-surface="add"] .opening-stat,
-      body[data-command-surface="list"] .opening-stat {
-        display: grid !important;
-      }
-
-      body[data-command-surface="search"] .game-button,
-      body[data-command-surface="add"] .game-button,
-      body[data-command-surface="list"] .game-button {
-        min-height: 66px !important;
-        grid-template-columns: minmax(0, 1fr) 22px !important;
-        grid-template-rows: auto auto auto !important;
-        padding: 8px 34px 9px 0 !important;
-        border-bottom: 1px solid rgba(255, 255, 255, .19) !important;
-      }
-
-      body[data-command-surface="search"] .game-button__eyebrow,
-      body[data-command-surface="add"] .game-button__eyebrow,
-      body[data-command-surface="list"] .game-button__eyebrow {
-        display: block !important;
-      }
-
-      body[data-command-surface="search"] #header-game-label,
-      body[data-command-surface="add"] #header-game-label,
-      body[data-command-surface="list"] #header-game-label {
-        font-size: clamp(1.48rem, 7.5vw, 2.05rem) !important;
-      }
-
-      body[data-command-surface="search"] #header-kickoff,
-      body[data-command-surface="add"] #header-kickoff,
-      body[data-command-surface="list"] #header-kickoff {
-        font-size: .78rem !important;
-      }
-
-      body[data-command-surface="search"] .command-surface:not([hidden]),
-      body[data-command-surface="add"] .command-surface:not([hidden]) {
-        inset: calc(var(--header-height) + ${HEADER_OVERHANG}px) 0 var(--footer-height) 0 !important;
-      }
-    }
-
     @media (max-width: 899px) {
       .command-surface .search-field {
         border-color: var(--cgb-neutral-300) !important;
@@ -216,7 +149,7 @@ function installStyles() {
       body[data-command-surface="list"] #map-view > #venue-tray.venue-tray.tray--full {
         position: fixed !important;
         z-index: 47 !important;
-        inset: calc(var(--header-height) + ${HEADER_OVERHANG}px) 0 var(--footer-height) 0 !important;
+        inset: var(--header-height) 0 var(--footer-height) 0 !important;
         width: 100vw !important;
         height: auto !important;
         max-width: none !important;
