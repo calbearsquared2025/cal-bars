@@ -97,9 +97,15 @@ function normalizeEventArguments(args, windowObject) {
   return ['event', eventName, parameters];
 }
 
-export function trackCgbEvent(eventName, parameters = {}, windowObject = window) {
+export function trackCgbEvent(eventName, parameters = {}, windowObject = globalThis.window) {
   if (!windowObject || typeof windowObject.gtag !== 'function') return false;
-  windowObject.gtag('event', eventName, parameters);
+  const normalizedName = canonicalEventName(eventName);
+  const normalizedParameters = sanitizeEventParameters({
+    ...eventDefaults(normalizedName, windowObject),
+    ...parameters
+  });
+  windowObject.gtag('event', normalizedName, normalizedParameters);
+  if (normalizedName.startsWith('fan_intent_')) pendingIntentSurface = '';
   return true;
 }
 
