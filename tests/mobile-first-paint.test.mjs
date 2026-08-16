@@ -29,9 +29,7 @@ test('settled portrait map geometry is available from static CSS before modules 
   );
   assert.match(css, /@media \(max-width: 899px\)/);
   assert.match(css, /body\[data-view="map"\][\s\S]*position: fixed/);
-  assert.match(css, /data-command-surface="map"[\s\S]*--header-height: calc\(140px/);
-  assert.match(css, /data-command-surface="map"[\s\S]*game-button__eyebrow[\s\S]*display: block !important/);
-  assert.match(css, /data-command-surface="map"[\s\S]*#header-game-label[\s\S]*font-size: 1\.18rem !important/);
+  assert.match(css, /data-command-surface="map"[\s\S]*--header-height: calc\(176px/);
   assert.match(css, /\.site-header[\s\S]*height: var\(--header-height\) !important/);
   assert.match(css, /tray--peek[\s\S]*width: 100% !important[\s\S]*height: 96px !important/);
   assert.match(css, /tray--peek \.tray-handle[\s\S]*height: 18px !important[\s\S]*display: grid !important/);
@@ -39,19 +37,9 @@ test('settled portrait map geometry is available from static CSS before modules 
   assert.match(css, /maplibregl-ctrl-top-right[\s\S]*display: none !important/);
   assert.match(
     css,
-    /maplibregl-ctrl-bottom-right[\s\S]*top: 64px !important[\s\S]*bottom: auto !important[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/
+    /maplibregl-ctrl-bottom-right[\s\S]*top: 38px !important[\s\S]*bottom: auto !important[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/
   );
-});
-
-test('selected Map hides the global stats card and reclaims the attribution slot', () => {
-  assert.match(
-    css,
-    /data-command-surface="map"\]:has\(#venue-tray\.tray--selected\) \.opening-stat[\s\S]*display: none !important/
-  );
-  assert.match(
-    css,
-    /data-command-surface="map"\]:has\(#venue-tray\.tray--selected\) \.maplibregl-ctrl-bottom-right[\s\S]*top: 10px !important/
-  );
+  assert.doesNotMatch(css, /:has\(#venue-tray\.tray--selected\)/);
 });
 
 test('Search Add and List keep CGB branding with a compact selected-game header', () => {
