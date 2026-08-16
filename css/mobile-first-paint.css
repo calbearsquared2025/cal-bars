@@ -21,7 +21,7 @@
   }
 
   .maplibregl-ctrl-bottom-right {
-    top: 38px !important;
+    top: 64px !important;
     right: auto !important;
     bottom: auto !important;
     left: max(8px, env(safe-area-inset-left, 0px)) !important;
@@ -179,17 +179,41 @@
 
 @media (max-width: 899px) and (orientation: portrait) {
   body[data-view="map"][data-command-surface="map"] {
-    --header-height: calc(176px + env(safe-area-inset-top, 0px));
+    --header-height: calc(140px + env(safe-area-inset-top, 0px));
   }
 
   body[data-view="map"][data-command-surface="map"] .site-header {
     height: var(--header-height) !important;
     min-height: var(--header-height) !important;
     display: grid !important;
-    grid-template-rows: auto 1fr !important;
+    grid-template-rows: 36px 64px !important;
     align-content: start !important;
-    gap: 12px !important;
-    padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right, 0px)) 25px max(16px, env(safe-area-inset-left, 0px)) !important;
+    gap: 4px !important;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) max(14px, env(safe-area-inset-right, 0px)) 8px max(14px, env(safe-area-inset-left, 0px)) !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .site-header__brand-row {
+    min-height: 36px !important;
+    display: flex !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .game-button {
+    min-height: 64px !important;
+    grid-template-rows: auto auto auto !important;
+    padding: 2px 34px 4px 0 !important;
+    border-bottom: 0 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .game-button__eyebrow {
+    display: block !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #header-game-label {
+    font-size: 1.18rem !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #header-kickoff {
+    font-size: .72rem !important;
   }
 
   body[data-command-surface="search"],
