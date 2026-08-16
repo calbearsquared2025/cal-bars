@@ -1,25 +1,37 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { GA_MEASUREMENT_ID, initializeGoogleAnalytics } from '../js/analytics.mjs';
+import {
+  GA_MEASUREMENT_ID,
+  initializeGoogleAnalytics,
+  sanitizeEventParameters,
+  trackCgbEvent
+} from '../js/analytics.mjs';
 
-test('Google Analytics migration preserves the existing GA4 property and initializes once', () => {
+function analyticsDocumentStub() {
   const appended = [];
   const elementsById = new Map();
-  const documentObject = {
-    createElement(tagName) {
-      return { tagName };
-    },
-    getElementById(id) {
-      return elementsById.get(id) || null;
-    },
-    head: {
-      append(element) {
-        appended.push(element);
-        if (element.id) elementsById.set(element.id, element);
+  return {
+    appended,
+    documentObject: {
+      createElement(tagName) {
+        return { tagName };
+      },
+      getElementById(id) {
+        return elementsById.get(id) || null;
+      },
+      head: {
+        append(element) {
+          appended.push(element);
+          if (element.id) elementsById.set(element.id, element);
+        }
       }
     }
   };
+}
+
+test('Google Analytics migration preserves the existing GA4 property and initializes once', () => {
+  const { appended, documentObject } = analyticsDocumentStub();
   const windowObject = {};
 
   assert.equal(GA_MEASUREMENT_ID, 'G-CZV3JSBNJK');
@@ -41,4 +53,99 @@ test('Google Analytics migration preserves the existing GA4 property and initial
   assert.equal(initializeGoogleAnalytics({ windowObject, documentObject }), true);
   assert.equal(appended.length, 1);
   assert.equal(windowObject.dataLayer.length, 2);
+});
+
+test('global gtag remains a standard passthrough and does not filter non-CGB parameters', () => {
+  const { documentObject } = analyticsDocumentStub();
+  const windowObject = {};
+  const callback = () => {};
+  initializeGoogleAnalytics({ windowObject, documentObject });
+
+  windowObject.gtag('event', 'third_party_event', {
+    send_to: 'G-OTHER',
+    event_callback: callback,
+    arbitrary_parameter: 'kept'
+  });
+
+  const call = Array.from(windowObject.dataLayer.at(-1));
+  assert.equal(call[0], 'event');
+  assert.equal(call[1], 'third_party_event');
+  assert.deepEqual(call[2], {
+    send_to: 'G-OTHER',
+    event_callback: callback,
+    arbitrary_parameter: 'kept'
+  });
+});
+
+test('CGB event helper aliases legacy names, adds context, and drops private or high-risk parameters', () => {
+  const sent = [];
+  const windowObject = {
+    CGBApp: {
+      getState() {
+        return { gameId: '2026-ucla' };
+      }
+    },
+    gtag(...args) {
+      sent.push(args);
+    }
+  };
+
+  assert.equal(trackCgbEvent('external_place_result_selected', {
+    place_type: 'poi',
+    browser_id: 'private-browser-id',
+    latitude: 37.8,
+    search_term: 'raw user search'
+  }, windowObject), true);
+
+  assert.deepEqual(sent, [[
+    'event',
+    'external_place_selected',
+    {
+      game_id: '2026-ucla',
+      entry_surface: 'search',
+      result_type: 'external',
+      place_type: 'poi'
+    }
+  ]]);
+});
+
+test('CGB event helper only sends approved flow parameters', () => {
+  const sent = [];
+  const windowObject = {
+    gtag(...args) {
+      sent.push(args);
+    }
+  };
+
+  assert.deepEqual(sanitizeEventParameters({
+    game_id: '2026-stanford',
+    venue_type: 'cal_bar',
+    action_surface: 'detail',
+    browser_id: 'do-not-send',
+    email: 'do-not-send@example.com',
+    longitude: -122.2
+  }), {
+    game_id: '2026-stanford',
+    venue_type: 'cal_bar',
+    action_surface: 'detail'
+  });
+
+  assert.equal(trackCgbEvent('directions_clicked', {
+    game_id: '2026-stanford',
+    venue_type: 'cal_bar',
+    action_surface: 'detail'
+  }, windowObject), true);
+  assert.deepEqual(sent, [[
+    'event',
+    'directions_clicked',
+    {
+      game_id: '2026-stanford',
+      venue_type: 'cal_bar',
+      action_surface: 'detail'
+    }
+  ]]);
+});
+
+test('CGB event helper is a no-op outside a browser instead of throwing', () => {
+  assert.equal(trackCgbEvent('fan_intent_joined', { game_id: 'game_1' }), false);
 });

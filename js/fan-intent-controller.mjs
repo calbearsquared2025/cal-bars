@@ -1,3 +1,4 @@
+import { trackCgbEvent } from './analytics.mjs';
 import {
   beginIntentTransaction,
   commitIntentResponse,
@@ -11,6 +12,20 @@ export function fanIntentFailureCopy(error) {
   if (code.includes('selection_conflict')) return 'Your selection changed elsewhere. Refresh and try again.';
   if (code.includes('not_configured')) return 'Check-ins are temporarily unavailable.';
   return 'Could not save your selection. Your previous choice was restored.';
+}
+
+function trackIntentSuccess(state, operation) {
+  const venue = state.snapshot?.venues?.find((item) => item.venue_id === operation.venueId);
+  const eventName = operation.action === 'withdraw'
+    ? 'fan_intent_withdrawn'
+    : operation.action === 'move'
+      ? 'fan_intent_moved'
+      : 'fan_intent_joined';
+  trackCgbEvent(eventName, {
+    game_id: state.gameId,
+    venue_type: venue?.venue_type || '',
+    intent_action: operation.action
+  });
 }
 
 export function createFanIntentController({
@@ -60,6 +75,7 @@ export function createFanIntentController({
           ? 'Your selection moved.'
           : 'You’ll be here.';
       showStatus(message, 2600);
+      trackIntentSuccess(state, transaction.operation);
       return true;
     } catch (error) {
       fanState.selections = rollbackIntentTransaction(state.snapshot, transaction);
