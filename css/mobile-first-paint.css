@@ -33,6 +33,14 @@
     font-size: 10px !important;
   }
 
+  body[data-view="map"][data-command-surface="map"]:has(#venue-tray.tray--selected) .opening-stat {
+    display: none !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"]:has(#venue-tray.tray--selected) .maplibregl-ctrl-bottom-right {
+    top: 10px !important;
+  }
+
   #map-view > #venue-tray.venue-tray::before {
     content: none !important;
     display: none !important;
