@@ -19,9 +19,9 @@ test('desktop venue detail layout keeps navigation and hierarchy desktop-specifi
   assert.ok(unifiedCss.includes('padding-top: 8px !important'));
   assert.ok(css.includes('html body[data-view="detail"] .back-link'));
   assert.ok(css.includes('position: absolute !important'));
-  assert.ok(unifiedCss.includes('top: 10px !important'));
+  assert.ok(unifiedCss.includes('top: 8px !important'));
   assert.ok(unifiedCss.includes('left: 46px !important'));
-  assert.ok(unifiedCss.includes('padding: 48px 28px 28px !important'));
+  assert.ok(unifiedCss.includes('padding: 42px 28px 28px !important'));
   assert.ok(css.includes('display: flow-root !important'));
   assert.ok(css.includes('float: left !important'));
   assert.ok(css.includes('width: 56% !important'));
