@@ -7,6 +7,10 @@
     <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/>
     <circle cx="12" cy="10" r="2"/>
   </symbol>
+  <symbol id="icon-cal-bar" viewBox="0 0 24 24">
+    <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" fill="currentColor" stroke="none"/>
+    <circle cx="12" cy="10" r="2.1" fill="#fff" stroke="none"/>
+  </symbol>
   <symbol id="icon-near-me" viewBox="0 0 24 24">
     <path d="m20 4-7 16-2.2-6.8L4 11l16-7Z"/>
   </symbol>
