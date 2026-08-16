@@ -51,6 +51,16 @@ test('selected tray toggles from the full profile directly to the existing mini 
   assert.doesNotMatch(source, /selectedTrayExpanded|lastSelectedVenueId|setSelectedTrayDensity|selectedDensity|data-selected-density/);
 });
 
+test('tapping unused mobile map space clears the selected venue without treating markers or controls as background', () => {
+  assert.match(source, /function handleMapBackgroundTap/);
+  assert.match(source, /event\.target\.closest\?\.\('#map'\)/);
+  assert.match(source, /\.cgb-marker, \.user-marker, \.maplibregl-ctrl/);
+  assert.match(source, /state\.selectedVenueId = null/);
+  assert.match(source, /state\.locationFocusVenueId = null/);
+  assert.match(source, /window\.CGBApp\?\.render\?\.\(\)/);
+  assert.match(source, /document\.addEventListener\('click', handleMapBackgroundTap, \{ capture: true \}\)/);
+});
+
 test('selected profile uses content-driven height rather than a medium fixed-height override', () => {
   assert.doesNotMatch(source, /tray--selected\[data-selected-density/);
   assert.doesNotMatch(source, /height: 170px !important/);
