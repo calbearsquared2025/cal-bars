@@ -20,32 +20,27 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      /* Search, Add, and List are opaque peer tab surfaces; the map never shows through. */
-      body[data-command-surface="search"] #map,
+      /* Add and List are opaque peer tab surfaces; Search first-paint rules are static CSS. */
       body[data-command-surface="add"] #map,
       body[data-command-surface="list"] #map {
         visibility: hidden !important;
       }
 
-      body[data-command-surface="search"] #map-view,
       body[data-command-surface="add"] #map-view,
       body[data-command-surface="list"] #map-view {
         background: var(--cgb-warm-50) !important;
       }
 
-      body[data-command-surface="search"] .command-surface:not([hidden]),
       body[data-command-surface="add"] .command-surface:not([hidden]) {
         z-index: 47 !important;
         inset: var(--header-height) 0 var(--footer-height) 0 !important;
         background: var(--cgb-warm-50) !important;
       }
 
-      body[data-command-surface="search"] .command-surface__back,
       body[data-command-surface="add"] .command-surface__back {
         display: none !important;
       }
 
-      body[data-command-surface="search"] #map-view > #venue-tray,
       body[data-command-surface="add"] #map-view > #venue-tray {
         display: none !important;
       }
@@ -72,7 +67,6 @@ function installStyles() {
     }
 
     @media (max-width: 899px) and (orientation: portrait) {
-      body[data-command-surface="search"] .command-surface__shell,
       body[data-command-surface="add"] .command-surface__shell {
         padding-top: 18px !important;
       }
