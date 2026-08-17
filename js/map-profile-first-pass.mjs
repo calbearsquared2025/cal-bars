@@ -15,25 +15,6 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      .command-surface .search-field {
-        border-color: var(--cgb-neutral-300) !important;
-        box-shadow: var(--shadow-xs) !important;
-      }
-
-      .command-surface .search-field:focus-within {
-        border-color: var(--cgb-gold-400) !important;
-        box-shadow: 0 0 0 2px rgba(253, 181, 21, .34), var(--shadow-sm) !important;
-      }
-
-      .command-surface .search-field input,
-      .command-surface .search-field input:focus,
-      .command-surface .search-field input:focus-visible {
-        outline: 0 !important;
-        border: 0 !important;
-        box-shadow: none !important;
-      }
-
-      body[data-command-surface="search"] #map-view > #venue-tray.venue-tray.tray--peek,
       body[data-command-surface="add"] #map-view > #venue-tray.venue-tray {
         display: none !important;
       }
