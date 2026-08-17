@@ -250,3 +250,41 @@
     font-size: .72rem !important;
   }
 }
+
+/* Search must be visually complete before deferred JavaScript refinements initialize. */
+@media (max-width: 899px) {
+  body[data-command-surface="search"] #map {
+    visibility: hidden !important;
+  }
+
+  body[data-command-surface="search"] #map-view {
+    background: var(--cgb-warm-50, #f7f6f2) !important;
+  }
+
+  body[data-command-surface="search"] .command-surface:not([hidden]) {
+    z-index: 47 !important;
+    inset: var(--header-height) 0 var(--footer-height) 0 !important;
+    background: var(--cgb-warm-50, #f7f6f2) !important;
+  }
+
+  body[data-command-surface="search"] .command-surface__back,
+  body[data-command-surface="search"] #map-view > #venue-tray.venue-tray {
+    display: none !important;
+  }
+
+  body[data-command-surface="search"] .command-surface .search-suggestions button,
+  body[data-command-surface="search"] .command-surface .external-place-result {
+    color: var(--cgb-ink-900, #101626);
+  }
+
+  body[data-command-surface="search"] .command-surface .search-suggestions button strong,
+  body[data-command-surface="search"] .command-surface .external-place-result strong {
+    color: var(--cgb-navy-950, #010133);
+  }
+
+  body[data-command-surface="search"] .command-surface .search-suggestions button span,
+  body[data-command-surface="search"] .command-surface .external-place-result span,
+  body[data-command-surface="search"] .command-surface .external-place-result small {
+    color: var(--cgb-ink-500, #687280);
+  }
+}
