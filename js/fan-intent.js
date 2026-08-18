@@ -5,6 +5,7 @@ import {
   INTENT_SELECTIONS_STORAGE_KEY,
   compactListFanCountCopy,
   createBrowserId,
+  detailPresenceCopy,
   isValidBrowserId,
   parseStoredSelections,
   validateFanIntentResponse
@@ -168,9 +169,7 @@ function syncDetailPresence(venueId, isSelected) {
     else card.prepend(presence);
   }
   const count = getFanCount(appState.snapshot, appState.gameId, venueId);
-  presence.textContent = count === 1
-    ? 'You’re the first Bear here.'
-    : 'You’re one of them.';
+  presence.textContent = detailPresenceCopy(count);
 }
 
 function renderIntentButton(button) {
