@@ -303,15 +303,22 @@ async function verifyMobileBottomWhitespace() {
   await sleep(30);
 }
 
-function verifyImmediateSingleOwnerRerender(venue, hasParty) {
+function verifyImmediateSingleOwnerRerender(venue, hasParty, fixtureMode) {
+  const priorMapNode = element('#venue-detail .detail-local-map');
+  const priorActiveMap = (window.CGBMapLibreRuntimeMock?.maps || [])
+    .find((candidate) => !candidate.removed);
   window.CGBApp?.render?.();
   check(!element('#venue-detail .detail-game-context'), 'Base rerender should not recreate the superseded selected-game module');
-  check(Boolean(element('#venue-detail .detail-local-map')) === !venue.photo_url, 'Base renderer should immediately retain the accepted no-photo map structure');
-  const pendingMap = element('#venue-detail .detail-local-map');
-  if (!venue.photo_url && pendingMap) {
-    check(!pendingMap.classList.contains('is-ready'), 'Fresh no-photo Detail map should not expose an intermediate render');
-    check(pendingMap.getAttribute('aria-busy') === 'true', 'Fresh no-photo Detail map should start busy');
-    check(getComputedStyle(pendingMap).visibility === 'hidden', 'Fresh no-photo Detail map should remain hidden before MapLibre load');
+  const renderedMapNode = element('#venue-detail .detail-local-map');
+  if (fixtureMode === 'none') {
+    check(renderedMapNode === priorMapNode, 'Snapshot rerender should retain the settled local-map container');
+    check(renderedMapNode?.classList.contains('is-ready'), 'Retained local map should remain ready across snapshot rerender');
+    check(renderedMapNode?.getAttribute('aria-busy') === 'false', 'Retained local map should remain settled across snapshot rerender');
+    check(getComputedStyle(renderedMapNode).visibility === 'visible', 'Retained local map should remain visible across snapshot rerender');
+    const activeMaps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
+    check(activeMaps.length === 1 && activeMaps[0] === priorActiveMap, 'Snapshot rerender should retain exactly one MapLibre instance');
+  } else {
+    check(Boolean(renderedMapNode) === !venue.photo_url, 'Base renderer should preserve photo-present local-map eligibility');
   }
   check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Base renderer should emit the Detail Share icon without a later upgrade');
   check(Boolean(element('#venue-detail .detail-directions-inline .ui-icon')), 'Base renderer should emit the Detail Directions icon without a later upgrade');
@@ -367,7 +374,10 @@ async function main() {
   const hasParty = Boolean(partyFor(selectedVenueId, settledState?.gameId));
   const mobile = window.matchMedia('(max-width: 899px)').matches;
 
-  verifyImmediateSingleOwnerRerender(venue, hasParty);
+  if (fixtureMode === 'none') {
+    await waitFor(() => element('#venue-detail .detail-local-map')?.classList.contains('is-ready'), 'initial ready Venue local map');
+  }
+  verifyImmediateSingleOwnerRerender(venue, hasParty, fixtureMode);
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'post-rerender Venue media refinement');
   if (fixtureMode !== 'photo') {
     await waitFor(() => element('#venue-detail .detail-local-map')?.classList.contains('is-ready'), 'ready Venue local map');

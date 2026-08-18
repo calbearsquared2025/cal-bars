@@ -74,7 +74,7 @@ test('initial Detail render waits for contribution adapters to register', () => 
   assert.match(app, /document\.addEventListener\('DOMContentLoaded', boot, \{ once: true \}\)/);
   assert.match(watchPartyForm, /app\.subscribe\('rendered', render\)[\s\S]*initializeCalBarNominationEntry[\s\S]*initializeListingUpdateEntry/);
   assert.match(detailHarness, /await waitFor\(\(\) => Boolean\(element\('#venue-detail > \.detail-contribution'\)\), 'compact contribution section'\)/);
-  assert.match(detailHarness, /verifyImmediateSingleOwnerRerender\(venue, hasParty\)[\s\S]*verifyContribution\(venue, fixtureMode\)/);
+  assert.match(detailHarness, /verifyImmediateSingleOwnerRerender\(venue, hasParty, fixtureMode\)[\s\S]*verifyContribution\(venue, fixtureMode\)/);
 });
 
 test('app.js is the single structural owner for Venue Detail on every render', () => {
@@ -83,7 +83,7 @@ test('app.js is the single structural owner for Venue Detail on every render', (
   assert.doesNotMatch(detailRefinement, /function refineVenueDetail|function refineDetailIdentity|function refineDetailAttendance|function refineDetailContribution|function refineDetailPrimaryActions/);
   assert.doesNotMatch(fanIntent, /function renderDetailActivity/);
   assert.match(detailRefinement, /syncDetailLocalMap\(hero, venue, state\)/);
-  assert.match(detailHarness, /function verifyImmediateSingleOwnerRerender\(venue, hasParty\)[\s\S]*window\.CGBApp\?\.render\?\.\(\)[\s\S]*Base rerender should not recreate the superseded selected-game module/);
+  assert.match(detailHarness, /function verifyImmediateSingleOwnerRerender\(venue, hasParty, fixtureMode\)[\s\S]*window\.CGBApp\?\.render\?\.\(\)[\s\S]*Base rerender should not recreate the superseded selected-game module/);
 });
 
 test('direct route and refresh coverage retains game and Venue identity for known and TBD kickoff states', () => {

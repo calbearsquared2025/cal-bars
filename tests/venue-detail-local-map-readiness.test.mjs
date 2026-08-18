@@ -18,7 +18,7 @@ test('no-photo local map stays hidden and busy until its MapLibre load event', (
   assert.match(detailCss, /\.detail-local-map\.is-ready\s*\{[^}]*visibility: visible !important;/);
   assert.match(refinement, /map\.on\('load', \(\) => \{[\s\S]*detailLocalMap !== map[\s\S]*revealDetailLocalMap\(container\)/);
   assert.match(refinement, /function revealDetailLocalMap\(container\)[\s\S]*classList\.add\('is-ready'\)[\s\S]*setAttribute\('aria-busy', 'false'\)/);
-  assert.match(detailHarness, /Fresh no-photo Detail map should remain hidden before MapLibre load/);
+  assert.match(detailHarness, /initial ready Venue local map/);
   assert.match(detailHarness, /Ready Detail local map should be visible/);
 });
 
@@ -28,4 +28,11 @@ test('readiness belongs to one local-map instance and photo-present Detail creat
   assert.match(refinement, /if \(detailLocalMap !== map \|\| detailLocalMapContainer !== container \|\| detailLocalMapVenueId !== venue\.venue_id\) return;/);
   assert.match(app, /if \(venue\.photo_url \|\| !\[latitude, longitude\]\.every\(Number\.isFinite\)\) return null/);
   assert.match(detailHarness, /Photo-present Detail should retain no active local-map instance/);
+});
+
+test('unchanged snapshot rerenders retain the settled map container and instance', () => {
+  assert.match(app, /function takeReusableDetailLocalMap\(venue\)[\s\S]*dataset\.venueId === venue\.venue_id[\s\S]*dataset\.latitude[\s\S]*dataset\.longitude[\s\S]*dataset\.markerKind === markerKind/);
+  assert.match(app, /const localMap = takeReusableDetailLocalMap\(venue\) \|\| createDetailLocalMap\(venue\);[\s\S]*venueDetail\.replaceChildren\(\)/);
+  assert.match(detailHarness, /Snapshot rerender should retain the settled local-map container/);
+  assert.match(detailHarness, /Snapshot rerender should retain exactly one MapLibre instance/);
 });
