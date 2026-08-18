@@ -52,7 +52,7 @@ export function gameTitle(game) {
 }
 
 export function venueTypeLabel(venue) {
-  return venue?.venue_type === 'cal_bar' ? 'CAL BAR' : 'COMMUNITY LOCATION';
+  return venue?.venue_type === 'cal_bar' ? 'CAL BAR' : 'FAN-ADDED';
 }
 
 export function compactVenueLocation(venue) {
@@ -65,6 +65,7 @@ export function venueBadgeDescriptors(venue, party) {
   const badges = [];
   if (party) badges.push({ text: 'WATCH PARTY', kind: 'party' });
   if (venue?.venue_type === 'cal_bar') badges.push({ text: 'CAL BAR', kind: 'cal' });
+  else if (venue?.venue_type === 'community_location') badges.push({ text: 'FAN-ADDED', kind: 'community' });
   return badges;
 }
 
@@ -77,7 +78,7 @@ export function haversineMiles(lat1, lon1, lat2, lon2) {
   const dLat = toRad(bLat - aLat);
   const dLon = toRad(bLon - aLon);
   const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(toRad(dLon / 2)) ** 2;
   return 2 * radius * Math.asin(Math.sqrt(a));
 }
 
