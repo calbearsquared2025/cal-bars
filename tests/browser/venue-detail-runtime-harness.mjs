@@ -140,6 +140,8 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
     check(creditLink?.textContent?.trim() === venue.photo_credit, 'Only the photo credit identity should be linkable');
     check(creditLink?.href === safeExternalUrl(venue.photo_credit_url), 'Valid HTTP(S) photo credit URL should be used');
     check(creditLink?.target === '_blank' && creditLink?.rel.includes('noopener'), 'Photo credit links should open externally and safely');
+    const activeMaps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
+    check(activeMaps.length === 0, 'Photo-present Detail should retain no active local-map instance');
     return;
   }
 
@@ -154,6 +156,9 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
   check(Number(mapNode?.dataset.longitude) === Number(venue.longitude), 'Detail local map should use canonical longitude');
   const zoom = Number(mapNode?.dataset.zoom);
   check(zoom === 16, 'Detail local map should use the approved wider local zoom');
+  check(mapNode?.classList.contains('is-ready'), 'Detail local map should reveal only after MapLibre is ready');
+  check(mapNode?.getAttribute('aria-busy') === 'false', 'Ready Detail local map should clear its busy state');
+  check(getComputedStyle(mapNode).visibility === 'visible', 'Ready Detail local map should be visible');
 
   const maps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
   const markers = (window.CGBMapLibreRuntimeMock?.markers || [])
@@ -302,6 +307,12 @@ function verifyImmediateSingleOwnerRerender(venue, hasParty) {
   window.CGBApp?.render?.();
   check(!element('#venue-detail .detail-game-context'), 'Base rerender should not recreate the superseded selected-game module');
   check(Boolean(element('#venue-detail .detail-local-map')) === !venue.photo_url, 'Base renderer should immediately retain the accepted no-photo map structure');
+  const pendingMap = element('#venue-detail .detail-local-map');
+  if (!venue.photo_url && pendingMap) {
+    check(!pendingMap.classList.contains('is-ready'), 'Fresh no-photo Detail map should not expose an intermediate render');
+    check(pendingMap.getAttribute('aria-busy') === 'true', 'Fresh no-photo Detail map should start busy');
+    check(getComputedStyle(pendingMap).visibility === 'hidden', 'Fresh no-photo Detail map should remain hidden before MapLibre load');
+  }
   check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Base renderer should emit the Detail Share icon without a later upgrade');
   check(Boolean(element('#venue-detail .detail-directions-inline .ui-icon')), 'Base renderer should emit the Detail Directions icon without a later upgrade');
   verifyIdentity(venue, hasParty);
@@ -358,6 +369,9 @@ async function main() {
 
   verifyImmediateSingleOwnerRerender(venue, hasParty);
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'post-rerender Venue media refinement');
+  if (fixtureMode !== 'photo') {
+    await waitFor(() => element('#venue-detail .detail-local-map')?.classList.contains('is-ready'), 'ready Venue local map');
+  }
   await sleep(50);
 
   check(routeVenue?.venue_id === venue.venue_id, 'Direct Venue URL should resolve the requested Venue slug');

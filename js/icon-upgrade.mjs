@@ -82,6 +82,11 @@ function createDetailLocalMarker(venue, state) {
   return marker;
 }
 
+function revealDetailLocalMap(container) {
+  container?.classList.add('is-ready');
+  container?.setAttribute('aria-busy', 'false');
+}
+
 function syncDetailLocalMap(hero, venue, state) {
   const container = hero?.querySelector('.detail-local-map');
   if (!container) {
@@ -109,13 +114,17 @@ function syncDetailLocalMap(hero, venue, state) {
     fallback.className = 'detail-local-map__fallback';
     fallback.textContent = 'Map unavailable';
     container.append(fallback);
+    revealDetailLocalMap(container);
     return;
   }
 
   const key = String(window.CGBApp?.mapTilerKey || '').trim();
-  if (!key) return;
+  if (!key) {
+    revealDetailLocalMap(container);
+    return;
+  }
   const style = `https://api.maptiler.com/maps/${DETAIL_MAP_STYLE_ID}/style.json?key=${encodeURIComponent(key)}`;
-  detailLocalMap = new window.maplibregl.Map({
+  const map = new window.maplibregl.Map({
     container,
     style,
     center: [longitude, latitude],
@@ -124,12 +133,19 @@ function syncDetailLocalMap(hero, venue, state) {
     attributionControl: false,
     fadeDuration: 0
   });
-  detailLocalMap.on('error', (event) => console.warn('Detail map error', event?.error || event));
+  detailLocalMap = map;
+  map.on('load', () => {
+    if (detailLocalMap !== map || detailLocalMapContainer !== container || detailLocalMapVenueId !== venue.venue_id) return;
+    revealDetailLocalMap(container);
+  });
+  map.on('error', (event) => console.warn('Detail map error', event?.error || event));
   new window.maplibregl.Marker({
     element: createDetailLocalMarker(venue, state),
     anchor: 'bottom'
-  }).setLngLat([longitude, latitude]).addTo(detailLocalMap);
-  requestAnimationFrame(() => detailLocalMap?.resize?.());
+  }).setLngLat([longitude, latitude]).addTo(map);
+  requestAnimationFrame(() => {
+    if (detailLocalMap === map) map.resize?.();
+  });
 }
 
 export function upgradeRenderedIcons(root = document) {

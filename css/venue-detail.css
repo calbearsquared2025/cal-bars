@@ -112,6 +112,11 @@ body[data-view="detail"] .detail-local-map {
   border: 1px solid var(--cgb-neutral-200) !important;
   border-radius: 14px !important;
   clip-path: none !important;
+  visibility: hidden !important;
+}
+
+body[data-view="detail"] .detail-local-map.is-ready {
+  visibility: visible !important;
 }
 
 body[data-view="detail"] .detail-local-map canvas {

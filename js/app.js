@@ -542,6 +542,7 @@ function createDetailLocalMap(venue) {
   map.dataset.zoom = '16';
   map.setAttribute('role', 'img');
   map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
+  map.setAttribute('aria-busy', 'true');
   return map;
 }
 
