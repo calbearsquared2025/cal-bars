@@ -79,6 +79,7 @@
   <script>
     if (new URLSearchParams(window.location.search).has('venue')) {
       document.body.dataset.view = 'detail';
+      document.body.dataset.detailState = 'pending';
     }
   </script>
   <header class="site-header">
@@ -230,7 +231,7 @@
       </div>
     </section>
 
-    <section id="detail-view" class="detail-view" hidden aria-label="Venue details">
+    <section id="detail-view" class="detail-view" hidden aria-label="Venue details" aria-busy="true">
       <div class="detail-shell">
         <a id="detail-back" class="back-link" href="./">
           <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>

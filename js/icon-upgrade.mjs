@@ -87,6 +87,29 @@ function revealDetailLocalMap(container) {
   container?.setAttribute('aria-busy', 'false');
 }
 
+function revealPendingDetailViewWhenSettled() {
+  const state = window.CGBApp?.getState?.();
+  const hero = document.querySelector('#venue-detail > .detail-hero');
+  if (!state?.detailMode || !detailVenue(state) || !hero) return;
+
+  const localMap = hero.querySelector(':scope > .detail-local-map');
+  if (localMap && !localMap.classList.contains('is-ready')) return;
+
+  const photo = hero.querySelector(':scope > .detail-photo .detail-photo__image');
+  if (photo && (!photo.complete || photo.naturalWidth === 0)) {
+    if (!photo.dataset.detailReadyListener) {
+      photo.dataset.detailReadyListener = 'true';
+      photo.addEventListener('load', scheduleUpgrade, { once: true });
+    }
+    return;
+  }
+
+  if (document.body.dataset.detailState === 'pending') {
+    document.body.dataset.detailState = 'ready';
+  }
+  document.querySelector('#detail-view')?.setAttribute('aria-busy', 'false');
+}
+
 function syncDetailLocalMap(hero, venue, state) {
   const container = hero?.querySelector('.detail-local-map');
   if (!container) {
@@ -137,6 +160,7 @@ function syncDetailLocalMap(hero, venue, state) {
   map.on('load', () => {
     if (detailLocalMap !== map || detailLocalMapContainer !== container || detailLocalMapVenueId !== venue.venue_id) return;
     revealDetailLocalMap(container);
+    revealPendingDetailViewWhenSettled();
   });
   map.on('error', (event) => console.warn('Detail map error', event?.error || event));
   new window.maplibregl.Marker({
@@ -182,6 +206,7 @@ function runRefinements() {
   const hero = document.querySelector('#venue-detail .detail-hero');
   if (!state?.detailMode || !venue || !hero) destroyDetailLocalMap();
   else syncDetailLocalMap(hero, venue, state);
+  revealPendingDetailViewWhenSettled();
 }
 
 function scheduleUpgrade() {

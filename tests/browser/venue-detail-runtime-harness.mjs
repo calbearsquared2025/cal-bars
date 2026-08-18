@@ -366,6 +366,12 @@ async function main() {
   await waitFor(() => document.body.dataset.view === 'detail' && !element('#venue-detail .detail-game-context'), 'resolved Detail refinement');
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'Venue photo or local-map presentation');
   await waitFor(() => Boolean(element('#venue-detail > .detail-contribution')), 'compact contribution section');
+  await waitFor(
+    () => document.body.dataset.detailState === 'ready' &&
+      element('#detail-view')?.getAttribute('aria-busy') === 'false',
+    'settled Detail first-paint gate'
+  );
+  check(element('#detail-view')?.getAttribute('aria-busy') === 'false', 'Settled Detail view should clear its busy state');
   if (fixtureMode === 'photo') await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry]')), 'configured Submit a Photo contribution');
 
   const settledState = state();

@@ -945,6 +945,7 @@ function renderDetailView() {
   disposeMapForDetail();
   dom.mapView.hidden = true;
   dom.detailView.hidden = false;
+  dom.detailView.setAttribute('aria-busy', 'true');
   dom.detailBack.href = buildGameUrl(state.gameId, location.href);
   const game = selectedGame();
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
@@ -1315,6 +1316,10 @@ async function boot() {
   } catch (error) {
     console.error(error);
     dom.app.setAttribute('aria-busy', 'false');
+    if (document.body.dataset.detailState === 'pending') {
+      document.body.dataset.detailState = 'ready';
+      dom.detailView.setAttribute('aria-busy', 'false');
+    }
     showStatus('The location data could not be loaded.', 6000);
     dom.mapFallback.hidden = false;
   }

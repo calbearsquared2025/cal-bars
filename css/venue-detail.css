@@ -6,6 +6,12 @@ body[data-view="detail"] #detail-view[hidden] {
   display: block !important;
 }
 
+body[data-view="detail"][data-detail-state="pending"] #detail-view {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 body[data-view="detail"] {
   --header-height: calc(118px + env(safe-area-inset-top, 0px));
 }
