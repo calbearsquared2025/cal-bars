@@ -46,17 +46,28 @@ let ready = false;
 let resolveReady;
 const readyPromise = new Promise((resolve) => { resolveReady = resolve; });
 
+function presentationSnapshot(snapshot) {
+  return {
+    ...snapshot,
+    venues: (snapshot.venues || []).map((venue) => {
+      const { verification_status: _verificationStatus, ...presentationVenue } = venue || {};
+      return presentationVenue;
+    })
+  };
+}
+
 export function setCanonicalSnapshot(snapshot, dataSource = appState.dataSource) {
   if (!snapshot || typeof snapshot !== 'object') throw new Error('invalid_snapshot');
+  const nextSnapshot = presentationSnapshot(snapshot);
 
   if (!appState.snapshot) {
-    appState.snapshot = snapshot;
-  } else if (appState.snapshot !== snapshot) {
+    appState.snapshot = nextSnapshot;
+  } else {
     PUBLIC_SNAPSHOT_KEYS.forEach((key) => {
-      appState.snapshot[key] = snapshot[key];
+      appState.snapshot[key] = nextSnapshot[key];
     });
-    if ('schemaVersion' in snapshot) appState.snapshot.schemaVersion = snapshot.schemaVersion;
-    if ('generatedAt' in snapshot) appState.snapshot.generatedAt = snapshot.generatedAt;
+    if ('schemaVersion' in nextSnapshot) appState.snapshot.schemaVersion = nextSnapshot.schemaVersion;
+    if ('generatedAt' in nextSnapshot) appState.snapshot.generatedAt = nextSnapshot.generatedAt;
   }
 
   appState.dataSource = dataSource;
