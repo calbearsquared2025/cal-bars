@@ -53,7 +53,7 @@ test('one canonical snapshot object is retained while public arrays are refreshe
   assert.equal(appState.snapshot.generatedAt, 'two');
 });
 
-test('game switching restores the selection for the current canonical game', () => {
+test('restoring persisted Fan Intent keeps the current tray surface', () => {
   resetAppStateForTests();
   setCanonicalSnapshot(snapshot());
   appState.fanIntent.selections = { game_1: 'ven_1', game_2: 'ven_2' };
@@ -61,10 +61,13 @@ test('game switching restores the selection for the current canonical game', () 
   appState.gameId = 'game_1';
   restoreSelectedVenueFromFanIntent();
   assert.equal(appState.selectedVenueId, 'ven_1');
+  assert.equal(appState.trayState, 'peek');
 
+  appState.trayState = 'full';
   appState.gameId = 'game_2';
   restoreSelectedVenueFromFanIntent();
   assert.equal(appState.selectedVenueId, 'ven_2');
+  assert.equal(appState.trayState, 'full');
 });
 
 test('venue ranking reflects updated canonical fan counts', () => {
