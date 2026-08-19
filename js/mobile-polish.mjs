@@ -66,6 +66,7 @@ function updateMapActionPosition() {
   if (document.body.dataset.view !== 'map' || document.body.dataset.commandSurface !== 'map') return;
   if (getComputedStyle(tray).display === 'none') return;
 
+  // getBoundingClientRect() and innerHeight share the layout-viewport coordinate space.
   const trayTop = tray.getBoundingClientRect().top;
   const viewportHeight = window.innerHeight;
   if (!Number.isFinite(trayTop) || !Number.isFinite(viewportHeight)) return;
