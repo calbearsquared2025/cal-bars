@@ -3,9 +3,11 @@ import {
   buildVenueUrl,
   compactVenueLocation,
   markerKind,
+  NEARBY_RADIUS_MILES,
   rankVenues,
   TRAY_GUIDANCE_COPY
 } from './core.mjs';
+import { clearSelectedMapVenue } from './app-state.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
@@ -61,9 +63,21 @@ function rankedVenue(state, venueId) {
     .find(({ venue }) => venue.venue_id === venueId) || null;
 }
 
+function nearestNearbyVenue(state) {
+  if (!state?.snapshot || !state.gameId || !state.origin) return null;
+  return rankVenues(state.snapshot, state.gameId, state.origin).reduce((nearest, candidate) => {
+    const distance = Number(candidate.distance);
+    if (!Number.isFinite(distance) || distance > NEARBY_RADIUS_MILES) return nearest;
+    if (!nearest || distance < Number(nearest.distance)) return candidate;
+    return nearest;
+  }, null);
+}
+
 function previewCandidate(state = appState()) {
   const selected = rankedVenue(state, state?.selectedVenueId);
-  return selected ? { ...selected, mode: 'selected' } : null;
+  if (selected) return { ...selected, mode: 'selected' };
+  const nearby = nearestNearbyVenue(state);
+  return nearby ? { ...nearby, mode: 'nearby' } : null;
 }
 
 function previewVenueCard(venueId = '') {
@@ -81,19 +95,24 @@ function formatDistance(distance) {
 function updatePreviewIntent() {
   const state = appState();
   const button = document.querySelector('#browse-locations-button');
+  const eyebrow = button?.querySelector('.eyebrow');
   const title = document.querySelector('#tray-summary-title');
   const copy = document.querySelector('#tray-summary-copy');
   const count = document.querySelector('#tray-summary-count');
   const marker = document.querySelector('#tray-summary-marker');
-  if (!button || !title || !copy || !count || !marker) return;
+  if (!button || !eyebrow || !title || !copy || !count || !marker) return;
 
   const candidate = previewCandidate(state);
   if (!candidate) {
-    title.textContent = 'Find your Cal crowd';
-    copy.textContent = TRAY_GUIDANCE_COPY;
+    const usingLocation = Boolean(state?.origin);
+    eyebrow.textContent = usingLocation ? 'Near you' : 'Explore';
+    title.textContent = usingLocation ? 'No nearby locations' : 'Find your Cal crowd';
+    copy.textContent = usingLocation
+      ? `No mapped locations within ${NEARBY_RADIUS_MILES} miles.`
+      : TRAY_GUIDANCE_COPY;
     count.textContent = '';
     marker.dataset.kind = 'community-location';
-    button.dataset.previewMode = 'guidance';
+    button.dataset.previewMode = usingLocation ? 'nearby-empty' : 'guidance';
     button.removeAttribute('data-direct-venue-id');
     button.setAttribute('aria-label', 'Open the location list');
     return;
@@ -105,9 +124,9 @@ function updatePreviewIntent() {
     : venue.venue_type === 'cal_bar'
       ? 'Cal Bar'
       : 'Community Location';
-  const context = mode === 'selected' ? 'Selected' : 'Nearby';
+  eyebrow.textContent = mode === 'selected' ? 'Selected' : 'Near you';
   title.textContent = venue.name;
-  copy.textContent = [context, type, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
+  copy.textContent = [type, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   count.textContent = Number(fanCount) > 0 ? bearCountCopy(fanCount) : '';
   marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
   button.dataset.previewMode = mode;
@@ -126,6 +145,16 @@ function openPreviewVenue(event) {
   if (!card) return;
 
   card.click();
+}
+
+function handleMapDeselect(event) {
+  const map = event.target.closest?.('#map');
+  if (!map || !isMobile() || document.body.dataset.commandSurface !== 'map') return;
+  if (event.target.closest?.('.cgb-marker, .maplibregl-control-container, .maplibregl-ctrl')) return;
+  if (!clearSelectedMapVenue()) return;
+
+  lastAutoFocusedVenueId = '';
+  window.CGBApp?.render?.();
 }
 
 function openSelectedVenueDetail(venueId) {
@@ -280,6 +309,7 @@ function initialize() {
   document.addEventListener('pointerup', handleSelectedHandleSwipe, { capture: true });
   document.addEventListener('pointercancel', resetSelectedHandleSwipe, { capture: true });
   document.addEventListener('click', handleTrayTopTap, { capture: true });
+  document.addEventListener('click', handleMapDeselect);
 
   document.addEventListener('click', (event) => {
     const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
