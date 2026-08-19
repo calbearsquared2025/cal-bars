@@ -45,7 +45,7 @@ test('settled portrait map geometry is available from static CSS before modules 
 test('portrait header makes game selection explicit without crowding the brand', () => {
   assert.match(
     css,
-    /data-command-surface="map"[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(94px/
+    /data-command-surface="map"[\s\S]*data-view="detail"[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(94px/
   );
   assert.match(css, /\.site-header__brand-row[\s\S]*min-height: 62px !important[\s\S]*padding-right: min\(42vw, 164px\) !important/);
   assert.match(css, /#header-about-button[\s\S]*display: none !important/);
@@ -55,6 +55,14 @@ test('portrait header makes game selection explicit without crowding the brand',
   assert.match(css, /#header-game-label[\s\S]*font-size: \.96rem !important/);
   assert.match(css, /#header-kickoff[\s\S]*font-size: \.59rem !important/);
   assert.match(css, /game-button__chevron[\s\S]*width: 14px !important/);
+});
+
+test('mobile Detail uses the compact header and a flush white page surface', () => {
+  assert.match(css, /body\[data-view="detail"\][\s\S]*--header-height: calc\(94px/);
+  assert.match(css, /body\[data-view="detail"\] \.site-header[\s\S]*height: var\(--header-height\) !important/);
+  assert.match(css, /body\[data-view="detail"\] \.detail-view \{[\s\S]*padding: 0 !important[\s\S]*background: var\(--cgb-white, #fff\) !important/);
+  assert.match(css, /body\[data-view="detail"\] \.detail-shell \{[\s\S]*width: 100% !important[\s\S]*max-width: none !important[\s\S]*padding: 0 !important/);
+  assert.match(css, /body\[data-view="detail"\] \.venue-detail \{[\s\S]*border: 0 !important[\s\S]*border-radius: 0 !important[\s\S]*box-shadow: none !important/);
 });
 
 test('map statistics tighten without crowding the header brand', () => {
