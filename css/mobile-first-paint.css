@@ -123,6 +123,29 @@
     display: none !important;
   }
 
+  /* Mobile Detail is a page surface, not a card floating inside another surface. */
+  body[data-view="detail"] .detail-view {
+    padding: 0 !important;
+    background: var(--cgb-white, #fff) !important;
+  }
+
+  body[data-view="detail"] .detail-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--cgb-white, #fff) !important;
+  }
+
+  body[data-view="detail"] .venue-detail {
+    width: 100% !important;
+    max-width: none !important;
+    background: var(--cgb-white, #fff) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
   body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
     position: fixed !important;
     z-index: 47 !important;
@@ -209,6 +232,7 @@
 
 @media (max-width: 899px) and (orientation: portrait) {
   body[data-view="map"][data-command-surface="map"],
+  body[data-view="detail"],
   body[data-command-surface="search"],
   body[data-command-surface="add"],
   body[data-command-surface="list"] {
@@ -216,6 +240,7 @@
   }
 
   body[data-view="map"][data-command-surface="map"] .site-header,
+  body[data-view="detail"] .site-header,
   body[data-command-surface="search"] .site-header,
   body[data-command-surface="add"] .site-header,
   body[data-command-surface="list"] .site-header {
