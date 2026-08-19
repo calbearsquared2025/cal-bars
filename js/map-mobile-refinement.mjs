@@ -40,6 +40,12 @@ function installStyles() {
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > .icon-button {
         display: none !important;
       }
+
+      .cgb-marker.is-nearby-preview .marker-pin,
+      .cgb-marker.is-nearby-preview .marker-star {
+        scale: 1.08;
+        filter: drop-shadow(0 0 5px rgba(253,181,21,.78));
+      }
     }
   `;
   document.head.append(style);
@@ -80,6 +86,13 @@ function previewCandidate(state = appState()) {
   return nearby ? { ...nearby, mode: 'nearby' } : null;
 }
 
+function syncNearbyPreviewMarker(candidate) {
+  const nearbyVenueId = candidate?.mode === 'nearby' ? candidate.venue?.venue_id : '';
+  document.querySelectorAll('.cgb-marker[data-venue-id]').forEach((marker) => {
+    marker.classList.toggle('is-nearby-preview', marker.dataset.venueId === nearbyVenueId);
+  });
+}
+
 function previewVenueCard(venueId = '') {
   const cards = Array.from(document.querySelectorAll('#location-list .location-card[data-venue-id]'));
   return cards.find((card) => card.dataset.venueId === venueId) || null;
@@ -103,6 +116,7 @@ function updatePreviewIntent() {
   if (!button || !eyebrow || !title || !copy || !count || !marker) return;
 
   const candidate = previewCandidate(state);
+  syncNearbyPreviewMarker(candidate);
   if (!candidate) {
     const usingLocation = Boolean(state?.origin);
     eyebrow.textContent = usingLocation ? 'Near you' : 'Explore';
