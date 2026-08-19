@@ -58,6 +58,7 @@ test('portrait header makes game selection explicit without crowding the brand',
 });
 
 test('mobile Detail uses the compact header and a flush white page surface without a navy under-page flash', () => {
+  assert.match(html, /<meta name="theme-color" content="#ffffff">/);
   assert.match(css, /body\[data-view="detail"\][\s\S]*--header-height: calc\(94px/);
   assert.match(css, /body\[data-view="detail"\] \.site-header[\s\S]*height: var\(--header-height\) !important/);
   assert.match(css, /body\[data-view="detail"\] \.detail-view \{[\s\S]*padding: 0 !important[\s\S]*background: var\(--cgb-white, #fff\) !important/);
