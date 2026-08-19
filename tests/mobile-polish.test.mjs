@@ -66,6 +66,21 @@ test('selected Venue uses a viewport-anchored rounded bottom sheet', async () =>
   assert.match(css, /overflow: hidden/);
 });
 
+test('mobile location control follows the visible tray and keeps a clean circular shadow', async () => {
+  const [script, firstPaintCss] = await Promise.all([
+    source('js/mobile-polish.mjs'),
+    source('css/mobile-first-paint.css')
+  ]);
+  assert.match(script, /const MAP_ACTION_GAP = 14/);
+  assert.match(script, /function updateMapActionPosition/);
+  assert.match(script, /tray\.getBoundingClientRect\(\)/);
+  assert.match(script, /window\.visualViewport\?\.height \|\| window\.innerHeight/);
+  assert.match(script, /--map-action-bottom/);
+  assert.match(script, /new ResizeObserver\(scheduleMapActionPosition\)/);
+  assert.match(firstPaintCss, /\.map-actions[\s\S]*top: auto !important[\s\S]*bottom: var\(--map-action-bottom, calc\(var\(--footer-height\) \+ 110px\)\) !important/);
+  assert.match(firstPaintCss, /#near-me-button[\s\S]*border-radius: 50% !important[\s\S]*clip-path: none !important[\s\S]*box-shadow: 0 6px 16px/);
+});
+
 test('header corrections preserve game-title descenders and pin the menu to the viewport edge', async () => {
   const css = await source('css/mobile-polish.css');
   assert.match(css, /#header-game-label[\s\S]*overflow: hidden[\s\S]*padding-bottom: \.16em[\s\S]*line-height: 1\.22/);
