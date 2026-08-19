@@ -515,3 +515,58 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
     margin-top: 16px !important;
   }
 }
+
+/* Mobile portrait: compact global header + full-width white venue surface. */
+@media (max-width: 899px) and (orientation: portrait) {
+  body[data-view="detail"] {
+    --header-height: calc(94px + env(safe-area-inset-top, 0px)) !important;
+    background: var(--cgb-navy-900) !important;
+  }
+
+  body[data-view="detail"] .site-header {
+    height: var(--header-height) !important;
+    min-height: var(--header-height) !important;
+    display: block !important;
+    gap: 0 !important;
+    padding: calc(env(safe-area-inset-top, 0px) + 8px) max(14px, env(safe-area-inset-right, 0px)) 8px max(14px, env(safe-area-inset-left, 0px)) !important;
+  }
+
+  body[data-view="detail"] .detail-view {
+    width: 100% !important;
+    padding: 14px 0 0 !important;
+    background: var(--cgb-navy-900) !important;
+  }
+
+  body[data-view="detail"] .detail-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 10px 0 0 !important;
+    background: var(--cgb-white) !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+
+  body[data-view="detail"] .back-link {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    margin: 0 16px 4px !important;
+    min-height: 38px !important;
+    width: fit-content !important;
+    color: var(--cgb-navy-900) !important;
+    background: var(--cgb-white) !important;
+    border: 1px solid var(--cgb-neutral-200) !important;
+    box-shadow: var(--shadow-xs) !important;
+  }
+
+  body[data-view="detail"] .venue-detail {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: calc(100dvh - var(--header-height) - 14px) !important;
+    margin: 0 !important;
+    background: var(--cgb-white) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
