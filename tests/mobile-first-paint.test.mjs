@@ -57,13 +57,22 @@ test('portrait header makes game selection explicit without crowding the brand',
   assert.match(css, /game-button__chevron[\s\S]*width: 14px !important/);
 });
 
-test('mobile Detail uses the compact header and a flush white page surface', () => {
+test('mobile Detail uses the compact header and a flush white page surface without a navy under-page flash', () => {
   assert.match(css, /body\[data-view="detail"\][\s\S]*--header-height: calc\(94px/);
   assert.match(css, /body\[data-view="detail"\] \.site-header[\s\S]*height: var\(--header-height\) !important/);
-  assert.match(css, /body\[data-view="detail"\] \{[\s\S]*background-color: var\(--cgb-navy-900, #071e41\) !important/);
   assert.match(css, /body\[data-view="detail"\] \.detail-view \{[\s\S]*padding: 0 !important[\s\S]*background: var\(--cgb-white, #fff\) !important/);
   assert.match(css, /body\[data-view="detail"\] \.detail-shell \{[\s\S]*width: 100% !important[\s\S]*max-width: none !important[\s\S]*padding: 0 !important/);
   assert.match(css, /body\[data-view="detail"\] \.venue-detail \{[\s\S]*border: 0 !important[\s\S]*border-radius: 0 !important[\s\S]*box-shadow: none !important/);
+  assert.doesNotMatch(css, /body\[data-view="detail"\] \{[^}]*background-color: var\(--cgb-navy/);
+});
+
+test('Search Add and List share one mobile title hierarchy', () => {
+  assert.match(css, /data-command-surface="search"[\s\S]*command-surface__shell[\s\S]*data-command-surface="add"[\s\S]*command-surface__shell[\s\S]*padding-top: 16px !important/);
+  assert.match(css, /data-command-surface="search"[\s\S]*command-surface__header[\s\S]*data-command-surface="add"[\s\S]*command-surface__header[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(css, /data-command-surface="search"[\s\S]*command-surface__back[\s\S]*data-command-surface="add"[\s\S]*command-surface__back[\s\S]*display: none !important/);
+  assert.match(css, /data-command-surface="list"[\s\S]*tray-list__header[\s\S]*padding: 16px 16px 11px !important[\s\S]*background: var\(--cgb-warm-50/);
+  assert.match(css, /data-command-surface="search"[\s\S]*command-surface__header \.eyebrow[\s\S]*data-command-surface="add"[\s\S]*command-surface__header \.eyebrow[\s\S]*data-command-surface="list"[\s\S]*tray-list__header \.eyebrow[\s\S]*font-size: var\(--text-2xs/);
+  assert.match(css, /data-command-surface="search"[\s\S]*command-surface__header h2[\s\S]*data-command-surface="add"[\s\S]*command-surface__header h2[\s\S]*data-command-surface="list"[\s\S]*tray-list__header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);
 });
 
 test('map statistics tighten without crowding the header brand', () => {
@@ -88,6 +97,7 @@ test('initial map and secondary header geometry no longer have competing runtime
   assert.doesNotMatch(profileStyles, /data-command-surface="search"[\s\S]*site-header/);
   assert.doesNotMatch(profileStyles, /header-game-label/);
   assert.doesNotMatch(mobileTabStyles, /tray--peek/);
+  assert.doesNotMatch(mobileTabStyles, /command-surface__header|tray-list__header/);
 });
 
 test('detail routing still overrides the safe initial map state synchronously', () => {
