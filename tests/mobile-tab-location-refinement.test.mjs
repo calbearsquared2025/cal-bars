@@ -17,8 +17,11 @@ test('Search Add and List hide the map and Search does not show a selected tray'
   assert.match(source, /data-command-surface="search"[\s\S]*#venue-tray[\s\S]*display: none !important/);
 });
 
-test('Search Add and List use compact spacing below the shared branded header', () => {
-  assert.match(source, /@media \(max-width: 899px\) and \(orientation: portrait\)[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*padding-top: 18px !important[\s\S]*data-command-surface="list"[\s\S]*padding-top: 16px !important/);
+test('Search Add and List title geometry is owned by static first-paint CSS', () => {
+  assert.doesNotMatch(source, /command-surface__header|command-surface__back|tray-list__header/);
+  assert.match(firstPaintCss, /data-command-surface="search"[\s\S]*command-surface__header[\s\S]*data-command-surface="add"[\s\S]*command-surface__header/);
+  assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__header[\s\S]*padding: 16px 16px 11px !important/);
+  assert.match(firstPaintCss, /command-surface__header h2[\s\S]*tray-list__header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);
 });
 
 test('mobile tab refinement does not override the accepted desktop selected-profile actions', () => {
