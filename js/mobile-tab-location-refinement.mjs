@@ -44,22 +44,6 @@ function installStyles() {
       body[data-command-surface="list"] #map-view > #venue-tray.venue-tray.tray--full {
         inset: var(--header-height) 0 var(--footer-height) 0 !important;
       }
-
-      body[data-command-surface="list"] #close-list-button {
-        display: none !important;
-      }
-
-      body[data-command-surface="list"] #clear-search-button {
-        display: inline-flex !important;
-        align-items: center;
-        min-height: 36px;
-        padding: 0 12px;
-        white-space: nowrap;
-        text-decoration: none !important;
-        border: 1px solid var(--cgb-neutral-300);
-        border-radius: 999px;
-        background: var(--cgb-white);
-      }
     }
 
   `;
