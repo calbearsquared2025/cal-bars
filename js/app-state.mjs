@@ -110,7 +110,6 @@ export function restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty = f
   const exists = venueId && appState.snapshot.venues.some((venue) => venue.venue_id === venueId);
   if (exists) {
     appState.selectedVenueId = venueId;
-    appState.trayState = 'selected';
   } else if (!preserveCurrentWhenEmpty) {
     appState.selectedVenueId = null;
     appState.trayState = 'peek';
