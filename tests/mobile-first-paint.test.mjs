@@ -68,16 +68,20 @@ test('mobile Detail uses the compact header and a flush white page surface witho
   assert.doesNotMatch(css, /body\[data-view="detail"\] \{[^}]*background-color: var\(--cgb-navy/);
 });
 
-test('Search Add and List use the same destination-header component', () => {
+test('Search Add and List use the same destination-header component with an optional action column', () => {
   const sharedHeaders = html.match(/class="[^"]*mobile-destination-header[^"]*"/g) || [];
+  const mobileTabStyles = styleBlock(mobileTab);
   assert.equal(sharedHeaders.length, 3);
   assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>[\s\S]*class="tray-list__toolbar"[\s\S]*id="clear-search-button"/);
-  assert.match(css, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important[\s\S]*padding: 0 0 11px !important[\s\S]*border-bottom: 1px solid var\(--cgb-neutral-200\) !important/);
+  assert.match(css, /\.mobile-destination-header \{[\s\S]*padding: 0 0 11px !important[\s\S]*border-bottom: 1px solid var\(--cgb-neutral-200\) !important/);
   assert.match(css, /\.mobile-destination-header \.eyebrow[\s\S]*font-size: var\(--text-2xs/);
   assert.match(css, /\.mobile-destination-header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);
   assert.match(css, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*position: static !important[\s\S]*padding: 16px 16px 11px !important/);
-  assert.match(css, /data-command-surface="list"[\s\S]*tray-list__toolbar[\s\S]*justify-content: flex-end/);
-  assert.match(css, /#clear-search-button:not\(\[hidden\]\)[\s\S]*border-radius: 999px/);
+  assert.match(mobileTabStyles, /\.mobile-destination-header[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
+  assert.match(mobileTabStyles, /tray-list__header #clear-search-button[\s\S]*align-self: end !important[\s\S]*justify-self: end !important/);
+  assert.match(mobileTabStyles, /tray-list__toolbar[\s\S]*display: none !important/);
+  assert.match(mobileTab, /header\.append\(button\)/);
+  assert.match(mobileTab, /toolbar\.prepend\(button\)/);
 });
 
 test('map statistics tighten without crowding the header brand', () => {
@@ -89,7 +93,7 @@ test('map statistics tighten without crowding the header brand', () => {
   assert.match(css, /data-command-surface="search"[\s\S]*opening-stat[\s\S]*display: none !important/);
 });
 
-test('initial map and secondary destination geometry no longer have competing style owners', () => {
+test('initial map and destination title typography avoid competing style owners', () => {
   const mapMobileStyles = styleBlock(mapMobile);
   const profileStyles = styleBlock(profileFirstPass);
   const mobileTabStyles = styleBlock(mobileTab);
@@ -102,7 +106,8 @@ test('initial map and secondary destination geometry no longer have competing st
   assert.doesNotMatch(profileStyles, /data-command-surface="search"[\s\S]*site-header/);
   assert.doesNotMatch(profileStyles, /header-game-label/);
   assert.doesNotMatch(mobileTabStyles, /tray--peek/);
-  assert.doesNotMatch(mobileTabStyles, /command-surface__header|tray-list__header|clear-search-button|close-list-button/);
+  assert.doesNotMatch(mobileTabStyles, /command-surface__header/);
+  assert.doesNotMatch(mobileTabStyles, /tray-list__header h2|tray-list__header \.eyebrow/);
   assert.doesNotMatch(mobilePolishCss, /data-command-surface="list"\] \.tray-list__header/);
   assert.doesNotMatch(mobilePolishCss, /data-command-surface="search"\][\s\S]*--header-height: calc\(82px/);
 });
