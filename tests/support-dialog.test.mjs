@@ -21,7 +21,9 @@ test('support dialog loads Ko-fi only after an explicit open action', () => {
   assert.match(script, /dialog\.showModal\(\)/);
 });
 
-test('support dialog is viewport-bounded', () => {
-  assert.match(styles, /max-height: 94dvh/);
-  assert.match(styles, /height: min\(712px, calc\(94dvh - 126px\)\)/);
+test('support dialog stays compact and viewport-bounded', () => {
+  assert.match(styles, /width: min\(92vw, 480px\)/);
+  assert.match(styles, /max-height: 80dvh/);
+  assert.match(styles, /height: min\(600px, calc\(80dvh - 108px\)\)/);
+  assert.match(styles, /background: rgba\(1, 1, 51, \.5\)/);
 });
