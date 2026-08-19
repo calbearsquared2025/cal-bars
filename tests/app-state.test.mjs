@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   appState,
+  clearSelectedMapVenue,
   resetAppStateForTests,
   restoreSelectedVenueFromFanIntent,
   setCanonicalSnapshot
@@ -68,6 +69,26 @@ test('restoring persisted Fan Intent keeps the current tray surface', () => {
   restoreSelectedVenueFromFanIntent();
   assert.equal(appState.selectedVenueId, 'ven_2');
   assert.equal(appState.trayState, 'full');
+});
+
+test('clearing the map selection preserves game location and Fan Intent', () => {
+  resetAppStateForTests();
+  setCanonicalSnapshot(snapshot());
+  appState.gameId = 'game_1';
+  appState.origin = { lat: 37.8, lon: -122.3, label: 'your location' };
+  appState.selectedVenueId = 'ven_1';
+  appState.trayState = 'selected';
+  appState.locationFocusVenueId = 'ven_1';
+  appState.fanIntent.selections = { game_1: 'ven_1' };
+
+  assert.equal(clearSelectedMapVenue(), true);
+  assert.equal(appState.selectedVenueId, null);
+  assert.equal(appState.trayState, 'peek');
+  assert.equal(appState.locationFocusVenueId, null);
+  assert.equal(appState.gameId, 'game_1');
+  assert.deepEqual(appState.origin, { lat: 37.8, lon: -122.3, label: 'your location' });
+  assert.deepEqual(appState.fanIntent.selections, { game_1: 'ven_1' });
+  assert.equal(clearSelectedMapVenue(), false);
 });
 
 test('venue ranking reflects updated canonical fan counts', () => {
