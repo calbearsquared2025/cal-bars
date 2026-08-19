@@ -46,19 +46,52 @@ function installStyles() {
       }
 
       /* All destination headers use the same optional-action grid. Search/Add simply
-         have no action in column two; List places Near me / All locations there. */
+         have no action in column two; List places its dedicated location action there. */
       .mobile-destination-header {
         grid-template-columns: minmax(0, 1fr) auto !important;
       }
 
-      body[data-command-surface="list"] .tray-list__header #clear-search-button {
-        align-self: end !important;
-        justify-self: end !important;
-        margin-left: 12px !important;
+      body[data-command-surface="list"] .list-location-action {
+        align-self: end;
+        justify-self: end;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin: 0 0 -5px 12px;
+        padding: 7px 0 7px 10px;
+        color: var(--cgb-navy-900);
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        font-family: var(--font-condensed, sans-serif);
+        font-size: .72rem;
+        font-weight: 800;
+        line-height: 1;
+        white-space: nowrap;
+        box-shadow: none;
       }
 
-      /* The List location action now lives in the shared title header, so the old
-         separate toolbar must not reserve an empty band below it. */
+      body[data-command-surface="list"] .list-location-action .ui-icon {
+        width: 15px;
+        height: 15px;
+        flex: 0 0 auto;
+      }
+
+      body[data-command-surface="list"] .list-location-action:hover,
+      body[data-command-surface="list"] .list-location-action:focus-visible {
+        text-decoration: underline;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      body[data-command-surface="list"] .list-location-action:focus-visible {
+        outline: 2px solid var(--cgb-gold-400);
+        outline-offset: 2px;
+      }
+
+      /* Desktop retains the legacy tray controls; mobile List uses the dedicated
+         header action and should not reserve a toolbar band below the title. */
       body[data-command-surface="list"] .tray-list__toolbar {
         display: none !important;
       }
@@ -130,26 +163,48 @@ function syncCorrectionLanguage() {
   if (listingUpdate) listingUpdate.textContent = 'Suggest an Update';
 }
 
-function syncListLocationControl() {
-  const button = document.querySelector('#clear-search-button');
+function ensureListLocationControl() {
+  let button = document.querySelector('#list-location-button');
+  if (button) return button;
+
   const header = document.querySelector('#tray-list .tray-list__header');
-  const toolbar = document.querySelector('#tray-list .tray-list__toolbar');
+  if (!header) return null;
+
+  button = document.createElement('button');
+  button.id = 'list-location-button';
+  button.className = 'list-location-action';
+  button.type = 'button';
+  button.hidden = true;
+
+  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  icon.setAttribute('class', 'ui-icon');
+  icon.setAttribute('viewBox', '0 0 24 24');
+  icon.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  icon.append(use);
+
+  const label = document.createElement('span');
+  label.className = 'list-location-action__label';
+  button.append(icon, label);
+  header.append(button);
+  return button;
+}
+
+function syncListLocationControl() {
+  const button = ensureListLocationControl();
   if (!button) return;
 
-  if (!isMobile()) {
-    if (toolbar && button.parentElement !== toolbar) toolbar.prepend(button);
-    return;
-  }
-
-  if (header && button.parentElement !== header) header.append(button);
-
-  const state = appState();
-  const onList = document.body.dataset.commandSurface === 'list';
+  const onList = isMobile() && document.body.dataset.commandSurface === 'list';
   button.hidden = !onList;
   if (!onList) return;
 
-  const usingLocation = Boolean(state?.origin);
-  button.textContent = usingLocation ? 'All locations' : 'Near me';
+  const usingLocation = Boolean(appState()?.origin);
+  const label = button.querySelector('.list-location-action__label');
+  const iconUse = button.querySelector('use');
+  if (label) label.textContent = usingLocation ? 'All locations' : 'Near me';
+  if (iconUse) iconUse.setAttribute('href', usingLocation
+    ? 'assets/icons.svg#icon-map'
+    : 'assets/icons.svg#icon-near-me');
   button.setAttribute('aria-label', usingLocation
     ? 'Show all mapped locations'
     : 'Use my location to show nearby locations');
@@ -192,7 +247,7 @@ function locationSuccess(position, target) {
 
 function requestLocation(target = 'map') {
   const trigger = target === 'list'
-    ? document.querySelector('#clear-search-button')
+    ? document.querySelector('#list-location-button')
     : document.querySelector('#near-me-button');
   if (!navigator.geolocation) {
     window.CGBApp?.showStatus?.('Location is not available in this browser');
@@ -237,7 +292,7 @@ function handleLocateClick(event) {
 }
 
 function handleListLocationClick(event) {
-  const button = event.target.closest?.('#clear-search-button');
+  const button = event.target.closest?.('#list-location-button');
   if (!button || !isMobile() || document.body.dataset.commandSurface !== 'list') return;
   event.preventDefault();
   event.stopImmediatePropagation();
@@ -254,8 +309,10 @@ function sync() {
 
 function initialize() {
   installStyles();
+  ensureListLocationControl();
   document.addEventListener('click', handleLocateClick, { capture: true });
   document.addEventListener('click', handleListLocationClick, { capture: true });
+  document.querySelector('#mobile-list-button')?.addEventListener('click', () => requestAnimationFrame(syncListLocationControl));
   document.querySelector('#mobile-add-button')?.addEventListener('click', () => requestAnimationFrame(syncCalBarNominationAction));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
