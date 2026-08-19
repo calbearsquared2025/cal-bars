@@ -44,6 +44,24 @@ function installStyles() {
       body[data-command-surface="list"] #map-view > #venue-tray.venue-tray.tray--full {
         inset: var(--header-height) 0 var(--footer-height) 0 !important;
       }
+
+      /* All destination headers use the same optional-action grid. Search/Add simply
+         have no action in column two; List places Near me / All locations there. */
+      .mobile-destination-header {
+        grid-template-columns: minmax(0, 1fr) auto !important;
+      }
+
+      body[data-command-surface="list"] .tray-list__header #clear-search-button {
+        align-self: end !important;
+        justify-self: end !important;
+        margin-left: 12px !important;
+      }
+
+      /* The List location action now lives in the shared title header, so the old
+         separate toolbar must not reserve an empty band below it. */
+      body[data-command-surface="list"] .tray-list__toolbar {
+        display: none !important;
+      }
     }
 
   `;
@@ -114,7 +132,17 @@ function syncCorrectionLanguage() {
 
 function syncListLocationControl() {
   const button = document.querySelector('#clear-search-button');
-  if (!button || !isMobile()) return;
+  const header = document.querySelector('#tray-list .tray-list__header');
+  const toolbar = document.querySelector('#tray-list .tray-list__toolbar');
+  if (!button) return;
+
+  if (!isMobile()) {
+    if (toolbar && button.parentElement !== toolbar) toolbar.prepend(button);
+    return;
+  }
+
+  if (header && button.parentElement !== header) header.append(button);
+
   const state = appState();
   const onList = document.body.dataset.commandSurface === 'list';
   button.hidden = !onList;
