@@ -29,7 +29,7 @@ test('settled portrait map geometry is available from static CSS before modules 
   );
   assert.match(css, /@media \(max-width: 899px\)/);
   assert.match(css, /body\[data-view="map"\][\s\S]*position: fixed/);
-  assert.match(css, /data-command-surface="map"[\s\S]*--header-height: calc\(176px/);
+  assert.match(css, /data-command-surface="map"[\s\S]*--header-height: calc\(82px/);
   assert.match(css, /\.site-header[\s\S]*height: var\(--header-height\) !important/);
   assert.match(css, /tray--peek[\s\S]*width: 100% !important[\s\S]*height: 96px !important/);
   assert.match(css, /tray--peek \.tray-handle[\s\S]*height: 18px !important[\s\S]*display: grid !important/);
@@ -42,12 +42,20 @@ test('settled portrait map geometry is available from static CSS before modules 
   assert.doesNotMatch(css, /:has\(#venue-tray\.tray--selected\)/);
 });
 
-test('Search Add and List keep CGB branding with a compact selected-game header', () => {
-  assert.match(css, /data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(112px/);
-  assert.match(css, /site-header__brand-row[\s\S]*display: flex !important/);
-  assert.match(css, /opening-stat[\s\S]*display: none !important/);
+test('portrait destinations share one compact brand and selected-game header', () => {
+  assert.match(
+    css,
+    /data-command-surface="map"[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(82px/
+  );
+  assert.match(css, /\.site-header__brand-row[\s\S]*padding-right: min\(38vw, 144px\) !important/);
+  assert.match(css, /#header-about-button[\s\S]*display: none !important/);
+  assert.match(css, /\.site-header > \.game-button[\s\S]*position: absolute !important/);
+  assert.match(css, /\.site-header > \.game-button[\s\S]*right: max\(14px, env\(safe-area-inset-right, 0px\)\) !important/);
+  assert.match(css, /\.site-header > \.game-button[\s\S]*width: min\(37vw, 138px\) !important/);
   assert.match(css, /game-button__eyebrow[\s\S]*display: none !important/);
-  assert.match(css, /#header-game-label[\s\S]*font-size: 1\.08rem !important/);
+  assert.match(css, /#header-game-label[\s\S]*font-size: \.92rem !important/);
+  assert.match(css, /#header-kickoff[\s\S]*font-size: \.62rem !important/);
+  assert.match(css, /data-command-surface="search"[\s\S]*opening-stat[\s\S]*display: none !important/);
 });
 
 test('initial map and secondary header geometry no longer have competing runtime style owners', () => {
