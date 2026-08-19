@@ -60,6 +60,7 @@
   <link rel="stylesheet" href="css/mobile-polish.css">
   <link rel="stylesheet" href="css/venue-detail.css">
   <link rel="stylesheet" href="css/mobile-first-paint.css">
+  <link rel="stylesheet" href="css/support-dialog.css">
   <style>
     .map-view,
     .map {
@@ -79,6 +80,7 @@
   <script>
     if (new URLSearchParams(window.location.search).has('venue')) {
       document.body.dataset.view = 'detail';
+      document.body.dataset.detailState = 'pending';
     }
   </script>
   <header class="site-header">
@@ -230,7 +232,7 @@
       </div>
     </section>
 
-    <section id="detail-view" class="detail-view" hidden aria-label="Venue details">
+    <section id="detail-view" class="detail-view" hidden aria-label="Venue details" aria-busy="true">
       <div class="detail-shell">
         <a id="detail-back" class="back-link" href="./">
           <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>
@@ -301,6 +303,8 @@
     <a href="https://x.com/calbearsquared" target="_blank" rel="noopener" aria-label="Cal Bear Squared on X">@calbearsquared</a>
     <span aria-hidden="true">·</span>
     <button id="about-button" class="text-button" type="button">About</button>
+    <span aria-hidden="true">·</span>
+    <button class="text-button" type="button" data-support-open>Buy me a beer</button>
   </footer>
 
   <dialog id="about-dialog" class="about-dialog">
@@ -313,6 +317,29 @@
       </div>
       <p>Choose a Cal football game, find a gathering location, and select <strong>I’ll be here</strong>.</p>
       <p>Your selection uses a random identifier stored in this browser and privately recorded with your selection. Cal Golden Bars publishes aggregate Bear counts, not names or attendee lists.</p>
+      <div class="about-support">
+        <button class="secondary-button" type="button" data-support-open>Buy me a beer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="support-dialog" class="support-dialog" aria-labelledby="support-dialog-title">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-header">
+        <h2 id="support-dialog-title">Buy me a beer</h2>
+        <button class="icon-button" value="cancel" aria-label="Close support panel">
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-close"></use></svg>
+        </button>
+      </div>
+      <iframe
+        id="kofiframe"
+        class="support-dialog__frame"
+        data-src="https://ko-fi.com/calgoldenbars/?hidefeed=true&amp;widget=true&amp;embed=true&amp;preview=true"
+        title="Support Cal Golden Bars on Ko-fi"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+      ></iframe>
+      <p class="support-dialog__fallback">Prefer the full payment page? <a href="https://ko-fi.com/calgoldenbars" target="_blank" rel="noopener noreferrer">Open Ko-fi</a>.</p>
     </form>
   </dialog>
 
@@ -321,6 +348,7 @@
   <script type="module" src="js/app.js"></script>
   <script type="module" src="js/icon-upgrade.mjs"></script>
   <script type="module" src="js/shell-controls.mjs"></script>
+  <script type="module" src="js/support-dialog.mjs"></script>
   <script type="module" src="js/mobile-polish.mjs"></script>
   <script type="module" src="js/map-failure.mjs"></script>
   <script type="module" src="js/watch-party-display.js"></script>

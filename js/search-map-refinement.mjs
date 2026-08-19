@@ -1,5 +1,4 @@
 const MOBILE_QUERY = '(max-width: 899px)';
-const STYLE_ID = 'cgb-search-map-refinement';
 const PENDING_TIMEOUT_MS = 8000;
 
 let searchResultPending = false;
@@ -11,21 +10,6 @@ function isMobile() {
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
-}
-
-function installStyles() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @media (max-width: 899px) {
-      /* Search is a clean command surface; selected and Nearby trays remain Map-only. */
-      body[data-command-surface="search"] #map-view > #venue-tray.venue-tray {
-        display: none !important;
-      }
-    }
-  `;
-  document.head.append(style);
 }
 
 function clearPending() {
@@ -80,7 +64,6 @@ function scheduleReturnToMap() {
 }
 
 function initialize() {
-  installStyles();
   document.addEventListener('submit', handleSearchSubmit, { capture: true });
   document.addEventListener('click', handleSearchResultClick, { capture: true });
   document.querySelector('#location-query')?.addEventListener('input', clearPending);

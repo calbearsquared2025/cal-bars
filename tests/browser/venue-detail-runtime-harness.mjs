@@ -140,6 +140,8 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
     check(creditLink?.textContent?.trim() === venue.photo_credit, 'Only the photo credit identity should be linkable');
     check(creditLink?.href === safeExternalUrl(venue.photo_credit_url), 'Valid HTTP(S) photo credit URL should be used');
     check(creditLink?.target === '_blank' && creditLink?.rel.includes('noopener'), 'Photo credit links should open externally and safely');
+    const activeMaps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
+    check(activeMaps.length === 0, 'Photo-present Detail should retain no active local-map instance');
     return;
   }
 
@@ -154,6 +156,9 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
   check(Number(mapNode?.dataset.longitude) === Number(venue.longitude), 'Detail local map should use canonical longitude');
   const zoom = Number(mapNode?.dataset.zoom);
   check(zoom === 16, 'Detail local map should use the approved wider local zoom');
+  check(mapNode?.classList.contains('is-ready'), 'Detail local map should reveal only after MapLibre is ready');
+  check(mapNode?.getAttribute('aria-busy') === 'false', 'Ready Detail local map should clear its busy state');
+  check(getComputedStyle(mapNode).visibility === 'visible', 'Ready Detail local map should be visible');
 
   const maps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
   const markers = (window.CGBMapLibreRuntimeMock?.markers || [])
@@ -298,10 +303,23 @@ async function verifyMobileBottomWhitespace() {
   await sleep(30);
 }
 
-function verifyImmediateSingleOwnerRerender(venue, hasParty) {
+function verifyImmediateSingleOwnerRerender(venue, hasParty, fixtureMode) {
+  const priorMapNode = element('#venue-detail .detail-local-map');
+  const priorActiveMap = (window.CGBMapLibreRuntimeMock?.maps || [])
+    .find((candidate) => !candidate.removed);
   window.CGBApp?.render?.();
   check(!element('#venue-detail .detail-game-context'), 'Base rerender should not recreate the superseded selected-game module');
-  check(Boolean(element('#venue-detail .detail-local-map')) === !venue.photo_url, 'Base renderer should immediately retain the accepted no-photo map structure');
+  const renderedMapNode = element('#venue-detail .detail-local-map');
+  if (fixtureMode === 'none') {
+    check(renderedMapNode === priorMapNode, 'Snapshot rerender should retain the settled local-map container');
+    check(renderedMapNode?.classList.contains('is-ready'), 'Retained local map should remain ready across snapshot rerender');
+    check(renderedMapNode?.getAttribute('aria-busy') === 'false', 'Retained local map should remain settled across snapshot rerender');
+    check(getComputedStyle(renderedMapNode).visibility === 'visible', 'Retained local map should remain visible across snapshot rerender');
+    const activeMaps = (window.CGBMapLibreRuntimeMock?.maps || []).filter((candidate) => !candidate.removed);
+    check(activeMaps.length === 1 && activeMaps[0] === priorActiveMap, 'Snapshot rerender should retain exactly one MapLibre instance');
+  } else {
+    check(Boolean(renderedMapNode) === !venue.photo_url, 'Base renderer should preserve photo-present local-map eligibility');
+  }
   check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Base renderer should emit the Detail Share icon without a later upgrade');
   check(Boolean(element('#venue-detail .detail-directions-inline .ui-icon')), 'Base renderer should emit the Detail Directions icon without a later upgrade');
   verifyIdentity(venue, hasParty);
@@ -348,6 +366,12 @@ async function main() {
   await waitFor(() => document.body.dataset.view === 'detail' && !element('#venue-detail .detail-game-context'), 'resolved Detail refinement');
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'Venue photo or local-map presentation');
   await waitFor(() => Boolean(element('#venue-detail > .detail-contribution')), 'compact contribution section');
+  await waitFor(
+    () => document.body.dataset.detailState === 'ready' &&
+      element('#detail-view')?.getAttribute('aria-busy') === 'false',
+    'settled Detail first-paint gate'
+  );
+  check(element('#detail-view')?.getAttribute('aria-busy') === 'false', 'Settled Detail view should clear its busy state');
   if (fixtureMode === 'photo') await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry]')), 'configured Submit a Photo contribution');
 
   const settledState = state();
@@ -356,8 +380,14 @@ async function main() {
   const hasParty = Boolean(partyFor(selectedVenueId, settledState?.gameId));
   const mobile = window.matchMedia('(max-width: 899px)').matches;
 
-  verifyImmediateSingleOwnerRerender(venue, hasParty);
+  if (fixtureMode === 'none') {
+    await waitFor(() => element('#venue-detail .detail-local-map')?.classList.contains('is-ready'), 'initial ready Venue local map');
+  }
+  verifyImmediateSingleOwnerRerender(venue, hasParty, fixtureMode);
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'post-rerender Venue media refinement');
+  if (fixtureMode !== 'photo') {
+    await waitFor(() => element('#venue-detail .detail-local-map')?.classList.contains('is-ready'), 'ready Venue local map');
+  }
   await sleep(50);
 
   check(routeVenue?.venue_id === venue.venue_id, 'Direct Venue URL should resolve the requested Venue slug');

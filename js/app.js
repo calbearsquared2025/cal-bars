@@ -540,8 +540,24 @@ function createDetailLocalMap(venue) {
   map.dataset.latitude = String(latitude);
   map.dataset.longitude = String(longitude);
   map.dataset.zoom = '16';
+  map.dataset.markerKind = markerKind(state.snapshot, state.gameId, venue);
   map.setAttribute('role', 'img');
   map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
+  map.setAttribute('aria-busy', 'true');
+  return map;
+}
+
+function takeReusableDetailLocalMap(venue) {
+  if (venue.photo_url) return null;
+  const map = dom.venueDetail.querySelector(':scope > .detail-hero > .detail-local-map');
+  const latitude = Number(venue.latitude);
+  const longitude = Number(venue.longitude);
+  const reusable = map?.dataset.venueId === venue.venue_id &&
+    Number(map.dataset.latitude) === latitude &&
+    Number(map.dataset.longitude) === longitude &&
+    map.dataset.markerKind === markerKind(state.snapshot, state.gameId, venue);
+  if (!reusable) return null;
+  map.remove();
   return map;
 }
 
@@ -929,6 +945,7 @@ function renderDetailView() {
   disposeMapForDetail();
   dom.mapView.hidden = true;
   dom.detailView.hidden = false;
+  dom.detailView.setAttribute('aria-busy', 'true');
   dom.detailBack.href = buildGameUrl(state.gameId, location.href);
   const game = selectedGame();
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
@@ -940,11 +957,11 @@ function renderDetailView() {
     currentCopy: bearCountCopy(count)
   });
 
+  const localMap = takeReusableDetailLocalMap(venue) || createDetailLocalMap(venue);
   dom.venueDetail.replaceChildren();
   dom.venueDetail.dataset.venueId = venue.venue_id;
   const hero = document.createElement('header');
   hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
-  const localMap = createDetailLocalMap(venue);
   if (localMap) hero.append(localMap);
   hero.append(createDetailBadges(venue, party));
   const title = document.createElement('h1');
@@ -1299,6 +1316,10 @@ async function boot() {
   } catch (error) {
     console.error(error);
     dom.app.setAttribute('aria-busy', 'false');
+    if (document.body.dataset.detailState === 'pending') {
+      document.body.dataset.detailState = 'ready';
+      dom.detailView.setAttribute('aria-busy', 'false');
+    }
     showStatus('The location data could not be loaded.', 6000);
     dom.mapFallback.hidden = false;
   }

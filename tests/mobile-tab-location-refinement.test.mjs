@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
+const mobilePolish = await readFile(new URL('js/mobile-polish.mjs', root), 'utf8');
 const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
 const app = await readFile(new URL('js/app.js', root), 'utf8');
 const iconUpgrade = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
@@ -53,8 +54,9 @@ test('List toggles between Near me and All locations', () => {
   assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
 });
 
-test('Nearby sheet restores its handle without allowing it to open List', () => {
+test('Nearby sheet handle remains tappable to open the List destination', () => {
   assert.match(firstPaintCss, /tray--peek \.tray-handle[\s\S]*display: grid !important/);
-  assert.match(source, /disablePeekHandleNavigation/);
-  assert.match(source, /event\.stopImmediatePropagation\(\)/);
+  assert.match(mobilePolish, /function handleTrayControl[\s\S]*openListFromMap\(event\)/);
+  assert.match(mobilePolish, /trayHandle\?\.addEventListener\('click', handleTrayControl, \{ capture: true \}\)/);
+  assert.doesNotMatch(source, /disablePeekHandleNavigation/);
 });

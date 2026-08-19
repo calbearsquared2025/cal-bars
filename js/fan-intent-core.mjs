@@ -43,6 +43,13 @@ export function compactListFanCountCopy(count) {
   return `${total} ${total === 1 ? 'BEAR' : 'BEARS'}`;
 }
 
+export function detailPresenceCopy(count) {
+  const total = Math.max(0, Math.trunc(Number(count) || 0));
+  return total <= 1
+    ? 'You’re the first Bear here.'
+    : 'You’re one of them.';
+}
+
 export function withStoredSelection(selections, gameId, venueId) {
   const next = { ...parseStoredSelections(selections) };
   if (!gameId) return next;

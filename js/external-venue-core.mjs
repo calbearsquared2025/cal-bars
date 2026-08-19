@@ -19,9 +19,10 @@ const US_REGION_CODES = Object.freeze({
 export const PUBLIC_VENUE_FIELDS = Object.freeze([
   'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
   'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
-  'verification_status', 'alumni_owned', 'short_description', 'photo_url',
-  'photo_caption', 'photo_credit', 'photo_credit_url', 'updated_at'
+  'alumni_owned', 'short_description', 'photo_url', 'photo_caption', 'photo_credit',
+  'photo_credit_url', 'updated_at'
 ]);
+const ACCEPTED_RESPONSE_VENUE_FIELDS = new Set([...PUBLIC_VENUE_FIELDS, 'verification_status']);
 
 const PRIVATE_RESPONSE_KEYS = new Set([
   'browserId', 'browser_id', 'fan_intent_id', 'external_source', 'external_place_id',
@@ -300,7 +301,7 @@ export function validateJoinExternalVenueResponse(response) {
   if (!response || typeof response !== 'object' || responseContainsPrivateExternalFields(response)) return false;
   if (response.ok !== true || response.action !== 'joinExternalVenue') return false;
   if (!response.venue || typeof response.venue !== 'object') return false;
-  if (Object.keys(response.venue).some((key) => !PUBLIC_VENUE_FIELDS.includes(key))) return false;
+  if (Object.keys(response.venue).some((key) => !ACCEPTED_RESPONSE_VENUE_FIELDS.has(key))) return false;
   if (typeof response.venue.venue_id !== 'string' || typeof response.venue.slug !== 'string') return false;
   if (response.venue.venue_type !== 'community_location' && response.venue.venue_type !== 'cal_bar') return false;
   if (!response.selection || response.selection.status !== 'attending') return false;

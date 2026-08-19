@@ -41,9 +41,10 @@ test('existing no-photo local map and compact description behavior remain in app
 });
 
 test('Detail finishing treatment uses the approved contribution grid and folds selected presence into activity', async () => {
-  const [detailCss, fanIntent] = await Promise.all([
+  const [detailCss, fanIntent, fanIntentCore] = await Promise.all([
     source('css/venue-detail.css'),
-    source('js/fan-intent.js')
+    source('js/fan-intent.js'),
+    source('js/fan-intent-core.mjs')
   ]);
   assert.match(detailCss, /\.detail-contribution__actions\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(detailCss, /body\[data-view="detail"\] \.mobile-command-bar\s*\{\s*display: grid !important;/);
@@ -53,8 +54,9 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.match(fanIntent, /const label = isSelected \? 'Invite more' : 'Share'/);
   assert.match(fanIntent, /share\.replaceChildren/);
   assert.doesNotMatch(fanIntent, /syncDetailShareAction/);
-  assert.match(fanIntent, /You’re the first Bear here\./);
-  assert.match(fanIntent, /You’re one of them\./);
+  assert.match(fanIntent, /presence\.textContent = detailPresenceCopy\(count\)/);
+  assert.match(fanIntentCore, /You’re the first Bear here\./);
+  assert.match(fanIntentCore, /You’re one of them\./);
   assert.doesNotMatch(fanIntent, /renderPostJoinInvitation|post-join-invitation|post-join-share/);
 });
 

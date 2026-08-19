@@ -8,6 +8,7 @@ import {
   commitIntentResponse,
   compactListFanCountCopy,
   createBrowserId,
+  detailPresenceCopy,
   intentAction,
   isValidBrowserId,
   parseStoredSelections,
@@ -41,6 +42,12 @@ test('list fan counts suppress zero and use compact singular/plural copy', () =>
   assert.equal(compactListFanCountCopy(0), '');
   assert.equal(compactListFanCountCopy(1), '1 BEAR');
   assert.equal(compactListFanCountCopy(2), '2 BEARS');
+});
+
+test('selected detail presence never describes a zero-count venue as one of many', () => {
+  assert.equal(detailPresenceCopy(0), 'You’re the first Bear here.');
+  assert.equal(detailPresenceCopy(1), 'You’re the first Bear here.');
+  assert.equal(detailPresenceCopy(2), 'You’re one of them.');
 });
 
 test('intent actions distinguish join, move, and withdraw', () => {
