@@ -146,37 +146,23 @@
     box-shadow: none !important;
   }
 
-  /* Search, Add, and List are peer destinations. Give all three the same title hierarchy. */
+  /* Search, Add, and List share one mobile destination-title component. */
   body[data-command-surface="search"] .command-surface__shell,
   body[data-command-surface="add"] .command-surface__shell {
     padding-top: 16px !important;
   }
 
-  body[data-command-surface="search"] .command-surface__header,
-  body[data-command-surface="add"] .command-surface__header {
+  .mobile-destination-header {
+    display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
     gap: 0 !important;
     padding: 0 0 11px !important;
     background: transparent !important;
     border-bottom: 1px solid var(--cgb-neutral-200) !important;
   }
 
-  body[data-command-surface="search"] .command-surface__back,
-  body[data-command-surface="add"] .command-surface__back {
-    display: none !important;
-  }
-
-  body[data-command-surface="list"] .tray-list__header {
-    min-height: 70px !important;
-    padding: 16px 16px 11px !important;
-    background: var(--cgb-warm-50, #f7f6f2) !important;
-    border-bottom: 1px solid var(--cgb-neutral-200) !important;
-    backdrop-filter: none !important;
-  }
-
-  body[data-command-surface="search"] .command-surface__header .eyebrow,
-  body[data-command-surface="add"] .command-surface__header .eyebrow,
-  body[data-command-surface="list"] .tray-list__header .eyebrow {
+  .mobile-destination-header .eyebrow {
     color: var(--cgb-ink-500) !important;
     font-family: var(--font-condensed, sans-serif) !important;
     font-size: var(--text-2xs, .6875rem) !important;
@@ -186,9 +172,7 @@
     text-transform: uppercase !important;
   }
 
-  body[data-command-surface="search"] .command-surface__header h2,
-  body[data-command-surface="add"] .command-surface__header h2,
-  body[data-command-surface="list"] .tray-list__header h2 {
+  .mobile-destination-header h2 {
     margin: 3px 0 0 !important;
     color: var(--cgb-navy-950) !important;
     font-family: var(--font-display) !important;
@@ -196,6 +180,48 @@
     font-weight: 750 !important;
     letter-spacing: -.015em !important;
     line-height: 1 !important;
+  }
+
+  body[data-command-surface="search"] .command-surface__back,
+  body[data-command-surface="add"] .command-surface__back {
+    display: none !important;
+  }
+
+  body[data-command-surface="list"] .tray-list {
+    background: var(--cgb-warm-50, #f7f6f2) !important;
+  }
+
+  body[data-command-surface="list"] .tray-list__header.mobile-destination-header {
+    position: static !important;
+    z-index: auto !important;
+    min-height: 0 !important;
+    padding: 16px 16px 11px !important;
+    backdrop-filter: none !important;
+  }
+
+  body[data-command-surface="list"] .tray-list__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 46px;
+    padding: 8px 16px 2px;
+    background: var(--cgb-warm-50, #f7f6f2);
+  }
+
+  body[data-command-surface="list"] #close-list-button {
+    display: none !important;
+  }
+
+  body[data-command-surface="list"] #clear-search-button:not([hidden]) {
+    display: inline-flex !important;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 12px;
+    white-space: nowrap;
+    text-decoration: none !important;
+    border: 1px solid var(--cgb-neutral-300);
+    border-radius: 999px;
+    background: var(--cgb-white);
   }
 
   body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
