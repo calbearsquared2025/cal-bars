@@ -30,13 +30,25 @@ test('collapsed preview prefers selected Venue then the physically nearest nearb
   assert.match(source, /mode: 'nearby'/);
 });
 
-test('collapsed preview labels reflect selection and location context', () => {
+test('collapsed preview labels reflect selection and location context without a Nearby first-paint flash', () => {
   assert.match(source, /eyebrow\.textContent = usingLocation \? 'Near you' : 'Explore'/);
   assert.match(source, /eyebrow\.textContent = mode === 'selected' \? 'Selected' : 'Near you'/);
   assert.match(source, /title\.textContent = usingLocation \? 'No nearby locations' : 'Find your Cal crowd'/);
   assert.match(source, /copy\.textContent = usingLocation[\s\S]*No mapped locations within/);
   assert.match(source, /copy\.textContent = \[type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/);
+  assert.match(firstPaintCss, /#browse-locations-button:not\(\[data-preview-mode\]\) \.eyebrow[\s\S]*font-size: 0 !important/);
+  assert.match(firstPaintCss, /#browse-locations-button:not\(\[data-preview-mode\]\) \.eyebrow::after[\s\S]*content: "EXPLORE"/);
   assert.match(html, new RegExp(TRAY_GUIDANCE_COPY.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});
+
+test('nearest location preview highlights the matching map marker without selecting it', () => {
+  assert.match(source, /function syncNearbyPreviewMarker/);
+  assert.match(source, /candidate\?\.mode === 'nearby'/);
+  assert.match(source, /marker\.classList\.toggle\('is-nearby-preview'/);
+  assert.match(source, /syncNearbyPreviewMarker\(candidate\)/);
+  assert.match(source, /\.cgb-marker\.is-nearby-preview \.marker-pin/);
+  assert.match(source, /\.cgb-marker\.is-nearby-preview \.marker-star/);
+  assert.match(source, /drop-shadow\(0 0 5px rgba\(253,181,21,\.78\)\)/);
 });
 
 test('selected mini profile opens the existing full selected profile directly', () => {
