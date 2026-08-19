@@ -123,6 +123,12 @@
     display: none !important;
   }
 
+  /* Keep the under-page background aligned with the header so Safari 26 can extend
+     the site's navy into its top chrome while the visible Detail surface stays white. */
+  body[data-view="detail"] {
+    background-color: var(--cgb-navy-900, #071e41) !important;
+  }
+
   /* Mobile Detail is a page surface, not a card floating inside another surface. */
   body[data-view="detail"] .detail-view {
     padding: 0 !important;
