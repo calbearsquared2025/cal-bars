@@ -5,8 +5,8 @@ function initializeSupportDialog() {
   if (!dialog || !frame || openButtons.length === 0) return;
 
   const loadFrame = () => {
-    if (frame.src || !frame.dataset.src) return;
-    frame.src = frame.dataset.src;
+    if (frame.hasAttribute('src') || !frame.dataset.src) return;
+    frame.setAttribute('src', frame.dataset.src);
   };
 
   const openDialog = () => {
