@@ -20,14 +20,22 @@ test('zoom controls are removed and hidden', () => {
   assert.match(source, /button\.remove\(\)/);
 });
 
-test('collapsed preview uses the selected Venue and otherwise returns to guidance', () => {
-  assert.match(source, /function previewCandidate/);
+test('collapsed preview prefers selected Venue then the physically nearest nearby Venue', () => {
+  assert.match(source, /function nearestNearbyVenue/);
+  assert.match(source, /rankVenues\(state\.snapshot, state\.gameId, state\.origin\)\.reduce/);
+  assert.match(source, /distance > NEARBY_RADIUS_MILES/);
+  assert.match(source, /distance < Number\(nearest\.distance\)/);
   assert.match(source, /rankedVenue\(state, state\?\.selectedVenueId\)/);
   assert.match(source, /mode: 'selected'/);
-  assert.doesNotMatch(source, /rankNearbyVenues/);
-  assert.doesNotMatch(source, /mode: 'nearby'/);
-  assert.match(source, /Find your Cal crowd/);
-  assert.match(source, /copy\.textContent = TRAY_GUIDANCE_COPY/);
+  assert.match(source, /mode: 'nearby'/);
+});
+
+test('collapsed preview labels reflect selection and location context', () => {
+  assert.match(source, /eyebrow\.textContent = usingLocation \? 'Near you' : 'Explore'/);
+  assert.match(source, /eyebrow\.textContent = mode === 'selected' \? 'Selected' : 'Near you'/);
+  assert.match(source, /title\.textContent = usingLocation \? 'No nearby locations' : 'Find your Cal crowd'/);
+  assert.match(source, /copy\.textContent = usingLocation[\s\S]*No mapped locations within/);
+  assert.match(source, /copy\.textContent = \[type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/);
   assert.match(html, new RegExp(TRAY_GUIDANCE_COPY.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });
 
@@ -37,6 +45,16 @@ test('selected mini profile opens the existing full selected profile directly', 
   assert.match(source, /if \(!button \|\| !isMobile\(\) \|\| !button\.dataset\.directVenueId\) return;[\s\S]*event\.preventDefault\(\)/);
   assert.match(source, /event\.stopImmediatePropagation\(\)/);
   assert.match(source, /card\.click\(\)/);
+});
+
+test('empty map clicks deselect the current Venue without intercepting markers or controls', () => {
+  assert.match(source, /import \{ clearSelectedMapVenue \} from '\.\/app-state\.mjs'/);
+  assert.match(source, /function handleMapDeselect/);
+  assert.match(source, /event\.target\.closest\?\.\('#map'\)/);
+  assert.match(source, /\.cgb-marker, \.maplibregl-control-container, \.maplibregl-ctrl/);
+  assert.match(source, /if \(!clearSelectedMapVenue\(\)\) return/);
+  assert.match(source, /window\.CGBApp\?\.render\?\.\(\)/);
+  assert.match(source, /document\.addEventListener\('click', handleMapDeselect\)/);
 });
 
 test('zero-count selected previews do not place long empty-state copy in the mini count slot', () => {
