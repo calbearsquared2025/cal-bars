@@ -104,6 +104,14 @@ export function activeFanIntentVenueId(gameId = appState.gameId) {
   return appState.fanIntent.selections[gameId] || null;
 }
 
+export function clearSelectedMapVenue() {
+  if (appState.detailMode || !appState.selectedVenueId) return false;
+  appState.selectedVenueId = null;
+  appState.trayState = 'peek';
+  appState.locationFocusVenueId = null;
+  return true;
+}
+
 export function restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty = false } = {}) {
   if (appState.detailMode || !appState.snapshot) return appState.selectedVenueId;
   const venueId = activeFanIntentVenueId();
