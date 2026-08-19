@@ -5,7 +5,6 @@ const VALID_VIEWS = new Set(['map', 'search', 'add', 'list']);
 const MAP_ACTION_GAP = 14;
 let activeView = 'map';
 let openingList = false;
-let trayResizeObserver = null;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -63,14 +62,15 @@ function normalizeSearchLabels() {
 function updateMapActionPosition() {
   const actions = document.querySelector('.map-actions');
   const tray = document.querySelector('#venue-tray');
-  if (!actions || !tray || !isMobile() || document.body.dataset.view !== 'map' || activeView !== 'map') return;
+  if (!actions || !tray || !isMobile()) return;
+  if (document.body.dataset.view !== 'map' || document.body.dataset.commandSurface !== 'map') return;
   if (getComputedStyle(tray).display === 'none') return;
 
-  const trayRect = tray.getBoundingClientRect();
-  const viewportHeight = window.visualViewport?.height || window.innerHeight;
-  if (!Number.isFinite(trayRect.top) || !Number.isFinite(viewportHeight)) return;
+  const trayTop = tray.getBoundingClientRect().top;
+  const viewportHeight = window.innerHeight;
+  if (!Number.isFinite(trayTop) || !Number.isFinite(viewportHeight)) return;
 
-  const bottom = Math.max(MAP_ACTION_GAP, viewportHeight - trayRect.top + MAP_ACTION_GAP);
+  const bottom = Math.max(MAP_ACTION_GAP, viewportHeight - trayTop + MAP_ACTION_GAP);
   actions.style.setProperty('--map-action-bottom', `${Math.round(bottom)}px`);
 }
 
@@ -155,27 +155,12 @@ function initializeNavigation() {
   });
 }
 
-function initializeMapActionAnchor() {
-  const tray = document.querySelector('#venue-tray');
-  if (!tray) return;
-
-  if (typeof ResizeObserver === 'function') {
-    trayResizeObserver?.disconnect();
-    trayResizeObserver = new ResizeObserver(scheduleMapActionPosition);
-    trayResizeObserver.observe(tray);
-  }
-
-  window.addEventListener('resize', scheduleMapActionPosition);
-  window.visualViewport?.addEventListener?.('resize', scheduleMapActionPosition);
-  scheduleMapActionPosition();
-}
-
 function initialize() {
   initializeNavigation();
-  initializeMapActionAnchor();
   document.querySelector('#location-query')?.addEventListener('input', () => requestAnimationFrame(normalizeSearchLabels));
   document.querySelector('#location-search')?.addEventListener('submit', () => requestAnimationFrame(normalizeSearchLabels));
 
+  window.addEventListener('resize', scheduleMapActionPosition);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleSync);
   sync();
   syncNavigation();
