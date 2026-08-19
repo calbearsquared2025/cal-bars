@@ -155,15 +155,47 @@ function installStyles() {
         background: var(--cgb-warm-50) !important;
       }
 
+      /* List is a peer destination to Search and Add. Its title block uses the same
+         34rem content rail, 16px inset, 11px divider spacing, and title hierarchy. */
       body[data-command-surface="list"] .tray-list__header {
-        min-height: 74px !important;
-        padding: 15px 16px 13px !important;
-        background: var(--cgb-warm-50) !important;
+        width: min(100%, 34rem) !important;
+        min-height: 0 !important;
+        display: block !important;
+        margin: 0 auto !important;
+        padding: 16px 16px 0 !important;
+        background: transparent !important;
+        border-bottom: 0 !important;
+        backdrop-filter: none !important;
+      }
+
+      body[data-command-surface="list"] .tray-list__header > div:first-child {
+        padding: 0 0 11px !important;
         border-bottom: 1px solid var(--cgb-neutral-200) !important;
       }
 
-      body[data-command-surface="list"] .tray-list__header h2 {
-        font-size: clamp(1.45rem, 6.4vw, 1.9rem) !important;
+      body[data-command-surface="list"] .tray-list__actions {
+        min-height: 36px !important;
+        justify-content: flex-start !important;
+        margin: 12px 0 14px !important;
+      }
+
+      body[data-command-surface="list"] #close-list-button {
+        display: none !important;
+      }
+
+      body[data-command-surface="list"] #clear-search-button {
+        min-height: 36px !important;
+        padding: 0 12px !important;
+        border: 1px solid var(--cgb-neutral-300) !important;
+        border-radius: 999px !important;
+        background: var(--cgb-white) !important;
+        text-decoration: none !important;
+      }
+
+      body[data-command-surface="list"] .location-list {
+        width: min(100%, 34rem) !important;
+        margin: 0 auto !important;
+        padding: 0 16px 24px !important;
       }
     }
   `;
