@@ -29,11 +29,13 @@ test('search and add are dedicated mobile surfaces', async () => {
   assert.match(html, /Report a problem/);
 });
 
-test('Search Add and List retain parallel eyebrow and title markup', async () => {
+test('Search Add and List retain parallel destination header markup', async () => {
   const html = await source('index.html');
-  assert.match(html, /id="search-surface"[\s\S]*<span class="eyebrow">Find a place<\/span>[\s\S]*<h2 id="search-surface-title">Search locations<\/h2>/);
-  assert.match(html, /id="add-surface"[\s\S]*<span class="eyebrow">Contribute<\/span>[\s\S]*<h2 id="add-surface-title">Add to the map<\/h2>/);
-  assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Selected game<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>/);
+  const sharedHeaders = html.match(/class="[^"]*mobile-destination-header[^"]*"/g) || [];
+  assert.equal(sharedHeaders.length, 3);
+  assert.match(html, /id="search-surface"[\s\S]*mobile-destination-header[\s\S]*<span class="eyebrow">Find a place<\/span>[\s\S]*<h2 id="search-surface-title">Search locations<\/h2>/);
+  assert.match(html, /id="add-surface"[\s\S]*mobile-destination-header[\s\S]*<span class="eyebrow">Contribute<\/span>[\s\S]*<h2 id="add-surface-title">Add to the map<\/h2>/);
+  assert.match(html, /id="tray-list"[\s\S]*mobile-destination-header[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>[\s\S]*class="tray-list__toolbar"/);
 });
 
 test('mobile styling removes the permanent map search and presents full command surfaces', async () => {
