@@ -1,0 +1,79 @@
+.support-dialog {
+  width: min(94vw, 560px);
+  max-height: 86dvh;
+  padding: 0;
+  overflow: hidden;
+  color: var(--cgb-ink-900, var(--ink));
+  background: var(--cgb-white, #fff);
+  border: 1px solid rgba(1, 1, 51, .12);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-lg, var(--shadow));
+}
+
+.support-dialog::backdrop {
+  background: rgba(1, 1, 51, .62);
+  backdrop-filter: blur(5px);
+}
+
+.support-dialog .dialog-shell {
+  display: grid;
+  gap: 10px;
+  max-height: 86dvh;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.support-dialog .dialog-header {
+  align-items: center;
+}
+
+.support-dialog .dialog-header h2 {
+  margin: 0;
+}
+
+.support-dialog__frame {
+  display: block;
+  width: 100%;
+  height: min(712px, calc(86dvh - 94px));
+  padding: 4px;
+  border: 0;
+  border-radius: 12px;
+  background: #f9f9f9;
+}
+
+.support-dialog__fallback {
+  margin: 0;
+  color: var(--cgb-ink-500, var(--muted));
+  font-size: .74rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.support-dialog__fallback a {
+  color: var(--cgb-navy-900, var(--cal-blue));
+  font-weight: 750;
+}
+
+.about-support {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cgb-neutral-200, var(--line));
+}
+
+.about-support .secondary-button {
+  width: 100%;
+}
+
+@media (max-height: 620px) {
+  .support-dialog {
+    max-height: 92dvh;
+  }
+
+  .support-dialog .dialog-shell {
+    max-height: 92dvh;
+  }
+
+  .support-dialog__frame {
+    height: calc(92dvh - 90px);
+  }
+}
