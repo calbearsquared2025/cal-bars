@@ -66,17 +66,20 @@ test('selected Venue uses a viewport-anchored rounded bottom sheet', async () =>
   assert.match(css, /overflow: hidden/);
 });
 
-test('mobile location control follows the visible tray and keeps a clean circular shadow', async () => {
+test('mobile location control follows the visible tray in one viewport coordinate system', async () => {
   const [script, firstPaintCss] = await Promise.all([
     source('js/mobile-polish.mjs'),
     source('css/mobile-first-paint.css')
   ]);
   assert.match(script, /const MAP_ACTION_GAP = 14/);
   assert.match(script, /function updateMapActionPosition/);
-  assert.match(script, /tray\.getBoundingClientRect\(\)/);
-  assert.match(script, /window\.visualViewport\?\.height \|\| window\.innerHeight/);
+  assert.match(script, /const trayTop = tray\.getBoundingClientRect\(\)\.top/);
+  assert.match(script, /const viewportHeight = window\.innerHeight/);
+  assert.match(script, /viewportHeight - trayTop \+ MAP_ACTION_GAP/);
   assert.match(script, /--map-action-bottom/);
-  assert.match(script, /new ResizeObserver\(scheduleMapActionPosition\)/);
+  assert.match(script, /CGBApp\?\.subscribe\?\.\('rendered'/);
+  assert.doesNotMatch(script, /visualViewport/);
+  assert.doesNotMatch(script, /ResizeObserver/);
   assert.match(firstPaintCss, /\.map-actions[\s\S]*top: auto !important[\s\S]*bottom: var\(--map-action-bottom, calc\(var\(--footer-height\) \+ 110px\)\) !important/);
   assert.match(firstPaintCss, /#near-me-button[\s\S]*border-radius: 50% !important[\s\S]*clip-path: none !important[\s\S]*box-shadow: 0 6px 16px/);
 });
