@@ -29,6 +29,13 @@ test('search and add are dedicated mobile surfaces', async () => {
   assert.match(html, /Report a problem/);
 });
 
+test('Search Add and List retain parallel eyebrow and title markup', async () => {
+  const html = await source('index.html');
+  assert.match(html, /id="search-surface"[\s\S]*<span class="eyebrow">Find a place<\/span>[\s\S]*<h2 id="search-surface-title">Search locations<\/h2>/);
+  assert.match(html, /id="add-surface"[\s\S]*<span class="eyebrow">Contribute<\/span>[\s\S]*<h2 id="add-surface-title">Add to the map<\/h2>/);
+  assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Selected game<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>/);
+});
+
 test('mobile styling removes the permanent map search and presents full command surfaces', async () => {
   const css = await source('css/mobile-command-navigation.css');
   assert.match(css, /\.map-toolbar \.location-search\s*\{\s*display: none;/);
