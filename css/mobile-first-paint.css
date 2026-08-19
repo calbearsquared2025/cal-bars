@@ -123,12 +123,6 @@
     display: none !important;
   }
 
-  /* Keep the under-page background aligned with the header so Safari 26 can extend
-     the site's navy into its top chrome while the visible Detail surface stays white. */
-  body[data-view="detail"] {
-    background-color: var(--cgb-navy-900, #071e41) !important;
-  }
-
   /* Mobile Detail is a page surface, not a card floating inside another surface. */
   body[data-view="detail"] .detail-view {
     padding: 0 !important;
@@ -150,6 +144,58 @@
     border: 0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+  }
+
+  /* Search, Add, and List are peer destinations. Give all three the same title hierarchy. */
+  body[data-command-surface="search"] .command-surface__shell,
+  body[data-command-surface="add"] .command-surface__shell {
+    padding-top: 16px !important;
+  }
+
+  body[data-command-surface="search"] .command-surface__header,
+  body[data-command-surface="add"] .command-surface__header {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0 !important;
+    padding: 0 0 11px !important;
+    background: transparent !important;
+    border-bottom: 1px solid var(--cgb-neutral-200) !important;
+  }
+
+  body[data-command-surface="search"] .command-surface__back,
+  body[data-command-surface="add"] .command-surface__back {
+    display: none !important;
+  }
+
+  body[data-command-surface="list"] .tray-list__header {
+    min-height: 70px !important;
+    padding: 16px 16px 11px !important;
+    background: var(--cgb-warm-50, #f7f6f2) !important;
+    border-bottom: 1px solid var(--cgb-neutral-200) !important;
+    backdrop-filter: none !important;
+  }
+
+  body[data-command-surface="search"] .command-surface__header .eyebrow,
+  body[data-command-surface="add"] .command-surface__header .eyebrow,
+  body[data-command-surface="list"] .tray-list__header .eyebrow {
+    color: var(--cgb-ink-500) !important;
+    font-family: var(--font-condensed, sans-serif) !important;
+    font-size: var(--text-2xs, .6875rem) !important;
+    font-weight: 850 !important;
+    letter-spacing: .1em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+  }
+
+  body[data-command-surface="search"] .command-surface__header h2,
+  body[data-command-surface="add"] .command-surface__header h2,
+  body[data-command-surface="list"] .tray-list__header h2 {
+    margin: 3px 0 0 !important;
+    color: var(--cgb-navy-950) !important;
+    font-family: var(--font-display) !important;
+    font-size: clamp(1.45rem, 6.4vw, 1.9rem) !important;
+    font-weight: 750 !important;
+    letter-spacing: -.015em !important;
+    line-height: 1 !important;
   }
 
   body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
