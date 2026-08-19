@@ -6,25 +6,28 @@ const root = new URL('../', import.meta.url);
 const profile = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('profile pass no longer overrides the shared Search Add and List header', () => {
+test('profile pass no longer overrides shared branded header geometry', () => {
   assert.doesNotMatch(profile, /HEADER_OVERHANG/);
   assert.doesNotMatch(profile, /--header-height: calc\(176px/);
   assert.doesNotMatch(profile, /site-header__brand-row/);
   assert.doesNotMatch(profile, /opening-stat[\s\S]*display: grid !important/);
   assert.doesNotMatch(profile, /header-game-label/);
-  assert.match(profile, /@media \(max-width: 899px\) \{[\s\S]*search-field:focus-within/);
+  assert.match(profile, /@media \(max-width: 899px\) \{/);
 });
 
-test('List fully replaces the map directly below the shared header', () => {
+test('List fully replaces the map directly below the shared header and uses the peer destination rail', () => {
   assert.match(profile, /data-command-surface="list"\] #map[\s\S]*visibility: hidden !important/);
   assert.match(profile, /tray--full[\s\S]*position: fixed !important/);
   assert.match(profile, /inset: var\(--header-height\) 0 var\(--footer-height\) 0 !important/);
   assert.match(profile, /border-radius: 0 !important/);
+  assert.match(profile, /tray-list__header[\s\S]*width: min\(100%, 34rem\) !important[\s\S]*display: block !important[\s\S]*padding: 16px 16px 0 !important/);
+  assert.match(profile, /tray-list__header > div:first-child[\s\S]*padding: 0 0 11px !important[\s\S]*border-bottom: 1px solid var\(--cgb-neutral-200\) !important/);
+  assert.match(profile, /tray-list__actions[\s\S]*justify-content: flex-start !important[\s\S]*margin: 12px 0 14px !important/);
+  assert.match(profile, /#clear-search-button[\s\S]*min-height: 36px !important[\s\S]*border-radius: 999px !important/);
+  assert.match(profile, /\.location-list[\s\S]*width: min\(100%, 34rem\) !important[\s\S]*padding: 0 16px 24px !important/);
 });
 
-test('Search has one focus outline and no nested input highlight', () => {
-  assert.match(profile, /search-field:focus-within/);
-  assert.match(profile, /search-field input:focus-visible[\s\S]*box-shadow: none !important/);
+test('Search language remains concise', () => {
   assert.match(profile, /Search Cal Golden Bars or add another location to the map\./);
 });
 
