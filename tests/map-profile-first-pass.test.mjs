@@ -15,16 +15,12 @@ test('profile pass no longer overrides shared branded header geometry', () => {
   assert.match(profile, /@media \(max-width: 899px\) \{/);
 });
 
-test('List fully replaces the map directly below the shared header and uses the peer destination rail', () => {
+test('List fully replaces the map while static CSS owns its destination header', () => {
   assert.match(profile, /data-command-surface="list"\] #map[\s\S]*visibility: hidden !important/);
   assert.match(profile, /tray--full[\s\S]*position: fixed !important/);
   assert.match(profile, /inset: var\(--header-height\) 0 var\(--footer-height\) 0 !important/);
   assert.match(profile, /border-radius: 0 !important/);
-  assert.match(profile, /tray-list__header[\s\S]*width: min\(100%, 34rem\) !important[\s\S]*display: block !important[\s\S]*padding: 16px 16px 0 !important/);
-  assert.match(profile, /tray-list__header > div:first-child[\s\S]*padding: 0 0 11px !important[\s\S]*border-bottom: 1px solid var\(--cgb-neutral-200\) !important/);
-  assert.match(profile, /tray-list__actions[\s\S]*justify-content: flex-start !important[\s\S]*margin: 12px 0 14px !important/);
-  assert.match(profile, /#clear-search-button[\s\S]*min-height: 36px !important[\s\S]*border-radius: 999px !important/);
-  assert.match(profile, /\.location-list[\s\S]*width: min\(100%, 34rem\) !important[\s\S]*padding: 0 16px 24px !important/);
+  assert.doesNotMatch(profile, /tray-list__header|tray-list__toolbar|clear-search-button|location-list/);
 });
 
 test('Search language remains concise', () => {
