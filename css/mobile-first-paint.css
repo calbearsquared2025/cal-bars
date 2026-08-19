@@ -178,76 +178,76 @@
 }
 
 @media (max-width: 899px) and (orientation: portrait) {
-  body[data-view="map"][data-command-surface="map"] {
-    --header-height: calc(176px + env(safe-area-inset-top, 0px));
-  }
-
-  body[data-view="map"][data-command-surface="map"] .site-header {
-    height: var(--header-height) !important;
-    min-height: var(--header-height) !important;
-    display: grid !important;
-    grid-template-rows: auto 1fr !important;
-    align-content: start !important;
-    gap: 12px !important;
-    padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right, 0px)) 25px max(16px, env(safe-area-inset-left, 0px)) !important;
-  }
-
+  body[data-view="map"][data-command-surface="map"],
   body[data-command-surface="search"],
   body[data-command-surface="add"],
   body[data-command-surface="list"] {
-    --header-height: calc(112px + env(safe-area-inset-top, 0px));
+    --header-height: calc(82px + env(safe-area-inset-top, 0px));
   }
 
+  body[data-view="map"][data-command-surface="map"] .site-header,
   body[data-command-surface="search"] .site-header,
   body[data-command-surface="add"] .site-header,
   body[data-command-surface="list"] .site-header {
     height: var(--header-height) !important;
     min-height: var(--header-height) !important;
-    display: grid !important;
-    grid-template-rows: 36px 56px !important;
-    align-content: start !important;
-    gap: 4px !important;
+    display: block !important;
     padding: calc(env(safe-area-inset-top, 0px) + 8px) max(14px, env(safe-area-inset-right, 0px)) 8px max(14px, env(safe-area-inset-left, 0px)) !important;
   }
 
-  body[data-command-surface="search"] .site-header__brand-row,
-  body[data-command-surface="add"] .site-header__brand-row,
-  body[data-command-surface="list"] .site-header__brand-row {
-    min-height: 36px !important;
+  .site-header__brand-row {
+    min-height: 56px !important;
     display: flex !important;
+    width: 100% !important;
+    padding-right: min(38vw, 144px) !important;
+  }
+
+  .site-header > .site-header__brand-row > #header-about-button {
+    display: none !important;
+  }
+
+  .site-header > .game-button {
+    position: absolute !important;
+    top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
+    right: max(14px, env(safe-area-inset-right, 0px)) !important;
+    width: min(37vw, 138px) !important;
+    min-height: 56px !important;
+    grid-template-columns: minmax(0, 1fr) 16px !important;
+    grid-template-rows: auto auto !important;
+    align-content: center !important;
+    gap: 0 4px !important;
+    padding: 5px 18px 5px 4px !important;
+    text-align: right !important;
+    border-bottom: 0 !important;
+  }
+
+  .site-header .game-button__eyebrow {
+    display: none !important;
+  }
+
+  .site-header #header-game-label {
+    grid-column: 1 !important;
+    font-size: .92rem !important;
+    line-height: 1.16 !important;
+    padding-bottom: .12em !important;
+  }
+
+  .site-header #header-kickoff {
+    grid-column: 1 !important;
+    font-size: .62rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .site-header .game-button__chevron {
+    right: 0 !important;
+    width: 14px !important;
+    height: 14px !important;
   }
 
   body[data-command-surface="search"] .opening-stat,
   body[data-command-surface="add"] .opening-stat,
   body[data-command-surface="list"] .opening-stat {
     display: none !important;
-  }
-
-  body[data-command-surface="search"] .game-button,
-  body[data-command-surface="add"] .game-button,
-  body[data-command-surface="list"] .game-button {
-    min-height: 56px !important;
-    grid-template-rows: auto auto !important;
-    padding: 4px 34px 4px 0 !important;
-    border-bottom: 0 !important;
-  }
-
-  body[data-command-surface="search"] .game-button__eyebrow,
-  body[data-command-surface="add"] .game-button__eyebrow,
-  body[data-command-surface="list"] .game-button__eyebrow {
-    display: none !important;
-  }
-
-  body[data-command-surface="search"] #header-game-label,
-  body[data-command-surface="add"] #header-game-label,
-  body[data-command-surface="list"] #header-game-label {
-    font-size: 1.08rem !important;
-  }
-
-  body[data-command-surface="search"] #header-kickoff,
-  body[data-command-surface="add"] #header-kickoff,
-  body[data-command-surface="list"] #header-kickoff {
-    font-size: .72rem !important;
   }
 }
 
