@@ -89,6 +89,23 @@
     padding: 2px 12px 8px !important;
   }
 
+  /* The static markup still contains the legacy Nearby eyebrow. Paint the correct default
+     before deferred JavaScript assigns the state-aware preview mode. */
+  body[data-view="map"][data-command-surface="map"] #browse-locations-button:not([data-preview-mode]) .eyebrow {
+    color: transparent !important;
+    font-size: 0 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #browse-locations-button:not([data-preview-mode]) .eyebrow::after {
+    content: "EXPLORE";
+    color: var(--cgb-ink-500, #687280);
+    font-family: var(--font-condensed, sans-serif);
+    font-size: .64rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    line-height: 1;
+  }
+
   body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__marker {
     width: 20px !important;
     height: 20px !important;
