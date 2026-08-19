@@ -60,6 +60,7 @@ test('portrait header makes game selection explicit without crowding the brand',
 test('mobile Detail uses the compact header and a flush white page surface', () => {
   assert.match(css, /body\[data-view="detail"\][\s\S]*--header-height: calc\(94px/);
   assert.match(css, /body\[data-view="detail"\] \.site-header[\s\S]*height: var\(--header-height\) !important/);
+  assert.match(css, /body\[data-view="detail"\] \{[\s\S]*background-color: var\(--cgb-navy-900, #071e41\) !important/);
   assert.match(css, /body\[data-view="detail"\] \.detail-view \{[\s\S]*padding: 0 !important[\s\S]*background: var\(--cgb-white, #fff\) !important/);
   assert.match(css, /body\[data-view="detail"\] \.detail-shell \{[\s\S]*width: 100% !important[\s\S]*max-width: none !important[\s\S]*padding: 0 !important/);
   assert.match(css, /body\[data-view="detail"\] \.venue-detail \{[\s\S]*border: 0 !important[\s\S]*border-radius: 0 !important[\s\S]*box-shadow: none !important/);
