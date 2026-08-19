@@ -68,20 +68,24 @@ test('mobile Detail uses the compact header and a flush white page surface witho
   assert.doesNotMatch(css, /body\[data-view="detail"\] \{[^}]*background-color: var\(--cgb-navy/);
 });
 
-test('Search Add and List use the same destination-header component with an optional action column', () => {
+test('Search Add and List use the same destination-header component with a dedicated optional List action', () => {
   const sharedHeaders = html.match(/class="[^"]*mobile-destination-header[^"]*"/g) || [];
   const mobileTabStyles = styleBlock(mobileTab);
   assert.equal(sharedHeaders.length, 3);
-  assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>[\s\S]*class="tray-list__toolbar"[\s\S]*id="clear-search-button"/);
+  assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>/);
   assert.match(css, /\.mobile-destination-header \{[\s\S]*padding: 0 0 11px !important[\s\S]*border-bottom: 1px solid var\(--cgb-neutral-200\) !important/);
   assert.match(css, /\.mobile-destination-header \.eyebrow[\s\S]*font-size: var\(--text-2xs/);
   assert.match(css, /\.mobile-destination-header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);
   assert.match(css, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*position: static !important[\s\S]*padding: 16px 16px 11px !important/);
   assert.match(mobileTabStyles, /\.mobile-destination-header[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
-  assert.match(mobileTabStyles, /tray-list__header #clear-search-button[\s\S]*align-self: end !important[\s\S]*justify-self: end !important/);
+  assert.match(mobileTabStyles, /\.list-location-action[\s\S]*align-self: end[\s\S]*background: transparent[\s\S]*border: 0[\s\S]*border-radius: 0/);
   assert.match(mobileTabStyles, /tray-list__toolbar[\s\S]*display: none !important/);
+  assert.match(mobileTab, /button\.id = 'list-location-button'/);
   assert.match(mobileTab, /header\.append\(button\)/);
-  assert.match(mobileTab, /toolbar\.prepend\(button\)/);
+  assert.match(mobileTab, /#list-location-button/);
+  assert.match(mobileTab, /list-location-action__label/);
+  assert.doesNotMatch(mobileTab, /header\.append\(button\)[\s\S]*toolbar\.prepend\(button\)/);
+  assert.doesNotMatch(mobileTab, /event\.target\.closest\?\.\('#clear-search-button'\)/);
 });
 
 test('map statistics tighten without crowding the header brand', () => {
