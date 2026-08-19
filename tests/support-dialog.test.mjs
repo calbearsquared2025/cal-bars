@@ -15,7 +15,8 @@ test('support entry points use the CGB Ko-fi panel without loading it at first p
 });
 
 test('support dialog loads Ko-fi only after an explicit open action', () => {
-  assert.match(script, /frame\.src = frame\.dataset\.src/);
+  assert.match(script, /frame\.hasAttribute\('src'\)/);
+  assert.match(script, /frame\.setAttribute\('src', frame\.dataset\.src\)/);
   assert.match(script, /button\.addEventListener\('click', openDialog\)/);
   assert.match(script, /dialog\.showModal\(\)/);
 });
