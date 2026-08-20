@@ -267,6 +267,19 @@ function showAdd() {
   setSurface('add');
 }
 
+function showDesktopAddLocation() {
+  if (isMobileLayout()) return;
+  contributionIntent = '';
+  updateSearchIntent();
+  setSurface('map');
+  dom.searchInput.value = '';
+  configureMissingLocationLink();
+  requestAnimationFrame(() => {
+    dom.searchInput?.focus({ preventScroll: true });
+    dom.searchInput?.select?.();
+  });
+}
+
 function beginContribution(intent, {
   venueId: requestedVenueId = '',
   ensureAttendance = false
@@ -425,6 +438,7 @@ function cacheDom() {
     reportOptions: document.querySelector('#add-report-options'),
     reportListingButton: document.querySelector('#add-report-listing-button'),
     reportPartyButton: document.querySelector('#add-report-party-button'),
+    desktopAddLocationButton: document.querySelector('#desktop-add-location-button'),
     tray: document.querySelector('#venue-tray'),
     trayHandle: document.querySelector('#tray-handle'),
     closeList: document.querySelector('#close-list-button'),
@@ -451,6 +465,7 @@ function initializeShellControls() {
   document.querySelector('#mobile-search-button')?.addEventListener('click', () => showSearch());
   document.querySelector('#mobile-add-button')?.addEventListener('click', showAdd);
   document.querySelector('#mobile-list-button')?.addEventListener('click', showList);
+  dom.desktopAddLocationButton.addEventListener('click', showDesktopAddLocation);
   document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
 
   document.addEventListener('click', handleSelectedVenueWatchParty);
