@@ -1028,26 +1028,25 @@ function renderVenueProfile() {
   const title = document.createElement('h1');
   title.textContent = venue.name;
   hero.append(title);
-  const city = document.createElement('p');
-  city.className = 'detail-city';
-  city.textContent = `${venue.city}, ${venue.region}`;
-  hero.append(city);
+
+  const streetAddress = [venue.address_line_1, venue.address_line_2].filter(Boolean).join(', ');
+  const addressLabel = (streetAddress
+    ? [streetAddress, venue.city, venue.region, venue.postal_code].filter(Boolean).join(', ')
+    : [venue.city, venue.region].filter(Boolean).join(', ')) || venue.name;
   const address = document.createElement('p');
   address.className = 'detail-address';
-  address.textContent = [venue.address_line_1, venue.address_line_2, venue.city, venue.region, venue.postal_code]
-    .filter(Boolean).join(', ');
-  hero.append(address);
-
-  const addressActions = document.createElement('div');
-  addressActions.className = 'detail-address-actions';
   const directions = document.createElement('a');
   directions.className = 'detail-directions-inline';
   directions.href = directionsUrl(venue);
   directions.target = '_blank';
   directions.rel = 'noopener';
-  directions.append(createIcon('directions'), document.createTextNode('Directions'));
-  addressActions.append(directions);
+  directions.append(createIcon('directions'), document.createTextNode(addressLabel));
+  address.append(directions);
+  hero.append(address);
+
   if (venue.website_url) {
+    const addressActions = document.createElement('div');
+    addressActions.className = 'detail-address-actions';
     const website = document.createElement('a');
     website.className = 'detail-website-inline';
     website.href = venue.website_url;
@@ -1055,8 +1054,8 @@ function renderVenueProfile() {
     website.rel = 'noopener';
     website.append(createIcon('external'), document.createTextNode('Visit venue website'));
     addressActions.append(website);
+    hero.append(addressActions);
   }
-  hero.append(addressActions);
   if (venue.short_description && !legacyActivitySeason(venue)) {
     const description = document.createElement('p');
     description.className = 'detail-description';
