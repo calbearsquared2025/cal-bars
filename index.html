@@ -78,7 +78,8 @@
 </head>
 <body data-view="map" data-command-surface="map">
   <script>
-    if (new URLSearchParams(window.location.search).has('venue')) {
+    const directVenueRoute = new URLSearchParams(window.location.search).has('venue');
+    if (directVenueRoute && window.matchMedia('(max-width: 899px)').matches) {
       document.body.dataset.view = 'detail';
       document.body.dataset.detailState = 'pending';
     }
