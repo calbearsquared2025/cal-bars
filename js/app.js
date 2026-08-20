@@ -44,9 +44,15 @@ const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
+const MOBILE_MEDIA = window.matchMedia(MOBILE_MEDIA_QUERY);
 const TRAY_SWIPE_THRESHOLD = 48;
 
 const dom = {};
+let previousMobileLayout = MOBILE_MEDIA.matches;
+
+function isMobileLayout() {
+  return MOBILE_MEDIA.matches;
+}
 
 function storageGet(key) {
   try { return window.localStorage.getItem(key); } catch (_) { return null; }
@@ -70,6 +76,7 @@ function cacheDom() {
     app: document.querySelector('#app'),
     mapView: document.querySelector('#map-view'),
     detailView: document.querySelector('#detail-view'),
+    detailShell: document.querySelector('#detail-view .detail-shell'),
     venueDetail: document.querySelector('#venue-detail'),
     detailBack: document.querySelector('#detail-back'),
     map: document.querySelector('#map'),
@@ -283,7 +290,7 @@ function markerElement(venue) {
 }
 
 function initMap() {
-  if (state.detailMode || state.map || !dom.map) return;
+  if ((state.detailMode && isMobileLayout()) || state.map || !dom.map) return;
   if (!window.maplibregl) {
     dom.mapFallback.hidden = false;
     dom.map.classList.add('map--fallback');
@@ -324,7 +331,10 @@ function initMap() {
   state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
   state.map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
-  state.map.on('load', renderMarkers);
+  state.map.on('load', () => {
+    renderMarkers();
+    if (!isMobileLayout() && state.selectedVenueId) focusReturnedDetailVenue(selectedVenue());
+  });
   new ResizeObserver(() => state.map?.resize()).observe(dom.map);
 }
 
@@ -341,7 +351,7 @@ function focusLocation(origin, nearby) {
   if (origin.venueId) state.locationFocusVenueId = origin.venueId;
   const ranked = nearby ?? rankNearbyVenues(state.snapshot, state.gameId, origin);
 
-  if (window.matchMedia(MOBILE_MEDIA_QUERY).matches) {
+  if (isMobileLayout()) {
     const points = [
       center,
       ...ranked.slice(0, 2).map(({ venue }) => [Number(venue.longitude), Number(venue.latitude)])
@@ -365,7 +375,7 @@ function focusLocation(origin, nearby) {
 
   state.map.easeTo({
     center,
-    zoom: window.matchMedia(MOBILE_MEDIA_QUERY).matches ? 10 : 11,
+    zoom: isMobileLayout() ? 10 : 11,
     duration: REDUCED_MOTION ? 0 : 500,
     essential: true
   });
@@ -401,20 +411,27 @@ function renderUserMarker() {
 
 function mapVisibilityMetrics() {
   const mapRect = dom.map.getBoundingClientRect();
-  const isMobile = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+  const mobile = isMobileLayout();
   const insets = { top: 16, right: 16, bottom: 16, left: 16 };
 
-  if (isMobile && dom.mapToolbar) {
+  if (mobile && dom.mapToolbar) {
     const toolbarRect = dom.mapToolbar.getBoundingClientRect();
     if (toolbarRect.bottom > mapRect.top && toolbarRect.top < mapRect.bottom) {
       insets.top = Math.max(insets.top, toolbarRect.bottom - mapRect.top + 12);
     }
   }
 
-  if (isMobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
+  if (mobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
     const trayRect = dom.tray.getBoundingClientRect();
     if (trayRect.top < mapRect.bottom && trayRect.bottom > mapRect.top) {
       insets.bottom = Math.max(insets.bottom, mapRect.bottom - Math.max(mapRect.top, trayRect.top) + 12);
+    }
+  }
+
+  if (!mobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
+    const trayRect = dom.tray.getBoundingClientRect();
+    if (trayRect.left < mapRect.right && trayRect.right > mapRect.left) {
+      insets.right = Math.max(insets.right, mapRect.right - Math.max(mapRect.left, trayRect.left) + 16);
     }
   }
 
@@ -448,7 +465,7 @@ function clearVenueVisibilitySchedule() {
 
 function scheduleSelectedVenueVisibility() {
   clearVenueVisibilitySchedule();
-  if (!state.map || !state.selectedVenueId || state.detailMode) return;
+  if (!state.map || !state.selectedVenueId || (state.detailMode && isMobileLayout())) return;
   state.venueVisibilityFrame = requestAnimationFrame(() => {
     state.venueVisibilityFrame = requestAnimationFrame(() => {
       state.venueVisibilityFrame = null;
@@ -475,6 +492,13 @@ function observeTrayLayout() {
 function selectVenue(venueId) {
   state.selectedVenueId = venueId;
   setTrayState('selected');
+  if (!isMobileLayout()) {
+    state.detailMode = true;
+    updateRouteForGame();
+    renderAll();
+    focusReturnedDetailVenue(selectedVenue());
+    return;
+  }
   renderMarkers();
   renderTray();
   scheduleSelectedVenueVisibility();
@@ -950,15 +974,51 @@ function disposeMapForDetail() {
   state.map = null;
 }
 
-function renderDetailView() {
+function placeVenueProfile(mobile) {
+  if (mobile) {
+    if (dom.venueDetail.parentElement !== dom.detailShell) dom.detailShell.append(dom.venueDetail);
+    return;
+  }
+  if (dom.venueDetail.parentElement !== dom.traySelected) dom.traySelected.replaceChildren(dom.venueDetail);
+}
+
+function renderGameContext(game) {
+  const context = document.createElement('section');
+  context.className = 'detail-game-context';
+  const eyebrow = document.createElement('span');
+  eyebrow.className = 'eyebrow';
+  eyebrow.textContent = 'Selected game';
+  const heading = document.createElement('h2');
+  heading.textContent = gameTitle(game);
+  const kickoff = document.createElement('p');
+  kickoff.textContent = formatKickoff(game);
+  context.append(eyebrow, heading, kickoff);
+  return context;
+}
+
+function renderVenueProfile() {
   const venue = selectedVenue();
   if (!state.detailMode || !venue) return;
-  disposeMapForDetail();
-  dom.mapView.hidden = true;
-  dom.detailView.hidden = false;
-  dom.detailView.setAttribute('aria-busy', 'true');
+  const mobile = isMobileLayout();
   const game = selectedGame();
-  dom.detailBack.href = buildGameUrl(game, location.href);
+
+  placeVenueProfile(mobile);
+  if (mobile) {
+    disposeMapForDetail();
+    document.body.dataset.view = 'detail';
+    dom.mapView.hidden = true;
+    dom.detailView.hidden = false;
+    dom.detailView.setAttribute('aria-busy', 'true');
+    dom.detailBack.href = buildGameUrl(game, location.href);
+  } else {
+    document.body.dataset.view = 'map';
+    delete document.body.dataset.detailState;
+    dom.mapView.hidden = false;
+    dom.detailView.hidden = true;
+    dom.detailView.setAttribute('aria-busy', 'false');
+    setTrayState('selected');
+  }
+
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
   const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
   const activityPresentation = venueActivityPresentation({
@@ -971,6 +1031,7 @@ function renderDetailView() {
   const localMap = takeReusableDetailLocalMap(venue) || createDetailLocalMap(venue);
   dom.venueDetail.replaceChildren();
   dom.venueDetail.dataset.venueId = venue.venue_id;
+  dom.venueDetail.dataset.profilePresentation = mobile ? 'mobile' : 'desktop';
   const hero = document.createElement('header');
   hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
   if (localMap) hero.append(localMap);
@@ -1014,6 +1075,7 @@ function renderDetailView() {
     hero.append(description);
   }
   dom.venueDetail.append(hero);
+  dom.venueDetail.append(renderGameContext(game));
 
   const activity = document.createElement('section');
   activity.className = 'activity-card';
@@ -1046,9 +1108,23 @@ function renderAll() {
   if (!state.snapshot) return;
   renderHeaderAndStats();
   renderGameDialog();
+  const mobile = isMobileLayout();
+
+  if (!mobile && state.selectedVenueId && !state.detailMode) {
+    state.detailMode = true;
+  }
+
   if (state.detailMode) {
-    renderDetailView();
+    renderVenueProfile();
+    if (!mobile) {
+      renderLocationList();
+      if (state.map) renderMarkers();
+      else initMap();
+      scheduleSelectedVenueVisibility();
+    }
   } else {
+    document.body.dataset.view = 'map';
+    delete document.body.dataset.detailState;
     dom.mapView.hidden = false;
     dom.detailView.hidden = true;
     renderTray();
@@ -1065,7 +1141,7 @@ function focusReturnedDetailVenue(venue) {
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (state.detailMode || state.selectedVenueId !== venue.venue_id || !state.map) return;
+      if ((state.detailMode && isMobileLayout()) || state.selectedVenueId !== venue.venue_id || !state.map) return;
       const currentZoom = Number(state.map.getZoom?.()) || 0;
       state.map.easeTo({
         center: [longitude, latitude],
@@ -1073,6 +1149,7 @@ function focusReturnedDetailVenue(venue) {
         duration: REDUCED_MOTION ? 0 : 420,
         essential: true
       });
+      scheduleSelectedVenueVisibility();
     });
   });
 }
@@ -1081,6 +1158,7 @@ function returnToMapFromDetail(event) {
   const venue = selectedVenue();
   if (!state.detailMode || !venue) return;
   event.preventDefault();
+  if (!isMobileLayout()) return;
   state.detailMode = false;
   setTrayState('selected');
   updateRouteForGame();
@@ -1259,6 +1337,15 @@ function wireTrayDrag() {
   });
 }
 
+function handleViewportClassChange() {
+  const mobile = isMobileLayout();
+  if (mobile === previousMobileLayout) return;
+  previousMobileLayout = mobile;
+  if (!mobile && state.selectedVenueId) state.detailMode = true;
+  renderAll();
+  if (!mobile && state.selectedVenueId) focusReturnedDetailVenue(selectedVenue());
+}
+
 function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
@@ -1311,6 +1398,7 @@ function wireEvents() {
     state.map?.resize();
     scheduleSelectedVenueVisibility();
   });
+  MOBILE_MEDIA.addEventListener?.('change', handleViewportClassChange);
 }
 
 async function boot() {
