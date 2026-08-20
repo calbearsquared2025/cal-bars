@@ -166,7 +166,7 @@ export function rankVenues(snapshot, gameId, origin = null, query = '') {
       return {
         venue,
         party,
-        fanCount: getFanCount(state.snapshot, state.gameId, venue.venue_id),
+        fanCount: getFanCount(snapshot, gameId, venue.venue_id),
         category,
         distance
       };
