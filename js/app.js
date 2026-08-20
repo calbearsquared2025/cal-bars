@@ -7,6 +7,7 @@ import {
   compactVenueLocation,
   findExactVenueMatch,
   formatKickoff,
+  gameRouteParam,
   gameTitle,
   getFanCount,
   getWatchPartiesForGame,
@@ -16,6 +17,7 @@ import {
   normalizeSearchText,
   rankNearbyVenues,
   rankVenues,
+  resolveGameRouteParam,
   resolveTrayState,
   selectDefaultGame,
   shareOrCopy,
@@ -174,22 +176,31 @@ function selectedVenue() {
 function initializeRoute() {
   const params = new URLSearchParams(location.search);
   const requestedGame = params.get('game');
+  const requestedGameRecord = resolveGameRouteParam(state.snapshot.games, requestedGame);
   const defaultGame = selectDefaultGame(state.snapshot.games);
-  state.gameId = state.snapshot.games.some((game) => game.game_id === requestedGame)
-    ? requestedGame
-    : defaultGame?.game_id || state.snapshot.games[0]?.game_id || null;
+  state.gameId = requestedGameRecord?.game_id || defaultGame?.game_id || state.snapshot.games[0]?.game_id || null;
 
   const venueSlug = params.get('venue');
   const venue = state.snapshot.venues.find((item) => item.slug === venueSlug);
   state.detailMode = Boolean(venue);
   state.selectedVenueId = venue?.venue_id || null;
+
+  if (requestedGame && requestedGameRecord) {
+    const canonicalGameParam = gameRouteParam(requestedGameRecord);
+    if (canonicalGameParam && canonicalGameParam !== requestedGame) {
+      const url = new URL(location.href);
+      url.searchParams.set('game', canonicalGameParam);
+      history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    }
+  }
 }
 
 function updateRouteForGame() {
   const venue = state.detailMode ? selectedVenue() : null;
+  const game = selectedGame();
   const nextUrl = venue
-    ? buildVenueUrl(venue.slug, state.gameId, location.href)
-    : buildGameUrl(state.gameId, location.href);
+    ? buildVenueUrl(venue.slug, game, location.href)
+    : buildGameUrl(game, location.href);
   const url = new URL(nextUrl);
   history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
 }
@@ -661,7 +672,7 @@ function createActionRow(venue, { details = true } = {}) {
   if (details) {
     const detail = document.createElement('a');
     detail.className = 'secondary-button';
-    detail.href = buildVenueUrl(venue.slug, state.gameId, location.href);
+    detail.href = buildVenueUrl(venue.slug, selectedGame(), location.href);
     detail.textContent = 'View details';
     row.append(detail);
   }
@@ -763,8 +774,8 @@ function showManualCopy(text) {
 }
 
 function buildVenueSharePayload(venue) {
-  const url = buildVenueUrl(venue.slug, state.gameId, location.href);
   const game = selectedGame();
+  const url = buildVenueUrl(venue.slug, game, location.href);
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
   return {
     title: `${party ? 'Watch Party at ' : ''}${venue.name} · Cal Golden Bars`,
@@ -946,8 +957,8 @@ function renderDetailView() {
   dom.mapView.hidden = true;
   dom.detailView.hidden = false;
   dom.detailView.setAttribute('aria-busy', 'true');
-  dom.detailBack.href = buildGameUrl(state.gameId, location.href);
   const game = selectedGame();
+  dom.detailBack.href = buildGameUrl(game, location.href);
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
   const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
   const activityPresentation = venueActivityPresentation({
@@ -996,7 +1007,6 @@ function renderDetailView() {
     addressActions.append(website);
   }
   hero.append(addressActions);
-
   if (venue.short_description && !legacyActivitySeason(venue)) {
     const description = document.createElement('p');
     description.className = 'detail-description';
