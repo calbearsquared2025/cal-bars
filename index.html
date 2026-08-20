@@ -159,10 +159,10 @@
               <span class="eyebrow">Browse</span>
               <h2 id="list-heading">Locations</h2>
             </div>
-            <button id="list-location-button" class="list-location-action" type="button">
-              <span id="list-location-state" class="list-location-action__state">All locations</span>
-              <span id="list-location-action-label" class="list-location-action__label">Near me</span>
-            </button>
+            <div id="list-location-toggle" class="list-location-toggle" role="group" aria-label="Location range">
+              <button id="list-location-nearby" class="list-location-toggle__option" type="button" aria-pressed="false">Near me</button>
+              <button id="list-location-all" class="list-location-toggle__option" type="button" aria-pressed="true">All locations</button>
+            </div>
           </header>
           <div class="tray-list__toolbar">
             <button id="clear-search-button" class="text-button" type="button" hidden>All locations</button>

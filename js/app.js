@@ -102,9 +102,8 @@ function cacheDom() {
     browseButton: document.querySelector('#browse-locations-button'),
     closeList: document.querySelector('#close-list-button'),
     clearSearch: document.querySelector('#clear-search-button'),
-    listLocation: document.querySelector('#list-location-button'),
-    listLocationState: document.querySelector('#list-location-state'),
-    listLocationAction: document.querySelector('#list-location-action-label'),
+    listLocationNearby: document.querySelector('#list-location-nearby'),
+    listLocationAll: document.querySelector('#list-location-all'),
     listHeading: document.querySelector('#list-heading'),
     locationList: document.querySelector('#location-list'),
     status: document.querySelector('#status'),
@@ -899,17 +898,16 @@ function updateClearSearchVisibility() {
 function renderLocationControl() {
   const usingNearby = Boolean(state.origin);
   const canRestoreNearby = !usingNearby && Boolean(normalizedUserLocation(state.nearbyOrigin));
-  dom.listLocationState.textContent = usingNearby
-    ? `Nearby · within ${NEARBY_RADIUS_MILES} miles`
-    : 'All locations';
-  dom.listLocationAction.textContent = usingNearby
-    ? 'Show all'
-    : canRestoreNearby ? 'Show nearby' : 'Near me';
-  dom.listLocation.setAttribute('aria-label', usingNearby
-    ? 'Show all mapped locations'
+  dom.listLocationNearby.setAttribute('aria-pressed', String(usingNearby));
+  dom.listLocationAll.setAttribute('aria-pressed', String(!usingNearby));
+  dom.listLocationNearby.setAttribute('aria-label', usingNearby
+    ? `Near me selected, showing locations within ${NEARBY_RADIUS_MILES} miles`
     : canRestoreNearby
       ? 'Show nearby locations using your saved location'
       : 'Use my location to show nearby locations');
+  dom.listLocationAll.setAttribute('aria-label', usingNearby
+    ? 'Show all mapped locations'
+    : 'All locations selected');
 }
 
 function renderLocationList(query = state.listQuery) {
@@ -1411,14 +1409,14 @@ function wireEvents() {
   document.addEventListener('click', (event) => {
     if (!dom.searchForm.contains(event.target)) dom.searchDropdown.hidden = true;
   });
-  dom.listLocation.addEventListener('click', () => {
-    if (state.origin) {
-      showAllLocations();
-      return;
-    }
+  dom.listLocationAll.addEventListener('click', () => {
+    if (state.origin) showAllLocations();
+  });
+  dom.listLocationNearby.addEventListener('click', () => {
+    if (state.origin) return;
     if (showNearbyLocations()) return;
     if (!navigator.geolocation) return showStatus('Location is not available in this browser');
-    dom.listLocation.disabled = true;
+    dom.listLocationNearby.disabled = true;
     showStatus('Finding your location…', 5000);
     navigator.geolocation.getCurrentPosition((position) => {
       state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
@@ -1429,14 +1427,15 @@ function wireEvents() {
       renderLocationList();
       renderMarkers();
       setTrayState('full');
+      renderLocationControl();
       focusLocation(state.origin, nearby);
-      dom.listLocation.disabled = false;
+      dom.listLocationNearby.disabled = false;
       showStatus(nearby.length
         ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
         : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
       emitRendered();
     }, () => {
-      dom.listLocation.disabled = false;
+      dom.listLocationNearby.disabled = false;
       showStatus('Location permission was not available');
     }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   });

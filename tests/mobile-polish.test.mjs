@@ -72,8 +72,8 @@ test('mobile location control is owned by the List header instead of a floating 
     source('js/mobile-polish.mjs'),
     source('css/mobile-command-navigation.css')
   ]);
-  assert.match(html, /id="list-location-button"/);
-  assert.match(css, /body\[data-command-surface="list"\] \.list-location-action/);
+  assert.match(html, /id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*id="list-location-all"/);
+  assert.match(css, /body\[data-command-surface="list"\] \.list-location-toggle/);
   assert.doesNotMatch(html, /class="map-actions"|id="near-me-button"/);
   assert.doesNotMatch(script, /MAP_ACTION_GAP|updateMapActionPosition|--map-action-bottom/);
 });

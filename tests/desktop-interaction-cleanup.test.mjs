@@ -21,10 +21,11 @@ test('desktop map toolbar contains Search without a standalone Nearby or Add she
   assert.doesNotMatch(commandCss, /desktop-add-location|data-desktop-search-mode|\.map-toolbar \.map-actions/);
 });
 
-test('Locations owns one canonical Nearby control on desktop and mobile', () => {
-  assert.match(html, /id="list-heading">Locations<\/h2>[\s\S]*id="list-location-button"[\s\S]*id="list-location-state"[\s\S]*id="list-location-action-label"/);
-  assert.match(app, /function renderLocationControl\(\)[\s\S]*Nearby · within \$\{NEARBY_RADIUS_MILES\} miles[\s\S]*'Show all'[\s\S]*'Show nearby'[\s\S]*'Near me'/);
-  assert.match(app, /dom\.listLocation\.addEventListener\('click'[\s\S]*showAllLocations\(\)[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation\.getCurrentPosition/);
+test('Locations owns one canonical fixed-position range toggle on desktop and mobile', () => {
+  assert.match(html, /id="list-heading">Locations<\/h2>[\s\S]*id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*>Near me<\/button>[\s\S]*id="list-location-all"[\s\S]*>All locations<\/button>/);
+  assert.match(app, /function renderLocationControl\(\)[\s\S]*listLocationNearby\.setAttribute\('aria-pressed'[\s\S]*listLocationAll\.setAttribute\('aria-pressed'/);
+  assert.match(app, /dom\.listLocationAll\.addEventListener\('click'[\s\S]*showAllLocations\(\)[\s\S]*dom\.listLocationNearby\.addEventListener\('click'[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation\.getCurrentPosition/);
+  assert.doesNotMatch(app, /listLocationNearby\.textContent|listLocationAll\.textContent/);
   assert.doesNotMatch(locationRefinement, /near-me-button|ensureListLocationControl|handleListLocationClick|requestLocation/);
 });
 

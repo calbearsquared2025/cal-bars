@@ -79,10 +79,10 @@ test('Search Add and List use the same destination-header component with a dedic
   assert.match(css, /\.mobile-destination-header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);
   assert.match(css, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*position: static !important[\s\S]*padding: 16px 16px 11px !important/);
   assert.match(mobileTabStyles, /\.mobile-destination-header[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
-  assert.match(commandCss, /data-command-surface="list"\] \.list-location-action[\s\S]*align-self: end[\s\S]*background: var\(--cgb-navy-50\)[\s\S]*border: 1px solid var\(--cgb-neutral-200\)[\s\S]*border-radius: 999px/);
+  assert.match(commandCss, /data-command-surface="list"\] \.list-location-toggle[\s\S]*align-self: end[\s\S]*grid-template-columns: repeat\(2, max-content\)[\s\S]*background: var\(--cgb-navy-50\)[\s\S]*border: 1px solid var\(--cgb-neutral-200\)[\s\S]*border-radius: 999px/);
   assert.match(mobileTabStyles, /tray-list__toolbar[\s\S]*display: none !important/);
-  assert.match(html, /id="tray-list"[\s\S]*id="list-location-button"[\s\S]*id="list-location-state"[\s\S]*id="list-location-action-label"/);
-  assert.doesNotMatch(mobileTab, /button\.id = 'list-location-button'|header\.append\(button\)|toolbar\.prepend\(button\)/);
+  assert.match(html, /id="tray-list"[\s\S]*id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*id="list-location-all"/);
+  assert.doesNotMatch(mobileTab, /list-location-toggle|header\.append\(button\)|toolbar\.prepend\(button\)/);
   assert.doesNotMatch(mobileTab, /event\.target\.closest\?\.\('#clear-search-button'\)/);
 });
 

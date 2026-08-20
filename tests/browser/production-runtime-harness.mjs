@@ -38,12 +38,21 @@ function element(selector) {
   return document.querySelector(selector);
 }
 
-function locationActionLabel() {
-  return element('#list-location-action-label')?.textContent?.trim() || '';
+function locationToggleLabels() {
+  return [...document.querySelectorAll('#list-location-toggle > button')]
+    .map((button) => button.textContent?.trim() || '');
 }
 
-function locationStateLabel() {
-  return element('#list-location-state')?.textContent?.trim() || '';
+function locationModeSelected(mode) {
+  const selector = mode === 'nearby' ? '#list-location-nearby' : '#list-location-all';
+  return element(selector)?.getAttribute('aria-pressed') === 'true';
+}
+
+function locationToggleIsStable() {
+  const toggle = element('#list-location-toggle');
+  return toggle?.children[0]?.id === 'list-location-nearby' &&
+    toggle?.children[1]?.id === 'list-location-all' &&
+    locationToggleLabels().join('|') === 'Near me|All locations';
 }
 
 function badgeTexts(selectorOrElement) {
@@ -202,15 +211,15 @@ async function waitForIntentSettled(label) {
   }, label, 4000);
 }
 
-async function verifyListLocationControl(expectedLabel, label) {
+async function verifyListLocationControl(expectedMode, label) {
   click('#mobile-list-button');
   return waitFor(() => {
-    const button = element('#list-location-button');
+    const toggle = element('#list-location-toggle');
     return activeCommand() === 'list' &&
       trayState() === 'full' &&
-      button &&
-      !button.hidden &&
-      locationActionLabel() === expectedLabel;
+      isVisible(toggle) &&
+      locationToggleIsStable() &&
+      locationModeSelected(expectedMode);
   }, label, 4000);
 }
 
@@ -456,24 +465,28 @@ async function runDesktopChecks() {
   } catch (error) {
     failures.push(`Could not install deterministic desktop geolocation mock: ${error.message}`);
   }
-  click('#list-location-button');
+  check(locationToggleIsStable(), 'Desktop location toggle should keep Near me left and All locations right');
+  check(locationModeSelected('all'), 'Desktop All locations should be selected initially');
+  click('#list-location-nearby');
   await waitFor(() => Boolean(state()?.origin), 'desktop Nearby location state');
   check(desktopGeolocationCalls === 1, 'Desktop initial Nearby should request geolocation once');
   check(Boolean(state()?.nearbyOrigin), 'Desktop Nearby should retain coordinates in canonical app state');
   check(isVisible('#location-list'), 'Desktop Nearby should keep Locations visible');
-  check(locationStateLabel() === 'Nearby · within 25 miles', 'Desktop Nearby should expose the approved proximity label');
-  check(locationActionLabel() === 'Show all', 'Desktop Nearby should label the reset action Show all');
-  click('#list-location-button');
+  check(locationToggleIsStable(), 'Desktop Nearby should not change location toggle labels or order');
+  check(locationModeSelected('nearby') && !locationModeSelected('all'), 'Desktop Nearby should select only Near me');
+  click('#list-location-all');
   await waitFor(() => !state()?.origin && trayState() === 'full' && state()?.detailMode === false, 'desktop Show all browse state');
   check(isVisible('#location-list'), 'Desktop All locations should keep Locations visible');
   check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Show all should preserve selected Venue identity');
-  check(locationActionLabel() === 'Show nearby', 'Desktop Show all should expose Show nearby');
+  check(locationToggleIsStable(), 'Desktop All locations should not change location toggle labels or order');
+  check(locationModeSelected('all') && !locationModeSelected('nearby'), 'Desktop All locations should select only All locations');
   click('#mobile-list-button');
   await waitFor(() => trayState() === 'full' && state()?.detailMode === false, 'desktop Locations after Show all');
-  check(locationActionLabel() === 'Show nearby', 'Desktop Locations should preserve Show nearby');
-  click('#list-location-button');
+  check(locationModeSelected('all') && locationToggleIsStable(), 'Desktop Locations should preserve the fixed All locations selection');
+  click('#list-location-nearby');
   await waitFor(() => Boolean(state()?.origin) && trayState() === 'full' && state()?.detailMode === false, 'desktop saved Nearby restore');
   check(desktopGeolocationCalls === 1, 'Desktop Show nearby should reuse coordinates without geolocation');
+  check(locationModeSelected('nearby') && locationToggleIsStable(), 'Desktop saved Nearby should restore the fixed Near me selection');
   check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Show nearby should preserve selected Venue identity');
 
   progress('desktop-game-dialog');
@@ -740,23 +753,22 @@ async function runMainChecks() {
   }
 
   await ensureListSurface('List for Nearby / All locations');
-  await waitFor(() => {
-    const button = element('#list-location-button');
-    return button && !button.hidden && locationActionLabel() === 'Near me';
-  }, 'Near me List control');
-  click('#list-location-button');
+  await verifyListLocationControl('all', 'All locations List control');
+  check(locationToggleIsStable(), 'Mobile location toggle should keep Near me left and All locations right');
+  click('#list-location-nearby');
   await waitFor(() => Boolean(state()?.origin), 'Nearby location state');
   check(mobileGeolocationCalls === 1, 'Mobile initial Nearby should request geolocation once');
   check(Boolean(state()?.nearbyOrigin), 'Mobile Nearby should retain coordinates in canonical app state');
 
-  await verifyListLocationControl('Show all', 'Show all List control');
-  click('#list-location-button');
+  await verifyListLocationControl('nearby', 'Near me selected List control');
+  click('#list-location-all');
   await waitFor(() => !state()?.origin, 'All locations state');
 
-  await verifyListLocationControl('Show nearby', 'Show nearby control after All locations');
-  click('#list-location-button');
+  await verifyListLocationControl('all', 'All locations selected control');
+  click('#list-location-nearby');
   await waitFor(() => Boolean(state()?.origin), 'saved Nearby location state');
   check(mobileGeolocationCalls === 1, 'Mobile Show nearby should reuse coordinates without geolocation');
+  check(locationToggleIsStable() && locationModeSelected('nearby'), 'Mobile saved Nearby should preserve the fixed toggle order');
 
   progress('list-back-map');
   click('#mobile-map-button');
@@ -781,18 +793,19 @@ async function runNearbyMobileChecks() {
   });
 
   await ensureListSurface('focused mobile Locations');
-  await waitFor(() => locationActionLabel() === 'Near me', 'focused mobile Near me control');
-  click('#list-location-button');
+  await waitFor(() => locationToggleIsStable() && locationModeSelected('all'), 'focused mobile All locations control');
+  click('#list-location-nearby');
   await yieldToBrowser();
   check(Boolean(state()?.origin && state()?.nearbyOrigin), `Focused mobile initial Nearby transition did not settle (geolocation calls: ${geolocationCalls}, origin: ${JSON.stringify(state()?.origin)}, nearbyOrigin: ${JSON.stringify(state()?.nearbyOrigin)})`);
   await waitFor(() => Boolean(state()?.origin && state()?.nearbyOrigin), 'focused mobile Nearby state');
-  await waitFor(() => activeCommand() === 'list' && trayState() === 'full' && locationActionLabel() === 'Show all', 'focused mobile Show all control');
-  click('#list-location-button');
+  await waitFor(() => activeCommand() === 'list' && trayState() === 'full' && locationToggleIsStable() && locationModeSelected('nearby'), 'focused mobile Near me selection');
+  click('#list-location-all');
   await waitFor(() => !state()?.origin, 'focused mobile Show all state');
-  await waitFor(() => activeCommand() === 'list' && trayState() === 'full' && locationActionLabel() === 'Show nearby', 'focused mobile Show nearby control');
-  click('#list-location-button');
+  await waitFor(() => activeCommand() === 'list' && trayState() === 'full' && locationToggleIsStable() && locationModeSelected('all'), 'focused mobile All locations selection');
+  click('#list-location-nearby');
   await waitFor(() => Boolean(state()?.origin), 'focused mobile saved Nearby restore');
   check(geolocationCalls === 1, 'Focused mobile Show nearby should not request geolocation again');
+  check(locationToggleIsStable() && locationModeSelected('nearby'), 'Focused mobile saved Nearby should preserve the fixed toggle order');
   finish('CGB_NEARBY_MOBILE_RUNTIME_HARNESS');
 }
 
@@ -859,18 +872,21 @@ async function runNearbyDesktopChecks() {
     }
   });
 
-  click('#list-location-button');
+  check(locationToggleIsStable() && locationModeSelected('all'), 'Focused desktop should start with the fixed All locations selection');
+  click('#list-location-nearby');
   await waitFor(() => Boolean(state()?.origin && state()?.nearbyOrigin), 'focused desktop Nearby state');
-  click('#list-location-button');
+  await waitFor(() => locationToggleIsStable() && locationModeSelected('nearby'), 'focused desktop Near me fixed toggle selection');
+  click('#list-location-all');
   await waitFor(() => !state()?.origin && trayState() === 'full' && state()?.detailMode === false, 'focused desktop Show all state');
   check(selectedVenueId() === retainedVenueId, 'Focused desktop Show all should preserve selected Venue identity');
-  check(locationActionLabel() === 'Show nearby', 'Focused desktop Show all should expose Show nearby');
+  check(locationToggleIsStable() && locationModeSelected('all'), 'Focused desktop All locations should keep the fixed toggle order');
   click('#mobile-list-button');
   await waitFor(() => trayState() === 'full' && state()?.detailMode === false, 'focused desktop Locations after Show all');
-  check(locationActionLabel() === 'Show nearby', 'Focused desktop Locations should preserve Show nearby');
-  click('#list-location-button');
+  check(locationToggleIsStable() && locationModeSelected('all'), 'Focused desktop Locations should preserve All locations selection');
+  click('#list-location-nearby');
   await waitFor(() => Boolean(state()?.origin) && trayState() === 'full' && state()?.detailMode === false, 'focused desktop saved Nearby restore');
   check(geolocationCalls === 1, 'Focused desktop Show nearby should not request geolocation again');
+  check(locationToggleIsStable() && locationModeSelected('nearby'), 'Focused desktop saved Nearby should preserve the fixed toggle order');
   check(selectedVenueId() === retainedVenueId, 'Focused desktop Show nearby should preserve selected Venue identity');
   finish('CGB_NEARBY_DESKTOP_RUNTIME_HARNESS');
 }

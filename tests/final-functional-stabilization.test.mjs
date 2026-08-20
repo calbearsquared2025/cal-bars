@@ -11,7 +11,7 @@ const [stabilization, icons, iconUpgrade, sprite] = await Promise.all([
 ]);
 
 test('Nearby and All locations preserve the List surface after application rerenders', () => {
-  assert.match(stabilization, /#mobile-list-button, #list-location-button, #clear-search-button/);
+  assert.match(stabilization, /#mobile-list-button, #list-location-toggle, #clear-search-button/);
   assert.match(stabilization, /listSurfaceLocked = true/);
   assert.match(stabilization, /state\.trayState = next/);
   assert.match(stabilization, /setTrayState\('full'\)/);

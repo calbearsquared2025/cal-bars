@@ -135,15 +135,16 @@
     box-shadow: var(--focus-ring), var(--shadow-sm);
   }
 
-  body[data-command-surface="list"] .list-location-action {
+  body[data-command-surface="list"] .list-location-toggle {
     align-self: end;
     justify-self: end;
     min-height: 40px;
-    display: inline-flex;
-    align-items: stretch;
+    display: inline-grid;
+    grid-template-columns: repeat(2, max-content);
+    align-items: center;
+    gap: 2px;
     margin: 0 0 -5px 10px;
-    padding: 0;
-    overflow: hidden;
+    padding: 2px;
     color: var(--cgb-navy-900);
     background: var(--cgb-navy-50);
     border: 1px solid var(--cgb-neutral-200);
@@ -156,27 +157,33 @@
     box-shadow: none;
   }
 
-  body[data-command-surface="list"] .list-location-action__state,
-  body[data-command-surface="list"] .list-location-action__label {
+  body[data-command-surface="list"] .list-location-toggle__option {
+    min-height: 34px;
     display: inline-flex;
     align-items: center;
-    padding: 0 8px;
-  }
-
-  body[data-command-surface="list"] .list-location-action__label {
+    justify-content: center;
+    padding: 0 9px;
     color: var(--cgb-navy-800);
-    background: var(--cgb-white);
-    border-left: 1px solid var(--cgb-neutral-300);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    font: inherit;
+    line-height: inherit;
   }
 
-  body[data-command-surface="list"] .list-location-action:hover .list-location-action__label,
-  body[data-command-surface="list"] .list-location-action:focus-visible .list-location-action__label {
+  body[data-command-surface="list"] .list-location-toggle__option[aria-pressed="true"] {
+    color: var(--cgb-navy-950);
+    background: var(--cgb-white);
+    box-shadow: var(--shadow-xs);
+  }
+
+  body[data-command-surface="list"] .list-location-toggle__option:hover {
     background: var(--cgb-gold-50);
   }
 
-  body[data-command-surface="list"] .list-location-action:focus-visible {
+  body[data-command-surface="list"] .list-location-toggle__option:focus-visible {
     outline: 2px solid var(--cgb-gold-400);
-    outline-offset: 2px;
+    outline-offset: 0;
   }
 
   .command-surface .search-field input {
@@ -579,13 +586,14 @@
     display: none;
   }
 
-  .venue-tray .list-location-action {
+  .venue-tray .list-location-toggle {
     min-height: 32px;
-    display: inline-flex;
-    align-items: stretch;
+    display: inline-grid;
+    grid-template-columns: repeat(2, max-content);
+    align-items: center;
+    gap: 2px;
     margin: 0;
-    padding: 0;
-    overflow: hidden;
+    padding: 2px;
     color: var(--cgb-navy-900, #0b2856);
     background: var(--cgb-navy-50, #eef3f8);
     border: 1px solid var(--cgb-neutral-200, #dfe3e8);
@@ -595,30 +603,34 @@
     text-decoration: none;
   }
 
-  .venue-tray .list-location-action__state {
+  .venue-tray .list-location-toggle__option {
+    min-height: 26px;
     display: inline-flex;
     align-items: center;
-    padding: 0 9px 0 10px;
-    color: var(--cgb-navy-950, #010133);
+    justify-content: center;
+    padding: 0 9px;
+    color: var(--cgb-navy-800, #0b2856);
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
     font-size: .66rem;
     font-weight: 850;
     letter-spacing: .01em;
   }
 
-  .venue-tray .list-location-action__label {
-    display: inline-flex;
-    align-items: center;
-    padding: 0 10px 0 9px;
-    color: var(--cgb-navy-800, #0b2856);
-    border-left: 1px solid var(--cgb-neutral-300, #c8ced6);
+  .venue-tray .list-location-toggle__option[aria-pressed="true"] {
+    color: var(--cgb-navy-950, #010133);
     background: var(--cgb-white, #fff);
-    font-size: .66rem;
-    font-weight: 850;
+    box-shadow: var(--shadow-xs);
   }
 
-  .venue-tray .list-location-action:hover .list-location-action__label,
-  .venue-tray .list-location-action:focus-visible .list-location-action__label {
+  .venue-tray .list-location-toggle__option:hover {
     background: var(--cgb-gold-50, #fff7dc);
+  }
+
+  .venue-tray .list-location-toggle__option:focus-visible {
+    outline: 2px solid var(--cgb-gold-400);
+    outline-offset: 0;
   }
 
   .desktop-locations-guidance {
