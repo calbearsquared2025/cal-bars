@@ -971,20 +971,6 @@ function placeVenueProfile(mobile) {
   if (dom.venueDetail.parentElement !== dom.traySelected) dom.traySelected.replaceChildren(dom.venueDetail);
 }
 
-function renderGameContext(game) {
-  const context = document.createElement('section');
-  context.className = 'detail-game-context';
-  const eyebrow = document.createElement('span');
-  eyebrow.className = 'eyebrow';
-  eyebrow.textContent = 'Selected game';
-  const heading = document.createElement('h2');
-  heading.textContent = gameTitle(game);
-  const kickoff = document.createElement('p');
-  kickoff.textContent = formatKickoff(game);
-  context.append(eyebrow, heading, kickoff);
-  return context;
-}
-
 function renderVenueProfile() {
   const venue = selectedVenue();
   if (!state.detailMode || !venue) return;
@@ -1063,7 +1049,6 @@ function renderVenueProfile() {
     hero.append(description);
   }
   dom.venueDetail.append(hero);
-  dom.venueDetail.append(renderGameContext(game));
 
   const activity = document.createElement('section');
   activity.className = 'activity-card';
