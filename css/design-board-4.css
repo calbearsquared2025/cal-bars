@@ -171,15 +171,7 @@ body[data-view="detail"] #app {
   }
 
   .location-search {
-    width: calc(100% - 51px);
-  }
-
-  .map-actions .secondary-button,
-  .map-actions .icon-button {
-    width: 43px;
-    min-width: 43px;
-    height: 43px;
-    min-height: 43px;
+    width: 100%;
   }
 
   .selected-card {
@@ -260,7 +252,7 @@ body[data-view="detail"] #app {
   }
 
   .location-search {
-    width: calc(100% - 50px);
+    width: 100%;
   }
 
   .search-field {
@@ -269,14 +261,6 @@ body[data-view="detail"] #app {
 
   .search-submit {
     min-height: 33px;
-  }
-
-  .map-actions .secondary-button,
-  .map-actions .icon-button {
-    width: 42px;
-    min-width: 42px;
-    height: 42px;
-    min-height: 42px;
   }
 
   .maplibregl-ctrl-top-right {
@@ -473,7 +457,7 @@ body[data-view="detail"] #app {
   }
 
   .location-search {
-    width: calc(100% - 54px);
+    width: 100%;
   }
 
   .maplibregl-ctrl-top-right {
@@ -670,65 +654,6 @@ body[data-view="detail"] #app {
 
   .site-footer .text-button {
     min-height: 0;
-  }
-
-  body[data-view="detail"] .detail-shell {
-    width: min(100%, 1180px);
-    max-width: 1180px;
-    padding: 20px;
-  }
-
-  body[data-view="detail"] .venue-detail {
-    min-height: calc(100dvh - 40px);
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr);
-    align-content: start;
-    padding: 0 0 0;
-    background: var(--cgb-white);
-    box-shadow: var(--shadow-lg);
-  }
-
-  body[data-view="detail"] .detail-hero {
-    grid-column: 1;
-    grid-row: 1 / span 20;
-    min-height: calc(100dvh - 40px);
-    padding: 56vh 44px 42px;
-  }
-
-  body[data-view="detail"] .detail-hero::after {
-    left: 22px;
-    right: 22px;
-    height: 190px;
-  }
-
-  body[data-view="detail"] .detail-hero .venue-badges {
-    top: auto;
-    bottom: 174px;
-    left: 38px;
-  }
-
-  body[data-view="detail"] .venue-detail > :not(.detail-hero) {
-    grid-column: 2;
-  }
-
-  body[data-view="detail"] .detail-game-context {
-    margin: 24px 24px 0;
-  }
-
-  body[data-view="detail"] .activity-card {
-    margin: 14px 38px 0;
-  }
-
-  body[data-view="detail"] .venue-detail > .action-row {
-    position: sticky;
-    bottom: 0;
-    align-self: end;
-  }
-
-  body[data-view="detail"] .back-link {
-    position: fixed;
-    top: 34px;
-    left: max(34px, calc(50vw - 570px));
   }
 }
 

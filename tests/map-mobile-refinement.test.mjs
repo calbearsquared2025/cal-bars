@@ -87,8 +87,8 @@ test('selected profile uses content-driven height rather than a medium fixed-hei
   assert.doesNotMatch(source, /max-height: 170px !important/);
 });
 
-test('attribution is placed left of the right-side map controls', () => {
-  assert.match(firstPaintCss, /maplibregl-ctrl-bottom-right[\s\S]*left: 8px !important/);
+test('attribution remains compact at the mobile map left edge', () => {
+  assert.match(firstPaintCss, /maplibregl-ctrl-bottom-right[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/);
   assert.match(source, /attribution\.style\.left = '8px'/);
   assert.match(source, /attribution\.style\.right = 'auto'/);
 });

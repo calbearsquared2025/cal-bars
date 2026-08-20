@@ -78,7 +78,8 @@
 </head>
 <body data-view="map" data-command-surface="map">
   <script>
-    if (new URLSearchParams(window.location.search).has('venue')) {
+    const directVenueRoute = new URLSearchParams(window.location.search).has('venue');
+    if (directVenueRoute && window.matchMedia('(max-width: 899px)').matches) {
       document.body.dataset.view = 'detail';
       document.body.dataset.detailState = 'pending';
     }
@@ -96,7 +97,7 @@
       </button>
     </div>
     <button id="game-button" class="game-button" type="button" aria-haspopup="dialog" aria-controls="game-dialog">
-      <span class="game-button__eyebrow">Next up</span>
+      <span class="game-button__eyebrow" style="color: var(--cgb-gold-400);">SELECT GAME</span>
       <strong id="header-game-label">Loading schedule…</strong>
       <span id="header-kickoff">&nbsp;</span>
       <svg class="ui-icon game-button__chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-down"></use></svg>
@@ -121,14 +122,11 @@
             <input id="location-query" type="search" autocomplete="off" autocapitalize="words" placeholder="City, ZIP, or venue">
             <button class="search-submit" type="submit">Search</button>
           </div>
-          <div id="search-suggestions" class="search-suggestions" role="listbox" hidden></div>
+          <div id="search-dropdown" class="search-suggestions" hidden>
+            <div id="search-suggestions" class="search-suggestion-results" role="listbox"></div>
+            <button id="search-add-location-button" class="search-add-location-action" type="button">Not yet listed? Add a location</button>
+          </div>
         </form>
-        <div class="map-actions">
-          <button id="near-me-button" class="secondary-button" type="button">
-            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-near-me"></use></svg>
-            Near me
-          </button>
-        </div>
       </div>
 
       <div id="map" class="map" role="region" aria-label="Map of Cal gathering locations">
@@ -161,6 +159,10 @@
               <span class="eyebrow">Browse</span>
               <h2 id="list-heading">Locations</h2>
             </div>
+            <div id="list-location-toggle" class="list-location-toggle" role="group" aria-label="Location range">
+              <button id="list-location-nearby" class="list-location-toggle__option" type="button" aria-pressed="false">Near me</button>
+              <button id="list-location-all" class="list-location-toggle__option" type="button" aria-pressed="true">All locations</button>
+            </div>
           </header>
           <div class="tray-list__toolbar">
             <button id="clear-search-button" class="text-button" type="button" hidden>All locations</button>
@@ -168,6 +170,10 @@
               <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-down"></use></svg>
             </button>
           </div>
+          <section class="desktop-locations-guidance" aria-label="How to browse locations">
+            <strong>Find your Cal crowd</strong>
+            <p>Search a city or choose a location below to see where Bears are gathering for the selected game.</p>
+          </section>
           <div id="location-list" class="location-list"></div>
         </div>
       </section>
@@ -184,7 +190,7 @@
             <h2 id="search-surface-title">Search locations</h2>
           </div>
         </header>
-        <p class="command-surface__intro">Search Cal Golden Bars or find another place to add to the map.</p>
+        <p id="search-surface-intro" class="command-surface__intro">Find a location already listed in Cal Golden Bars.</p>
         <div id="search-surface-intent" class="command-intent" role="status" hidden></div>
         <div id="search-surface-form-slot" class="search-surface__form-slot"></div>
       </div>
@@ -303,20 +309,21 @@
     <a href="https://x.com/calbearsquared" target="_blank" rel="noopener" aria-label="Cal Bear Squared on X">@calbearsquared</a>
     <span aria-hidden="true">·</span>
     <button id="about-button" class="text-button" type="button">About</button>
-    <span aria-hidden="true">·</span>
-    <button class="text-button" type="button" data-support-open>Buy me a beer</button>
   </footer>
 
   <dialog id="about-dialog" class="about-dialog">
     <form method="dialog" class="dialog-shell">
       <div class="dialog-header">
-        <h2>About Cal Golden Bars v2</h2>
+        <h2>About Cal Golden Bars</h2>
         <button class="icon-button" value="cancel" aria-label="Close">
           <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-close"></use></svg>
         </button>
       </div>
-      <p>Choose a Cal football game, find a gathering location, and select <strong>I’ll be here</strong>.</p>
-      <p>Your selection uses a random identifier stored in this browser and privately recorded with your selection. Cal Golden Bars publishes aggregate Bear counts, not names or attendee lists.</p>
+      <p><strong>Cal Golden Bars helps Cal fans find each other on game day.</strong> Find Cal Bars, Watch Parties, and other places where Bears are gathering, then let other Bears know where you’ll be.</p>
+      <p>Going somewhere to watch the game and want to meet up with other Cal fans? <strong>Plan a Watch Party</strong> so others can find you.</p>
+      <p>Own or manage a bar hosting a Cal event? Reach out at <a href="mailto:calbearsquared2025@gmail.com">calbearsquared2025@gmail.com</a>.</p>
+      <p>Fan selections are shown only as aggregate Bear counts. Cal Golden Bars does not publish names or attendee lists.</p>
+      <p>Cal Golden Bars is powered by <strong>CrowdMap</strong>, a platform for mapping where fans gather on game day. Interested in a similar site for your team? <a href="mailto:calbearsquared2025@gmail.com">Get in touch.</a></p>
       <div class="about-support">
         <button class="secondary-button" type="button" data-support-open>Buy me a beer</button>
       </div>

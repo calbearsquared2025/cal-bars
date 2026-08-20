@@ -132,17 +132,6 @@ function setTrayState(next) {
   if (list) list.hidden = next !== 'full';
 }
 
-function syncListLocationControl() {
-  const button = document.querySelector('#clear-search-button');
-  if (!button || document.body.dataset.commandSurface !== 'list') return;
-  const usingLocation = Boolean(appState()?.origin);
-  button.hidden = false;
-  button.textContent = usingLocation ? 'All locations' : 'Near me';
-  button.setAttribute('aria-label', usingLocation
-    ? 'Show all mapped locations'
-    : 'Use my location to show nearby locations');
-}
-
 function restoreListSurface() {
   if (!isMobile() || !listSurfaceLocked || document.body.dataset.view === 'detail') return;
   const searchSurface = document.querySelector('#search-surface');
@@ -151,7 +140,6 @@ function restoreListSurface() {
   if (addSurface) addSurface.hidden = true;
   setTrayState('full');
   setCommandActive('list');
-  syncListLocationControl();
 }
 
 function captureAddContext() {
@@ -219,6 +207,7 @@ function ensureAddLocationOption() {
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
     document.querySelector('#mobile-search-button')?.click();
+    requestAnimationFrame(() => document.querySelector('#search-add-location-button')?.click());
   });
 }
 
@@ -251,7 +240,7 @@ function schedulePostRender() {
 }
 
 function setListLockFromEvent(event) {
-  if (event.target.closest?.('#mobile-list-button, #clear-search-button')) {
+  if (event.target.closest?.('#mobile-list-button, #list-location-toggle, #clear-search-button')) {
     listSurfaceLocked = true;
     return;
   }

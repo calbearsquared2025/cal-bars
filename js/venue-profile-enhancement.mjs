@@ -49,7 +49,7 @@ function createLocalMapFallback(documentObject, venue) {
   map.dataset.latitude = String(latitude);
   map.dataset.longitude = String(longitude);
   map.dataset.zoom = '16';
-  map.setAttribute('role', 'img');
+  map.setAttribute('role', 'group');
   map.setAttribute('aria-label', `Local map centered on ${clean(venue.name) || 'this venue'}`);
   map.setAttribute('aria-busy', 'true');
   return map;
@@ -150,10 +150,7 @@ function moveEditorialDescription(detail, hero, documentObject) {
   }
   description.className = 'detail-editorial__copy';
   section.append(description);
-
-  const activity = detail.querySelector(':scope > .activity-card');
-  if (activity) activity.after(section);
-  else hero.after(section);
+  hero.after(section);
   return true;
 }
 

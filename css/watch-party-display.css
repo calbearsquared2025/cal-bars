@@ -76,11 +76,14 @@
 }
 
 .party-module__report {
-  color: #40516f;
+  justify-self: end;
   display: block;
+  margin: 0.65rem 0 0 auto;
+  color: var(--cgb-ink-500);
   font-size: 0.75rem;
   font-weight: 600;
-  margin-top: 0.65rem;
+  line-height: 1.2;
+  text-align: right;
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }

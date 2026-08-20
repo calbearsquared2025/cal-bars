@@ -91,6 +91,15 @@ test('clearing the map selection preserves game location and Fan Intent', () => 
   assert.equal(clearSelectedMapVenue(), false);
 });
 
+test('remembered Nearby coordinates belong to canonical app state and reset with it', () => {
+  resetAppStateForTests();
+  appState.nearbyOrigin = { lat: 37.8, lon: -122.3, label: 'your location' };
+
+  assert.deepEqual(appState.nearbyOrigin, { lat: 37.8, lon: -122.3, label: 'your location' });
+  resetAppStateForTests();
+  assert.equal(appState.nearbyOrigin, null);
+});
+
 test('venue ranking reflects updated canonical fan counts', () => {
   resetAppStateForTests();
   setCanonicalSnapshot(snapshot([

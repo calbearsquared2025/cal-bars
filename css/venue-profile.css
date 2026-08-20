@@ -174,17 +174,3 @@ body[data-view="detail"] .detail-contribution {
     left: 22px !important;
   }
 }
-
-@media (min-width: 900px) {
-  body[data-view="detail"] .detail-hero.detail-hero--has-photo {
-    grid-column: 1 !important;
-    grid-row: 1 / span 8 !important;
-    min-height: 0 !important;
-    padding: 18px 20px 22px !important;
-  }
-
-  body[data-view="detail"] .back-link {
-    top: 48px !important;
-    left: 50px !important;
-  }
-}

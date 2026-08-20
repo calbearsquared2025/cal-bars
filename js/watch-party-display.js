@@ -1,9 +1,9 @@
+import { formatGameDate, gameTitle } from './core.mjs';
 import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';
 import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
-import { createIcon } from './icons.mjs';
 
 function issueConfig() {
   const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
@@ -23,6 +23,12 @@ function appendText(container, text, className = '') {
   container.append(line);
 }
 
+function watchPartyGameContext(snapshot, party) {
+  const game = snapshot?.games?.find((candidate) => candidate.game_id === party?.game_id);
+  if (!game) return '';
+  return [gameTitle(game), formatGameDate(game)].filter(Boolean).join(' · ');
+}
+
 function renderParty(party, index, total, snapshot, { detail = false } = {}) {
   const module = document.createElement('section');
   module.className = 'party-module party-module--multiple';
@@ -38,7 +44,14 @@ function renderParty(party, index, total, snapshot, { detail = false } = {}) {
   title.append(star, titleText);
   module.append(title);
 
-  appendText(module, `Hosted by ${party.organizer_name}`);
+  appendText(module, watchPartyGameContext(snapshot, party), 'party-game-context');
+
+  const hosted = document.createElement('p');
+  hosted.append(document.createTextNode('Hosted by '));
+  const hostName = document.createElement('strong');
+  hostName.textContent = party.organizer_name;
+  hosted.append(hostName);
+  module.append(hosted);
 
   if (party.event_start_at) {
     const start = new Date(party.event_start_at);
@@ -63,8 +76,7 @@ function renderParty(party, index, total, snapshot, { detail = false } = {}) {
     link.href = party.official_event_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    if (detail) link.append(createIcon('external'), document.createTextNode('External event details'));
-    else link.textContent = 'Open event information';
+    link.textContent = detail ? 'External event details' : 'Open event information';
     module.append(link);
   }
 

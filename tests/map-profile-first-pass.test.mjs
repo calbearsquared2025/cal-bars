@@ -23,8 +23,8 @@ test('List fully replaces the map while static CSS owns its destination header',
   assert.doesNotMatch(profile, /tray-list__header|tray-list__toolbar|clear-search-button|location-list/);
 });
 
-test('Search language remains concise', () => {
-  assert.match(profile, /Search Cal Golden Bars or add another location to the map\./);
+test('profile pass does not override canonical Search-mode language', () => {
+  assert.doesNotMatch(profile, /setSearchLanguage|search-surface.*command-surface__intro|Search Cal Golden Bars or add another location/);
 });
 
 test('selected profile uses a restrained identity band and compact contribution action', () => {

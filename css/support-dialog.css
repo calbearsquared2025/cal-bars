@@ -70,6 +70,31 @@
   width: 100%;
 }
 
+@media (min-width: 900px) {
+  .about-dialog.about-dialog--footer-popover {
+    position: fixed;
+    inset: auto auto var(--footer-popover-bottom, 36px) var(--footer-popover-left, 16px);
+    width: min(360px, calc(100vw - 32px));
+    max-width: none;
+    max-height: min(70dvh, 480px);
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    border-radius: var(--radius-md, 6px);
+    box-shadow: var(--shadow-md, 0 12px 28px rgba(1, 1, 51, .16));
+    z-index: 90;
+  }
+
+  .about-dialog.about-dialog--footer-popover::backdrop {
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  .about-dialog.about-dialog--footer-popover .dialog-shell {
+    padding: 16px;
+  }
+}
+
 @media (max-width: 520px) {
   .support-dialog {
     width: min(94vw, 440px);

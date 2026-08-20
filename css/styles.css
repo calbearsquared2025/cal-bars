@@ -140,7 +140,6 @@ a { color: inherit; }
 .search-suggestions button:hover, .search-suggestions button:focus-visible { background: var(--surface-alt); }
 .search-suggestions span { color: var(--muted); font-size: .78rem; }
 
-.map-actions { display: flex; gap: 8px; justify-self: end; }
 .map { width: 100%; height: 100%; min-height: calc(100dvh - var(--header-height) - var(--footer-height)); }
 .map--fallback { background: radial-gradient(circle at 30% 30%, #e7f0f5 0, #c8d8e4 48%, #b9ccd9 100%); }
 .map-fallback { position: absolute; inset: 0; display: grid; place-content: center; gap: 5px; text-align: center; color: var(--cal-blue); padding: 24px; }
@@ -297,7 +296,6 @@ a { color: inherit; }
   .game-button { max-width: 420px; grid-template-columns: auto; padding: 9px 13px; }
   .map-toolbar { right: 430px; top: 16px; left: 16px; grid-template-columns: minmax(290px, 560px) auto; align-items: start; }
   .opening-stat { grid-column: 1 / -1; }
-  .map-actions { grid-column: 2; grid-row: 2; }
   .map { min-height: calc(100dvh - var(--header-height) - var(--footer-height)); }
   .tray-handle, .tray-peek, .tray-selected .icon-button, #close-list-button { display: none; }
   .tray-list__header { padding-top: 16px; }

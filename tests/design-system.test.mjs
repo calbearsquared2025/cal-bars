@@ -7,13 +7,14 @@ const [html, baseCss, ...rest] = await Promise.all([
   readFile(new URL('../css/design-system.css', import.meta.url), 'utf8'),
   ...[1, 2, 3, 4].map((part) => readFile(new URL(`../css/design-board-${part}.css`, import.meta.url), 'utf8')),
   readFile(new URL('../css/mobile-command-navigation.css', import.meta.url), 'utf8'),
+  readFile(new URL('../css/venue-detail.css', import.meta.url), 'utf8'),
   readFile(new URL('../assets/cgb-mark.svg', import.meta.url), 'utf8'),
   readFile(new URL('../assets/icons.svg', import.meta.url), 'utf8'),
   readFile(new URL('../js/icon-upgrade.mjs', import.meta.url), 'utf8'),
   readFile(new URL('../js/shell-controls.mjs', import.meta.url), 'utf8')
 ]);
 
-const [boardCss1, boardCss2, boardCss3, boardCss4, mobileCss, mark, icons, iconUpgrade, shellControls] = rest;
+const [boardCss1, boardCss2, boardCss3, boardCss4, mobileCss, venueDetailCss, mark, icons, iconUpgrade, shellControls] = rest;
 const css = [baseCss, boardCss1, boardCss2, boardCss3, boardCss4, mobileCss].join('\n');
 
 test('design-board layer loads last while preserving application contracts', () => {
@@ -93,13 +94,13 @@ test('layered map and venue surfaces use different widths instead of repeated ro
   assert.match(css, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\s*\{[\s\S]*right:\s*24px[\s\S]*width:\s*min\(390px, 34vw\)/);
 });
 
-test('venue detail remains unchanged in this navigation pass', () => {
+test('mobile full Venue Profile keeps the established full-width destination treatment', () => {
   assert.match(css, /\.detail-hero\s*\{[\s\S]*min-height:\s*336px[\s\S]*padding:\s*198px 30px 24px/);
   assert.match(css, /\.detail-hero::after\s*\{[\s\S]*left:\s*10px[\s\S]*right:\s*10px[\s\S]*clip-path:/);
-  assert.match(css, /\.detail-game-context\s*\{[\s\S]*margin:\s*-2px 16px 0[\s\S]*clip-path:/);
   assert.match(css, /\.activity-card\s*\{[\s\S]*margin:\s*12px 28px 0[\s\S]*clip-path:/);
   assert.match(css, /\.venue-detail > \.action-row\s*\{[\s\S]*position:\s*sticky[\s\S]*bottom:\s*0/);
-  assert.match(css, /body\[data-view="detail"\] \.site-header/);
+  assert.match(venueDetailCss, /body\[data-view="detail"\] #map-view[\s\S]*display: none !important/);
+  assert.match(venueDetailCss, /@media \(max-width: 899px\)[\s\S]*body\[data-view="detail"\] \.venue-detail > \.action-row\.detail-primary-actions[\s\S]*position: fixed !important/);
 });
 
 test('marker selectors preserve locked Watch Party, Cal Bar, and Community Location semantics', () => {
@@ -113,11 +114,13 @@ test('marker selectors preserve locked Watch Party, Cal Bar, and Community Locat
   assert.match(css, /\.marker-count/);
 });
 
-test('existing landscape and desktop rules remain available for later refinement', () => {
+test('desktop keeps the map-side rail and delegates the complete Venue Profile to its dedicated owner', () => {
   assert.match(css, /@media \(max-width: 899px\) and \(orientation: landscape\) and \(max-height: 500px\)/);
   assert.match(css, /--selected-tray-max-height:\s*calc\(100% - 16px\)/);
-  assert.match(css, /@media \(min-width: 900px\)/);
-  assert.match(css, /body\[data-view="detail"\] \.venue-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1\.15fr\) minmax\(360px, \.85fr\)/);
+  assert.match(boardCss4, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\s*\{[\s\S]*width:\s*min\(390px, 34vw\)/);
+  assert.match(venueDetailCss, /@media \(min-width: 900px\)[\s\S]*#tray-selected > #venue-detail/);
+  assert.match(venueDetailCss, /#tray-selected > #venue-detail > \.action-row\.detail-primary-actions[\s\S]*position: sticky/);
+  assert.doesNotMatch(boardCss4, /body\[data-view="detail"\] \.venue-detail\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1\.15fr\)/);
   assert.doesNotMatch(`${html}\n${css}`, /rotate to portrait|portrait only|orientation blocker/i);
 });
 

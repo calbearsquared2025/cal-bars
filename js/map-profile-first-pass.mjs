@@ -203,11 +203,6 @@ function openListSurface(event) {
   setCommandActive('list');
 }
 
-function setSearchLanguage() {
-  const intro = document.querySelector('#search-surface .command-surface__intro');
-  if (intro) intro.textContent = 'Search Cal Golden Bars or add another location to the map.';
-}
-
 function addPlanWatchPartyAction(card) {
   card.querySelector('.selected-card__party-empty')?.remove();
   const existing = card.querySelector('.selected-card__plan-party');
@@ -249,7 +244,6 @@ function enhanceSelectedCard() {
 
 function scheduleEnhancement() {
   requestAnimationFrame(() => {
-    setSearchLanguage();
     enhanceSelectedCard();
     requestAnimationFrame(enhanceSelectedCard);
   });
@@ -257,7 +251,6 @@ function scheduleEnhancement() {
 
 function initialize() {
   installStyles();
-  setSearchLanguage();
 
   document.querySelector('#mobile-list-button')?.addEventListener('click', openListSurface, { capture: true });
 

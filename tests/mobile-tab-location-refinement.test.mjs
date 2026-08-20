@@ -18,7 +18,7 @@ test('Search Add and List hide the map and Search does not show a selected tray'
 });
 
 test('Search Add and List presentation is owned by static first-paint CSS', () => {
-  assert.doesNotMatch(source, /command-surface__header|command-surface__back|tray-list__header|clear-search-button|close-list-button/);
+  assert.doesNotMatch(source, /command-surface__header|command-surface__back|tray-list__header|close-list-button/);
   assert.match(firstPaintCss, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*padding: 16px 16px 11px !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__toolbar/);
@@ -41,21 +41,33 @@ test('Add does not duplicate selected-game context and makes Cal Bar nomination 
   assert.match(icons, /id="icon-cal-bar"/);
 });
 
-test('Locate Me stays on Map and restores Nearby preview', () => {
-  assert.match(source, /handleLocateClick/);
-  assert.match(source, /requestLocation\('map'\)/);
-  assert.match(source, /setTrayState\('peek'\)/);
-  assert.match(source, /setCommandActive\('map'\)/);
-  assert.match(source, /rankNearbyVenues/);
-  assert.match(source, /CGBApp\?\.focusLocation/);
+test('canonical application owns location lookup and Nearby focus', () => {
+  assert.match(app, /dom\.listLocationNearby\.addEventListener\('click'/);
+  assert.match(app, /navigator\.geolocation\.getCurrentPosition/);
+  assert.match(app, /rememberNearbyOrigin\(\)/);
+  assert.match(app, /setTrayState\('full'\)/);
+  assert.match(app, /focusLocation\(state\.origin, nearby\)/);
   assert.match(app, /function focusLocation[\s\S]*fitBounds/);
+  assert.doesNotMatch(source, /handleLocateClick|requestLocation|rankNearbyVenues|focusLocation/);
 });
 
-test('List toggles between Near me and All locations', () => {
-  assert.match(source, /button\.textContent = usingLocation \? 'All locations' : 'Near me'/);
-  assert.match(source, /requestLocation\('list'\)/);
-  assert.match(source, /showAllLocations\(\)/);
+test('mobile List keeps Near me and All locations fixed while switching state without a second geolocation request', () => {
+  assert.match(app, /function rememberNearbyOrigin[\s\S]*state\.nearbyOrigin = location/);
+  assert.match(app, /function showAllLocations\(\)[\s\S]*state\.origin = null[\s\S]*setTrayState\('full'\)/);
+  assert.match(app, /function showNearbyLocations[\s\S]*state\.nearbyOrigin[\s\S]*state\.origin = \{ \.\.\.remembered \}/);
+  assert.match(app, /dom\.listLocationNearby\.setAttribute\('aria-pressed', String\(usingNearby\)\)[\s\S]*dom\.listLocationAll\.setAttribute\('aria-pressed', String\(!usingNearby\)\)/);
+  assert.match(app, /dom\.listLocationAll\.addEventListener\('click'[\s\S]*showAllLocations\(\)[\s\S]*dom\.listLocationNearby\.addEventListener\('click'[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation/);
+  assert.match(app, /navigator\.geolocation\.getCurrentPosition[\s\S]*setTrayState\('full'\);[\s\S]*renderLocationControl\(\);[\s\S]*focusLocation\(state\.origin, nearby\)/);
+  assert.doesNotMatch(app, /listLocationNearby\.textContent|listLocationAll\.textContent/);
+  assert.doesNotMatch(source, /nearbyOrigin|showAllLocations|showNearbyLocations|navigator\.geolocation/);
   assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
+});
+
+test('desktop All locations preserves resolved coordinates and fixed Near me restores them', () => {
+  assert.match(app, /function renderLocationControl[\s\S]*state\.nearbyOrigin[\s\S]*Show nearby locations using your saved location/);
+  assert.match(app, /function showAllLocations\(\)[\s\S]*Your location is saved for Nearby/);
+  assert.match(app, /function showNearbyLocations[\s\S]*using your saved location/);
+  assert.doesNotMatch(source, /syncNearMeControl|handleLocateClick/);
 });
 
 test('Nearby sheet handle remains tappable to open the List destination', () => {

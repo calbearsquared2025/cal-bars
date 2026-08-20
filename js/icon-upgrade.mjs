@@ -7,6 +7,7 @@ import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
 import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
+import { renderPhotoFormEntry } from './photo-form.js';
 import { enhanceVenueProfile } from './venue-profile-enhancement.mjs';
 
 let appConnected = false;
@@ -28,16 +29,10 @@ function prependIcon(element, iconName) {
   element.prepend(createIcon(iconName));
 }
 
-function appendIcon(element, iconName) {
-  if (!element || element.querySelector('.ui-icon')) return;
-  element.append(createIcon(iconName));
-}
-
 function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
   if (label === 'view details' || label === 'details') return 'details';
-  if (label === 'share' || label === 'share watch party' || label === 'invite more') return 'share';
   return null;
 }
 
@@ -48,12 +43,8 @@ function clarifyShareLabels(root = document) {
     if (!share) return;
     const container = row.parentElement;
     const detail = Boolean(row.closest('#venue-detail'));
-    if (detail && share.classList.contains('detail-share')) return;
     const hasWatchParty = Boolean(container?.querySelector(':scope > .party-module'));
-    const icon = share.querySelector('.ui-icon');
-    share.replaceChildren();
-    if (icon) share.append(icon);
-    share.append(document.createTextNode(detail ? 'Share' : hasWatchParty ? 'Share Watch Party' : 'Share'));
+    share.replaceChildren(document.createTextNode(detail ? 'Share' : hasWatchParty ? 'Share Watch Party' : 'Share'));
   });
 }
 
@@ -194,13 +185,12 @@ export function upgradeRenderedIcons(root = document) {
   });
 
   root.querySelectorAll('.venue-website').forEach((link) => prependIcon(link, 'external'));
-  root.querySelectorAll('.party-module a[target="_blank"]:not(.party-module__report)')
-    .forEach((link) => appendIcon(link, 'external'));
 }
 
 function runRefinements() {
   const state = window.CGBApp?.getState?.();
   enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
+  renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
   upgradeRenderedIcons();
   const venue = detailVenue(state);
   const hero = document.querySelector('#venue-detail .detail-hero');

@@ -4,10 +4,11 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/search-map-refinement.mjs', root), 'utf8');
+const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
 test('Search never displays a selected or Nearby mini tray', () => {
-  assert.match(source, /data-command-surface="search"\] #map-view > #venue-tray\.venue-tray[\s\S]*display: none !important/);
+  assert.match(firstPaintCss, /data-command-surface="search"\] #map-view > #venue-tray\.venue-tray[\s\S]*display: none !important/);
   assert.doesNotMatch(source, /has-selected-venue/);
 });
 

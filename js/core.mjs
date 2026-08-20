@@ -76,7 +76,7 @@ export function resolveGameRouteParam(games, value) {
 }
 
 export function venueTypeLabel(venue) {
-  return venue?.venue_type === 'cal_bar' ? 'CAL BAR' : 'FAN-ADDED';
+  return venue?.venue_type === 'cal_bar' ? 'CAL BAR' : 'COMMUNITY LOCATION';
 }
 
 export function compactVenueLocation(venue) {
@@ -89,7 +89,7 @@ export function venueBadgeDescriptors(venue, party) {
   const badges = [];
   if (party) badges.push({ text: 'WATCH PARTY', kind: 'party' });
   if (venue?.venue_type === 'cal_bar') badges.push({ text: 'CAL BAR', kind: 'cal' });
-  else if (venue?.venue_type === 'community_location') badges.push({ text: 'FAN-ADDED', kind: 'community' });
+  else if (venue?.verification_status === 'user_added') badges.push({ text: 'FAN-ADDED', kind: 'fan-added' });
   return badges;
 }
 

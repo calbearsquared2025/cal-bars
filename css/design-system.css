@@ -274,11 +274,6 @@ textarea {
   opacity: 1;
 }
 
-.search-field:focus-within {
-  border-color: var(--cgb-navy-700);
-  box-shadow: var(--shadow-md), var(--focus-ring);
-}
-
 .search-submit {
   min-height: 40px;
   padding: 8px 14px;
@@ -353,10 +348,6 @@ textarea {
 .external-place-result strong,
 .missing-location-link {
   color: var(--cgb-navy-900);
-}
-
-.map-actions {
-  gap: 7px;
 }
 
 .primary-button,
@@ -1160,16 +1151,6 @@ textarea {
   .search-submit {
     min-height: 34px;
     padding: 6px 11px;
-  }
-
-  .map-actions {
-    grid-column: 2;
-    align-self: start;
-  }
-
-  .map-actions .secondary-button,
-  .map-actions .icon-button {
-    min-height: 44px;
   }
 
   .maplibregl-ctrl-top-right {

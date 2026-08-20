@@ -1,14 +1,5 @@
-import {
-  NEARBY_RADIUS_MILES,
-  rankNearbyVenues
-} from './core.mjs';
-
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-tab-location-refinement';
-
-function isMobile() {
-  return window.matchMedia(MOBILE_QUERY).matches;
-}
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
@@ -45,53 +36,13 @@ function installStyles() {
         inset: var(--header-height) 0 var(--footer-height) 0 !important;
       }
 
-      /* All destination headers use the same optional-action grid. Search/Add simply
-         have no action in column two; List places its dedicated location action there. */
+      /* All destination headers use the same optional-action grid. */
       .mobile-destination-header {
         grid-template-columns: minmax(0, 1fr) auto !important;
       }
 
-      body[data-command-surface="list"] .list-location-action {
-        align-self: end;
-        justify-self: end;
-        min-height: 40px;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        margin: 0 0 -5px 12px;
-        padding: 7px 0 7px 10px;
-        color: var(--cgb-navy-900);
-        background: transparent;
-        border: 0;
-        border-radius: 0;
-        font-family: var(--font-condensed, sans-serif);
-        font-size: .72rem;
-        font-weight: 800;
-        line-height: 1;
-        white-space: nowrap;
-        box-shadow: none;
-      }
-
-      body[data-command-surface="list"] .list-location-action .ui-icon {
-        width: 15px;
-        height: 15px;
-        flex: 0 0 auto;
-      }
-
-      body[data-command-surface="list"] .list-location-action:hover,
-      body[data-command-surface="list"] .list-location-action:focus-visible {
-        text-decoration: underline;
-        text-decoration-thickness: 1px;
-        text-underline-offset: 3px;
-      }
-
-      body[data-command-surface="list"] .list-location-action:focus-visible {
-        outline: 2px solid var(--cgb-gold-400);
-        outline-offset: 2px;
-      }
-
-      /* Desktop retains the legacy tray controls; mobile List uses the dedicated
-         header action and should not reserve a toolbar band below the title. */
+      /* Mobile List uses its header action and does not reserve the legacy
+         search-reset toolbar band below the title. */
       body[data-command-surface="list"] .tray-list__toolbar {
         display: none !important;
       }
@@ -99,34 +50,6 @@ function installStyles() {
 
   `;
   document.head.append(style);
-}
-
-function setCommandActive(command) {
-  document.body.dataset.commandSurface = command;
-  document.querySelectorAll('.mobile-command').forEach((button) => {
-    const active = button.dataset.command === command || button.id === `mobile-${command}-button`;
-    button.classList.toggle('mobile-command--active', active);
-    if (active) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
-}
-
-function setTrayState(next) {
-  const state = appState();
-  const tray = document.querySelector('#venue-tray');
-  if (!state || !tray) return;
-
-  state.trayState = next;
-  tray.dataset.state = next;
-  tray.className = `venue-tray tray--${next}`;
-  const handle = document.querySelector('#tray-handle');
-  const peek = document.querySelector('#tray-peek');
-  const selected = document.querySelector('#tray-selected');
-  const list = document.querySelector('#tray-list');
-  handle?.setAttribute('aria-expanded', String(next !== 'peek'));
-  if (peek) peek.hidden = next !== 'peek';
-  if (selected) selected.hidden = next !== 'selected';
-  if (list) list.hidden = next !== 'full';
 }
 
 function selectedVenue(state = appState()) {
@@ -163,156 +86,14 @@ function syncCorrectionLanguage() {
   if (listingUpdate) listingUpdate.textContent = 'Suggest an Update';
 }
 
-function ensureListLocationControl() {
-  let button = document.querySelector('#list-location-button');
-  if (button) return button;
-
-  const header = document.querySelector('#tray-list .tray-list__header');
-  if (!header) return null;
-
-  button = document.createElement('button');
-  button.id = 'list-location-button';
-  button.className = 'list-location-action';
-  button.type = 'button';
-  button.hidden = true;
-
-  const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  icon.setAttribute('class', 'ui-icon');
-  icon.setAttribute('viewBox', '0 0 24 24');
-  icon.setAttribute('aria-hidden', 'true');
-  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-  icon.append(use);
-
-  const label = document.createElement('span');
-  label.className = 'list-location-action__label';
-  button.append(icon, label);
-  header.append(button);
-  return button;
-}
-
-function syncListLocationControl() {
-  const button = ensureListLocationControl();
-  if (!button) return;
-
-  const onList = isMobile() && document.body.dataset.commandSurface === 'list';
-  button.hidden = !onList;
-  if (!onList) return;
-
-  const usingLocation = Boolean(appState()?.origin);
-  const label = button.querySelector('.list-location-action__label');
-  const iconUse = button.querySelector('use');
-  if (label) label.textContent = usingLocation ? 'All locations' : 'Near me';
-  if (iconUse) iconUse.setAttribute('href', usingLocation
-    ? 'assets/icons.svg#icon-map'
-    : 'assets/icons.svg#icon-near-me');
-  button.setAttribute('aria-label', usingLocation
-    ? 'Show all mapped locations'
-    : 'Use my location to show nearby locations');
-}
-
-function locationSuccess(position, target) {
-  const state = appState();
-  if (!state) return;
-
-  state.origin = {
-    lat: position.coords.latitude,
-    lon: position.coords.longitude,
-    label: 'your location'
-  };
-  state.listQuery = '';
-  state.selectedVenueId = '';
-  const input = document.querySelector('#location-query');
-  if (input) input.value = '';
-
-  const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
-  if (target === 'list') {
-    document.querySelector('#search-surface')?.setAttribute('hidden', '');
-    document.querySelector('#add-surface')?.setAttribute('hidden', '');
-    setTrayState('full');
-    setCommandActive('list');
-  } else {
-    document.querySelector('#search-surface')?.setAttribute('hidden', '');
-    document.querySelector('#add-surface')?.setAttribute('hidden', '');
-    setTrayState('peek');
-    setCommandActive('map');
-  }
-
-  window.CGBApp?.render?.();
-  if (target === 'map') requestAnimationFrame(() => window.CGBApp?.focusLocation?.(state.origin, nearby));
-  window.CGBApp?.showStatus?.(nearby.length
-    ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
-    : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
-  syncListLocationControl();
-}
-
-function requestLocation(target = 'map') {
-  const trigger = target === 'list'
-    ? document.querySelector('#list-location-button')
-    : document.querySelector('#near-me-button');
-  if (!navigator.geolocation) {
-    window.CGBApp?.showStatus?.('Location is not available in this browser');
-    return;
-  }
-
-  if (trigger) trigger.disabled = true;
-  window.CGBApp?.showStatus?.('Finding your location…', 5000);
-  navigator.geolocation.getCurrentPosition(
-    (position) => {
-      if (trigger) trigger.disabled = false;
-      locationSuccess(position, target);
-    },
-    () => {
-      if (trigger) trigger.disabled = false;
-      window.CGBApp?.showStatus?.('Location permission was not available');
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-  );
-}
-
-function showAllLocations() {
-  const state = appState();
-  if (!state) return;
-  state.origin = null;
-  state.listQuery = '';
-  const input = document.querySelector('#location-query');
-  if (input) input.value = '';
-  setTrayState('full');
-  setCommandActive('list');
-  window.CGBApp?.render?.();
-  window.CGBApp?.showStatus?.('Showing all mapped locations');
-  syncListLocationControl();
-}
-
-function handleLocateClick(event) {
-  const locate = event.target.closest?.('#near-me-button');
-  if (!locate || !isMobile()) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  requestLocation('map');
-}
-
-function handleListLocationClick(event) {
-  const button = event.target.closest?.('#list-location-button');
-  if (!button || !isMobile() || document.body.dataset.commandSurface !== 'list') return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  if (appState()?.origin) showAllLocations();
-  else requestLocation('list');
-}
-
 function sync() {
   installStyles();
   syncCalBarNominationAction();
   syncCorrectionLanguage();
-  syncListLocationControl();
 }
 
 function initialize() {
   installStyles();
-  ensureListLocationControl();
-  document.addEventListener('click', handleLocateClick, { capture: true });
-  document.addEventListener('click', handleListLocationClick, { capture: true });
-  document.querySelector('#mobile-list-button')?.addEventListener('click', () => requestAnimationFrame(syncListLocationControl));
   document.querySelector('#mobile-add-button')?.addEventListener('click', () => requestAnimationFrame(syncCalBarNominationAction));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);

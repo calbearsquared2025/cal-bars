@@ -288,35 +288,6 @@
     display: none;
   }
 
-  /* Fixed viewport controls remain anchored over the map. */
-  .map-actions {
-    position: fixed;
-    z-index: 80;
-    top: 46dvh;
-    right: max(12px, env(safe-area-inset-right, 0px));
-    left: auto;
-    display: grid;
-    gap: 8px;
-    pointer-events: auto;
-  }
-
-  .map-actions #near-me-button .ui-icon {
-    transform: translate(-1px, 1px);
-  }
-
-  .map-actions #near-me-button {
-    position: static;
-  }
-
-  body[data-command-surface="search"] .map-actions,
-  body[data-command-surface="add"] .map-actions {
-    display: none;
-  }
-
-  body[data-command-surface="list"] .map-actions #near-me-button {
-    display: none;
-  }
-
   /* Map has a compact preview; the full list is a distinct List destination. */
   .tray--peek {
     height: 116px;

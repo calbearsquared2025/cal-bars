@@ -60,7 +60,7 @@ test('only a validated server response enters the canonical snapshot', () => {
   assert.match(commit, /CGBApp\?\.render\(\)/);
   assert.match(client, /validateJoinExternalVenueResponse\(response\)/);
   assert.match(app, /state\.snapshot\.venues\.find\(\(venue\) => venue\.venue_id === state\.selectedVenueId\)/);
-  assert.match(app, /buildVenueUrl\(venue\.slug, state\.gameId/);
+  assert.match(app, /buildVenueUrl\(venue\.slug, game, location\.href\)/);
 });
 
 test('successful external creation uses the shared Locate me focus behavior', () => {
@@ -99,6 +99,13 @@ test('external-search failure leaves existing CGB results available', () => {
   assert.match(failure, /replaceExternalGroup/);
   assert.doesNotMatch(failure, /replaceChildren|snapshot\.venues|locationList/);
   assert.match(core, /Existing CGB locations are still available/);
+});
+
+test('normal Search is existing-only until the canonical add-location mode is active', () => {
+  assert.match(client, /function externalSearchAllowed\(\)[\s\S]*appState\.searchMode === 'add-location'/);
+  assert.match(client, /if \(!externalSearchAllowed\(\) \|\| query\.length < MINIMUM_QUERY_LENGTH\)/);
+  assert.match(client, /searchCurrentQuery: scheduleExternalSearch/);
+  assert.match(client, /if \(appState\.searchMode === 'add-location'\)[\s\S]*scheduleExternalSearch\(\{ immediate: true \}\)/);
 });
 
 test('game switching clears stale external confirmation but keeps permanent canonical venues', () => {

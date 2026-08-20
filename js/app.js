@@ -44,9 +44,15 @@ const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
+const MOBILE_MEDIA = window.matchMedia(MOBILE_MEDIA_QUERY);
 const TRAY_SWIPE_THRESHOLD = 48;
 
 const dom = {};
+let previousMobileLayout = MOBILE_MEDIA.matches;
+
+function isMobileLayout() {
+  return MOBILE_MEDIA.matches;
+}
 
 function storageGet(key) {
   try { return window.localStorage.getItem(key); } catch (_) { return null; }
@@ -70,6 +76,7 @@ function cacheDom() {
     app: document.querySelector('#app'),
     mapView: document.querySelector('#map-view'),
     detailView: document.querySelector('#detail-view'),
+    detailShell: document.querySelector('#detail-view .detail-shell'),
     venueDetail: document.querySelector('#venue-detail'),
     detailBack: document.querySelector('#detail-back'),
     map: document.querySelector('#map'),
@@ -84,8 +91,9 @@ function cacheDom() {
     locationStat: document.querySelector('#location-stat'),
     searchForm: document.querySelector('#location-search'),
     searchInput: document.querySelector('#location-query'),
+    searchDropdown: document.querySelector('#search-dropdown'),
     suggestions: document.querySelector('#search-suggestions'),
-    nearMe: document.querySelector('#near-me-button'),
+    addLocationSearch: document.querySelector('#search-add-location-button'),
     tray: document.querySelector('#venue-tray'),
     trayHandle: document.querySelector('#tray-handle'),
     trayPeek: document.querySelector('#tray-peek'),
@@ -94,6 +102,8 @@ function cacheDom() {
     browseButton: document.querySelector('#browse-locations-button'),
     closeList: document.querySelector('#close-list-button'),
     clearSearch: document.querySelector('#clear-search-button'),
+    listLocationNearby: document.querySelector('#list-location-nearby'),
+    listLocationAll: document.querySelector('#list-location-all'),
     listHeading: document.querySelector('#list-heading'),
     locationList: document.querySelector('#location-list'),
     status: document.querySelector('#status'),
@@ -171,6 +181,19 @@ function selectedGame() {
 
 function selectedVenue() {
   return state.snapshot.venues.find((venue) => venue.venue_id === state.selectedVenueId) || null;
+}
+
+function normalizedUserLocation(origin = state.origin) {
+  const lat = Number(origin?.lat);
+  const lon = Number(origin?.lon);
+  if (origin?.label !== 'your location' || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return { lat, lon, label: 'your location' };
+}
+
+function rememberNearbyOrigin(origin = state.origin) {
+  const location = normalizedUserLocation(origin);
+  if (location) state.nearbyOrigin = location;
+  return state.nearbyOrigin;
 }
 
 function initializeRoute() {
@@ -283,7 +306,7 @@ function markerElement(venue) {
 }
 
 function initMap() {
-  if (state.detailMode || state.map || !dom.map) return;
+  if ((state.detailMode && isMobileLayout()) || state.map || !dom.map) return;
   if (!window.maplibregl) {
     dom.mapFallback.hidden = false;
     dom.map.classList.add('map--fallback');
@@ -324,7 +347,10 @@ function initMap() {
   state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
   state.map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
-  state.map.on('load', renderMarkers);
+  state.map.on('load', () => {
+    renderMarkers();
+    if (!isMobileLayout() && state.selectedVenueId) focusReturnedDetailVenue(selectedVenue());
+  });
   new ResizeObserver(() => state.map?.resize()).observe(dom.map);
 }
 
@@ -341,7 +367,7 @@ function focusLocation(origin, nearby) {
   if (origin.venueId) state.locationFocusVenueId = origin.venueId;
   const ranked = nearby ?? rankNearbyVenues(state.snapshot, state.gameId, origin);
 
-  if (window.matchMedia(MOBILE_MEDIA_QUERY).matches) {
+  if (isMobileLayout()) {
     const points = [
       center,
       ...ranked.slice(0, 2).map(({ venue }) => [Number(venue.longitude), Number(venue.latitude)])
@@ -365,7 +391,7 @@ function focusLocation(origin, nearby) {
 
   state.map.easeTo({
     center,
-    zoom: window.matchMedia(MOBILE_MEDIA_QUERY).matches ? 10 : 11,
+    zoom: isMobileLayout() ? 10 : 11,
     duration: REDUCED_MOTION ? 0 : 500,
     essential: true
   });
@@ -401,20 +427,27 @@ function renderUserMarker() {
 
 function mapVisibilityMetrics() {
   const mapRect = dom.map.getBoundingClientRect();
-  const isMobile = window.matchMedia(MOBILE_MEDIA_QUERY).matches;
+  const mobile = isMobileLayout();
   const insets = { top: 16, right: 16, bottom: 16, left: 16 };
 
-  if (isMobile && dom.mapToolbar) {
+  if (mobile && dom.mapToolbar) {
     const toolbarRect = dom.mapToolbar.getBoundingClientRect();
     if (toolbarRect.bottom > mapRect.top && toolbarRect.top < mapRect.bottom) {
       insets.top = Math.max(insets.top, toolbarRect.bottom - mapRect.top + 12);
     }
   }
 
-  if (isMobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
+  if (mobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
     const trayRect = dom.tray.getBoundingClientRect();
     if (trayRect.top < mapRect.bottom && trayRect.bottom > mapRect.top) {
       insets.bottom = Math.max(insets.bottom, mapRect.bottom - Math.max(mapRect.top, trayRect.top) + 12);
+    }
+  }
+
+  if (!mobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
+    const trayRect = dom.tray.getBoundingClientRect();
+    if (trayRect.left < mapRect.right && trayRect.right > mapRect.left) {
+      insets.right = Math.max(insets.right, mapRect.right - Math.max(mapRect.left, trayRect.left) + 16);
     }
   }
 
@@ -448,7 +481,7 @@ function clearVenueVisibilitySchedule() {
 
 function scheduleSelectedVenueVisibility() {
   clearVenueVisibilitySchedule();
-  if (!state.map || !state.selectedVenueId || state.detailMode) return;
+  if (!state.map || !state.selectedVenueId || (state.detailMode && isMobileLayout())) return;
   state.venueVisibilityFrame = requestAnimationFrame(() => {
     state.venueVisibilityFrame = requestAnimationFrame(() => {
       state.venueVisibilityFrame = null;
@@ -475,6 +508,13 @@ function observeTrayLayout() {
 function selectVenue(venueId) {
   state.selectedVenueId = venueId;
   setTrayState('selected');
+  if (!isMobileLayout()) {
+    state.detailMode = true;
+    updateRouteForGame();
+    renderAll();
+    focusReturnedDetailVenue(selectedVenue());
+    return;
+  }
   renderMarkers();
   renderTray();
   scheduleSelectedVenueVisibility();
@@ -530,17 +570,6 @@ function createBadges(venue, party) {
   return badges;
 }
 
-function createDetailBadges(venue, party) {
-  const badges = createBadges(venue, party);
-  if (venue.venue_type !== 'cal_bar' && venue.verification_status === 'user_added') {
-    const badge = document.createElement('span');
-    badge.className = 'venue-badge badge--fan-added';
-    badge.textContent = 'FAN-ADDED';
-    badges.append(badge);
-  }
-  return badges;
-}
-
 function createDetailLocalMap(venue) {
   const latitude = Number(venue.latitude);
   const longitude = Number(venue.longitude);
@@ -552,7 +581,7 @@ function createDetailLocalMap(venue) {
   map.dataset.longitude = String(longitude);
   map.dataset.zoom = '16';
   map.dataset.markerKind = markerKind(state.snapshot, state.gameId, venue);
-  map.setAttribute('role', 'img');
+  map.setAttribute('role', 'group');
   map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
   map.setAttribute('aria-busy', 'true');
   return map;
@@ -862,8 +891,23 @@ function renderSelectedCard() {
 }
 
 function updateClearSearchVisibility() {
-  const active = Boolean(state.listQuery || state.origin || dom.searchInput.value.trim());
+  const active = Boolean(state.listQuery || dom.searchInput.value.trim());
   dom.clearSearch.hidden = !active;
+}
+
+function renderLocationControl() {
+  const usingNearby = Boolean(state.origin);
+  const canRestoreNearby = !usingNearby && Boolean(normalizedUserLocation(state.nearbyOrigin));
+  dom.listLocationNearby.setAttribute('aria-pressed', String(usingNearby));
+  dom.listLocationAll.setAttribute('aria-pressed', String(!usingNearby));
+  dom.listLocationNearby.setAttribute('aria-label', usingNearby
+    ? `Near me selected, showing locations within ${NEARBY_RADIUS_MILES} miles`
+    : canRestoreNearby
+      ? 'Show nearby locations using your saved location'
+      : 'Use my location to show nearby locations');
+  dom.listLocationAll.setAttribute('aria-label', usingNearby
+    ? 'Show all mapped locations'
+    : 'All locations selected');
 }
 
 function renderLocationList(query = state.listQuery) {
@@ -950,15 +994,37 @@ function disposeMapForDetail() {
   state.map = null;
 }
 
-function renderDetailView() {
+function placeVenueProfile(mobile) {
+  if (mobile) {
+    if (dom.venueDetail.parentElement !== dom.detailShell) dom.detailShell.append(dom.venueDetail);
+    return;
+  }
+  if (dom.venueDetail.parentElement !== dom.traySelected) dom.traySelected.replaceChildren(dom.venueDetail);
+}
+
+function renderVenueProfile() {
   const venue = selectedVenue();
   if (!state.detailMode || !venue) return;
-  disposeMapForDetail();
-  dom.mapView.hidden = true;
-  dom.detailView.hidden = false;
-  dom.detailView.setAttribute('aria-busy', 'true');
+  const mobile = isMobileLayout();
   const game = selectedGame();
-  dom.detailBack.href = buildGameUrl(game, location.href);
+
+  placeVenueProfile(mobile);
+  if (mobile) {
+    disposeMapForDetail();
+    document.body.dataset.view = 'detail';
+    dom.mapView.hidden = true;
+    dom.detailView.hidden = false;
+    dom.detailView.setAttribute('aria-busy', 'true');
+    dom.detailBack.href = buildGameUrl(game, location.href);
+  } else {
+    document.body.dataset.view = 'map';
+    delete document.body.dataset.detailState;
+    dom.mapView.hidden = false;
+    dom.detailView.hidden = true;
+    dom.detailView.setAttribute('aria-busy', 'false');
+    setTrayState('selected');
+  }
+
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
   const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
   const activityPresentation = venueActivityPresentation({
@@ -971,33 +1037,33 @@ function renderDetailView() {
   const localMap = takeReusableDetailLocalMap(venue) || createDetailLocalMap(venue);
   dom.venueDetail.replaceChildren();
   dom.venueDetail.dataset.venueId = venue.venue_id;
+  dom.venueDetail.dataset.profilePresentation = mobile ? 'mobile' : 'desktop';
   const hero = document.createElement('header');
   hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
   if (localMap) hero.append(localMap);
-  hero.append(createDetailBadges(venue, party));
+  hero.append(createBadges(venue, party));
   const title = document.createElement('h1');
   title.textContent = venue.name;
   hero.append(title);
-  const city = document.createElement('p');
-  city.className = 'detail-city';
-  city.textContent = `${venue.city}, ${venue.region}`;
-  hero.append(city);
+
+  const streetAddress = [venue.address_line_1, venue.address_line_2].filter(Boolean).join(', ');
+  const addressLabel = (streetAddress
+    ? [streetAddress, venue.city, venue.region, venue.postal_code].filter(Boolean).join(', ')
+    : [venue.city, venue.region].filter(Boolean).join(', ')) || venue.name;
   const address = document.createElement('p');
   address.className = 'detail-address';
-  address.textContent = [venue.address_line_1, venue.address_line_2, venue.city, venue.region, venue.postal_code]
-    .filter(Boolean).join(', ');
-  hero.append(address);
-
-  const addressActions = document.createElement('div');
-  addressActions.className = 'detail-address-actions';
   const directions = document.createElement('a');
   directions.className = 'detail-directions-inline';
   directions.href = directionsUrl(venue);
   directions.target = '_blank';
   directions.rel = 'noopener';
-  directions.append(createIcon('directions'), document.createTextNode('Directions'));
-  addressActions.append(directions);
+  directions.append(createIcon('directions'), document.createTextNode(addressLabel));
+  address.append(directions);
+  hero.append(address);
+
   if (venue.website_url) {
+    const addressActions = document.createElement('div');
+    addressActions.className = 'detail-address-actions';
     const website = document.createElement('a');
     website.className = 'detail-website-inline';
     website.href = venue.website_url;
@@ -1005,8 +1071,8 @@ function renderDetailView() {
     website.rel = 'noopener';
     website.append(createIcon('external'), document.createTextNode('Visit venue website'));
     addressActions.append(website);
+    hero.append(addressActions);
   }
-  hero.append(addressActions);
   if (venue.short_description && !legacyActivitySeason(venue)) {
     const description = document.createElement('p');
     description.className = 'detail-description';
@@ -1046,9 +1112,24 @@ function renderAll() {
   if (!state.snapshot) return;
   renderHeaderAndStats();
   renderGameDialog();
+  renderLocationControl();
+  const mobile = isMobileLayout();
+
+  if (!mobile && state.selectedVenueId && !state.detailMode && state.trayState !== 'full') {
+    state.detailMode = true;
+  }
+
   if (state.detailMode) {
-    renderDetailView();
+    renderVenueProfile();
+    if (!mobile) {
+      renderLocationList();
+      if (state.map) renderMarkers();
+      else initMap();
+      scheduleSelectedVenueVisibility();
+    }
   } else {
+    document.body.dataset.view = 'map';
+    delete document.body.dataset.detailState;
     dom.mapView.hidden = false;
     dom.detailView.hidden = true;
     renderTray();
@@ -1058,6 +1139,49 @@ function renderAll() {
   emitRendered();
 }
 
+function showLocations() {
+  state.detailMode = false;
+  setTrayState('full');
+  updateRouteForGame();
+  renderAll();
+}
+
+function showAllLocations() {
+  const savedLocation = Boolean(rememberNearbyOrigin());
+  state.listQuery = '';
+  state.origin = null;
+  dom.searchInput.value = '';
+  dom.searchDropdown.hidden = true;
+  state.detailMode = false;
+  setTrayState('full');
+  updateRouteForGame();
+  renderAll();
+  showStatus(savedLocation
+    ? 'Showing all mapped locations. Your location is saved for Nearby.'
+    : 'Showing all mapped locations');
+  return savedLocation;
+}
+
+function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
+  const remembered = normalizedUserLocation(state.nearbyOrigin);
+  if (!remembered) return false;
+  state.nearbyOrigin = remembered;
+  state.origin = { ...remembered };
+  state.listQuery = '';
+  dom.searchInput.value = '';
+  dom.searchDropdown.hidden = true;
+  state.detailMode = false;
+  setTrayState(trayState);
+  updateRouteForGame();
+  const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
+  renderAll();
+  if (focus) requestAnimationFrame(() => focusLocation(state.origin, nearby));
+  showStatus(nearby.length
+    ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles using your saved location`
+    : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your saved location`);
+  return true;
+}
+
 function focusReturnedDetailVenue(venue) {
   const longitude = Number(venue?.longitude);
   const latitude = Number(venue?.latitude);
@@ -1065,7 +1189,7 @@ function focusReturnedDetailVenue(venue) {
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (state.detailMode || state.selectedVenueId !== venue.venue_id || !state.map) return;
+      if ((state.detailMode && isMobileLayout()) || state.selectedVenueId !== venue.venue_id || !state.map) return;
       const currentZoom = Number(state.map.getZoom?.()) || 0;
       state.map.easeTo({
         center: [longitude, latitude],
@@ -1073,6 +1197,7 @@ function focusReturnedDetailVenue(venue) {
         duration: REDUCED_MOTION ? 0 : 420,
         essential: true
       });
+      scheduleSelectedVenueVisibility();
     });
   });
 }
@@ -1081,6 +1206,7 @@ function returnToMapFromDetail(event) {
   const venue = selectedVenue();
   if (!state.detailMode || !venue) return;
   event.preventDefault();
+  if (!isMobileLayout()) return;
   state.detailMode = false;
   setTrayState('selected');
   updateRouteForGame();
@@ -1121,7 +1247,7 @@ async function runSearch(query) {
 
   const mappedMatches = rankVenues(state.snapshot, state.gameId, state.origin, normalizedQuery);
   const exact = findExactVenueMatch(mappedMatches.map(({ venue }) => venue), normalizedQuery);
-  dom.suggestions.hidden = true;
+  dom.searchDropdown.hidden = true;
 
   if (exact) {
     state.origin = null;
@@ -1170,9 +1296,11 @@ async function runSearch(query) {
 function renderSuggestions() {
   const query = dom.searchInput.value.trim();
   dom.suggestions.replaceChildren();
+  const showAddLocationAction = state.searchMode === 'existing';
+  dom.addLocationSearch.hidden = !showAddLocationAction;
   if (!query) {
     state.listQuery = '';
-    dom.suggestions.hidden = true;
+    dom.searchDropdown.hidden = !showAddLocationAction || document.activeElement !== dom.searchInput;
     renderLocationList();
     emitRendered();
     return;
@@ -1193,14 +1321,14 @@ function renderSuggestions() {
       dom.searchInput.value = venue.name;
       state.origin = null;
       state.listQuery = '';
-      dom.suggestions.hidden = true;
+      dom.searchDropdown.hidden = true;
       renderUserMarker();
       selectVenue(venue.venue_id);
       updateClearSearchVisibility();
     });
     dom.suggestions.append(button);
   });
-  dom.suggestions.hidden = matches.length === 0;
+  dom.searchDropdown.hidden = matches.length === 0 && !showAddLocationAction;
   state.listQuery = query;
   renderLocationList();
   renderMarkers();
@@ -1208,16 +1336,7 @@ function renderSuggestions() {
 }
 
 function clearSearchResults() {
-  state.listQuery = '';
-  state.origin = null;
-  dom.searchInput.value = '';
-  dom.suggestions.hidden = true;
-  renderUserMarker();
-  renderLocationList();
-  renderMarkers();
-  setTrayState('full');
-  showStatus('Showing all mapped locations');
-  emitRendered();
+  showAllLocations();
 }
 
 function wireTrayDrag() {
@@ -1259,6 +1378,15 @@ function wireTrayDrag() {
   });
 }
 
+function handleViewportClassChange() {
+  const mobile = isMobileLayout();
+  if (mobile === previousMobileLayout) return;
+  previousMobileLayout = mobile;
+  if (!mobile && state.selectedVenueId) state.detailMode = true;
+  renderAll();
+  if (!mobile && state.selectedVenueId) focusReturnedDetailVenue(selectedVenue());
+}
+
 function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
@@ -1271,35 +1399,43 @@ function wireEvents() {
     if (query) runSearch(query);
   });
   dom.searchInput.addEventListener('input', renderSuggestions);
+  dom.searchInput.addEventListener('focus', renderSuggestions);
   dom.searchInput.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      dom.suggestions.hidden = true;
+      dom.searchDropdown.hidden = true;
       dom.searchInput.blur();
     }
   });
   document.addEventListener('click', (event) => {
-    if (!dom.searchForm.contains(event.target)) dom.suggestions.hidden = true;
+    if (!dom.searchForm.contains(event.target)) dom.searchDropdown.hidden = true;
   });
-  dom.nearMe.addEventListener('click', () => {
+  dom.listLocationAll.addEventListener('click', () => {
+    if (state.origin) showAllLocations();
+  });
+  dom.listLocationNearby.addEventListener('click', () => {
+    if (state.origin) return;
+    if (showNearbyLocations()) return;
     if (!navigator.geolocation) return showStatus('Location is not available in this browser');
-    dom.nearMe.disabled = true;
+    dom.listLocationNearby.disabled = true;
     showStatus('Finding your location…', 5000);
     navigator.geolocation.getCurrentPosition((position) => {
       state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
+      rememberNearbyOrigin();
       state.listQuery = '';
       renderUserMarker();
       const nearby = rankedVisibleVenues();
       renderLocationList();
       renderMarkers();
       setTrayState('full');
+      renderLocationControl();
       focusLocation(state.origin, nearby);
-      dom.nearMe.disabled = false;
+      dom.listLocationNearby.disabled = false;
       showStatus(nearby.length
         ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
         : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
       emitRendered();
     }, () => {
-      dom.nearMe.disabled = false;
+      dom.listLocationNearby.disabled = false;
       showStatus('Location permission was not available');
     }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   });
@@ -1311,6 +1447,7 @@ function wireEvents() {
     state.map?.resize();
     scheduleSelectedVenueVisibility();
   });
+  MOBILE_MEDIA.addEventListener?.('change', handleViewportClassChange);
 }
 
 async function boot() {
@@ -1342,6 +1479,9 @@ window.CGBApp = Object.freeze({
   render: renderAll,
   refreshSnapshot,
   focusLocation,
+  showAllLocations,
+  showNearbyLocations,
+  showLocations,
   restoreSelection,
   selectGame,
   shareVenue,

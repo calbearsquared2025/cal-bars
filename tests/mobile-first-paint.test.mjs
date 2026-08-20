@@ -5,6 +5,7 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const html = await readFile(new URL('index.html', root), 'utf8');
 const css = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
+const commandCss = await readFile(new URL('css/mobile-command-navigation.css', root), 'utf8');
 const mobilePolishCss = await readFile(new URL('css/mobile-polish.css', root), 'utf8');
 const mapMobile = await readFile(new URL('js/map-mobile-refinement.mjs', root), 'utf8');
 const profileFirstPass = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
@@ -78,13 +79,10 @@ test('Search Add and List use the same destination-header component with a dedic
   assert.match(css, /\.mobile-destination-header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);
   assert.match(css, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*position: static !important[\s\S]*padding: 16px 16px 11px !important/);
   assert.match(mobileTabStyles, /\.mobile-destination-header[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
-  assert.match(mobileTabStyles, /\.list-location-action[\s\S]*align-self: end[\s\S]*background: transparent[\s\S]*border: 0[\s\S]*border-radius: 0/);
+  assert.match(commandCss, /data-command-surface="list"\] \.list-location-toggle[\s\S]*align-self: end[\s\S]*grid-template-columns: repeat\(2, max-content\)[\s\S]*background: var\(--cgb-navy-50\)[\s\S]*border: 1px solid var\(--cgb-neutral-200\)[\s\S]*border-radius: 999px/);
   assert.match(mobileTabStyles, /tray-list__toolbar[\s\S]*display: none !important/);
-  assert.match(mobileTab, /button\.id = 'list-location-button'/);
-  assert.match(mobileTab, /header\.append\(button\)/);
-  assert.match(mobileTab, /#list-location-button/);
-  assert.match(mobileTab, /list-location-action__label/);
-  assert.doesNotMatch(mobileTab, /header\.append\(button\)[\s\S]*toolbar\.prepend\(button\)/);
+  assert.match(html, /id="tray-list"[\s\S]*id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*id="list-location-all"/);
+  assert.doesNotMatch(mobileTab, /list-location-toggle|header\.append\(button\)|toolbar\.prepend\(button\)/);
   assert.doesNotMatch(mobileTab, /event\.target\.closest\?\.\('#clear-search-button'\)/);
 });
 
