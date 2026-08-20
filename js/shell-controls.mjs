@@ -11,7 +11,7 @@ import {
   resolveListingUpdateVenue
 } from './listing-update-core.mjs';
 import { buildMissingLocationFormUrl } from './missing-location-core.mjs';
-import { getWatchParty } from './core.mjs';
+import { getWatchParty, NEARBY_RADIUS_MILES } from './core.mjs';
 import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
@@ -204,10 +204,21 @@ function leaveDetailForCommand() {
   return true;
 }
 
+function setDesktopAddLocationMode(active) {
+  if (!dom) return;
+  const enabled = Boolean(active && !isMobileLayout());
+  if (enabled) document.body.dataset.desktopSearchMode = 'add-location';
+  else delete document.body.dataset.desktopSearchMode;
+  dom.desktopAddLocationButton.setAttribute('aria-pressed', String(enabled));
+  dom.desktopAddLocationHint.hidden = !enabled;
+  dom.searchInput.placeholder = enabled ? 'Search for the location to add' : 'City, ZIP, or venue';
+}
+
 function showMap() {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
+  if (!isMobileLayout()) setDesktopAddLocationMode(false);
   setSurface('map');
   if (dom.tray?.dataset.state === 'full') dom.closeList?.click();
   if (!isMobileLayout()) normalizeDesktopTray();
@@ -218,6 +229,7 @@ function showList() {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
+  if (!isMobileLayout()) setDesktopAddLocationMode(false);
   setSurface('map');
   if (dom.tray?.dataset.state !== 'full') dom.trayHandle?.click();
   currentSurface = 'list';
@@ -263,17 +275,23 @@ function showAdd() {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
+  if (!isMobileLayout()) setDesktopAddLocationMode(false);
   updateAddContext();
   setSurface('add');
 }
 
 function showDesktopAddLocation() {
   if (isMobileLayout()) return;
+  const activating = dom.desktopAddLocationButton.getAttribute('aria-pressed') !== 'true';
   contributionIntent = '';
   updateSearchIntent();
   setSurface('map');
+  setDesktopAddLocationMode(activating);
+  if (!activating) return;
+
   dom.searchInput.value = '';
   configureMissingLocationLink();
+  showStatus('Search for the place you want to add. Choose it from Places if it is not already listed.', 5000);
   requestAnimationFrame(() => {
     dom.searchInput?.focus({ preventScroll: true });
     dom.searchInput?.select?.();
@@ -341,6 +359,10 @@ function handleSearchResultClick(event) {
   const external = event.target.closest('button[data-external-place-id]');
   if (!existing && !external) return;
 
+  if (!isMobileLayout() && document.body.dataset.desktopSearchMode === 'add-location') {
+    setDesktopAddLocationMode(false);
+  }
+
   if (existing) {
     const venueId = existing.dataset.venueId;
     if (contributionIntent === CONTRIBUTION_INTENTS.report) {
@@ -385,6 +407,23 @@ function normalizeDesktopTray() {
   if (dom.tray?.dataset.state === 'peek') dom.trayHandle?.click();
 }
 
+function syncDesktopBrowseState() {
+  if (!dom || isMobileLayout()) return;
+  const state = appState();
+  if (!state?.listQuery) {
+    dom.listHeading.textContent = 'Locations';
+    dom.listEyebrow.textContent = 'Browse';
+  }
+
+  if (state?.origin && !dom.clearSearchButton.hidden) {
+    dom.clearSearchButton.textContent = 'Show all';
+    dom.clearSearchButton.dataset.proximityLabel = `Nearby · within ${NEARBY_RADIUS_MILES} miles`;
+    dom.clearSearchButton.setAttribute('aria-label', 'Show all mapped locations');
+  } else {
+    delete dom.clearSearchButton.dataset.proximityLabel;
+  }
+}
+
 function syncViewState() {
   const pendingDirectDetail = isMobileLayout() &&
     dom.app?.getAttribute('aria-busy') === 'true' &&
@@ -401,6 +440,7 @@ function syncViewState() {
 
   updateAddContext();
   updateCommandState();
+  syncDesktopBrowseState();
 
   const trayState = dom.tray?.dataset.state || 'peek';
   if (searchSubmissionPending && currentSurface === 'search' && (trayState === 'full' || trayState === 'selected')) {
@@ -439,6 +479,10 @@ function cacheDom() {
     reportListingButton: document.querySelector('#add-report-listing-button'),
     reportPartyButton: document.querySelector('#add-report-party-button'),
     desktopAddLocationButton: document.querySelector('#desktop-add-location-button'),
+    desktopAddLocationHint: document.querySelector('#desktop-add-location-hint'),
+    listHeading: document.querySelector('#list-heading'),
+    listEyebrow: document.querySelector('#tray-list .tray-list__header .eyebrow'),
+    clearSearchButton: document.querySelector('#clear-search-button'),
     tray: document.querySelector('#venue-tray'),
     trayHandle: document.querySelector('#tray-handle'),
     closeList: document.querySelector('#close-list-button'),
@@ -490,10 +534,12 @@ function initializeShellControls() {
   document.addEventListener('click', (event) => {
     if (isMobileLayout()) return;
     if (!event.target.closest?.('#location-list .location-card, .cgb-marker')) return;
+    setDesktopAddLocationMode(false);
     requestAnimationFrame(updateCommandState);
   });
 
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
+    setDesktopAddLocationMode(false);
     moveSearchForm();
     if (!isMobileLayout()) {
       currentSurface = 'map';
@@ -503,6 +549,7 @@ function initializeShellControls() {
       normalizeDesktopTray();
     }
     updateCommandState();
+    syncDesktopBrowseState();
   });
 
   syncViewState();
