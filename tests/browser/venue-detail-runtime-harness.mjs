@@ -217,12 +217,10 @@ function verifyHierarchy(venue) {
   const address = hero?.querySelector('.detail-address');
   const directions = hero?.querySelector('.detail-directions-inline');
   const editorial = element('#venue-detail > .detail-editorial');
-  const gameContext = element('#venue-detail > .detail-game-context');
   check(address?.textContent?.includes(venue.address_line_1 || ''), 'Profile should preserve the useful street address');
   check(Boolean(directions), 'Directions should appear inline in the identity/address area');
   check(!element('#venue-detail > .action-row > a[href*="google.com/maps"]'), 'Directions should not remain in the sticky action row');
-  check(Boolean(gameContext), 'Complete Venue Profile should identify the selected game in-page');
-  check(gameContext?.querySelector('.eyebrow')?.textContent?.trim() === 'Selected game', 'Selected-game module should be explicitly labeled');
+  check(!element('#venue-detail > .detail-game-context'), 'Profile should not duplicate selected-game context below the global selector');
   check(!hero?.querySelector('.detail-description'), 'Settled Venue Profile should not leave eligible editorial description inside the identity hero');
   if (editorial) {
     check(editorial.querySelector('h2')?.textContent?.trim() === 'CGB SAYS', 'Eligible Venue editorial section should use the CGB SAYS label');
@@ -342,7 +340,7 @@ function verifyImmediateSingleOwnerRerender(venue, hasParty, fixtureMode) {
   const priorMapNode = element('#venue-detail .detail-local-map');
   const priorLocalMap = localMapRuntime();
   window.CGBApp?.render?.();
-  check(Boolean(element('#venue-detail .detail-game-context')), 'Base rerender should retain selected-game context in the complete Profile');
+  check(!element('#venue-detail .detail-game-context'), 'Base rerender should not recreate redundant selected-game context');
   const renderedMapNode = element('#venue-detail .detail-local-map');
   if (fixtureMode === 'none') {
     check(renderedMapNode === priorMapNode, 'Snapshot rerender should retain the settled local-map container');
@@ -399,7 +397,7 @@ async function main() {
   const mobile = isMobile();
   await waitFor(() =>
     document.body.dataset.view === (mobile ? 'detail' : 'map') &&
-    Boolean(element('#venue-detail .detail-game-context')),
+    Boolean(element('#venue-detail .detail-hero')),
   'responsive Venue Profile presentation');
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'Venue photo or local-map presentation');
   await waitFor(() => Boolean(element('#venue-detail > .detail-contribution')), 'compact contribution section');
@@ -439,11 +437,10 @@ async function main() {
   check(element('#venue-detail')?.dataset.venueId === venue.venue_id, 'Profile DOM should preserve Venue identity');
   check(visible('.site-header'), 'Global Cal Golden Bars header should remain visible on the Venue Profile');
   check(visible('#game-button'), 'Global game selector should remain visible and functional');
-  check(Boolean(element('#venue-detail .detail-game-context')), 'Complete Profile should include selected-game context');
+  check(!element('#venue-detail .detail-game-context'), 'Profile should not duplicate selected-game context below the global selector');
   check(!element('#cgb-desktop-detail-hierarchy'), 'Profile presentation should not be injected as a runtime style correction');
   check(Array.from(document.styleSheets).some((sheet) => String(sheet.href || '').endsWith('/css/venue-detail.css')), 'Profile presentation should load from the static stylesheet chain');
   check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), 'Global game selector should identify the selected opponent');
-  check(element('#venue-detail .detail-game-context h2')?.textContent?.includes(game?.opponent_name || ''), 'In-profile game context should identify the selected opponent');
   const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
   check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Global game selector should preserve known or TBD kickoff behavior');
 
