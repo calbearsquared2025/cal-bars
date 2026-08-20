@@ -226,7 +226,7 @@ function verifyHierarchy(venue) {
     check(editorial.querySelector('h2')?.textContent?.trim() === 'CGB SAYS', 'Eligible Venue editorial section should use the CGB SAYS label');
     check(editorial.querySelector('.detail-editorial__copy')?.textContent?.trim() === venue.short_description?.trim(), 'CGB SAYS should reuse the canonical short_description without creating another field');
     const activity = element('#venue-detail > .activity-card');
-    if (activity) check(activity.nextElementSibling === editorial, 'CGB SAYS should follow Bear activity');
+    if (activity) check(editorial.nextElementSibling === activity, 'CGB SAYS should precede Bear activity');
   }
 }
 
@@ -252,12 +252,17 @@ function verifyWatchParty(hasParty) {
     check(style.overflowY !== 'auto' && style.overflowY !== 'scroll', 'Watch Party should not create its own internal scroll container');
     check(style.maxHeight === 'none' || !style.maxHeight, 'Watch Party should not impose a max-height');
     const external = party.querySelector('a[target="_blank"]:not(.party-module__report)');
-    if (external) check(external.textContent?.includes('External event details'), 'Watch Party external link should use the resolved copy');
+    if (external) {
+      check(external.textContent?.includes('External event details'), 'Watch Party external link should use the resolved copy');
+      check(!external.querySelector('.ui-icon'), 'Watch Party external link should remain text-only');
+    }
+    const hosted = Array.from(party.querySelectorAll('p')).find((line) => line.textContent?.trim().startsWith('Hosted by '));
+    if (hosted) check(Boolean(hosted.querySelector('strong')), 'Watch Party host name should be bold');
     const report = party.querySelector('.party-module__report');
-    if (report && isMobile()) {
+    if (report) {
       const reportStyle = getComputedStyle(report);
-      check(reportStyle.justifySelf === 'end', 'Mobile Report an Issue should align to the right edge');
-      check(Number.parseFloat(reportStyle.fontSize) <= 11, 'Mobile Report an Issue should remain a small utility action');
+      check(reportStyle.justifySelf === 'end', 'Report an Issue should align to the right edge');
+      check(Number.parseFloat(reportStyle.fontSize) <= 11, 'Report an Issue should remain a small muted utility action');
     }
   });
 }
@@ -351,7 +356,7 @@ function verifyImmediateSingleOwnerRerender(venue, hasParty, fixtureMode) {
   } else {
     check(Boolean(renderedMapNode) === !venue.photo_url, 'Base renderer should preserve photo-present local-map eligibility');
   }
-  check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Base renderer should emit the Profile Share icon without a later upgrade');
+  check(!element('#venue-detail .detail-share .ui-icon'), 'Profile Share should remain text-only without a later icon upgrade');
   check(Boolean(element('#venue-detail .detail-directions-inline .ui-icon')), 'Base renderer should emit the Profile Directions icon without a later upgrade');
   verifyIdentity(venue, hasParty);
   verifyBaseHierarchy(venue);
@@ -469,7 +474,7 @@ async function main() {
     check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh should restore Fan Intent state');
     await waitFor(() => actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite more'), 'contextual Invite more action');
     check(actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite more'), 'Selected Profile should use Invite more for the contextual share action');
-    check(Boolean(element('#venue-detail .detail-share .ui-icon')), 'Contextual Invite more action should retain the share icon');
+    check(!element('#venue-detail .detail-share .ui-icon'), 'Contextual Invite more action should remain text-only');
     check(!element('#venue-detail .detail-post-join-invitation .post-join-share'), 'Profile should not duplicate the contextual share action inside a post-join message');
     verifyStickyActions();
   }
