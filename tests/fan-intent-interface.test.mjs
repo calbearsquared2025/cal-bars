@@ -113,14 +113,15 @@ test('refresh, game switching, direct URLs, and cross-tab state use canonical ga
   assert.match(client, /restoreSelection/);
 });
 
-test('completed activity publishes cumulative season counts and standardized copy', () => {
+test('completed activity publishes cumulative season counts and evergreen baseline copy', () => {
   assert.match(script, /archiveCompletedFanIntentRowsUnlocked_/);
   assert.match(script, /status:'archived'|status: 'archived'/);
   assert.match(readScript, /archiveCompletedFanIntent_\(workbook\)/);
   assert.match(readScript, /venueSeasonCounts: buildVenueSeasonCounts_/);
   assert.match(readScript, /function buildVenueSeasonCounts_/);
   assert.match(activity, /Bears watched Cal games here this season/);
-  assert.match(activity, /MIGRATED_ACTIVITY_SEASON = 2025/);
+  assert.match(activity, /Bears watched Cal games here last season/);
+  assert.doesNotMatch(activity, /MIGRATED_ACTIVITY_SEASON|short_description|historicalEvidence/);
 });
 
 test('standardized activity presentation covers detail, selected-card, and list surfaces', () => {
