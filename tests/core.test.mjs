@@ -3,11 +3,13 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
   bearCountCopy,
+  buildGameUrl,
   buildVenueUrl,
   calculateMinimalPan,
   compactVenueLocation,
   findExactVenueMatch,
   formatKickoff,
+  gameRouteParam,
   gameTitle,
   getFanCount,
   getHistoryCount,
@@ -15,6 +17,7 @@ import {
   NEARBY_RADIUS_MILES,
   rankNearbyVenues,
   rankVenues,
+  resolveGameRouteParam,
   resolveTrayState,
   selectDefaultGame,
   shareOrCopy,
@@ -32,6 +35,27 @@ test('next upcoming game is the default', () => {
 
 test('game titles use the single canonical opponent name', () => {
   assert.equal(gameTitle({ opponent_name: 'North Carolina State', home_away: 'away' }), 'at North Carolina State');
+});
+
+test('game routes use opponent-name slugs while preserving canonical IDs internally', () => {
+  const ucla = snapshot.games.find((game) => game.game_id === 'game_2026_01');
+  assert.equal(gameRouteParam(ucla), 'ucla');
+  assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: 'Boston College' }), 'boston-college');
+  assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: "Saint Mary's" }), 'saint-marys');
+  assert.equal(resolveGameRouteParam(snapshot.games, 'ucla')?.game_id, 'game_2026_01');
+  assert.equal(resolveGameRouteParam(snapshot.games, 'UCLA')?.game_id, 'game_2026_01');
+  assert.equal(resolveGameRouteParam(snapshot.games, 'game_2026_01')?.game_id, 'game_2026_01');
+  assert.equal(resolveGameRouteParam(snapshot.games, 'not-a-game'), null);
+});
+
+test('game and venue URLs expose the opponent slug instead of the canonical game ID', () => {
+  const game = snapshot.games.find((item) => item.game_id === 'game_2026_01');
+  const gameUrl = new URL(buildGameUrl(game, 'https://example.com/index.html?old=1'));
+  const venueUrl = new URL(buildVenueUrl('golden-bear-test-pub-berkeley', game, 'https://example.com/index.html?old=1'));
+  assert.equal(gameUrl.searchParams.get('game'), 'ucla');
+  assert.equal(venueUrl.searchParams.get('venue'), 'golden-bear-test-pub-berkeley');
+  assert.equal(venueUrl.searchParams.get('game'), 'ucla');
+  assert.equal(venueUrl.searchParams.has('old'), false);
 });
 
 test('compact venue location uses street and locality without postal-address noise', () => {
@@ -228,9 +252,10 @@ test('failed automatic copy preserves the complete URL for manual copying', asyn
   assert.deepEqual(result, { method: 'manual', url });
 });
 
-test('venue share URL preserves venue and game context', () => {
-  const url = new URL(buildVenueUrl('golden-bear-test-pub-berkeley', 'game_2026_01', 'https://example.com/index.html?old=1'));
+test('venue share URL preserves venue and readable game context', () => {
+  const game = snapshot.games.find((item) => item.game_id === 'game_2026_01');
+  const url = new URL(buildVenueUrl('golden-bear-test-pub-berkeley', game, 'https://example.com/index.html?old=1'));
   assert.equal(url.searchParams.get('venue'), 'golden-bear-test-pub-berkeley');
-  assert.equal(url.searchParams.get('game'), 'game_2026_01');
+  assert.equal(url.searchParams.get('game'), 'ucla');
   assert.equal(url.searchParams.has('old'), false);
 });
