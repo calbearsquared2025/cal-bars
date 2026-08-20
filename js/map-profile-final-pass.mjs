@@ -83,9 +83,9 @@ function installStyles() {
         grid-column: 1 !important;
         grid-row: 1 !important;
         margin: 0 !important;
-        padding: 8px 0 9px 12px !important;
+        padding: 8px 0 9px !important;
         background: transparent !important;
-        border-left: 3px solid var(--cgb-navy-900) !important;
+        border-left: 0 !important;
         border-bottom: 0 !important;
       }
 
@@ -350,7 +350,7 @@ function refineActions(root = document) {
   const actions = Array.from(row.querySelectorAll(':scope > a, :scope > button'));
   const intent = actions.find((action) => action.classList.contains('intent-button'));
   const directions = actions.find((action) => /^Directions$/i.test(action.textContent.trim()));
-  const details = actions.find((action) => /details/i.test(action.textContent.trim()));
+  const details = actions.find((action) => /details|more about this location/i.test(action.textContent.trim()));
   const share = actions.find((action) => /^Share$/i.test(action.textContent.trim()));
 
   if (directions) {
@@ -362,8 +362,8 @@ function refineActions(root = document) {
 
   if (details) {
     details.classList.add('selected-card__details');
-    const icon = details.querySelector('.ui-icon') || createIcon('details');
-    details.replaceChildren(icon, document.createTextNode('Details'));
+    details.replaceChildren(document.createTextNode('More About This Location'));
+    details.setAttribute('aria-label', 'More About This Location');
   }
 
   if (share) {

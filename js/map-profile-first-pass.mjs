@@ -36,9 +36,9 @@ function installStyles() {
       #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header {
         display: block !important;
         margin: 0 -14px 1px !important;
-        padding: 10px 14px 11px 18px !important;
+        padding: 10px 14px 11px !important;
         background: linear-gradient(90deg, var(--cgb-navy-50), var(--cgb-white) 78%) !important;
-        border-left: 4px solid var(--cgb-navy-900) !important;
+        border-left: 0 !important;
         border-bottom: 1px solid var(--cgb-neutral-200) !important;
       }
 
@@ -224,15 +224,17 @@ function addPlanWatchPartyAction(card) {
 
 function normalizeActionLabels(card) {
   const detail = Array.from(card.querySelectorAll('.action-row .secondary-button'))
-    .find((action) => /view details|details/i.test(action.textContent));
+    .find((action) => /view details|details|more about this location/i.test(action.textContent));
   if (!detail) return;
 
+  detail.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
+
   Array.from(detail.childNodes).forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE && /view details|details/i.test(node.textContent || '')) {
-      node.textContent = 'Details';
+    if (node.nodeType === Node.TEXT_NODE && /view details|details|more about this location/i.test(node.textContent || '')) {
+      node.textContent = 'More About This Location';
     }
   });
-  detail.setAttribute('aria-label', 'Details');
+  detail.setAttribute('aria-label', 'More About This Location');
 }
 
 function enhanceSelectedCard() {

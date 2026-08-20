@@ -136,8 +136,8 @@ function contributionUrl(intent, venueId, state = appState()) {
 function updateResponsiveCommandLabels() {
   const mobile = isMobileLayout();
   const labels = mobile
-    ? { map: 'Map', search: 'Search', add: 'Add', list: 'List' }
-    : { map: 'Selected', search: 'Search', add: 'Add', list: 'Locations' };
+    ? { map: 'Map', search: 'Search', add: 'Add', list: 'List', about: 'About' }
+    : { map: 'Selected', search: 'Search', add: 'Add', list: 'Locations', about: 'About' };
 
   dom.commandButtons.forEach((button) => {
     const label = button.querySelector('span:last-child');
@@ -153,7 +153,7 @@ function updateCommandState() {
   updateResponsiveCommandLabels();
   const mobile = isMobileLayout();
   const trayState = dom.tray?.dataset.state || 'peek';
-  const active = currentSurface === 'search' || currentSurface === 'add'
+  const active = currentSurface === 'search' || currentSurface === 'add' || currentSurface === 'about'
     ? currentSurface
     : trayState === 'full'
       ? 'list'
@@ -171,6 +171,7 @@ function setSurface(next, { focus = false } = {}) {
   currentSurface = next;
   dom.searchSurface.hidden = next !== 'search';
   dom.addSurface.hidden = next !== 'add';
+  dom.aboutSurface.hidden = next !== 'about';
   document.body.dataset.commandSurface = next;
   moveSearchForm();
   updateCommandState();
@@ -296,6 +297,14 @@ function showAdd() {
   setSurface('add');
 }
 
+function showAbout() {
+  leaveDetailForCommand();
+  contributionIntent = '';
+  updateSearchIntent();
+  setSearchMode('existing');
+  setSurface('about');
+}
+
 function showAddLocationSearch() {
   contributionIntent = '';
   updateSearchIntent();
@@ -415,7 +424,7 @@ function syncDesktopBrowseState() {
   if (!dom || isMobileLayout()) return;
   const state = appState();
   if (!state?.listQuery) {
-    dom.listHeading.textContent = 'Locations';
+    dom.listHeading.textContent = 'Find your Cal crowd';
     dom.listEyebrow.textContent = 'Browse';
   }
 
@@ -431,6 +440,7 @@ function syncViewState() {
   if (detailVisible) {
     dom.searchSurface.hidden = true;
     dom.addSurface.hidden = true;
+    dom.aboutSurface.hidden = true;
   } else {
     normalizeDesktopTray();
   }
@@ -470,6 +480,7 @@ function cacheDom() {
     searchSlot: document.querySelector('#search-surface-form-slot'),
     searchIntent: document.querySelector('#search-surface-intent'),
     addSurface: document.querySelector('#add-surface'),
+    aboutSurface: document.querySelector('#about-surface'),
     addContext: document.querySelector('#add-surface .add-context:not(.add-game-context)'),
     addContextName: document.querySelector('#add-context-name'),
     addContextCopy: document.querySelector('#add-context-copy'),
@@ -490,8 +501,9 @@ function cacheDom() {
     if (button.id === 'mobile-search-button') button.dataset.command = 'search';
     if (button.id === 'mobile-add-button') button.dataset.command = 'add';
     if (button.id === 'mobile-list-button') button.dataset.command = 'list';
+    if (button.id === 'mobile-about-button') button.dataset.command = 'about';
   });
-  return Object.entries(dom).every(([key, value]) => key === 'commandButtons' ? value.length === 4 : Boolean(value));
+  return Object.entries(dom).every(([key, value]) => key === 'commandButtons' ? value.length === 5 : Boolean(value));
 }
 
 function initializeShellControls() {
@@ -501,12 +513,17 @@ function initializeShellControls() {
   setSurface('map');
 
   document.querySelector('#header-about-button')?.addEventListener('click', () => {
+    if (isMobileLayout()) {
+      showAbout();
+      return;
+    }
     document.querySelector('#about-button')?.click();
   });
   document.querySelector('#mobile-map-button')?.addEventListener('click', showMap);
   document.querySelector('#mobile-search-button')?.addEventListener('click', () => showSearch());
   document.querySelector('#mobile-add-button')?.addEventListener('click', showAdd);
   document.querySelector('#mobile-list-button')?.addEventListener('click', showList);
+  document.querySelector('#mobile-about-button')?.addEventListener('click', showAbout);
   dom.addLocationSearch.addEventListener('click', showAddLocationSearch);
   document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
 
@@ -543,6 +560,7 @@ function initializeShellControls() {
       currentSurface = 'map';
       dom.searchSurface.hidden = true;
       dom.addSurface.hidden = true;
+      dom.aboutSurface.hidden = true;
       document.body.dataset.commandSurface = 'map';
       normalizeDesktopTray();
     }

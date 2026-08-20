@@ -1,5 +1,39 @@
 /* Settled mobile map geometry required before deferred modules initialize. */
 @media (max-width: 899px) {
+  :root {
+    --cgb-mobile-safe-surface: #eef4fa;
+  }
+
+  html,
+  body,
+  body .site-header,
+  body .mobile-command-bar {
+    background-color: var(--cgb-mobile-safe-surface) !important;
+  }
+
+  .mobile-command-bar {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+
+  #mobile-about-button {
+    display: grid !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .map-actions {
+    position: fixed !important;
+    z-index: 80 !important;
+    top: var(--map-action-top, calc(100dvh - var(--footer-height) - 156px)) !important;
+    right: max(12px, env(safe-area-inset-right, 0px)) !important;
+    bottom: auto !important;
+    display: grid !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .map-actions #near-me-button {
+    border-radius: 50% !important;
+    clip-path: none !important;
+    filter: none !important;
+  }
+
   body[data-view="map"] {
     position: fixed;
     top: 0;
@@ -133,9 +167,10 @@
     box-shadow: none !important;
   }
 
-  /* Search, Add, and List share one mobile destination-title component. */
+  /* Search, Add, List, and About share one mobile destination-title component. */
   body[data-command-surface="search"] .command-surface__shell,
-  body[data-command-surface="add"] .command-surface__shell {
+  body[data-command-surface="add"] .command-surface__shell,
+  body[data-command-surface="about"] .command-surface__shell {
     padding-top: 16px !important;
   }
 
@@ -170,7 +205,8 @@
   }
 
   body[data-command-surface="search"] .command-surface__back,
-  body[data-command-surface="add"] .command-surface__back {
+  body[data-command-surface="add"] .command-surface__back,
+  body[data-command-surface="about"] .command-surface__back {
     display: none !important;
   }
 
@@ -274,6 +310,27 @@
     color: var(--cgb-ink-500);
   }
 
+  .selected-card > .venue-activity-history--season-prompt {
+    margin: 18px 0 16px !important;
+    padding: 0 !important;
+    color: var(--cgb-ink-500, #657083) !important;
+    background: transparent !important;
+    border: 0 !important;
+    font-size: 16px !important;
+    font-weight: 400 !important;
+    line-height: 1.35 !important;
+  }
+
+  .selected-card > .venue-activity-history--season-prompt > span {
+    display: block;
+    margin: 0 !important;
+  }
+
+  .selected-card > .venue-activity-history--season-prompt > .venue-activity-history__cta {
+    color: var(--cgb-navy-900, #0b2856) !important;
+    font-weight: 650 !important;
+  }
+
 }
 
 @media (max-width: 899px) and (orientation: portrait) {
@@ -281,7 +338,8 @@
   body[data-view="detail"],
   body[data-command-surface="search"],
   body[data-command-surface="add"],
-  body[data-command-surface="list"] {
+  body[data-command-surface="list"],
+  body[data-command-surface="about"] {
     --header-height: calc(94px + env(safe-area-inset-top, 0px));
   }
 
@@ -289,7 +347,8 @@
   body[data-view="detail"] .site-header,
   body[data-command-surface="search"] .site-header,
   body[data-command-surface="add"] .site-header,
-  body[data-command-surface="list"] .site-header {
+  body[data-command-surface="list"] .site-header,
+  body[data-command-surface="about"] .site-header {
     height: var(--header-height) !important;
     min-height: var(--header-height) !important;
     display: block !important;
@@ -372,7 +431,8 @@
 
   body[data-command-surface="search"] .opening-stat,
   body[data-command-surface="add"] .opening-stat,
-  body[data-command-surface="list"] .opening-stat {
+  body[data-command-surface="list"] .opening-stat,
+  body[data-command-surface="about"] .opening-stat {
     display: none !important;
   }
 }

@@ -18,7 +18,6 @@ import {
   rankNearbyVenues,
   rankVenues,
   resolveGameRouteParam,
-  resolveTrayState,
   selectDefaultGame,
   shareOrCopy,
   validateSnapshotShape,
@@ -94,6 +93,7 @@ function cacheDom() {
     searchDropdown: document.querySelector('#search-dropdown'),
     suggestions: document.querySelector('#search-suggestions'),
     addLocationSearch: document.querySelector('#search-add-location-button'),
+    nearMe: document.querySelector('#near-me-button'),
     tray: document.querySelector('#venue-tray'),
     trayHandle: document.querySelector('#tray-handle'),
     trayPeek: document.querySelector('#tray-peek'),
@@ -522,9 +522,8 @@ function selectVenue(venueId) {
 }
 
 function trayHandleLabel(next) {
-  if (next === 'full') return 'Collapse location tray';
-  if (next === 'selected') return 'Show all locations';
-  return 'Expand location tray';
+  if (next === 'peek') return 'Location tray collapsed';
+  return 'Collapse to mini profile';
 }
 
 function setTrayState(next) {
@@ -541,11 +540,6 @@ function setTrayState(next) {
   requestAnimationFrame(() => state.map?.resize());
   if (changed) scheduleSelectedVenueVisibility();
   return changed;
-}
-
-function applyTrayAction(action) {
-  const next = resolveTrayState(state.trayState, action, Boolean(state.selectedVenueId));
-  setTrayState(next);
 }
 
 function formatDistance(distance) {
@@ -702,7 +696,7 @@ function createActionRow(venue, { details = true } = {}) {
     const detail = document.createElement('a');
     detail.className = 'secondary-button';
     detail.href = buildVenueUrl(venue.slug, selectedGame(), location.href);
-    detail.textContent = 'View details';
+    detail.textContent = 'More About This Location';
     row.append(detail);
   }
 
@@ -1182,6 +1176,35 @@ function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
   return true;
 }
 
+function locateOnMap() {
+  if (!isMobileLayout()) return;
+  if (!normalizedUserLocation(state.origin) && showNearbyLocations({ trayState: 'peek', focus: true })) return;
+  if (!navigator.geolocation) return showStatus('Location is not available in this browser');
+
+  dom.nearMe.disabled = true;
+  showStatus('Finding your location…', 5000);
+  navigator.geolocation.getCurrentPosition((position) => {
+    state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
+    rememberNearbyOrigin();
+    state.listQuery = '';
+    state.detailMode = false;
+    dom.searchInput.value = '';
+    dom.searchDropdown.hidden = true;
+    setTrayState('peek');
+    updateRouteForGame();
+    const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
+    renderAll();
+    requestAnimationFrame(() => focusLocation(state.origin, nearby));
+    dom.nearMe.disabled = false;
+    showStatus(nearby.length
+      ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
+      : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
+  }, () => {
+    dom.nearMe.disabled = false;
+    showStatus('Location permission was not available');
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
+}
+
 function focusReturnedDetailVenue(venue) {
   const longitude = Number(venue?.longitude);
   const latitude = Number(venue?.latitude);
@@ -1355,14 +1378,10 @@ function wireTrayDrag() {
     if (startY === null || event.pointerId !== pointerId) return;
     const delta = event.clientY - startY;
     reset();
-    if (delta < -TRAY_SWIPE_THRESHOLD) {
+    if (Math.abs(delta) > TRAY_SWIPE_THRESHOLD) {
       suppressNextClick = true;
       window.setTimeout(() => { suppressNextClick = false; }, 0);
-      applyTrayAction('up');
-    } else if (delta > TRAY_SWIPE_THRESHOLD) {
-      suppressNextClick = true;
-      window.setTimeout(() => { suppressNextClick = false; }, 0);
-      applyTrayAction('down');
+      setTrayState('peek');
     }
   });
 
@@ -1374,7 +1393,7 @@ function wireTrayDrag() {
       event.preventDefault();
       return;
     }
-    applyTrayAction('toggle');
+    setTrayState('peek');
   });
 }
 
@@ -1439,6 +1458,7 @@ function wireEvents() {
       showStatus('Location permission was not available');
     }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   });
+  dom.nearMe?.addEventListener('click', locateOnMap);
   dom.aboutButton.addEventListener('click', () => dom.aboutDialog.showModal());
   wireTrayDrag();
   observeTrayLayout();

@@ -160,7 +160,7 @@ function isDirectionsLink(element) {
 function isShareButton(element) {
   if (!element?.matches?.('button')) return false;
   if (element.matches('.detail-share')) return true;
-  return element.closest('.action-row') && /^(Share|Invite more|Share Watch Party)$/i.test(element.textContent.trim());
+  return element.closest('.action-row') && /^(Share|Invite Others|Share Watch Party)$/i.test(element.textContent.trim());
 }
 
 function handleFlowClick(event, windowObject) {

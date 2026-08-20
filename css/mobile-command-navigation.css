@@ -1,10 +1,19 @@
-/* Milestone 8A — mobile Map / Search / Add / List information architecture. */
+/* Milestone 8A — mobile Map / Search / Add / List / About information architecture. */
 .command-surface {
   display: none;
 }
 
-.desktop-locations-guidance {
-  display: none;
+.location-card__top > div {
+  flex: 1 1 auto;
+}
+
+.location-card .venue-badges {
+  flex-wrap: nowrap;
+}
+
+.location-card__count {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 @media (max-width: 899px) {
@@ -143,7 +152,7 @@
     grid-template-columns: repeat(2, max-content);
     align-items: center;
     gap: 2px;
-    margin: 0 0 -5px 10px;
+    margin: 10px 0 0;
     padding: 2px;
     color: var(--cgb-navy-900);
     background: var(--cgb-navy-50);
@@ -473,7 +482,7 @@
   }
 
   .mobile-command-bar {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .mobile-command {
@@ -553,10 +562,10 @@
 
   .venue-tray .tray-list__header {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: 10px;
-    padding: 13px 16px 4px;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 8px;
+    padding: 13px 16px 10px;
     background: var(--cgb-white, #fff);
     border-bottom: 0;
     backdrop-filter: none;
@@ -570,6 +579,14 @@
   .venue-tray .tray-list__header h2 {
     margin-top: 2px;
     font-size: 1.08rem;
+  }
+
+  .venue-tray .tray-list__intro {
+    max-width: 34rem;
+    margin: 5px 0 0;
+    color: var(--cgb-ink-500, #657083);
+    font-size: .69rem;
+    line-height: 1.35;
   }
 
   .venue-tray .tray-list__toolbar {
@@ -601,6 +618,7 @@
     font-weight: 800;
     line-height: 1;
     text-decoration: none;
+    justify-self: end;
   }
 
   .venue-tray .list-location-toggle__option {
@@ -631,30 +649,6 @@
   .venue-tray .list-location-toggle__option:focus-visible {
     outline: 2px solid var(--cgb-gold-400);
     outline-offset: 0;
-  }
-
-  .desktop-locations-guidance {
-    display: grid;
-    gap: 2px;
-    padding: 9px 16px 10px;
-    color: var(--cgb-ink-700, #3d485c);
-    background: var(--cgb-neutral-50, #f7f7f7);
-    border-top: 1px solid var(--cgb-neutral-200, #dfe3e8);
-    border-bottom: 1px solid var(--cgb-neutral-200, #dfe3e8);
-  }
-
-  .desktop-locations-guidance strong {
-    color: var(--cgb-navy-950, #010133);
-    font-family: var(--font-display);
-    font-size: .9rem;
-    line-height: 1.1;
-  }
-
-  .desktop-locations-guidance p {
-    margin: 0;
-    color: var(--cgb-ink-500, #657083);
-    font-size: .69rem;
-    line-height: 1.35;
   }
 
   .mobile-command-bar {
@@ -696,7 +690,8 @@
   }
 
   #mobile-search-button,
-  #mobile-add-button {
+  #mobile-add-button,
+  #mobile-about-button {
     display: none;
   }
 
@@ -705,6 +700,8 @@
     grid-column: 1;
     width: 100%;
     justify-content: center;
+    align-items: center;
+    text-align: center;
     border: 1px solid rgba(1, 1, 51, .18);
     border-radius: 9px 0 0 9px;
   }
@@ -714,6 +711,8 @@
     grid-column: 2;
     width: 100%;
     justify-content: center;
+    align-items: center;
+    text-align: center;
     border: 1px solid rgba(1, 1, 51, .18);
     border-left: 0;
     border-radius: 0 9px 9px 0;
