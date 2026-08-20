@@ -282,7 +282,7 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_64902a48440e55522742d631&__cgb_prejoined=1&__cgb_harness=direct',
+    path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=syracuse&__cgb_prejoined=1&__cgb_harness=direct',
     marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Production TBD direct-route refresh harness',
     virtualTimeBudget: 30000
@@ -304,14 +304,14 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_prejoined=1&__cgb_harness=direct',
+    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=ucla&__cgb_prejoined=1&__cgb_harness=direct',
     marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Production direct-route refresh harness',
     virtualTimeBudget: 30000
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=bear-territory-test-cafe-alameda&game=game_9e8f4860c6a256c0fae6007d&__cgb_harness=direct',
+    path: '/__cgb_production_runtime__?venue=bear-territory-test-cafe-alameda&game=ucla&__cgb_harness=direct',
     marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Small-portrait fan-added Watch Party Detail harness',
     virtualTimeBudget: 30000,
@@ -319,7 +319,7 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=california-test-grill-san-francisco&game=game_64902a48440e55522742d631&__cgb_harness=direct',
+    path: '/__cgb_production_runtime__?venue=california-test-grill-san-francisco&game=syracuse&__cgb_harness=direct',
     marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Short-landscape plain fan-added Detail harness',
     virtualTimeBudget: 30000,
@@ -335,7 +335,7 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_prejoined=1&__cgb_harness=desktop-direct',
+    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=ucla&__cgb_prejoined=1&__cgb_harness=desktop-direct',
     marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
     label: 'Desktop production direct-route refresh harness',
     virtualTimeBudget: 30000,
