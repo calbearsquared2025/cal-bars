@@ -150,10 +150,7 @@ function moveEditorialDescription(detail, hero, documentObject) {
   }
   description.className = 'detail-editorial__copy';
   section.append(description);
-
-  const activity = detail.querySelector(':scope > .activity-card');
-  if (activity) activity.after(section);
-  else hero.after(section);
+  hero.after(section);
   return true;
 }
 
