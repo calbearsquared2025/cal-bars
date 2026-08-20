@@ -1,5 +1,9 @@
 /* Milestone 8A — authoritative mobile interaction and visual correction layer. */
 
+.map-actions {
+  display: none;
+}
+
 /* MapLibre owns the outer marker transform. Never animate it or pins lag behind the map. */
 .maplibregl-marker.cgb-marker,
 .cgb-marker {
@@ -113,6 +117,61 @@
 }
 
 @media (max-width: 899px) {
+  :root {
+    --cgb-mobile-safe-surface: #eef4fa;
+  }
+
+  html,
+  body,
+  body .site-header,
+  body .mobile-command-bar {
+    background-color: var(--cgb-mobile-safe-surface) !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .map-actions {
+    position: fixed;
+    z-index: 80;
+    top: var(--map-action-top, calc(100dvh - var(--footer-height) - 156px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    bottom: auto;
+    display: grid;
+    pointer-events: auto;
+    transition: top var(--motion-standard, 220ms) ease;
+  }
+
+  .map-actions #near-me-button {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0;
+    color: var(--cgb-navy-950);
+    background: rgba(255, 255, 255, .96);
+    border: 1px solid rgba(1, 1, 51, .16);
+    border-radius: 50%;
+    clip-path: none;
+    box-shadow: 0 6px 16px rgba(1, 1, 51, .18);
+    font-size: 0;
+  }
+
+  .map-actions #near-me-button .ui-icon {
+    width: 19px;
+    height: 19px;
+    transform: translate(-1px, 1px);
+  }
+
+  .map-actions #near-me-button:hover,
+  .map-actions #near-me-button:focus-visible {
+    color: var(--cgb-navy-950);
+    background: var(--cgb-gold-400);
+    border-color: var(--cgb-gold-500);
+  }
+
+  body:not([data-command-surface="map"]) .map-actions,
+  body:not([data-view="map"]) .map-actions {
+    display: none;
+  }
+
   /* Preserve descenders such as the g in Wagner. */
   .game-button strong,
   #header-game-label {
@@ -187,7 +246,8 @@
   }
 
   body[data-command-surface="search"] .command-surface:not([hidden]),
-  body[data-command-surface="add"] .command-surface:not([hidden]) {
+  body[data-command-surface="add"] .command-surface:not([hidden]),
+  body[data-command-surface="about"] .command-surface:not([hidden]) {
     inset: var(--header-height) 0 calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px)) 0;
   }
 

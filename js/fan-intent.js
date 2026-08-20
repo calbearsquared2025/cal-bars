@@ -195,7 +195,7 @@ function renderIntentButton(button) {
   const row = button.closest('.action-row');
   const share = row?.querySelector(':scope > button.secondary-button');
   if (share) {
-    const label = isSelected ? 'Invite more' : 'Share';
+    const label = isSelected ? 'Invite Others' : 'Share';
     const icon = share.querySelector('.ui-icon');
     share.replaceChildren(...(icon ? [icon] : []), label);
     share.setAttribute('aria-label', label);
@@ -207,6 +207,24 @@ function renderIntentButton(button) {
 
 function replaceTextLines(element, lines) {
   element.replaceChildren();
+  const seasonPrompt = element.classList.contains('venue-activity-history') &&
+    lines.length === 2 &&
+    /last season\.$/i.test(lines[0]) &&
+    /^Be part of the \d{4} season\.$/i.test(lines[1]);
+  element.classList.toggle('venue-activity-history--season-prompt', seasonPrompt);
+
+  if (seasonPrompt) {
+    lines.forEach((line, index) => {
+      const copy = document.createElement('span');
+      copy.className = index === 0
+        ? 'venue-activity-history__history'
+        : 'venue-activity-history__cta';
+      copy.textContent = line;
+      element.append(copy);
+    });
+    return;
+  }
+
   lines.forEach((line, index) => {
     if (index > 0) element.append(document.createElement('br'));
     element.append(document.createTextNode(line));

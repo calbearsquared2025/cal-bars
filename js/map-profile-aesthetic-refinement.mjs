@@ -89,12 +89,12 @@ function installStyles() {
       }
 
       .mobile-command-bar {
-        background: color-mix(in srgb, var(--cgb-navy-50) 92%, white 8%) !important;
+        background: var(--cgb-mobile-safe-surface, #eef4fa) !important;
       }
 
       @supports not (background: color-mix(in srgb, white, black)) {
         .mobile-command-bar {
-          background: #f4f7ff !important;
+          background: var(--cgb-mobile-safe-surface, #eef4fa) !important;
         }
       }
 

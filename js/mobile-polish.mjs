@@ -1,16 +1,11 @@
-import { NEARBY_RADIUS_MILES } from './core.mjs';
-
 const MOBILE_QUERY = '(max-width: 899px)';
-const VALID_VIEWS = new Set(['map', 'search', 'add', 'list']);
+const VALID_VIEWS = new Set(['map', 'search', 'add', 'list', 'about']);
+const MAP_ACTION_GAP = 14;
 let activeView = 'map';
 let openingList = false;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
-}
-
-function appState() {
-  return window.CGBApp?.getState?.() || null;
 }
 
 function numericText(element) {
@@ -42,12 +37,11 @@ function updateStatistics() {
 
 function updateListHeading() {
   if (!isMobile()) return;
-  const state = appState();
   const heading = document.querySelector('#list-heading');
   const eyebrow = document.querySelector('.tray-list__header .eyebrow');
-  if (!state || !heading || !eyebrow || state.listQuery) return;
-  heading.textContent = state.origin ? 'Nearby' : 'Locations';
-  eyebrow.textContent = state.origin ? `Within ${NEARBY_RADIUS_MILES} miles` : 'Browse';
+  if (!heading || !eyebrow) return;
+  heading.textContent = 'Find your Cal crowd';
+  eyebrow.textContent = 'Browse';
 }
 
 function normalizeSearchLabels() {
@@ -59,15 +53,45 @@ function normalizeSearchLabels() {
     .forEach((note) => { note.textContent = 'Not yet listed in Cal Golden Bars.'; });
 }
 
+function updateMapActionPosition() {
+  const actions = document.querySelector('.map-actions');
+  const tray = document.querySelector('#venue-tray');
+  if (!actions || !tray || !isMobile()) return;
+  if (document.body.dataset.view !== 'map' || document.body.dataset.commandSurface !== 'map') return;
+  if (getComputedStyle(tray).display === 'none') return;
+
+  // The mini tray has fixed CSS geometry. Leaving its anchor in CSS lets iPhone
+  // Safari follow the dynamic viewport while the address bar expands or collapses.
+  if (tray.dataset.state === 'peek') {
+    actions.style.removeProperty('--map-action-bottom');
+    actions.style.removeProperty('--map-action-top');
+    return;
+  }
+
+  const trayTop = tray.getBoundingClientRect().top;
+  const actionHeight = actions.getBoundingClientRect().height || 46;
+  if (!Number.isFinite(trayTop) || !Number.isFinite(actionHeight)) return;
+
+  const top = Math.max(MAP_ACTION_GAP, trayTop - actionHeight - MAP_ACTION_GAP);
+  actions.style.removeProperty('--map-action-bottom');
+  actions.style.setProperty('--map-action-top', `${Math.round(top)}px`);
+}
+
+function scheduleMapActionPosition() {
+  requestAnimationFrame(updateMapActionPosition);
+}
+
 function setActiveView(next) {
   if (!isMobile() || !VALID_VIEWS.has(next)) return;
   activeView = next;
   document.body.dataset.commandSurface = next;
+  scheduleMapActionPosition();
 }
 
 function visibleSurface() {
   if (!document.querySelector('#search-surface')?.hidden) return 'search';
   if (!document.querySelector('#add-surface')?.hidden) return 'add';
+  if (!document.querySelector('#about-surface')?.hidden) return 'about';
   return '';
 }
 
@@ -91,16 +115,13 @@ function openListFromMap(event) {
   requestAnimationFrame(() => { openingList = false; });
 }
 
-function handleTrayControl(event) {
-  const tray = document.querySelector('#venue-tray');
-  if (!isMobile() || activeView !== 'map' || tray?.dataset.state !== 'peek') return;
-  openListFromMap(event);
-}
-
 function scheduleSync() {
   requestAnimationFrame(() => {
     sync();
-    requestAnimationFrame(syncNavigation);
+    requestAnimationFrame(() => {
+      syncNavigation();
+      updateMapActionPosition();
+    });
   });
 }
 
@@ -108,6 +129,7 @@ function sync() {
   updateStatistics();
   updateListHeading();
   normalizeSearchLabels();
+  updateMapActionPosition();
 }
 
 function initializeNavigation() {
@@ -115,15 +137,16 @@ function initializeNavigation() {
   const searchButton = document.querySelector('#mobile-search-button');
   const addButton = document.querySelector('#mobile-add-button');
   const listButton = document.querySelector('#mobile-list-button');
+  const aboutButton = document.querySelector('#mobile-about-button');
 
   mapButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('map')));
   searchButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('search')));
   addButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('add')));
   listButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('list')));
+  aboutButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('about')));
 
   document.querySelector('#browse-locations-button')?.addEventListener('click', openListFromMap, { capture: true });
   const trayHandle = document.querySelector('#tray-handle');
-  trayHandle?.addEventListener('click', handleTrayControl, { capture: true });
   trayHandle?.addEventListener('pointerup', scheduleSync);
   document.querySelector('#close-list-button')?.addEventListener('click', scheduleSync);
   document.querySelectorAll('[data-command-close]').forEach((button) => {
@@ -136,6 +159,8 @@ function initialize() {
   document.querySelector('#location-query')?.addEventListener('input', () => requestAnimationFrame(normalizeSearchLabels));
   document.querySelector('#location-search')?.addEventListener('submit', () => requestAnimationFrame(normalizeSearchLabels));
 
+  window.addEventListener('resize', scheduleMapActionPosition);
+  window.visualViewport?.addEventListener?.('resize', scheduleMapActionPosition);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleSync);
   sync();
   syncNavigation();

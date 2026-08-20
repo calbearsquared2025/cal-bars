@@ -11,24 +11,28 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      /* Add and List are opaque peer tab surfaces; Search first-paint rules are static CSS. */
+      /* Add, List, and About are opaque peer tab surfaces; Search first-paint rules are static CSS. */
       body[data-command-surface="add"] #map,
-      body[data-command-surface="list"] #map {
+      body[data-command-surface="list"] #map,
+      body[data-command-surface="about"] #map {
         visibility: hidden !important;
       }
 
       body[data-command-surface="add"] #map-view,
-      body[data-command-surface="list"] #map-view {
+      body[data-command-surface="list"] #map-view,
+      body[data-command-surface="about"] #map-view {
         background: var(--cgb-warm-50) !important;
       }
 
-      body[data-command-surface="add"] .command-surface:not([hidden]) {
+      body[data-command-surface="add"] .command-surface:not([hidden]),
+      body[data-command-surface="about"] .command-surface:not([hidden]) {
         z-index: 47 !important;
         inset: var(--header-height) 0 var(--footer-height) 0 !important;
         background: var(--cgb-warm-50) !important;
       }
 
-      body[data-command-surface="add"] #map-view > #venue-tray {
+      body[data-command-surface="add"] #map-view > #venue-tray,
+      body[data-command-surface="about"] #map-view > #venue-tray {
         display: none !important;
       }
 
@@ -39,6 +43,10 @@ function installStyles() {
       /* All destination headers use the same optional-action grid. */
       .mobile-destination-header {
         grid-template-columns: minmax(0, 1fr) auto !important;
+      }
+
+      body[data-command-surface="list"] .tray-list__header.mobile-destination-header {
+        grid-template-columns: minmax(0, 1fr) !important;
       }
 
       /* Mobile List uses its header action and does not reserve the legacy

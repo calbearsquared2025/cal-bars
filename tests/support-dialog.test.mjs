@@ -37,3 +37,17 @@ test('desktop footer About uses the consolidated anchored popover treatment', ()
   assert.match(script, /aboutDialog\.classList\.add\('about-dialog--footer-popover'\)[\s\S]*aboutDialog\.show\(\)/);
   assert.match(styles, /@media \(min-width: 900px\)[\s\S]*\.about-dialog\.about-dialog--footer-popover[\s\S]*position: fixed/);
 });
+
+test('About popup is compact, privacy-forward, and positioned left of Locations', () => {
+  const aboutMarkup = html.match(/<dialog id="about-dialog"[\s\S]*?<\/dialog>/)?.[0] || '';
+  assert.doesNotMatch(aboutMarkup, /<h2>About Cal Golden Bars<\/h2>\s*<button[^>]*aria-label="Close"/);
+  assert.match(aboutMarkup, /Going somewhere[^<]*Plan a Watch Party so others can find you\.<\/p>/);
+  assert.doesNotMatch(aboutMarkup, /<strong>Plan a Watch Party<\/strong>/);
+  assert.match(aboutMarkup, /<small class="about-privacy"><em>Cal Golden Bars does not collect names or attendee lists\.<\/em><\/small>/);
+  assert.match(script, /venueTray\?\.getBoundingClientRect\(\)/);
+  assert.match(script, /trayRect \? trayRect\.left - width - ABOUT_POPOVER_GAP/);
+  assert.match(script, /window\.innerHeight - trayRect\.bottom/);
+  assert.match(script, /--about-popover-bottom/);
+  assert.match(styles, /width: min\(440px, calc\(100vw - 32px\)\)/);
+  assert.match(styles, /overflow: visible/);
+});
