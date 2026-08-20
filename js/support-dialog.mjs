@@ -5,15 +5,8 @@ function initializeSupportDialog() {
   const frame = document.querySelector('#kofiframe');
   const aboutDialog = document.querySelector('#about-dialog');
   const footerAboutButton = document.querySelector('#about-button');
-  const footerSupportButton = document.querySelector('.site-footer [data-support-open]');
   const openButtons = Array.from(document.querySelectorAll('[data-support-open]'));
   if (!dialog || !frame || openButtons.length === 0) return;
-
-  if (footerSupportButton) {
-    const separator = footerSupportButton.previousElementSibling;
-    footerSupportButton.hidden = true;
-    if (separator?.getAttribute('aria-hidden') === 'true') separator.hidden = true;
-  }
 
   const clearAboutPopover = () => {
     aboutDialog?.classList.remove('about-dialog--footer-popover');
