@@ -165,11 +165,15 @@ test('photo-present Profile uses the existing enhancement and tears down the loc
   assert.match(detailCss, /#tray-selected > #venue-detail \.detail-photo__frame[\s\S]*aspect-ratio: 16 \/ 10/);
 });
 
-test('Profile identity keeps Directions, website, address, and description in one hierarchy', () => {
-  assert.match(app, /addressActions\.className = 'detail-address-actions'/);
-  assert.match(app, /directions\.className = 'detail-directions-inline'/);
-  assert.match(app, /website\.className = 'detail-website-inline'/);
-  assert.match(app, /hero\.append\(addressActions\)[\s\S]*description\.className = 'detail-description'[\s\S]*hero\.append\(description\)/);
+test('Profile identity uses one actionable location line and keeps website and description subordinate', () => {
+  const profileSource = app.match(/function renderVenueProfile\(\)[\s\S]*?function emitRendered/)?.[0] || '';
+  assert.match(profileSource, /const streetAddress = \[venue\.address_line_1, venue\.address_line_2\]\.filter\(Boolean\)\.join\(', '\)/);
+  assert.match(profileSource, /const addressLabel = \(streetAddress[\s\S]*\[venue\.city, venue\.region\]\.filter\(Boolean\)\.join\(', '\)/);
+  assert.match(profileSource, /directions\.href = directionsUrl\(venue\)/);
+  assert.match(profileSource, /directions\.append\(createIcon\('directions'\), document\.createTextNode\(addressLabel\)\)[\s\S]*address\.append\(directions\)[\s\S]*hero\.append\(address\)/);
+  assert.doesNotMatch(profileSource, /city\.className = 'detail-city'|city\.textContent/);
+  assert.doesNotMatch(profileSource, /addressActions\.append\(directions\)/);
+  assert.match(profileSource, /if \(venue\.website_url\)[\s\S]*website\.className = 'detail-website-inline'[\s\S]*hero\.append\(addressActions\)/);
   assert.match(detailCss, /#tray-selected > #venue-detail \.detail-address/);
 });
 
