@@ -4,7 +4,6 @@ import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
-import { createIcon } from './icons.mjs';
 
 function issueConfig() {
   const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
@@ -46,7 +45,13 @@ function renderParty(party, index, total, snapshot, { detail = false } = {}) {
   module.append(title);
 
   appendText(module, watchPartyGameContext(snapshot, party), 'party-game-context');
-  appendText(module, `Hosted by ${party.organizer_name}`);
+
+  const hosted = document.createElement('p');
+  hosted.append(document.createTextNode('Hosted by '));
+  const hostName = document.createElement('strong');
+  hostName.textContent = party.organizer_name;
+  hosted.append(hostName);
+  module.append(hosted);
 
   if (party.event_start_at) {
     const start = new Date(party.event_start_at);
@@ -71,8 +76,7 @@ function renderParty(party, index, total, snapshot, { detail = false } = {}) {
     link.href = party.official_event_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    if (detail) link.append(createIcon('external'), document.createTextNode('External event details'));
-    else link.textContent = 'Open event information';
+    link.textContent = detail ? 'External event details' : 'Open event information';
     module.append(link);
   }
 
