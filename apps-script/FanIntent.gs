@@ -15,13 +15,17 @@ function doPost(event) {
     const action = inspectPostAction_(event);
     const request = action === 'joinExternalVenue'
       ? parseJoinExternalVenueRequest_(event)
-      : parseFanIntentRequest_(event);
+      : action === 'addExternalVenue'
+        ? parseAddExternalVenueRequest_(event)
+        : parseFanIntentRequest_(event);
     const lock = LockService.getScriptLock();
     lock.waitLock(CGB_FAN_INTENT_LOCK_TIMEOUT_MS);
     try {
       const response = action === 'joinExternalVenue'
         ? processJoinExternalVenueRequest_(request)
-        : processFanIntentRequest_(request);
+        : action === 'addExternalVenue'
+          ? processAddExternalVenueRequest_(request)
+          : processFanIntentRequest_(request);
       return jsonResponse_(response);
     } finally {
       lock.releaseLock();
