@@ -37,7 +37,6 @@ function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
   if (label === 'view details' || label === 'details') return 'details';
-  if (label === 'share' || label === 'share watch party' || label === 'invite more') return 'share';
   return null;
 }
 
@@ -48,12 +47,8 @@ function clarifyShareLabels(root = document) {
     if (!share) return;
     const container = row.parentElement;
     const detail = Boolean(row.closest('#venue-detail'));
-    if (detail && share.classList.contains('detail-share')) return;
     const hasWatchParty = Boolean(container?.querySelector(':scope > .party-module'));
-    const icon = share.querySelector('.ui-icon');
-    share.replaceChildren();
-    if (icon) share.append(icon);
-    share.append(document.createTextNode(detail ? 'Share' : hasWatchParty ? 'Share Watch Party' : 'Share'));
+    share.replaceChildren(document.createTextNode(detail ? 'Share' : hasWatchParty ? 'Share Watch Party' : 'Share'));
   });
 }
 
@@ -194,8 +189,6 @@ export function upgradeRenderedIcons(root = document) {
   });
 
   root.querySelectorAll('.venue-website').forEach((link) => prependIcon(link, 'external'));
-  root.querySelectorAll('.party-module a[target="_blank"]:not(.party-module__report)')
-    .forEach((link) => appendIcon(link, 'external'));
 }
 
 function runRefinements() {
