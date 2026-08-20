@@ -23,8 +23,96 @@
   text-align: center;
 }
 
+.watch-party-attendance-handoff {
+  width: min(92vw, 420px);
+  max-width: 420px;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--navy, #002676);
+  box-shadow: 0 24px 70px rgba(0, 18, 56, .24);
+}
+
+.watch-party-attendance-handoff::backdrop {
+  background: rgba(0, 18, 56, .52);
+  backdrop-filter: blur(3px);
+}
+
+.watch-party-attendance-handoff__panel {
+  position: relative;
+  display: grid;
+  gap: .85rem;
+  padding: 1.35rem;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.watch-party-attendance-handoff__close {
+  position: absolute;
+  top: .65rem;
+  right: .7rem;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.watch-party-attendance-handoff__eyebrow {
+  margin: 0;
+  padding-right: 2.5rem;
+  color: var(--navy, #002676);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+}
+
+.watch-party-attendance-handoff h2,
+.watch-party-attendance-handoff__copy {
+  margin: 0;
+}
+
+.watch-party-attendance-handoff h2 {
+  padding-right: 2rem;
+  font-size: clamp(1.35rem, 5vw, 1.7rem);
+  line-height: 1.15;
+}
+
+.watch-party-attendance-handoff__copy {
+  color: rgba(0, 38, 118, .78);
+  line-height: 1.45;
+}
+
+.watch-party-attendance-handoff__actions {
+  display: grid;
+  gap: .7rem;
+  margin-top: .15rem;
+}
+
+.watch-party-attendance-handoff__actions > button {
+  width: 100%;
+  min-height: 48px;
+}
+
 @media (max-width: 599px) {
   .watch-party-contribution__action {
     width: 100%;
+  }
+
+  .watch-party-attendance-handoff {
+    width: calc(100vw - 24px);
+    max-width: none;
+    margin: auto 12px 12px;
+  }
+
+  .watch-party-attendance-handoff__panel {
+    padding: 1.2rem;
   }
 }
