@@ -3,12 +3,14 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [html, shellControls, commandCss, mobilePolish, locationRefinement] = await Promise.all([
+const [html, shellControls, commandCss, mobilePolish, locationRefinement, app, appState] = await Promise.all([
   read('../index.html'),
   read('../js/shell-controls.mjs'),
   read('../css/mobile-command-navigation.css'),
   read('../js/mobile-polish.mjs'),
-  read('../js/mobile-tab-location-refinement.mjs')
+  read('../js/mobile-tab-location-refinement.mjs'),
+  read('../js/app.js'),
+  read('../js/app-state.mjs')
 ]);
 
 test('desktop map toolbar separates Search, Near me, and Add location', () => {
@@ -47,12 +49,18 @@ test('desktop Locations presents nearby state and guidance as one compact browse
 });
 
 test('desktop Show all can return to Nearby without requesting location again', () => {
-  assert.match(locationRefinement, /let rememberedLocation = null/);
-  assert.match(locationRefinement, /function handleDesktopClearSearchClick[\s\S]*showAllLocations\(\)/);
-  assert.match(locationRefinement, /function showAllLocations\(\)[\s\S]*rememberedLocation = activeUserLocation[\s\S]*state\.origin = null/);
-  assert.match(locationRefinement, /function syncNearMeControl[\s\S]*'Show nearby'/);
-  assert.match(locationRefinement, /function handleLocateClick[\s\S]*locationFilterSuppressed && rememberedLocation[\s\S]*showNearbyLocations\(isMobile\(\) \? 'map' : 'list'\)/);
-  assert.match(locationRefinement, /function showNearbyLocations[\s\S]*state\.origin = \{ \.\.\.rememberedLocation \}/);
+  assert.match(appState, /nearbyOrigin: null/);
+  assert.match(app, /function showAllLocations\(\)[\s\S]*rememberNearbyOrigin\(\)[\s\S]*state\.origin = null[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('full'\)[\s\S]*renderAll\(\)/);
+  assert.match(app, /function showNearbyLocations[\s\S]*state\.origin = \{ \.\.\.remembered \}[\s\S]*state\.detailMode = false[\s\S]*renderAll\(\)/);
+  assert.match(app, /dom\.nearMe\.addEventListener\('click'[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation\.getCurrentPosition/);
+  assert.match(locationRefinement, /function syncNearMeControl[\s\S]*state\?\.nearbyOrigin[\s\S]*'Show nearby'/);
+  assert.doesNotMatch(locationRefinement, /handleDesktopClearSearchClick|rememberedLocation|locationFilterSuppressed/);
+});
+
+test('desktop Locations is a canonical browse transition that does not re-enter a retained Venue profile', () => {
+  assert.match(app, /function showLocations\(\)[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('full'\)[\s\S]*renderAll\(\)/);
+  assert.match(app, /!mobile && state\.selectedVenueId && !state\.detailMode && state\.trayState !== 'full'/);
+  assert.match(shellControls, /function showList\(\)[\s\S]*CGBApp\?\.showLocations[\s\S]*CGBApp\.showLocations\(\)/);
 });
 
 test('desktop browse heading is no longer overwritten by the mobile Nearby heading refinement', () => {

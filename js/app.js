@@ -180,6 +180,19 @@ function selectedVenue() {
   return state.snapshot.venues.find((venue) => venue.venue_id === state.selectedVenueId) || null;
 }
 
+function normalizedUserLocation(origin = state.origin) {
+  const lat = Number(origin?.lat);
+  const lon = Number(origin?.lon);
+  if (origin?.label !== 'your location' || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return { lat, lon, label: 'your location' };
+}
+
+function rememberNearbyOrigin(origin = state.origin) {
+  const location = normalizedUserLocation(origin);
+  if (location) state.nearbyOrigin = location;
+  return state.nearbyOrigin;
+}
+
 function initializeRoute() {
   const params = new URLSearchParams(location.search);
   const requestedGame = params.get('game');
@@ -1083,7 +1096,7 @@ function renderAll() {
   renderGameDialog();
   const mobile = isMobileLayout();
 
-  if (!mobile && state.selectedVenueId && !state.detailMode) {
+  if (!mobile && state.selectedVenueId && !state.detailMode && state.trayState !== 'full') {
     state.detailMode = true;
   }
 
@@ -1105,6 +1118,49 @@ function renderAll() {
     else initMap();
   }
   emitRendered();
+}
+
+function showLocations() {
+  state.detailMode = false;
+  setTrayState('full');
+  updateRouteForGame();
+  renderAll();
+}
+
+function showAllLocations() {
+  const savedLocation = Boolean(rememberNearbyOrigin());
+  state.listQuery = '';
+  state.origin = null;
+  dom.searchInput.value = '';
+  dom.suggestions.hidden = true;
+  state.detailMode = false;
+  setTrayState('full');
+  updateRouteForGame();
+  renderAll();
+  showStatus(savedLocation
+    ? 'Showing all mapped locations. Your location is saved for Nearby.'
+    : 'Showing all mapped locations');
+  return savedLocation;
+}
+
+function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
+  const remembered = normalizedUserLocation(state.nearbyOrigin);
+  if (!remembered) return false;
+  state.nearbyOrigin = remembered;
+  state.origin = { ...remembered };
+  state.listQuery = '';
+  dom.searchInput.value = '';
+  dom.suggestions.hidden = true;
+  state.detailMode = false;
+  setTrayState(trayState);
+  updateRouteForGame();
+  const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
+  renderAll();
+  if (focus) requestAnimationFrame(() => focusLocation(state.origin, nearby));
+  showStatus(nearby.length
+    ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles using your saved location`
+    : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your saved location`);
+  return true;
 }
 
 function focusReturnedDetailVenue(venue) {
@@ -1259,16 +1315,7 @@ function renderSuggestions() {
 }
 
 function clearSearchResults() {
-  state.listQuery = '';
-  state.origin = null;
-  dom.searchInput.value = '';
-  dom.suggestions.hidden = true;
-  renderUserMarker();
-  renderLocationList();
-  renderMarkers();
-  setTrayState('full');
-  showStatus('Showing all mapped locations');
-  emitRendered();
+  showAllLocations();
 }
 
 function wireTrayDrag() {
@@ -1341,11 +1388,13 @@ function wireEvents() {
     if (!dom.searchForm.contains(event.target)) dom.suggestions.hidden = true;
   });
   dom.nearMe.addEventListener('click', () => {
+    if (!normalizedUserLocation(state.origin) && showNearbyLocations()) return;
     if (!navigator.geolocation) return showStatus('Location is not available in this browser');
     dom.nearMe.disabled = true;
     showStatus('Finding your location…', 5000);
     navigator.geolocation.getCurrentPosition((position) => {
       state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
+      rememberNearbyOrigin();
       state.listQuery = '';
       renderUserMarker();
       const nearby = rankedVisibleVenues();
@@ -1403,6 +1452,9 @@ window.CGBApp = Object.freeze({
   render: renderAll,
   refreshSnapshot,
   focusLocation,
+  showAllLocations,
+  showNearbyLocations,
+  showLocations,
   restoreSelection,
   selectGame,
   shareVenue,

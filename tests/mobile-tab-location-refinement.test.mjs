@@ -52,20 +52,20 @@ test('Locate Me stays on Map and restores Nearby preview', () => {
 });
 
 test('mobile List toggles Nearby to all locations and back without a second geolocation request', () => {
-  assert.match(source, /let rememberedLocation = null/);
-  assert.match(source, /function showAllLocations\(\)[\s\S]*rememberedLocation = activeUserLocation[\s\S]*state\.origin = null/);
-  assert.match(source, /function showNearbyLocations[\s\S]*state\.origin = \{ \.\.\.rememberedLocation \}/);
+  assert.match(source, /state\.nearbyOrigin = userLocation\(state\.origin\)/);
+  assert.match(source, /function showAllLocations\(\)[\s\S]*CGBApp\?\.showAllLocations/);
+  assert.match(source, /function showNearbyLocations[\s\S]*state\.nearbyOrigin[\s\S]*CGBApp\?\.showNearbyLocations/);
   assert.match(source, /label\.textContent = usingLocation \? 'All locations' : canRestoreNearby \? 'Show nearby' : 'Near me'/);
   assert.match(source, /handleListLocationClick[\s\S]*showAllLocations\(\)[\s\S]*showNearbyLocations\('list'\)[\s\S]*requestLocation\('list'\)/);
+  assert.doesNotMatch(source, /rememberedLocation|locationFilterSuppressed/);
   assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
 });
 
 test('desktop Show all preserves the resolved user location and Near me becomes Show nearby', () => {
-  assert.match(source, /function handleDesktopClearSearchClick[\s\S]*!userLocation\(appState\(\)\?\.origin\)[\s\S]*showAllLocations\(\)/);
-  assert.match(source, /function syncNearMeControl[\s\S]*locationFilterSuppressed && rememberedLocation \? 'Show nearby' : 'Near me'/);
-  assert.match(source, /function handleLocateClick[\s\S]*locationFilterSuppressed && rememberedLocation[\s\S]*showNearbyLocations\(isMobile\(\) \? 'map' : 'list'\)/);
-  assert.match(source, /Showing all mapped locations\. Your location is saved for Nearby\./);
-  assert.match(source, /using your saved location/);
+  assert.match(source, /function syncNearMeControl[\s\S]*state\?\.nearbyOrigin[\s\S]*canRestoreNearby \? 'Show nearby' : 'Near me'/);
+  assert.match(app, /function showAllLocations\(\)[\s\S]*Your location is saved for Nearby/);
+  assert.match(app, /function showNearbyLocations[\s\S]*using your saved location/);
+  assert.match(source, /function handleLocateClick[\s\S]*!locate \|\| !isMobile\(\)/);
 });
 
 test('Nearby sheet handle remains tappable to open the List destination', () => {

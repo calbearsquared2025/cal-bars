@@ -266,7 +266,24 @@ async function runHarness({ path, marker, label, virtualTimeBudget, windowSize =
 }
 
 let passed = true;
+const nearbyOnly = process.env.CGB_BROWSER_HARNESS_ONLY === 'nearby';
 try {
+  if (nearbyOnly) {
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?__cgb_harness=nearby-mobile',
+      marker: 'CGB_NEARBY_MOBILE_RUNTIME_HARNESS_PASS',
+      label: 'Focused mobile Nearby reuse harness',
+      virtualTimeBudget: 60000
+    }) && passed;
+
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?__cgb_harness=nearby-desktop',
+      marker: 'CGB_NEARBY_DESKTOP_RUNTIME_HARNESS_PASS',
+      label: 'Focused desktop Nearby reuse harness',
+      virtualTimeBudget: 30000,
+      windowSize: '1440,900'
+    }) && passed;
+  } else {
   passed = await runHarness({
     path: '/__cgb_first_paint__',
     marker: 'CGB_STATIC_MOBILE_FIRST_PAINT_PASS',
@@ -341,10 +358,13 @@ try {
     virtualTimeBudget: 30000,
     windowSize: '1440,900'
   }) && passed;
+  }
 } finally {
   server.close();
 }
 
 if (!passed) process.exit(1);
 
-console.log('Browser harnesses passed: static mobile first paint without refinement modules, the reduced external-venue fixture, the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');
+console.log(nearbyOnly
+  ? 'Focused Nearby browser harnesses passed on mobile and desktop.'
+  : 'Browser harnesses passed: static mobile first paint without refinement modules, the reduced external-venue fixture, the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');

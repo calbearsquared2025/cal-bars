@@ -5,8 +5,6 @@ import {
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-tab-location-refinement';
-let rememberedLocation = null;
-let locationFilterSuppressed = false;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -23,14 +21,6 @@ function userLocation(origin = appState()?.origin) {
   return { lat, lon, label: 'your location' };
 }
 
-function rememberActiveLocation() {
-  const location = userLocation();
-  if (!location) return rememberedLocation;
-  rememberedLocation = location;
-  locationFilterSuppressed = false;
-  return rememberedLocation;
-}
-
 function setNearMeLabel(label) {
   const button = document.querySelector('#near-me-button');
   if (!button) return;
@@ -44,8 +34,9 @@ function setNearMeLabel(label) {
 }
 
 function syncNearMeControl() {
-  rememberActiveLocation();
-  setNearMeLabel(locationFilterSuppressed && rememberedLocation ? 'Show nearby' : 'Near me');
+  const state = appState();
+  const canRestoreNearby = Boolean(userLocation(state?.nearbyOrigin) && !userLocation(state?.origin));
+  setNearMeLabel(canRestoreNearby ? 'Show nearby' : 'Near me');
 }
 
 function installStyles() {
@@ -233,7 +224,7 @@ function syncListLocationControl() {
   if (!onList) return;
 
   const usingLocation = Boolean(appState()?.origin);
-  const canRestoreNearby = !usingLocation && locationFilterSuppressed && Boolean(rememberedLocation);
+  const canRestoreNearby = !usingLocation && Boolean(userLocation(appState()?.nearbyOrigin));
   const label = button.querySelector('.list-location-action__label');
   const iconUse = button.querySelector('use');
   if (label) label.textContent = usingLocation ? 'All locations' : canRestoreNearby ? 'Show nearby' : 'Near me';
@@ -256,8 +247,7 @@ function locationSuccess(position, target) {
     lon: position.coords.longitude,
     label: 'your location'
   };
-  rememberedLocation = userLocation(state.origin);
-  locationFilterSuppressed = false;
+  state.nearbyOrigin = userLocation(state.origin);
   state.listQuery = '';
   state.selectedVenueId = '';
   const input = document.querySelector('#location-query');
@@ -312,36 +302,19 @@ function requestLocation(target = 'map') {
 function showAllLocations() {
   const state = appState();
   if (!state) return;
-  const activeUserLocation = userLocation(state.origin);
-  if (activeUserLocation) rememberedLocation = activeUserLocation;
-  locationFilterSuppressed = Boolean(rememberedLocation && activeUserLocation);
-  state.origin = null;
-  state.listQuery = '';
-  const input = document.querySelector('#location-query');
-  if (input) input.value = '';
+  if (userLocation(state.origin)) state.nearbyOrigin = userLocation(state.origin);
   if (isMobile()) {
     setTrayState('full');
     setCommandActive('list');
-  } else {
-    state.trayState = 'full';
   }
-  window.CGBApp?.render?.();
-  window.CGBApp?.showStatus?.(locationFilterSuppressed
-    ? 'Showing all mapped locations. Your location is saved for Nearby.'
-    : 'Showing all mapped locations');
+  window.CGBApp?.showAllLocations?.();
   syncNearMeControl();
   syncListLocationControl();
 }
 
 function showNearbyLocations(target = 'list') {
   const state = appState();
-  if (!state || !rememberedLocation) return false;
-  state.origin = { ...rememberedLocation };
-  state.listQuery = '';
-  locationFilterSuppressed = false;
-  const input = document.querySelector('#location-query');
-  if (input) input.value = '';
-  const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
+  if (!state || !userLocation(state.nearbyOrigin)) return false;
   if (isMobile()) {
     if (target === 'list') {
       setTrayState('full');
@@ -350,16 +323,11 @@ function showNearbyLocations(target = 'list') {
       setTrayState('peek');
       setCommandActive('map');
     }
-  } else {
-    state.trayState = 'full';
   }
-  window.CGBApp?.render?.();
-  if (!isMobile() || target === 'map') {
-    requestAnimationFrame(() => window.CGBApp?.focusLocation?.(state.origin, nearby));
-  }
-  window.CGBApp?.showStatus?.(nearby.length
-    ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles using your saved location`
-    : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your saved location`);
+  window.CGBApp?.showNearbyLocations?.({
+    trayState: target === 'map' ? 'peek' : 'full',
+    focus: target === 'map'
+  });
   syncNearMeControl();
   syncListLocationControl();
   return true;
@@ -367,14 +335,14 @@ function showNearbyLocations(target = 'list') {
 
 function handleLocateClick(event) {
   const locate = event.target.closest?.('#near-me-button');
-  if (!locate) return;
-  if (locationFilterSuppressed && rememberedLocation) {
+  if (!locate || !isMobile()) return;
+  const state = appState();
+  if (userLocation(state?.nearbyOrigin) && !userLocation(state?.origin)) {
     event.preventDefault();
     event.stopImmediatePropagation();
     showNearbyLocations(isMobile() ? 'map' : 'list');
     return;
   }
-  if (!isMobile()) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   requestLocation('map');
@@ -386,16 +354,8 @@ function handleListLocationClick(event) {
   event.preventDefault();
   event.stopImmediatePropagation();
   if (appState()?.origin) showAllLocations();
-  else if (locationFilterSuppressed && rememberedLocation) showNearbyLocations('list');
+  else if (userLocation(appState()?.nearbyOrigin)) showNearbyLocations('list');
   else requestLocation('list');
-}
-
-function handleDesktopClearSearchClick(event) {
-  const button = event.target.closest?.('#clear-search-button');
-  if (!button || isMobile() || !userLocation(appState()?.origin)) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  showAllLocations();
 }
 
 function sync() {
@@ -411,7 +371,6 @@ function initialize() {
   ensureListLocationControl();
   document.addEventListener('click', handleLocateClick, { capture: true });
   document.addEventListener('click', handleListLocationClick, { capture: true });
-  document.addEventListener('click', handleDesktopClearSearchClick, { capture: true });
   document.querySelector('#mobile-list-button')?.addEventListener('click', () => requestAnimationFrame(syncListLocationControl));
   document.querySelector('#mobile-add-button')?.addEventListener('click', () => requestAnimationFrame(syncCalBarNominationAction));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);

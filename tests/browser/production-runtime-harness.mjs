@@ -197,7 +197,7 @@ async function waitForIntentSettled(label) {
 async function verifyListLocationControl(expectedLabel, label) {
   click('#mobile-list-button');
   return waitFor(() => {
-    const button = element('#clear-search-button');
+    const button = element('#list-location-button');
     return activeCommand() === 'list' &&
       trayState() === 'full' &&
       button &&
@@ -433,11 +433,13 @@ async function runDesktopChecks() {
   progress('desktop-nearby-all');
   click('#mobile-list-button');
   await waitFor(() => trayState() === 'full', 'desktop Locations before Nearby');
+  let desktopGeolocationCalls = 0;
   try {
     Object.defineProperty(navigator, 'geolocation', {
       configurable: true,
       value: {
         getCurrentPosition(success) {
+          desktopGeolocationCalls += 1;
           success({ coords: { latitude: 37.8715, longitude: -122.2730 } });
         }
       }
@@ -447,12 +449,23 @@ async function runDesktopChecks() {
   }
   click('#near-me-button');
   await waitFor(() => Boolean(state()?.origin), 'desktop Nearby location state');
+  check(desktopGeolocationCalls === 1, 'Desktop initial Nearby should request geolocation once');
+  check(Boolean(state()?.nearbyOrigin), 'Desktop Nearby should retain coordinates in canonical app state');
   check(isVisible('#location-list'), 'Desktop Nearby should keep Locations visible');
   check(!element('#clear-search-button')?.hidden, 'Desktop Nearby should expose All locations');
-  check(element('#clear-search-button')?.textContent?.trim() === 'All locations', 'Desktop Nearby should label the reset action All locations');
+  check(element('#clear-search-button')?.textContent?.trim() === 'Show all', 'Desktop Nearby should label the reset action Show all');
   click('#clear-search-button');
-  await waitFor(() => !state()?.origin, 'desktop All locations state');
+  await waitFor(() => !state()?.origin && trayState() === 'full' && state()?.detailMode === false, 'desktop Show all browse state');
   check(isVisible('#location-list'), 'Desktop All locations should keep Locations visible');
+  check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Show all should preserve selected Venue identity');
+  check(element('#near-me-button')?.textContent?.trim() === 'Show nearby', 'Desktop Show all should expose Show nearby');
+  click('#mobile-list-button');
+  await waitFor(() => trayState() === 'full' && state()?.detailMode === false, 'desktop Locations after Show all');
+  check(element('#near-me-button')?.textContent?.trim() === 'Show nearby', 'Desktop Locations should preserve Show nearby');
+  click('#near-me-button');
+  await waitFor(() => Boolean(state()?.origin) && trayState() === 'full' && state()?.detailMode === false, 'desktop saved Nearby restore');
+  check(desktopGeolocationCalls === 1, 'Desktop Show nearby should reuse coordinates without geolocation');
+  check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Show nearby should preserve selected Venue identity');
 
   progress('desktop-game-dialog');
   click('#game-button');
@@ -702,11 +715,13 @@ async function runMainChecks() {
   }
 
   progress('nearby-list');
+  let mobileGeolocationCalls = 0;
   try {
     Object.defineProperty(navigator, 'geolocation', {
       configurable: true,
       value: {
         getCurrentPosition(success) {
+          mobileGeolocationCalls += 1;
           success({ coords: { latitude: 37.8715, longitude: -122.2730 } });
         }
       }
@@ -717,17 +732,22 @@ async function runMainChecks() {
 
   await ensureListSurface('List for Nearby / All locations');
   await waitFor(() => {
-    const button = element('#clear-search-button');
+    const button = element('#list-location-button');
     return button && !button.hidden && button.textContent?.trim() === 'Near me';
   }, 'Near me List control');
-  click('#clear-search-button');
+  click('#list-location-button');
   await waitFor(() => Boolean(state()?.origin), 'Nearby location state');
+  check(mobileGeolocationCalls === 1, 'Mobile initial Nearby should request geolocation once');
+  check(Boolean(state()?.nearbyOrigin), 'Mobile Nearby should retain coordinates in canonical app state');
 
   await verifyListLocationControl('All locations', 'All locations List control');
-  click('#clear-search-button');
+  click('#list-location-button');
   await waitFor(() => !state()?.origin, 'All locations state');
 
-  await verifyListLocationControl('Near me', 'Near me control restored after All locations');
+  await verifyListLocationControl('Show nearby', 'Show nearby control after All locations');
+  click('#list-location-button');
+  await waitFor(() => Boolean(state()?.origin), 'saved Nearby location state');
+  check(mobileGeolocationCalls === 1, 'Mobile Show nearby should reuse coordinates without geolocation');
 
   progress('list-back-map');
   click('#mobile-map-button');
@@ -736,8 +756,81 @@ async function runMainChecks() {
   finish('CGB_PRODUCTION_RUNTIME_HARNESS');
 }
 
+async function runNearbyMobileChecks() {
+  progress('nearby-mobile-ready');
+  await waitFor(() => Boolean(state()?.snapshot), 'focused mobile Nearby application ready');
+  progress('nearby-mobile-controls');
+  let geolocationCalls = 0;
+  Object.defineProperty(navigator, 'geolocation', {
+    configurable: true,
+    value: {
+      getCurrentPosition(success) {
+        geolocationCalls += 1;
+        success({ coords: { latitude: 37.8715, longitude: -122.2730 } });
+      }
+    }
+  });
+
+  await ensureListSurface('focused mobile Locations');
+  await waitFor(() => element('#list-location-button')?.textContent?.trim() === 'Near me', 'focused mobile Near me control');
+  click('#list-location-button');
+  await yieldToBrowser();
+  check(Boolean(state()?.origin && state()?.nearbyOrigin), `Focused mobile initial Nearby transition did not settle (geolocation calls: ${geolocationCalls}, origin: ${JSON.stringify(state()?.origin)}, nearbyOrigin: ${JSON.stringify(state()?.nearbyOrigin)})`);
+  await waitFor(() => Boolean(state()?.origin && state()?.nearbyOrigin), 'focused mobile Nearby state');
+  await waitFor(() => activeCommand() === 'list' && trayState() === 'full' && element('#list-location-button')?.textContent?.trim() === 'All locations', 'focused mobile All locations control');
+  click('#list-location-button');
+  await waitFor(() => !state()?.origin, 'focused mobile Show all state');
+  await waitFor(() => activeCommand() === 'list' && trayState() === 'full' && element('#list-location-button')?.textContent?.trim() === 'Show nearby', 'focused mobile Show nearby control');
+  click('#list-location-button');
+  await waitFor(() => Boolean(state()?.origin), 'focused mobile saved Nearby restore');
+  check(geolocationCalls === 1, 'Focused mobile Show nearby should not request geolocation again');
+  finish('CGB_NEARBY_MOBILE_RUNTIME_HARNESS');
+}
+
+async function runNearbyDesktopChecks() {
+  progress('nearby-desktop-ready');
+  await waitForDesktopApplicationReady('focused desktop Nearby application ready');
+  const card = element('#location-list .location-card');
+  check(Boolean(card), 'Focused desktop fixture should contain a selectable Venue');
+  card?.click();
+  await waitFor(() => Boolean(selectedVenueId()) && trayState() === 'selected' && state()?.detailMode === true, 'focused desktop selected Venue');
+  const retainedVenueId = selectedVenueId();
+  click('#mobile-list-button');
+  await waitFor(() => trayState() === 'full' && state()?.detailMode === false, 'focused desktop Locations browse state');
+
+  let geolocationCalls = 0;
+  Object.defineProperty(navigator, 'geolocation', {
+    configurable: true,
+    value: {
+      getCurrentPosition(success) {
+        geolocationCalls += 1;
+        success({ coords: { latitude: 37.8715, longitude: -122.2730 } });
+      }
+    }
+  });
+
+  click('#near-me-button');
+  await waitFor(() => Boolean(state()?.origin && state()?.nearbyOrigin), 'focused desktop Nearby state');
+  click('#clear-search-button');
+  await waitFor(() => !state()?.origin && trayState() === 'full' && state()?.detailMode === false, 'focused desktop Show all state');
+  check(selectedVenueId() === retainedVenueId, 'Focused desktop Show all should preserve selected Venue identity');
+  check(element('#near-me-button')?.textContent?.trim() === 'Show nearby', 'Focused desktop Show all should expose Show nearby');
+  click('#mobile-list-button');
+  await waitFor(() => trayState() === 'full' && state()?.detailMode === false, 'focused desktop Locations after Show all');
+  check(element('#near-me-button')?.textContent?.trim() === 'Show nearby', 'Focused desktop Locations should preserve Show nearby');
+  click('#near-me-button');
+  await waitFor(() => Boolean(state()?.origin) && trayState() === 'full' && state()?.detailMode === false, 'focused desktop saved Nearby restore');
+  check(geolocationCalls === 1, 'Focused desktop Show nearby should not request geolocation again');
+  check(selectedVenueId() === retainedVenueId, 'Focused desktop Show nearby should preserve selected Venue identity');
+  finish('CGB_NEARBY_DESKTOP_RUNTIME_HARNESS');
+}
+
 const mode = new URLSearchParams(location.search).get('__cgb_harness');
-(mode === 'direct'
+(mode === 'nearby-mobile'
+  ? runNearbyMobileChecks()
+  : mode === 'nearby-desktop'
+    ? runNearbyDesktopChecks()
+  : mode === 'direct'
   ? runDirectRouteCheck()
   : mode === 'landscape'
     ? runShortLandscapeChecks()
@@ -747,7 +840,11 @@ const mode = new URLSearchParams(location.search).get('__cgb_harness');
       ? runDesktopDirectRouteCheck()
       : runMainChecks()).catch((error) => {
   failures.push(error?.stack || String(error));
-  finish(mode === 'direct'
+  finish(mode === 'nearby-mobile'
+    ? 'CGB_NEARBY_MOBILE_RUNTIME_HARNESS'
+    : mode === 'nearby-desktop'
+      ? 'CGB_NEARBY_DESKTOP_RUNTIME_HARNESS'
+    : mode === 'direct'
     ? 'CGB_PRODUCTION_DIRECT_ROUTE'
     : mode === 'landscape'
       ? 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS'

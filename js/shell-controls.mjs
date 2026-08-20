@@ -231,6 +231,12 @@ function showList() {
   updateSearchIntent();
   if (!isMobileLayout()) setDesktopAddLocationMode(false);
   setSurface('map');
+  if (!isMobileLayout() && window.CGBApp?.showLocations) {
+    currentSurface = 'list';
+    window.CGBApp.showLocations();
+    updateCommandState();
+    return;
+  }
   if (dom.tray?.dataset.state !== 'full') dom.trayHandle?.click();
   currentSurface = 'list';
   updateCommandState();

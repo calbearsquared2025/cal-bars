@@ -12,6 +12,7 @@ export const appState = {
   gameId: null,
   selectedVenueId: null,
   origin: null,
+  nearbyOrigin: null,
   listQuery: '',
   trayState: 'peek',
   map: null,
@@ -130,6 +131,7 @@ export function resetAppStateForTests() {
   appState.gameId = null;
   appState.selectedVenueId = null;
   appState.origin = null;
+  appState.nearbyOrigin = null;
   appState.listQuery = '';
   appState.trayState = 'peek';
   appState.locationFocusVenueId = null;
