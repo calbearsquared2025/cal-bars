@@ -3,6 +3,11 @@
   display: none;
 }
 
+.desktop-add-location-button,
+.desktop-locations-guidance {
+  display: none;
+}
+
 @media (max-width: 899px) {
   body[data-view="detail"] .mobile-command-bar,
   body[data-view="detail"] .command-surface {
@@ -485,6 +490,65 @@
 }
 
 @media (min-width: 900px) {
+  .map-toolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .map-toolbar .location-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .map-toolbar .map-actions {
+    align-items: center;
+  }
+
+  .desktop-add-location-button {
+    min-height: 50px;
+    display: inline-flex;
+    white-space: nowrap;
+    color: var(--cgb-navy-950, #010133);
+    background: var(--cgb-gold-50, #fff7dc);
+    border-color: var(--cgb-gold-400, #fdb515);
+    font-size: .72rem;
+    font-weight: 800;
+  }
+
+  .desktop-add-location-button:hover,
+  .desktop-add-location-button:focus-visible {
+    background: rgba(253, 181, 21, .18);
+  }
+
+  .desktop-add-location-button__mark {
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .desktop-locations-guidance {
+    display: grid;
+    gap: 4px;
+    padding: 13px 16px 14px;
+    color: var(--cgb-ink-700, #3d485c);
+    background: var(--cgb-white, #fff);
+    border-bottom: 1px solid var(--cgb-neutral-200, #dfe3e8);
+  }
+
+  .desktop-locations-guidance strong {
+    color: var(--cgb-navy-950, #010133);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  .desktop-locations-guidance p {
+    margin: 0;
+    color: var(--cgb-ink-500, #657083);
+    font-size: .72rem;
+    line-height: 1.4;
+  }
+
   .mobile-command-bar {
     position: fixed;
     z-index: 46;
