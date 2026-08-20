@@ -101,9 +101,11 @@ test('Bear count copy is explicit for zero, singular, and plural counts', () => 
   assert.equal(bearCountCopy(3), '3 Bears watching here');
 });
 
-test('Community Location type no longer generates Fan-Added presentation', () => {
+test('Fan-Added presentation comes only from user-added provenance', () => {
   const calBar = { venue_type: 'cal_bar' };
+  const userAddedCalBar = { venue_type: 'cal_bar', verification_status: 'user_added' };
   const communityLocation = { venue_type: 'community_location' };
+  const userAddedCommunityLocation = { venue_type: 'community_location', verification_status: 'user_added' };
   const party = { watch_party_id: 'wp_test' };
 
   assert.equal(venueTypeLabel(calBar), 'CAL BAR');
@@ -115,10 +117,17 @@ test('Community Location type no longer generates Fan-Added presentation', () =>
   assert.deepEqual(venueBadgeDescriptors(communityLocation, party), [
     { text: 'WATCH PARTY', kind: 'party' }
   ]);
-  assert.deepEqual(venueBadgeDescriptors(calBar, null), [
-    { text: 'CAL BAR', kind: 'cal' }
+  assert.deepEqual(venueBadgeDescriptors(userAddedCommunityLocation, party), [
+    { text: 'WATCH PARTY', kind: 'party' },
+    { text: 'FAN-ADDED', kind: 'fan-added' }
   ]);
   assert.deepEqual(venueBadgeDescriptors(communityLocation, null), []);
+  assert.deepEqual(venueBadgeDescriptors(userAddedCommunityLocation, null), [
+    { text: 'FAN-ADDED', kind: 'fan-added' }
+  ]);
+  assert.deepEqual(venueBadgeDescriptors(userAddedCalBar, null), [
+    { text: 'CAL BAR', kind: 'cal' }
+  ]);
 });
 
 test('exact venue matching does not treat city or ZIP searches as a venue selection', () => {
