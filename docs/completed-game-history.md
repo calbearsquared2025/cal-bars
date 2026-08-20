@@ -1,4 +1,4 @@
-# Completed-game and migrated Venue activity
+# Completed-game and Venue activity
 
 ## Approved public behavior
 
@@ -10,28 +10,35 @@ When archived Fan Intent exists for completed games in the selected season, show
 
 The total counts archived browser-level selections across completed games. It is directional anonymous activity, not a unique-person count across the full season.
 
-When no selected-season total exists, a migrated Venue with reviewed Cal-game or watch-party history uses the same standardized fallback, even when its older evidence sentence did not include the year:
+For an upcoming game, the prior-season baseline is shown only when the Venue has both:
 
-> Bears watched Cal games here in 2025.
+- zero current-game Fan Intent; and
+- zero archived Fan Intent in the selected season.
+
+The baseline copy is evergreen:
+
+> Bears watched Cal games here last season.
 >
 > Be part of the 2026 season.
 
-The frontend suppresses the more precise evidence sentence when it is used to generate this standardized copy. Venues without reviewed Cal-game or watch-party history receive no migrated-history claim.
+As soon as current-game Fan Intent or archived selected-season activity exists, drop the prior-season baseline and use the normal current-season activity messaging.
+
+The frontend does not inspect `short_description` or infer historical activity from venue-specific migration wording. Existing venue descriptions remain independent editorial content.
+
+Completed-game views continue to use archived selected-season activity. When none exists, they show that no Cal-game activity is recorded for the season rather than presenting a live zero count.
 
 ## Existing public contract
 
-The normal public snapshot now includes `venueSeasonCounts`, with one row per season and Venue that has archived activity. No additional browser request is introduced. Older last-known-good and static fallback snapshots may omit the collection and are treated as having no season history.
+The normal public snapshot includes `fanCounts` for current-game aggregate activity and `venueSeasonCounts`, with one row per season and Venue that has archived activity. No additional browser request is introduced. Older last-known-good and static fallback snapshots may omit `venueSeasonCounts` and are treated as having no archived season history.
 
 `venueHistoryCounts` remains in the response for backward compatibility but is not used for the approved public season-history wording.
 
-## Manual acceptance after merge
+## Manual acceptance
 
-1. Upload the reviewed `apps-script/Code.gs` to the staged Apps Script project.
-2. Build a staged snapshot containing two archived selections at one Venue for one completed 2026 Game.
-3. Confirm the public snapshot contains one `venueSeasonCounts` row with `count: 2`.
-4. Confirm an upcoming 2026 Venue detail shows current-game activity plus the cumulative season sentence.
-5. Confirm a migrated Venue with reviewed history and no 2026 archived activity shows only the standardized two-line history treatment.
-6. Confirm a Venue without reviewed Cal-game or watch-party history shows no 2025 claim.
-7. Run the complete repository, browser, privacy, and exact-SHA validation commands before merge or deployment.
+1. Confirm an upcoming Venue with zero current-game Fan Intent and zero archived 2026 activity shows **Bears watched Cal games here last season.** and **Be part of the 2026 season.**
+2. Confirm adding current-game Fan Intent immediately removes that two-line baseline, even before any completed 2026 game exists.
+3. Confirm an upcoming Venue with archived 2026 activity shows the cumulative **Bears watched Cal games here this season.** sentence instead of the prior-season baseline.
+4. Confirm Venue description wording does not change whether the baseline appears.
+5. Confirm a completed-game view with archived activity uses the season total and does not show a live zero count.
 
-No new OAuth scope, Script Property, Sheet column, MapTiler request, browser identifier exposure, or public attendee identity is introduced.
+No new OAuth scope, Script Property, Sheet column, MapTiler request, browser identifier exposure, public attendee identity, or backend change is introduced.
