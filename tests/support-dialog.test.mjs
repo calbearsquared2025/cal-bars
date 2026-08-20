@@ -27,3 +27,13 @@ test('support dialog stays compact and viewport-bounded', () => {
   assert.match(styles, /height: min\(600px, calc\(80dvh - 108px\)\)/);
   assert.match(styles, /background: rgba\(1, 1, 51, \.5\)/);
 });
+
+test('desktop footer About uses the consolidated anchored popover treatment', () => {
+  assert.match(html, /class="game-button__eyebrow"[^>]*>SELECT GAME<\/span>/);
+  assert.match(html, /id="about-button"[^>]*>About<\/button>\s*<\/footer>/);
+  assert.match(html, /Cal Golden Bars is powered by <strong>CrowdMap<\/strong>/);
+  assert.match(script, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
+  assert.match(script, /footerAboutButton\?\.addEventListener\('click', openFooterAboutPopover, \{ capture: true \}\)/);
+  assert.match(script, /aboutDialog\.classList\.add\('about-dialog--footer-popover'\)[\s\S]*aboutDialog\.show\(\)/);
+  assert.match(styles, /@media \(min-width: 900px\)[\s\S]*\.about-dialog\.about-dialog--footer-popover[\s\S]*position: fixed/);
+});
