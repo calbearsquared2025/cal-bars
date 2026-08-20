@@ -174,8 +174,9 @@ function handleMapDeselect(event) {
 function openSelectedVenueDetail(venueId) {
   const state = appState();
   const venue = selectedVenue(venueId, state);
-  if (!venue || !state?.gameId) return false;
-  window.location.assign(buildVenueUrl(venue.slug, state.gameId, window.location.href));
+  const game = state?.snapshot?.games?.find((item) => item.game_id === state?.gameId) || null;
+  if (!venue || !game) return false;
+  window.location.assign(buildVenueUrl(venue.slug, game, window.location.href));
   return true;
 }
 
