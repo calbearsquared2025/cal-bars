@@ -554,17 +554,6 @@ function createBadges(venue, party) {
   return badges;
 }
 
-function createDetailBadges(venue, party) {
-  const badges = createBadges(venue, party);
-  if (venue.venue_type !== 'cal_bar' && venue.verification_status === 'user_added') {
-    const badge = document.createElement('span');
-    badge.className = 'venue-badge badge--fan-added';
-    badge.textContent = 'FAN-ADDED';
-    badges.append(badge);
-  }
-  return badges;
-}
-
 function createDetailLocalMap(venue) {
   const latitude = Number(venue.latitude);
   const longitude = Number(venue.longitude);
@@ -1035,7 +1024,7 @@ function renderVenueProfile() {
   const hero = document.createElement('header');
   hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
   if (localMap) hero.append(localMap);
-  hero.append(createDetailBadges(venue, party));
+  hero.append(createBadges(venue, party));
   const title = document.createElement('h1');
   title.textContent = venue.name;
   hero.append(title);
