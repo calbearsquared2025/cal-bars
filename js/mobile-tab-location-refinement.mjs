@@ -5,6 +5,8 @@ import {
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-tab-location-refinement';
+let rememberedLocation = null;
+let locationFilterSuppressed = false;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -12,6 +14,38 @@ function isMobile() {
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
+}
+
+function userLocation(origin = appState()?.origin) {
+  const lat = Number(origin?.lat);
+  const lon = Number(origin?.lon);
+  if (origin?.label !== 'your location' || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+  return { lat, lon, label: 'your location' };
+}
+
+function rememberActiveLocation() {
+  const location = userLocation();
+  if (!location) return rememberedLocation;
+  rememberedLocation = location;
+  locationFilterSuppressed = false;
+  return rememberedLocation;
+}
+
+function setNearMeLabel(label) {
+  const button = document.querySelector('#near-me-button');
+  if (!button) return;
+  const textNode = Array.from(button.childNodes)
+    .find((node) => node.nodeType === 3 && node.textContent.trim());
+  if (textNode) textNode.textContent = ` ${label}`;
+  else button.append(document.createTextNode(` ${label}`));
+  button.setAttribute('aria-label', label === 'Show nearby'
+    ? 'Show nearby locations using your saved location'
+    : 'Use my location to show nearby locations');
+}
+
+function syncNearMeControl() {
+  rememberActiveLocation();
+  setNearMeLabel(locationFilterSuppressed && rememberedLocation ? 'Show nearby' : 'Near me');
 }
 
 function installStyles() {
@@ -199,15 +233,18 @@ function syncListLocationControl() {
   if (!onList) return;
 
   const usingLocation = Boolean(appState()?.origin);
+  const canRestoreNearby = !usingLocation && locationFilterSuppressed && Boolean(rememberedLocation);
   const label = button.querySelector('.list-location-action__label');
   const iconUse = button.querySelector('use');
-  if (label) label.textContent = usingLocation ? 'All locations' : 'Near me';
+  if (label) label.textContent = usingLocation ? 'All locations' : canRestoreNearby ? 'Show nearby' : 'Near me';
   if (iconUse) iconUse.setAttribute('href', usingLocation
     ? 'assets/icons.svg#icon-map'
     : 'assets/icons.svg#icon-near-me');
   button.setAttribute('aria-label', usingLocation
     ? 'Show all mapped locations'
-    : 'Use my location to show nearby locations');
+    : canRestoreNearby
+      ? 'Show nearby locations using your saved location'
+      : 'Use my location to show nearby locations');
 }
 
 function locationSuccess(position, target) {
@@ -219,6 +256,8 @@ function locationSuccess(position, target) {
     lon: position.coords.longitude,
     label: 'your location'
   };
+  rememberedLocation = userLocation(state.origin);
+  locationFilterSuppressed = false;
   state.listQuery = '';
   state.selectedVenueId = '';
   const input = document.querySelector('#location-query');
@@ -242,6 +281,7 @@ function locationSuccess(position, target) {
   window.CGBApp?.showStatus?.(nearby.length
     ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
     : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
+  syncNearMeControl();
   syncListLocationControl();
 }
 
@@ -272,20 +312,69 @@ function requestLocation(target = 'map') {
 function showAllLocations() {
   const state = appState();
   if (!state) return;
+  const activeUserLocation = userLocation(state.origin);
+  if (activeUserLocation) rememberedLocation = activeUserLocation;
+  locationFilterSuppressed = Boolean(rememberedLocation && activeUserLocation);
   state.origin = null;
   state.listQuery = '';
   const input = document.querySelector('#location-query');
   if (input) input.value = '';
-  setTrayState('full');
-  setCommandActive('list');
+  if (isMobile()) {
+    setTrayState('full');
+    setCommandActive('list');
+  } else {
+    state.trayState = 'full';
+  }
   window.CGBApp?.render?.();
-  window.CGBApp?.showStatus?.('Showing all mapped locations');
+  window.CGBApp?.showStatus?.(locationFilterSuppressed
+    ? 'Showing all mapped locations. Your location is saved for Nearby.'
+    : 'Showing all mapped locations');
+  syncNearMeControl();
   syncListLocationControl();
+}
+
+function showNearbyLocations(target = 'list') {
+  const state = appState();
+  if (!state || !rememberedLocation) return false;
+  state.origin = { ...rememberedLocation };
+  state.listQuery = '';
+  locationFilterSuppressed = false;
+  const input = document.querySelector('#location-query');
+  if (input) input.value = '';
+  const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
+  if (isMobile()) {
+    if (target === 'list') {
+      setTrayState('full');
+      setCommandActive('list');
+    } else {
+      setTrayState('peek');
+      setCommandActive('map');
+    }
+  } else {
+    state.trayState = 'full';
+  }
+  window.CGBApp?.render?.();
+  if (!isMobile() || target === 'map') {
+    requestAnimationFrame(() => window.CGBApp?.focusLocation?.(state.origin, nearby));
+  }
+  window.CGBApp?.showStatus?.(nearby.length
+    ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles using your saved location`
+    : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your saved location`);
+  syncNearMeControl();
+  syncListLocationControl();
+  return true;
 }
 
 function handleLocateClick(event) {
   const locate = event.target.closest?.('#near-me-button');
-  if (!locate || !isMobile()) return;
+  if (!locate) return;
+  if (locationFilterSuppressed && rememberedLocation) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    showNearbyLocations(isMobile() ? 'map' : 'list');
+    return;
+  }
+  if (!isMobile()) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   requestLocation('map');
@@ -297,13 +386,23 @@ function handleListLocationClick(event) {
   event.preventDefault();
   event.stopImmediatePropagation();
   if (appState()?.origin) showAllLocations();
+  else if (locationFilterSuppressed && rememberedLocation) showNearbyLocations('list');
   else requestLocation('list');
+}
+
+function handleDesktopClearSearchClick(event) {
+  const button = event.target.closest?.('#clear-search-button');
+  if (!button || isMobile() || !userLocation(appState()?.origin)) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  showAllLocations();
 }
 
 function sync() {
   installStyles();
   syncCalBarNominationAction();
   syncCorrectionLanguage();
+  syncNearMeControl();
   syncListLocationControl();
 }
 
@@ -312,6 +411,7 @@ function initialize() {
   ensureListLocationControl();
   document.addEventListener('click', handleLocateClick, { capture: true });
   document.addEventListener('click', handleListLocationClick, { capture: true });
+  document.addEventListener('click', handleDesktopClearSearchClick, { capture: true });
   document.querySelector('#mobile-list-button')?.addEventListener('click', () => requestAnimationFrame(syncListLocationControl));
   document.querySelector('#mobile-add-button')?.addEventListener('click', () => requestAnimationFrame(syncCalBarNominationAction));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
