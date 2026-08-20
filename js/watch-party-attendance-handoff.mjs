@@ -13,6 +13,7 @@ export function openWaitingFormWindow(windowObject = window) {
     return null;
   }
   try {
+    if (opened) opened.opener = null;
     if (opened?.document) {
       opened.document.title = 'Loading Watch Party submission form';
       opened.document.body.textContent = 'Loading Watch Party submission form…';
