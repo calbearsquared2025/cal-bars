@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [html, shellControls, commandCss, mobilePolish] = await Promise.all([
+const [html, shellControls, commandCss, mobilePolish, locationRefinement] = await Promise.all([
   read('../index.html'),
   read('../js/shell-controls.mjs'),
   read('../css/mobile-command-navigation.css'),
-  read('../js/mobile-polish.mjs')
+  read('../js/mobile-polish.mjs'),
+  read('../js/mobile-tab-location-refinement.mjs')
 ]);
 
 test('desktop map toolbar separates Search, Near me, and Add location', () => {
@@ -43,6 +44,15 @@ test('desktop Locations presents nearby state and guidance as one compact browse
   assert.match(commandCss, /content: attr\(data-proximity-label\)/);
   assert.match(shellControls, /dataset\.proximityLabel = `Nearby · within \$\{NEARBY_RADIUS_MILES\} miles`/);
   assert.match(shellControls, /clearSearchButton\.textContent = 'Show all'/);
+});
+
+test('desktop Show all can return to Nearby without requesting location again', () => {
+  assert.match(locationRefinement, /let rememberedLocation = null/);
+  assert.match(locationRefinement, /function handleDesktopClearSearchClick[\s\S]*showAllLocations\(\)/);
+  assert.match(locationRefinement, /function showAllLocations\(\)[\s\S]*rememberedLocation = activeUserLocation[\s\S]*state\.origin = null/);
+  assert.match(locationRefinement, /function syncNearMeControl[\s\S]*'Show nearby'/);
+  assert.match(locationRefinement, /function handleLocateClick[\s\S]*locationFilterSuppressed && rememberedLocation[\s\S]*showNearbyLocations\(isMobile\(\) \? 'map' : 'list'\)/);
+  assert.match(locationRefinement, /function showNearbyLocations[\s\S]*state\.origin = \{ \.\.\.rememberedLocation \}/);
 });
 
 test('desktop browse heading is no longer overwritten by the mobile Nearby heading refinement', () => {
