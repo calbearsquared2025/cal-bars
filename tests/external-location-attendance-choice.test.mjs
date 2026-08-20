@@ -26,10 +26,10 @@ test('Add location only uses the no-attendance venue creation path', () => {
   assert.doesNotMatch(body, /ensureAttendance|fanIntent|INTENT_SELECTIONS_STORAGE_KEY/);
 });
 
-test('attendance remains a separate explicit location action', () => {
+test('attendance and Watch Party planning remain separate explicit actions', () => {
   assert.match(source, /#external-venue-confirm/);
-  assert.match(source, /#external-venue-add-only/);
-  assert.match(source, /#external-venue-plan-watch-party/);
+  assert.match(source, /const ADD_ONLY_BUTTON_ID = 'external-venue-add-only'/);
+  assert.match(source, /const BUTTON_ID = 'external-venue-plan-watch-party'/);
 });
 
 test('external location actions are disabled together during writes', () => {
