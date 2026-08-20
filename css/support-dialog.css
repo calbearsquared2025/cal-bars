@@ -1,3 +1,8 @@
+.site-footer [data-support-open],
+.site-footer > span:has(+ [data-support-open]) {
+  display: none;
+}
+
 .support-dialog {
   width: min(92vw, 480px);
   max-height: 80dvh;
