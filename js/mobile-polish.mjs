@@ -42,6 +42,7 @@ function updateStatistics() {
 }
 
 function updateListHeading() {
+  if (!isMobile()) return;
   const state = appState();
   const heading = document.querySelector('#list-heading');
   const eyebrow = document.querySelector('.tray-list__header .eyebrow');
