@@ -1,10 +1,17 @@
 import { buildCommittedExternalVenueWatchPartyUrl } from './external-watch-party-cta-core.mjs';
 import { INTENT_SELECTIONS_STORAGE_KEY } from './fan-intent-core.mjs';
+import { createExternalVenueWithoutAttendance } from './external-venue-contribution.js';
 import {
   beginExternalWatchPartyPlan,
   resolveExternalWatchPartyPlan,
   selectionsAfterExternalWatchPartyPlan
 } from './external-watch-party-plan-core.mjs';
+import {
+  WATCH_PARTY_ATTENDANCE_CHOICES,
+  closeWaitingFormWindow,
+  navigateWaitingFormWindow,
+  requestWatchPartyAttendance
+} from './watch-party-attendance-handoff.mjs';
 
 const BUTTON_ID = 'external-venue-plan-watch-party';
 const RETRY_SELECTOR = '[data-external-watch-party-form-retry]';
@@ -33,23 +40,12 @@ function ensureStylesheet(documentObject = document) {
   documentObject.head?.append(link);
 }
 
-function openWaitingWindow(windowObject = window) {
-  const opened = windowObject.open('', '_blank');
-  try {
-    if (opened?.document) {
-      opened.document.title = 'Preparing Watch Party Form';
-      opened.document.body.textContent = 'Preparing the Watch Party Form…';
-    }
-  } catch (_) {}
-  return opened;
-}
-
 function closeWaitingWindow() {
-  try { pendingWindow?.close?.(); } catch (_) {}
+  closeWaitingFormWindow(pendingWindow);
   pendingWindow = null;
 }
 
-function showFormRetry(href, documentObject = document) {
+function showFormRetry(href, attending, documentObject = document) {
   documentObject.querySelector(RETRY_SELECTOR)?.remove();
   const card = documentObject.querySelector('#tray-selected .selected-card');
   if (!card || !href) return;
@@ -59,7 +55,9 @@ function showFormRetry(href, documentObject = document) {
   section.dataset.externalWatchPartyFormRetry = 'true';
 
   const prompt = documentObject.createElement('p');
-  prompt.textContent = 'Your location and attendance were saved. Open the Watch Party Form to continue.';
+  prompt.textContent = attending
+    ? 'Your location and attendance were saved. Open the Watch Party Form to continue.'
+    : 'Your location was saved. Open the Watch Party Form to continue.';
 
   const link = documentObject.createElement('a');
   link.className = 'primary-button';
@@ -72,21 +70,19 @@ function showFormRetry(href, documentObject = document) {
   card.append(section);
 }
 
-function navigateToForm(href, documentObject = document) {
+function navigateToForm(href, attending, documentObject, windowObject) {
   if (!href) return false;
-  try {
-    if (pendingWindow && !pendingWindow.closed) {
-      pendingWindow.location.href = href;
-      pendingWindow = null;
-      return true;
-    }
-  } catch (_) {}
-  showFormRetry(href, documentObject);
+  const opened = navigateWaitingFormWindow(pendingWindow, href, windowObject);
+  if (opened) {
+    pendingWindow = null;
+    return true;
+  }
+  showFormRetry(href, attending, documentObject);
   return false;
 }
 
 function persistCommittedSelection(state, committed, windowObject = window) {
-  if (!state?.fanIntent) return false;
+  if (!state?.fanIntent || committed?.attending !== true) return false;
   const selections = selectionsAfterExternalWatchPartyPlan(
     state.fanIntent.selections,
     committed
@@ -114,16 +110,43 @@ function ensurePlanButton({ app, documentObject = document, windowObject = windo
   button.textContent = 'Plan a Watch Party';
   actions.insertBefore(button, cancel);
 
-  button.addEventListener('click', () => {
+  button.addEventListener('click', async () => {
     const state = app?.getState?.();
     const external = windowObject.CGBExternalVenueSearch?.getState?.();
     const selected = external?.retry || external?.selected;
-    const plan = beginExternalWatchPartyPlan({ selected, gameId: state?.gameId });
-    if (!plan || external?.pending) return;
+    if (!selected || external?.pending) return;
+
+    const handoff = await requestWatchPartyAttendance({ documentObject, windowObject });
+    if (!handoff) return;
+
+    const attending = handoff.choice === WATCH_PARTY_ATTENDANCE_CHOICES.attend;
+    const plan = beginExternalWatchPartyPlan({
+      selected,
+      gameId: state?.gameId,
+      attending
+    });
+    if (!plan) {
+      closeWaitingFormWindow(handoff.windowRef);
+      return;
+    }
 
     pendingPlan = plan;
-    pendingWindow = openWaitingWindow(windowObject);
-    confirm.click();
+    pendingWindow = handoff.windowRef;
+
+    if (attending) {
+      confirm.click();
+      return;
+    }
+
+    const venue = await createExternalVenueWithoutAttendance({
+      selected,
+      documentObject,
+      windowObject
+    });
+    if (!venue && pendingPlan) {
+      pendingPlan = null;
+      closeWaitingWindow();
+    }
   });
 }
 
@@ -153,8 +176,10 @@ export function initializeExternalWatchPartyPlan({
     }
     if (!resolution.committed) return;
 
-    persistCommittedSelection(state, resolution.committed, windowObject);
-    app.render?.();
+    if (resolution.committed.attending) {
+      persistCommittedSelection(state, resolution.committed, windowObject);
+      app.render?.();
+    }
 
     const href = buildCommittedExternalVenueWatchPartyUrl({
       config: readConfig(documentObject),
@@ -163,6 +188,11 @@ export function initializeExternalWatchPartyPlan({
       venueId: resolution.committed.venueId
     });
 
-    navigateToForm(href, documentObject);
+    navigateToForm(
+      href,
+      resolution.committed.attending,
+      documentObject,
+      windowObject
+    );
   });
 }
