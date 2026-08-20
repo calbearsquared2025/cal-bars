@@ -28,11 +28,6 @@ function prependIcon(element, iconName) {
   element.prepend(createIcon(iconName));
 }
 
-function appendIcon(element, iconName) {
-  if (!element || element.querySelector('.ui-icon')) return;
-  element.append(createIcon(iconName));
-}
-
 function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
   if (label === 'directions') return 'directions';
