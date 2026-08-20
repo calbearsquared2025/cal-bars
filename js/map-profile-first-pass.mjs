@@ -154,17 +154,6 @@ function installStyles() {
         overflow-y: auto !important;
         background: var(--cgb-warm-50) !important;
       }
-
-      body[data-command-surface="list"] .tray-list__header {
-        min-height: 74px !important;
-        padding: 15px 16px 13px !important;
-        background: var(--cgb-warm-50) !important;
-        border-bottom: 1px solid var(--cgb-neutral-200) !important;
-      }
-
-      body[data-command-surface="list"] .tray-list__header h2 {
-        font-size: clamp(1.45rem, 6.4vw, 1.9rem) !important;
-      }
     }
   `;
   document.head.append(style);

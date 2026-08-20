@@ -11,14 +11,18 @@ const iconUpgrade = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8')
 const icons = await readFile(new URL('assets/icons.svg', root), 'utf8');
 
 test('Search Add and List hide the map and Search does not show a selected tray', () => {
-  assert.match(source, /data-command-surface="search"[\s\S]*#map[\s\S]*visibility: hidden !important/);
+  assert.match(firstPaintCss, /data-command-surface="search"[\s\S]*#map[\s\S]*visibility: hidden !important/);
   assert.match(source, /data-command-surface="add"[\s\S]*#map[\s\S]*visibility: hidden !important/);
   assert.match(source, /data-command-surface="list"[\s\S]*#map[\s\S]*visibility: hidden !important/);
-  assert.match(source, /data-command-surface="search"[\s\S]*#venue-tray[\s\S]*display: none !important/);
+  assert.match(firstPaintCss, /data-command-surface="search"[\s\S]*#venue-tray[\s\S]*display: none !important/);
 });
 
-test('Search Add and List use compact spacing below the shared branded header', () => {
-  assert.match(source, /@media \(max-width: 899px\) and \(orientation: portrait\)[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*padding-top: 18px !important[\s\S]*data-command-surface="list"[\s\S]*padding-top: 16px !important/);
+test('Search Add and List presentation is owned by static first-paint CSS', () => {
+  assert.doesNotMatch(source, /command-surface__header|command-surface__back|tray-list__header|clear-search-button|close-list-button/);
+  assert.match(firstPaintCss, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
+  assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*padding: 16px 16px 11px !important/);
+  assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__toolbar/);
+  assert.match(firstPaintCss, /#clear-search-button:not\(\[hidden\]\)[\s\S]*border-radius: 999px/);
 });
 
 test('mobile tab refinement does not override the accepted desktop selected-profile actions', () => {

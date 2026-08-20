@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Find where Cal fans are gathering for the selected football game.">
-  <meta name="theme-color" content="#010133">
+  <meta name="theme-color" content="#ffffff">
   <meta
     name="cgb-data-endpoint"
     content="https://script.google.com/macros/s/AKfycbx5Y4nfnKe7KyaSQHOEvYqpSVtcG7z6KFf1aAnD1NEvIf5y3Xlj1hHUECudo49V4tGlJw/exec"
@@ -156,17 +156,17 @@
         </div>
         <div id="tray-selected" class="tray-selected" hidden></div>
         <div id="tray-list" class="tray-list" hidden>
-          <div class="tray-list__header">
+          <header class="tray-list__header mobile-destination-header">
             <div>
-              <span class="eyebrow">Selected game</span>
+              <span class="eyebrow">Browse</span>
               <h2 id="list-heading">Locations</h2>
             </div>
-            <div class="tray-list__actions">
-              <button id="clear-search-button" class="text-button" type="button" hidden>All locations</button>
-              <button id="close-list-button" class="icon-button" type="button" aria-label="Collapse location list">
-                <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-down"></use></svg>
-              </button>
-            </div>
+          </header>
+          <div class="tray-list__toolbar">
+            <button id="clear-search-button" class="text-button" type="button" hidden>All locations</button>
+            <button id="close-list-button" class="icon-button" type="button" aria-label="Collapse location list">
+              <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-down"></use></svg>
+            </button>
           </div>
           <div id="location-list" class="location-list"></div>
         </div>
@@ -175,7 +175,7 @@
 
     <section id="search-surface" class="command-surface command-surface--search" hidden aria-labelledby="search-surface-title">
       <div class="command-surface__shell">
-        <header class="command-surface__header">
+        <header class="command-surface__header mobile-destination-header">
           <button class="command-surface__back" type="button" data-command-close aria-label="Back to map">
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>
           </button>
@@ -192,7 +192,7 @@
 
     <section id="add-surface" class="command-surface command-surface--add" hidden aria-labelledby="add-surface-title">
       <div class="command-surface__shell">
-        <header class="command-surface__header">
+        <header class="command-surface__header mobile-destination-header">
           <button class="command-surface__back" type="button" data-command-close aria-label="Back to map">
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>
           </button>

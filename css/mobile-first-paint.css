@@ -123,6 +123,107 @@
     display: none !important;
   }
 
+  /* Mobile Detail is a page surface, not a card floating inside another surface. */
+  body[data-view="detail"] .detail-view {
+    padding: 0 !important;
+    background: var(--cgb-white, #fff) !important;
+  }
+
+  body[data-view="detail"] .detail-shell {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: var(--cgb-white, #fff) !important;
+  }
+
+  body[data-view="detail"] .venue-detail {
+    width: 100% !important;
+    max-width: none !important;
+    background: var(--cgb-white, #fff) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Search, Add, and List share one mobile destination-title component. */
+  body[data-command-surface="search"] .command-surface__shell,
+  body[data-command-surface="add"] .command-surface__shell {
+    padding-top: 16px !important;
+  }
+
+  .mobile-destination-header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 0 !important;
+    padding: 0 0 11px !important;
+    background: transparent !important;
+    border-bottom: 1px solid var(--cgb-neutral-200) !important;
+  }
+
+  .mobile-destination-header .eyebrow {
+    color: var(--cgb-ink-500) !important;
+    font-family: var(--font-condensed, sans-serif) !important;
+    font-size: var(--text-2xs, .6875rem) !important;
+    font-weight: 850 !important;
+    letter-spacing: .1em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+  }
+
+  .mobile-destination-header h2 {
+    margin: 3px 0 0 !important;
+    color: var(--cgb-navy-950) !important;
+    font-family: var(--font-display) !important;
+    font-size: clamp(1.45rem, 6.4vw, 1.9rem) !important;
+    font-weight: 750 !important;
+    letter-spacing: -.015em !important;
+    line-height: 1 !important;
+  }
+
+  body[data-command-surface="search"] .command-surface__back,
+  body[data-command-surface="add"] .command-surface__back {
+    display: none !important;
+  }
+
+  body[data-command-surface="list"] .tray-list {
+    background: var(--cgb-warm-50, #f7f6f2) !important;
+  }
+
+  body[data-command-surface="list"] .tray-list__header.mobile-destination-header {
+    position: static !important;
+    z-index: auto !important;
+    min-height: 0 !important;
+    padding: 16px 16px 11px !important;
+    backdrop-filter: none !important;
+  }
+
+  body[data-command-surface="list"] .tray-list__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 46px;
+    padding: 8px 16px 2px;
+    background: var(--cgb-warm-50, #f7f6f2);
+  }
+
+  body[data-command-surface="list"] #close-list-button {
+    display: none !important;
+  }
+
+  body[data-command-surface="list"] #clear-search-button:not([hidden]) {
+    display: inline-flex !important;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 12px;
+    white-space: nowrap;
+    text-decoration: none !important;
+    border: 1px solid var(--cgb-neutral-300);
+    border-radius: 999px;
+    background: var(--cgb-white);
+  }
+
   body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions {
     position: fixed !important;
     z-index: 47 !important;
@@ -209,6 +310,7 @@
 
 @media (max-width: 899px) and (orientation: portrait) {
   body[data-view="map"][data-command-surface="map"],
+  body[data-view="detail"],
   body[data-command-surface="search"],
   body[data-command-surface="add"],
   body[data-command-surface="list"] {
@@ -216,6 +318,7 @@
   }
 
   body[data-view="map"][data-command-surface="map"] .site-header,
+  body[data-view="detail"] .site-header,
   body[data-command-surface="search"] .site-header,
   body[data-command-surface="add"] .site-header,
   body[data-command-surface="list"] .site-header {

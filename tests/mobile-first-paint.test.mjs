@@ -5,6 +5,7 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const html = await readFile(new URL('index.html', root), 'utf8');
 const css = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
+const mobilePolishCss = await readFile(new URL('css/mobile-polish.css', root), 'utf8');
 const mapMobile = await readFile(new URL('js/map-mobile-refinement.mjs', root), 'utf8');
 const profileFirstPass = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
 const mobileTab = await readFile(new URL('js/mobile-tab-location-refinement.mjs', root), 'utf8');
@@ -45,7 +46,7 @@ test('settled portrait map geometry is available from static CSS before modules 
 test('portrait header makes game selection explicit without crowding the brand', () => {
   assert.match(
     css,
-    /data-command-surface="map"[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(94px/
+    /data-command-surface="map"[\s\S]*data-view="detail"[\s\S]*data-command-surface="search"[\s\S]*data-command-surface="add"[\s\S]*data-command-surface="list"[\s\S]*--header-height: calc\(94px/
   );
   assert.match(css, /\.site-header__brand-row[\s\S]*min-height: 62px !important[\s\S]*padding-right: min\(42vw, 164px\) !important/);
   assert.match(css, /#header-about-button[\s\S]*display: none !important/);
@@ -57,6 +58,36 @@ test('portrait header makes game selection explicit without crowding the brand',
   assert.match(css, /game-button__chevron[\s\S]*width: 14px !important/);
 });
 
+test('mobile Detail uses the compact header and a flush white page surface without a navy under-page flash', () => {
+  assert.match(html, /<meta name="theme-color" content="#ffffff">/);
+  assert.match(css, /body\[data-view="detail"\][\s\S]*--header-height: calc\(94px/);
+  assert.match(css, /body\[data-view="detail"\] \.site-header[\s\S]*height: var\(--header-height\) !important/);
+  assert.match(css, /body\[data-view="detail"\] \.detail-view \{[\s\S]*padding: 0 !important[\s\S]*background: var\(--cgb-white, #fff\) !important/);
+  assert.match(css, /body\[data-view="detail"\] \.detail-shell \{[\s\S]*width: 100% !important[\s\S]*max-width: none !important[\s\S]*padding: 0 !important/);
+  assert.match(css, /body\[data-view="detail"\] \.venue-detail \{[\s\S]*border: 0 !important[\s\S]*border-radius: 0 !important[\s\S]*box-shadow: none !important/);
+  assert.doesNotMatch(css, /body\[data-view="detail"\] \{[^}]*background-color: var\(--cgb-navy/);
+});
+
+test('Search Add and List use the same destination-header component with a dedicated optional List action', () => {
+  const sharedHeaders = html.match(/class="[^"]*mobile-destination-header[^"]*"/g) || [];
+  const mobileTabStyles = styleBlock(mobileTab);
+  assert.equal(sharedHeaders.length, 3);
+  assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>/);
+  assert.match(css, /\.mobile-destination-header \{[\s\S]*padding: 0 0 11px !important[\s\S]*border-bottom: 1px solid var\(--cgb-neutral-200\) !important/);
+  assert.match(css, /\.mobile-destination-header \.eyebrow[\s\S]*font-size: var\(--text-2xs/);
+  assert.match(css, /\.mobile-destination-header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);
+  assert.match(css, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*position: static !important[\s\S]*padding: 16px 16px 11px !important/);
+  assert.match(mobileTabStyles, /\.mobile-destination-header[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
+  assert.match(mobileTabStyles, /\.list-location-action[\s\S]*align-self: end[\s\S]*background: transparent[\s\S]*border: 0[\s\S]*border-radius: 0/);
+  assert.match(mobileTabStyles, /tray-list__toolbar[\s\S]*display: none !important/);
+  assert.match(mobileTab, /button\.id = 'list-location-button'/);
+  assert.match(mobileTab, /header\.append\(button\)/);
+  assert.match(mobileTab, /#list-location-button/);
+  assert.match(mobileTab, /list-location-action__label/);
+  assert.doesNotMatch(mobileTab, /header\.append\(button\)[\s\S]*toolbar\.prepend\(button\)/);
+  assert.doesNotMatch(mobileTab, /event\.target\.closest\?\.\('#clear-search-button'\)/);
+});
+
 test('map statistics tighten without crowding the header brand', () => {
   assert.match(
     css,
@@ -66,7 +97,7 @@ test('map statistics tighten without crowding the header brand', () => {
   assert.match(css, /data-command-surface="search"[\s\S]*opening-stat[\s\S]*display: none !important/);
 });
 
-test('initial map and secondary header geometry no longer have competing runtime style owners', () => {
+test('initial map and destination title typography avoid competing style owners', () => {
   const mapMobileStyles = styleBlock(mapMobile);
   const profileStyles = styleBlock(profileFirstPass);
   const mobileTabStyles = styleBlock(mobileTab);
@@ -79,6 +110,10 @@ test('initial map and secondary header geometry no longer have competing runtime
   assert.doesNotMatch(profileStyles, /data-command-surface="search"[\s\S]*site-header/);
   assert.doesNotMatch(profileStyles, /header-game-label/);
   assert.doesNotMatch(mobileTabStyles, /tray--peek/);
+  assert.doesNotMatch(mobileTabStyles, /command-surface__header/);
+  assert.doesNotMatch(mobileTabStyles, /tray-list__header h2|tray-list__header \.eyebrow/);
+  assert.doesNotMatch(mobilePolishCss, /data-command-surface="list"\] \.tray-list__header/);
+  assert.doesNotMatch(mobilePolishCss, /data-command-surface="search"\][\s\S]*--header-height: calc\(82px/);
 });
 
 test('detail routing still overrides the safe initial map state synchronously', () => {

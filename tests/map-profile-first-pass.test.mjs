@@ -6,25 +6,24 @@ const root = new URL('../', import.meta.url);
 const profile = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 
-test('profile pass no longer overrides the shared Search Add and List header', () => {
+test('profile pass no longer overrides shared branded header geometry', () => {
   assert.doesNotMatch(profile, /HEADER_OVERHANG/);
   assert.doesNotMatch(profile, /--header-height: calc\(176px/);
   assert.doesNotMatch(profile, /site-header__brand-row/);
   assert.doesNotMatch(profile, /opening-stat[\s\S]*display: grid !important/);
   assert.doesNotMatch(profile, /header-game-label/);
-  assert.match(profile, /@media \(max-width: 899px\) \{[\s\S]*search-field:focus-within/);
+  assert.match(profile, /@media \(max-width: 899px\) \{/);
 });
 
-test('List fully replaces the map directly below the shared header', () => {
+test('List fully replaces the map while static CSS owns its destination header', () => {
   assert.match(profile, /data-command-surface="list"\] #map[\s\S]*visibility: hidden !important/);
   assert.match(profile, /tray--full[\s\S]*position: fixed !important/);
   assert.match(profile, /inset: var\(--header-height\) 0 var\(--footer-height\) 0 !important/);
   assert.match(profile, /border-radius: 0 !important/);
+  assert.doesNotMatch(profile, /tray-list__header|tray-list__toolbar|clear-search-button|location-list/);
 });
 
-test('Search has one focus outline and no nested input highlight', () => {
-  assert.match(profile, /search-field:focus-within/);
-  assert.match(profile, /search-field input:focus-visible[\s\S]*box-shadow: none !important/);
+test('Search language remains concise', () => {
   assert.match(profile, /Search Cal Golden Bars or add another location to the map\./);
 });
 
