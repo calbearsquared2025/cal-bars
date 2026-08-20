@@ -18,7 +18,7 @@ test('Search Add and List hide the map and Search does not show a selected tray'
 });
 
 test('Search Add and List presentation is owned by static first-paint CSS', () => {
-  assert.doesNotMatch(source, /command-surface__header|command-surface__back|tray-list__header|clear-search-button|close-list-button/);
+  assert.doesNotMatch(source, /command-surface__header|command-surface__back|tray-list__header|close-list-button/);
   assert.match(firstPaintCss, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*padding: 16px 16px 11px !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__toolbar/);
@@ -51,11 +51,21 @@ test('Locate Me stays on Map and restores Nearby preview', () => {
   assert.match(app, /function focusLocation[\s\S]*fitBounds/);
 });
 
-test('List toggles between Near me and All locations', () => {
-  assert.match(source, /button\.textContent = usingLocation \? 'All locations' : 'Near me'/);
-  assert.match(source, /requestLocation\('list'\)/);
-  assert.match(source, /showAllLocations\(\)/);
+test('mobile List toggles Nearby to all locations and back without a second geolocation request', () => {
+  assert.match(source, /let rememberedLocation = null/);
+  assert.match(source, /function showAllLocations\(\)[\s\S]*rememberedLocation = activeUserLocation[\s\S]*state\.origin = null/);
+  assert.match(source, /function showNearbyLocations[\s\S]*state\.origin = \{ \.\.\.rememberedLocation \}/);
+  assert.match(source, /label\.textContent = usingLocation \? 'All locations' : canRestoreNearby \? 'Show nearby' : 'Near me'/);
+  assert.match(source, /handleListLocationClick[\s\S]*showAllLocations\(\)[\s\S]*showNearbyLocations\('list'\)[\s\S]*requestLocation\('list'\)/);
   assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
+});
+
+test('desktop Show all preserves the resolved user location and Near me becomes Show nearby', () => {
+  assert.match(source, /function handleDesktopClearSearchClick[\s\S]*!userLocation\(appState\(\)\?\.origin\)[\s\S]*showAllLocations\(\)/);
+  assert.match(source, /function syncNearMeControl[\s\S]*locationFilterSuppressed && rememberedLocation \? 'Show nearby' : 'Near me'/);
+  assert.match(source, /function handleLocateClick[\s\S]*locationFilterSuppressed && rememberedLocation[\s\S]*showNearbyLocations\(isMobile\(\) \? 'map' : 'list'\)/);
+  assert.match(source, /Showing all mapped locations\. Your location is saved for Nearby\./);
+  assert.match(source, /using your saved location/);
 });
 
 test('Nearby sheet handle remains tappable to open the List destination', () => {
