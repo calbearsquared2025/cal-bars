@@ -9,6 +9,7 @@ const [
   mobile,
   css,
   detailCss,
+  profileCss,
   detailRefinement,
   shellControls,
   fanIntent,
@@ -26,6 +27,7 @@ const [
   read('../js/map-mobile-refinement.mjs'),
   read('../css/design-board-4.css'),
   read('../css/venue-detail.css'),
+  read('../css/venue-profile.css'),
   read('../js/icon-upgrade.mjs'),
   read('../js/shell-controls.mjs'),
   read('../js/fan-intent.js'),
@@ -45,69 +47,95 @@ test('selected mini and full profiles share the compact useful-address formatter
   assert.match(mobile, /\[context, type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/);
 });
 
-test('Detail retains the global game selector while removing opening stats and the duplicate in-page game module', () => {
+test('the complete Venue Profile includes explicit selected-game context while retaining the global game selector', () => {
   assert.match(html, /id="game-button"/);
   assert.match(app, /dom\.headerGameLabel\.textContent = gameTitle\(game\)/);
   assert.match(app, /dom\.headerKickoff\.textContent = formatKickoff\(game\)/);
   assert.match(app, /function selectGame\(gameId\)[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)/);
-  assert.match(detailCss, /body\[data-view="detail"\] \.site-header[\s\S]*display: grid !important/);
-  assert.match(detailCss, /body\[data-view="detail"\] \.opening-stat,[\s\S]*display: none !important/);
-  assert.doesNotMatch(app, /className = 'detail-game-context'/);
-  assert.doesNotMatch(detailCss, /detail-game-context::after/);
+  assert.match(app, /function renderGameContext\(game\)[\s\S]*eyebrow\.textContent = 'Selected game'[\s\S]*heading\.textContent = gameTitle\(game\)[\s\S]*kickoff\.textContent = formatKickoff\(game\)/);
+  assert.match(app, /dom\.venueDetail\.append\(renderGameContext\(game\)\)/);
+  assert.match(detailCss, /body\[data-view="detail"\] \.detail-game-context/);
+  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-game-context/);
 });
 
-test('Detail route and presentation are established before asynchronous application rendering', () => {
+test('direct Venue first paint is viewport-aware instead of forcing desktop into standalone Detail', () => {
   const detailStyles = html.indexOf('href="css/venue-detail.css"');
   const applicationModule = html.indexOf('src="js/app.js"');
   assert.ok(detailStyles > -1 && detailStyles < applicationModule);
-  assert.match(html, /new URLSearchParams\(window\.location\.search\)\.has\('venue'\)[\s\S]*document\.body\.dataset\.view = 'detail'/);
+  assert.match(html, /directVenueRoute[\s\S]*matchMedia\('\(max-width: 899px\)'\)\.matches[\s\S]*document\.body\.dataset\.view = 'detail'/);
   assert.match(detailCss, /body\[data-view="detail"\] #map-view[\s\S]*display: none !important/);
   assert.match(detailCss, /body\[data-view="detail"\] #detail-view\[hidden\][\s\S]*display: block !important/);
-  assert.doesNotMatch(detailRefinement, /installDesktopDetailHierarchy|cgb-desktop-detail-hierarchy|createElement\('style'\)/);
-  assert.match(shellControls, /pendingDirectDetail[\s\S]*aria-busy[\s\S]*has\('venue'\)[\s\S]*detailVisible = !dom\.detailView\?\.hidden \|\| pendingDirectDetail/);
+  assert.match(shellControls, /pendingDirectDetail = isMobileLayout\(\)[\s\S]*aria-busy[\s\S]*has\('venue'\)/);
+  assert.doesNotMatch(profileCss, /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\]/);
+  assert.doesNotMatch(css, /body\[data-view="detail"\] \.venue-detail[\s\S]*grid-template-columns: minmax\(0, 1\.15fr\)/);
 });
 
-test('initial Detail render waits for contribution adapters to register', () => {
+test('initial mobile Detail render still waits for contribution adapters to register', () => {
   const applicationModule = html.indexOf('src="js/app.js"');
   const contributionModule = html.indexOf('src="js/watch-party-form.js"');
   assert.ok(applicationModule > -1 && contributionModule > applicationModule);
   assert.match(app, /document\.addEventListener\('DOMContentLoaded', boot, \{ once: true \}\)/);
   assert.match(watchPartyForm, /app\.subscribe\('rendered', render\)[\s\S]*initializeCalBarNominationEntry[\s\S]*initializeListingUpdateEntry/);
   assert.match(detailHarness, /await waitFor\(\(\) => Boolean\(element\('#venue-detail > \.detail-contribution'\)\), 'compact contribution section'\)/);
-  assert.match(detailHarness, /verifyImmediateSingleOwnerRerender\(venue, hasParty, fixtureMode\)[\s\S]*verifyContribution\(venue, fixtureMode\)/);
 });
 
-test('app.js is the single structural owner for Venue Detail on every render', () => {
-  assert.match(app, /function renderDetailView\(\)[\s\S]*createDetailLocalMap\(venue\)[\s\S]*createDetailBadges\(venue, party\)/);
-  assert.match(app, /function renderDetailView\(\)[\s\S]*createDetailContribution\(\)[\s\S]*createDetailActionRow\(venue\)/);
+test('one Venue Profile element and one structural builder serve mobile Detail and desktop rail', () => {
+  assert.match(app, /function placeVenueProfile\(mobile\)[\s\S]*dom\.detailShell\.append\(dom\.venueDetail\)[\s\S]*dom\.traySelected\.replaceChildren\(dom\.venueDetail\)/);
+  assert.match(app, /function renderVenueProfile\(\)[\s\S]*placeVenueProfile\(mobile\)[\s\S]*createDetailLocalMap\(venue\)[\s\S]*createDetailBadges\(venue, party\)/);
+  assert.match(app, /function renderVenueProfile\(\)[\s\S]*createDetailContribution\(\)[\s\S]*createDetailActionRow\(venue\)/);
+  assert.doesNotMatch(app, /function renderDetailView\(/);
   assert.doesNotMatch(detailRefinement, /function refineVenueDetail|function refineDetailIdentity|function refineDetailAttendance|function refineDetailContribution|function refineDetailPrimaryActions/);
   assert.doesNotMatch(fanIntent, /function renderDetailActivity/);
   assert.match(detailRefinement, /syncDetailLocalMap\(hero, venue, state\)/);
-  assert.match(detailHarness, /function verifyImmediateSingleOwnerRerender\(venue, hasParty, fixtureMode\)[\s\S]*window\.CGBApp\?\.render\?\.\(\)[\s\S]*Base rerender should not recreate the superseded selected-game module/);
 });
 
-test('direct route and refresh coverage retains game and Venue identity for known and TBD kickoff states', () => {
+test('desktop Venue selection keeps the map active, opens the complete Profile, and canonicalizes the Venue URL', () => {
+  assert.match(app, /function selectVenue\(venueId\)[\s\S]*if \(!isMobileLayout\(\)\) \{[\s\S]*state\.detailMode = true[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)/);
+  assert.match(app, /function initMap\(\)[\s\S]*state\.detailMode && isMobileLayout\(\)/);
+  assert.match(app, /function renderVenueProfile\(\)[\s\S]*if \(mobile\) \{[\s\S]*dom\.mapView\.hidden = true[\s\S]*\} else \{[\s\S]*dom\.mapView\.hidden = false[\s\S]*setTrayState\('selected'\)/);
+  assert.match(app, /function renderAll\(\)[\s\S]*if \(state\.detailMode\) \{[\s\S]*renderVenueProfile\(\)[\s\S]*if \(!mobile\) \{[\s\S]*renderLocationList\(\)[\s\S]*initMap\(\)/);
+  assert.match(detailCss, /@media \(min-width: 900px\)[\s\S]*#tray-selected > #venue-detail/);
+});
+
+test('desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition', () => {
+  const compactActions = app.match(/function createActionRow\(venue, \{ details = true \} = \{\}\)[\s\S]*?function createDetailActionRow/)?.[0] || '';
+  const fullActions = app.match(/function createDetailActionRow\(venue\)[\s\S]*?function createDetailContribution/)?.[0] || '';
+  assert.match(compactActions, /detail\.textContent = 'View details'/);
+  assert.match(fullActions, /row\.append\(intent, share\)/);
+  assert.doesNotMatch(fullActions, /View details|View venue|details = true/);
+  assert.match(app, /function renderSelectedCard\(\)[\s\S]*card\.append\(createActionRow\(venue\)\)/);
+  assert.match(app, /function renderVenueProfile\(\)[\s\S]*dom\.venueDetail\.append\(createDetailActionRow\(venue\)\)/);
+});
+
+test('direct route and sharing retain canonical game and Venue identity', () => {
   assert.match(app, /const venueSlug = params\.get\('venue'\)/);
   assert.match(app, /const requestedGame = params\.get\('game'\)/);
-  assert.match(app, /buildVenueUrl\(venue\.slug, state\.gameId, location\.href\)/);
+  assert.match(app, /resolveGameRouteParam\(state\.snapshot\.games, requestedGame\)/);
+  assert.match(app, /buildVenueUrl\(venue\.slug, game, location\.href\)/);
   assert.match(runner, /Production TBD direct-route refresh harness/);
   assert.match(runner, /Production direct-route refresh harness/);
 });
 
-test('Detail Back returns to the focused map with the same Venue selected', () => {
-  assert.match(app, /function returnToMapFromDetail\(event\)[\s\S]*event\.preventDefault\(\)[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('selected'\)[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)[\s\S]*focusReturnedDetailVenue\(venue\)/);
-  assert.match(app, /function focusReturnedDetailVenue\(venue\)[\s\S]*center: \[longitude, latitude\][\s\S]*zoom: Math\.max\(currentZoom, 11\)/);
+test('mobile Back returns to the focused map while desktop does not manufacture a Detail back transition', () => {
+  assert.match(app, /function returnToMapFromDetail\(event\)[\s\S]*event\.preventDefault\(\)[\s\S]*if \(!isMobileLayout\(\)\) return;[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('selected'\)[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)[\s\S]*focusReturnedDetailVenue\(venue\)/);
   assert.match(app, /dom\.detailBack\.addEventListener\('click', returnToMapFromDetail\)/);
+  assert.match(shellControls, /function leaveDetailForCommand\(\)[\s\S]*if \(!isMobileLayout\(\) \|\| !state\?\.detailMode\) return false/);
 });
 
-test('no-photo Detail creates one noninteractive Venue-local MapLibre map from canonical coordinates', () => {
+test('viewport class changes preserve Venue and game state without mutating the canonical URL', () => {
+  const transition = app.match(/function handleViewportClassChange\(\)[\s\S]*?function wireEvents/)?.[0] || '';
+  assert.match(transition, /const mobile = isMobileLayout\(\)/);
+  assert.match(transition, /if \(!mobile && state\.selectedVenueId\) state\.detailMode = true/);
+  assert.match(transition, /renderAll\(\)/);
+  assert.doesNotMatch(transition, /updateRouteForGame|history\.|location\./);
+  assert.match(app, /MOBILE_MEDIA\.addEventListener\?\.\('change', handleViewportClassChange\)/);
+});
+
+test('no-photo mobile Detail creates one noninteractive Venue-local MapLibre map from canonical coordinates', () => {
   assert.match(app, /venue\.photo_url \? '' : ' detail-hero--no-photo'/);
   assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*dataset\.latitude = String\(latitude\)[\s\S]*dataset\.longitude = String\(longitude\)[\s\S]*dataset\.zoom = '16'/);
   assert.match(detailRefinement, /const DETAIL_MAP_ZOOM = 16\.0/);
-  assert.match(detailRefinement, /const latitude = Number\(venue\.latitude\)/);
-  assert.match(detailRefinement, /const longitude = Number\(venue\.longitude\)/);
   assert.match(detailRefinement, /center: \[longitude, latitude\]/);
-  assert.match(detailRefinement, /zoom: DETAIL_MAP_ZOOM/);
   assert.match(detailRefinement, /interactive: false/);
   assert.match(detailRefinement, /attributionControl: false/);
   assert.equal((detailRefinement.match(/new window\.maplibregl\.Marker/g) || []).length, 1);
@@ -127,17 +155,19 @@ test('mobile Detail reserves only the fixed-action footprint above the global na
   assert.match(detailCss, /\.action-row\.detail-primary-actions[\s\S]*padding:[^;]*env\(safe-area-inset-bottom, 0px\)/);
 });
 
-test('photo-present Detail uses profile enhancement and tears down the local-map fallback', () => {
+test('photo-present Profile uses the existing enhancement and tears down the local-map fallback', () => {
   assert.match(app, /venue\.photo_url \? '' : ' detail-hero--no-photo'/);
   assert.match(detailRefinement, /enhanceVenueProfile\(\{ state, documentObject: document, onPhotoError: scheduleUpgrade \}\)[\s\S]*syncDetailLocalMap\(hero, venue, state\)/);
   assert.match(detailRefinement, /function syncDetailLocalMap\(hero, venue, state\)[\s\S]*const container = hero\?\.querySelector\('\.detail-local-map'\)[\s\S]*if \(!container\) \{[\s\S]*destroyDetailLocalMap\(\)/);
+  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-photo__frame[\s\S]*aspect-ratio: 16 \/ 10/);
 });
 
-test('Detail identity moves Directions and short description into the address hierarchy', () => {
+test('Profile identity keeps Directions, website, address, and description in one hierarchy', () => {
   assert.match(app, /addressActions\.className = 'detail-address-actions'/);
   assert.match(app, /directions\.className = 'detail-directions-inline'/);
+  assert.match(app, /website\.className = 'detail-website-inline'/);
   assert.match(app, /hero\.append\(addressActions\)[\s\S]*description\.className = 'detail-description'[\s\S]*hero\.append\(description\)/);
-  assert.match(detailCss, /detail-description[\s\S]*color: var\(--cgb-ink-700\)/);
+  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-address/);
 });
 
 test('FAN-ADDED is provenance-only and suppressed for Cal Bars', () => {
@@ -155,35 +185,31 @@ test('Watch Party identity coverage includes Cal Bar, fan-added non-Cal-Bar, and
   assert.match(harness, /Watch Party at a Community Location should remain distinct from a Cal Bar/);
 });
 
-test('Detail attendance separates the numeral from the singular/plural label', () => {
+test('Profile attendance separates the numeral from the singular/plural label', () => {
   assert.match(app, /className = 'bear-count__number'/);
   assert.match(app, /className = 'bear-count__label'/);
   assert.match(app, /number === 1 \? 'Bear watching here' : 'Bears watching here'/);
   assert.match(detailCss, /activity-card > strong[\s\S]*gap: 6px/);
 });
 
-test('Detail Watch Party treatment reuses gold language, page scrolling, and scopes exact external copy to Detail', () => {
+test('Watch Party treatment and adapters remain attached to the shared Profile element', () => {
   assert.match(watchPartyDisplay, /if \(detail\) link\.append\(createIcon\('external'\), document\.createTextNode\('External event details'\)\)/);
-  assert.match(watchPartyDisplay, /else link\.textContent = 'Open event information'/);
   assert.match(watchPartyDisplay, /container\.querySelector\(':scope > \.detail-contribution, :scope > \.action-row'\)/);
-  assert.match(detailCss, /venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
-  assert.match(detailCss, /max-height: none !important/);
-  assert.match(detailCss, /overflow: visible !important/);
-  assert.match(detailCss, /party-module__report[\s\S]*justify-self: end[\s\S]*font-size: \.65rem !important/);
+  assert.match(detailCss, /#tray-selected > #venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
   assert.match(watchPartyDisplay, /party-module__report/);
 });
 
-test('Detail persistent action row resolves to Fan Intent and Share while Directions moves out of it', () => {
+test('persistent Profile action row resolves to Fan Intent and Share while Directions stays in identity', () => {
   const detailActionSource = app.match(/function createDetailActionRow\(venue\)[\s\S]*?function createDetailContribution/)?.[0] || '';
   assert.match(app, /row\.className = 'action-row detail-primary-actions'/);
   assert.match(app, /share\.className = 'secondary-button detail-share'/);
   assert.match(app, /row\.append\(intent, share\)/);
   assert.doesNotMatch(detailActionSource, /directions/i);
-  assert.match(detailCss, /grid-template-columns: minmax\(0, 1fr\) minmax\(96px, \.42fr\)/);
   assert.match(app, /share\.append\(createIcon\('share'\), document\.createTextNode\('Share'\)\)/);
+  assert.match(detailCss, /#tray-selected > #venue-detail > \.action-row\.detail-primary-actions[\s\S]*position: sticky/);
 });
 
-test('Detail contributions consolidate existing configured actions without changing their URLs or eligibility owners', () => {
+test('Profile contributions retain existing URLs and are tertiary in the desktop rail', () => {
   assert.match(app, /heading\.textContent = 'Help improve this listing'/);
   assert.match(watchPartyForm, /link\.dataset\.watchPartyFormEntryPoint = 'true'/);
   assert.match(calBarNomination, /link\.dataset\.calBarNominationEntry = 'true'/);
@@ -192,8 +218,13 @@ test('Detail contributions consolidate existing configured actions without chang
     assert.match(source, /detail-contribution__actions/);
     assert.match(source, /actions\.append\(link\)/);
   });
-  assert.match(listingUpdate, /Report a problem with this listing'/);
-  assert.doesNotMatch(listingUpdate, /Report a problem with this listing\./);
+  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-contribution__actions[\s\S]*grid-template-columns: 1fr/);
+  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-contribution__action[\s\S]*background: transparent/);
+});
+
+test('desktop map visibility accounts for the Profile rail instead of letting the selected marker sit behind it', () => {
+  assert.match(app, /function mapVisibilityMetrics\(\)[\s\S]*if \(!mobile && dom\.tray[\s\S]*insets\.right = Math\.max/);
+  assert.match(app, /function scheduleSelectedVenueVisibility\(\)[\s\S]*state\.detailMode && isMobileLayout\(\)/);
 });
 
 test('edge fixtures and runner cover zero Bears, long content, portrait, short landscape, and desktop', () => {
