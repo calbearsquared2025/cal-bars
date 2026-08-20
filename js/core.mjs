@@ -51,6 +51,30 @@ export function gameTitle(game) {
   return `vs. ${opponent}`;
 }
 
+function slugifyRoutePart(value) {
+  return String(value || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[’']/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+export function gameRouteParam(game) {
+  return slugifyRoutePart(game?.opponent_name) || String(game?.game_id || '').trim();
+}
+
+export function resolveGameRouteParam(games, value) {
+  const requested = String(value || '').trim();
+  if (!requested) return null;
+  const list = games || [];
+  const byId = list.find((game) => game?.game_id === requested);
+  if (byId) return byId;
+  const requestedSlug = slugifyRoutePart(requested);
+  return list.find((game) => gameRouteParam(game) === requestedSlug) || null;
+}
+
 export function venueTypeLabel(venue) {
   return venue?.venue_type === 'cal_bar' ? 'CAL BAR' : 'FAN-ADDED';
 }
@@ -186,18 +210,20 @@ export function resolveTrayState(current, action, hasSelection = false) {
   return state;
 }
 
-export function buildGameUrl(gameId, baseHref) {
+export function buildGameUrl(game, baseHref) {
   const url = new URL(baseHref);
   url.search = '';
-  if (gameId) url.searchParams.set('game', gameId);
+  const gameParam = gameRouteParam(game);
+  if (gameParam) url.searchParams.set('game', gameParam);
   return url.toString();
 }
 
-export function buildVenueUrl(slug, gameId, baseHref) {
+export function buildVenueUrl(slug, game, baseHref) {
   const url = new URL(baseHref);
   url.search = '';
   if (slug) url.searchParams.set('venue', slug);
-  if (gameId) url.searchParams.set('game', gameId);
+  const gameParam = gameRouteParam(game);
+  if (gameParam) url.searchParams.set('game', gameParam);
   return url.toString();
 }
 
