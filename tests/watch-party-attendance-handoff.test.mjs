@@ -21,8 +21,9 @@ test('handoff exposes one explicit attendance choice and one sharing choice', ()
   assert.match(source, /Before we open it, will you be at this Watch Party\?/);
 });
 
-test('choice click can synchronously reserve a child window for the Google Form transfer', () => {
+test('choice click can synchronously reserve an isolated child window for the Google Form transfer', () => {
   const child = {
+    opener: {},
     closed: false,
     document: { title: '', body: { textContent: '' } },
     location: { href: '' }
@@ -36,6 +37,7 @@ test('choice click can synchronously reserve a child window for the Google Form 
   };
 
   assert.equal(openWaitingFormWindow(fakeWindow), child);
+  assert.equal(child.opener, null);
   assert.equal(child.document.title, 'Loading Watch Party submission form');
   assert.equal(child.document.body.textContent, 'Loading Watch Party submission form…');
 });
