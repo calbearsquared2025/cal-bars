@@ -5,7 +5,7 @@ import { buildVenueShareMessage, shareOrCopy } from '../js/core.mjs';
 
 const appSource = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
 
-const url = 'https://example.com/?venue=george-and-walts&game=game_1';
+const url = 'https://example.com/?venue=george-and-walts&game=ucla';
 
 test('standard venue share uses the approved invitation copy exactly', () => {
   assert.equal(buildVenueShareMessage({
