@@ -206,6 +206,11 @@
     box-shadow: var(--shadow-xs);
   }
 
+  .command-surface .search-field input:focus-visible {
+    outline: 0;
+    box-shadow: none;
+  }
+
   .command-surface .search-submit {
     clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
   }
