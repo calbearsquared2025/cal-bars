@@ -76,25 +76,6 @@ body[data-view="detail"] .venue-detail {
   }
 }
 
-body[data-view="detail"] .detail-game-context {
-  margin: 12px 16px 0 !important;
-  padding: 12px 14px !important;
-  background: var(--cgb-navy-50) !important;
-  border: 1px solid var(--cgb-neutral-200) !important;
-  border-radius: 14px !important;
-}
-
-body[data-view="detail"] .detail-game-context h2 {
-  margin: 3px 0 2px !important;
-  color: var(--cgb-navy-950) !important;
-  font-size: 1rem !important;
-}
-
-body[data-view="detail"] .detail-game-context p {
-  color: var(--cgb-ink-500) !important;
-  font-size: var(--text-xs) !important;
-}
-
 body[data-view="detail"] .detail-hero.detail-hero--no-photo {
   min-height: 0 !important;
   display: block !important;
@@ -597,7 +578,6 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
     line-height: 1.3 !important;
   }
 
-  #tray-selected > #venue-detail .detail-game-context,
   #tray-selected > #venue-detail .activity-card,
   #tray-selected > #venue-detail > .party-module,
   #tray-selected > #venue-detail .detail-editorial,
@@ -608,23 +588,6 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
     border-top: 1px solid var(--cgb-neutral-200) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-  }
-
-  #tray-selected > #venue-detail .detail-game-context {
-    background: var(--cgb-navy-50) !important;
-  }
-
-  #tray-selected > #venue-detail .detail-game-context h2 {
-    margin: 4px 0 2px !important;
-    color: var(--cgb-navy-950) !important;
-    font-size: .98rem !important;
-    line-height: 1.2 !important;
-  }
-
-  #tray-selected > #venue-detail .detail-game-context p {
-    margin: 0 !important;
-    color: var(--cgb-ink-500) !important;
-    font-size: .72rem !important;
   }
 
   #tray-selected > #venue-detail .activity-card {
