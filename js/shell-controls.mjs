@@ -197,7 +197,7 @@ function moveSearchForm() {
 
 function leaveDetailForCommand() {
   const state = appState();
-  if (!state?.detailMode) return false;
+  if (!isMobileLayout() || !state?.detailMode) return false;
   const back = document.querySelector('#detail-back');
   if (!back) return false;
   back.click();
@@ -373,7 +373,8 @@ function normalizeDesktopTray() {
 }
 
 function syncViewState() {
-  const pendingDirectDetail = dom.app?.getAttribute('aria-busy') === 'true' &&
+  const pendingDirectDetail = isMobileLayout() &&
+    dom.app?.getAttribute('aria-busy') === 'true' &&
     new URLSearchParams(location.search).has('venue');
   const detailVisible = !dom.detailView?.hidden || pendingDirectDetail;
   document.body.dataset.view = detailVisible ? 'detail' : 'map';
