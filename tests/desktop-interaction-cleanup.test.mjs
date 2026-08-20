@@ -3,17 +3,30 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [html, shellControls, commandCss] = await Promise.all([
+const [html, shellControls, commandCss, mobilePolish] = await Promise.all([
   read('../index.html'),
   read('../js/shell-controls.mjs'),
-  read('../css/mobile-command-navigation.css')
+  read('../css/mobile-command-navigation.css'),
+  read('../js/mobile-polish.mjs')
 ]);
 
-test('desktop map toolbar owns a dedicated Add location action', () => {
-  assert.match(html, /class="map-actions"[\s\S]*id="near-me-button"[\s\S]*id="desktop-add-location-button"[\s\S]*Add location/);
-  assert.match(shellControls, /function showDesktopAddLocation\(\)[\s\S]*setSurface\('map'\)[\s\S]*dom\.searchInput\.value = ''[\s\S]*dom\.searchInput\?\.focus/);
-  assert.match(shellControls, /dom\.desktopAddLocationButton\.addEventListener\('click', showDesktopAddLocation\)/);
-  assert.doesNotMatch(shellControls, /desktopAddLocationButton\.addEventListener\('click', showAdd\)/);
+test('desktop map toolbar separates Search, Near me, and Add location', () => {
+  assert.match(html, /class="map-actions"[\s\S]*id="near-me-button"[\s\S]*id="desktop-add-location-button"[\s\S]*Add location[\s\S]*id="desktop-add-location-hint"/);
+  assert.match(commandCss, /@media \(min-width: 900px\)[\s\S]*\.map-toolbar \.map-actions \{[\s\S]*position: static;[\s\S]*display: flex;/);
+  assert.match(commandCss, /\.map-toolbar \.map-actions \.secondary-button \{[\s\S]*width: auto;[\s\S]*font-size: \.72rem;/);
+  assert.doesNotMatch(commandCss.match(/@media \(min-width: 900px\)[\s\S]*/)?.[0] || '', /\.map-toolbar \.map-actions \{[\s\S]*position: absolute;/);
+});
+
+test('desktop Add location enters an explicit search mode instead of only focusing the field', () => {
+  const desktopAddSource = shellControls.match(/function setDesktopAddLocationMode\(active\)[\s\S]*?function beginContribution/)?.[0] || '';
+  assert.match(desktopAddSource, /dataset\.desktopSearchMode = 'add-location'/);
+  assert.match(desktopAddSource, /desktopAddLocationButton\.setAttribute\('aria-pressed'/);
+  assert.match(desktopAddSource, /desktopAddLocationHint\.hidden = !enabled/);
+  assert.match(desktopAddSource, /Search for the location to add/);
+  assert.match(desktopAddSource, /showStatus\('Search for the place you want to add\./);
+  assert.match(desktopAddSource, /dom\.searchInput\?\.focus/);
+  assert.doesNotMatch(desktopAddSource, /setSurface\('add'\)|showAdd\(/);
+  assert.match(commandCss, /body\[data-desktop-search-mode="add-location"\] \.map-toolbar \.search-field/);
 });
 
 test('desktop rail keeps only Locations and Selected while mobile retains generic Add', () => {
@@ -23,16 +36,18 @@ test('desktop rail keeps only Locations and Selected while mobile retains generi
   assert.match(shellControls, /document\.querySelector\('#mobile-add-button'\)\?\.addEventListener\('click', showAdd\)/);
 });
 
-test('desktop Locations teaches the browse workflow before the ranked list', () => {
-  assert.match(html, /class="desktop-locations-guidance"[\s\S]*<strong>Find your Cal crowd<\/strong>[\s\S]*Search a city or choose a location below to see where Bears are gathering for the selected game\.[\s\S]*id="location-list"/);
-  assert.match(commandCss, /\.desktop-locations-guidance \{[\s\S]*display: none/);
-  assert.match(commandCss, /@media \(min-width: 900px\)[\s\S]*\.desktop-locations-guidance \{[\s\S]*display: grid/);
+test('desktop Locations presents nearby state and guidance as one compact browse header', () => {
+  assert.match(html, /id="list-heading">Locations<\/h2>[\s\S]*class="tray-list__toolbar"[\s\S]*id="clear-search-button"[\s\S]*class="desktop-locations-guidance"[\s\S]*<strong>Find your Cal crowd<\/strong>[\s\S]*id="location-list"/);
+  assert.match(commandCss, /\.venue-tray \.tray-list__header \{[\s\S]*background: var\(--cgb-white/);
+  assert.match(commandCss, /#clear-search-button:not\(\[hidden\]\)[\s\S]*border-radius: 999px/);
+  assert.match(commandCss, /content: attr\(data-proximity-label\)/);
+  assert.match(shellControls, /dataset\.proximityLabel = `Nearby · within \$\{NEARBY_RADIUS_MILES\} miles`/);
+  assert.match(shellControls, /clearSearchButton\.textContent = 'Show all'/);
 });
 
-test('desktop Add location reuses search instead of the contribution surface', () => {
-  const desktopAddSource = shellControls.match(/function showDesktopAddLocation\(\)[\s\S]*?function beginContribution/)?.[0] || '';
-  assert.match(desktopAddSource, /setSurface\('map'\)/);
-  assert.match(desktopAddSource, /searchInput/);
-  assert.doesNotMatch(desktopAddSource, /setSurface\('add'\)|showAdd\(/);
-  assert.match(html, /id="add-surface"/);
+test('desktop browse heading is no longer overwritten by the mobile Nearby heading refinement', () => {
+  const headingSource = mobilePolish.match(/function updateListHeading\(\)[\s\S]*?function normalizeSearchLabels/)?.[0] || '';
+  assert.match(headingSource, /if \(!isMobile\(\)\) return;/);
+  assert.match(shellControls, /dom\.listHeading\.textContent = 'Locations'/);
+  assert.match(shellControls, /dom\.listEyebrow\.textContent = 'Browse'/);
 });
