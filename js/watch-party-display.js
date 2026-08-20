@@ -1,3 +1,4 @@
+import { formatGameDate, gameTitle } from './core.mjs';
 import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';
 import {
   buildWatchPartyIssueUrl,
@@ -23,6 +24,12 @@ function appendText(container, text, className = '') {
   container.append(line);
 }
 
+function watchPartyGameContext(snapshot, party) {
+  const game = snapshot?.games?.find((candidate) => candidate.game_id === party?.game_id);
+  if (!game) return '';
+  return [gameTitle(game), formatGameDate(game)].filter(Boolean).join(' · ');
+}
+
 function renderParty(party, index, total, snapshot, { detail = false } = {}) {
   const module = document.createElement('section');
   module.className = 'party-module party-module--multiple';
@@ -38,6 +45,7 @@ function renderParty(party, index, total, snapshot, { detail = false } = {}) {
   title.append(star, titleText);
   module.append(title);
 
+  appendText(module, watchPartyGameContext(snapshot, party), 'party-game-context');
   appendText(module, `Hosted by ${party.organizer_name}`);
 
   if (party.event_start_at) {
