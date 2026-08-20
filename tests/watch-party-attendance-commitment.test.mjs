@@ -7,6 +7,7 @@ const bootstrapSource = await readFile(new URL('js/icon-upgrade.mjs', root), 'ut
 const stabilizationSource = await readFile(new URL('js/final-functional-stabilization.mjs', root), 'utf8');
 const profileSource = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
 const shellSource = await readFile(new URL('js/shell-controls.mjs', root), 'utf8');
+const handoffSource = await readFile(new URL('js/watch-party-attendance-handoff.mjs', root), 'utf8');
 const fanIntentSource = await readFile(new URL('js/fan-intent.js', root), 'utf8');
 const fanIntentControllerSource = await readFile(new URL('js/fan-intent-controller.mjs', root), 'utf8');
 
@@ -18,7 +19,7 @@ function functionBody(source, name, nextName) {
   return source.slice(start, end);
 }
 
-test('selected venue Watch Party action has one navigation owner', () => {
+test('selected venue Watch Party action has one navigation owner and uses the shared handoff', () => {
   const presentation = functionBody(profileSource, 'addPlanWatchPartyAction', 'normalizeActionLabels');
   const contribution = functionBody(shellSource, 'beginContribution', 'handleSelectedVenueWatchParty');
   const selectedAction = functionBody(shellSource, 'handleSelectedVenueWatchParty', 'handleSearchResultClick');
@@ -32,13 +33,17 @@ test('selected venue Watch Party action has one navigation owner', () => {
   assert.doesNotMatch(selectedAction, /stopPropagation|stopImmediatePropagation|\.click\(\)/);
   assert.match(shellSource, /document\.addEventListener\('click', handleSelectedVenueWatchParty\)/);
   assert.doesNotMatch(shellSource, /handleSelectedVenueWatchParty, \{ capture: true \}/);
-  assert.ok(contribution.indexOf('openExternalUrl(href)') < contribution.indexOf('window.CGBFanIntent'));
+  assert.match(contribution, /openWatchPartyUrlWithAttendanceChoice/);
+  assert.doesNotMatch(contribution, /ensureAttendance\s*=/);
 });
 
-test('selected venue Watch Party action delegates attendance to the existing Fan Intent owner', () => {
+test('Watch Party handoff keeps attendance explicit and delegates yes to the existing Fan Intent owner', () => {
   assert.doesNotMatch(bootstrapSource, /watch-party-attendance-commitment/);
-  assert.match(shellSource, /ensureAttendance && intent === CONTRIBUTION_INTENTS\.watchParty/);
-  assert.match(shellSource, /window\.CGBFanIntent\?\.ensureAttendance\?\./);
+  assert.match(shellSource, /requestWatchPartyAttendance/);
+  assert.match(shellSource, /WATCH_PARTY_ATTENDANCE_CHOICES\.attend/);
+  assert.match(shellSource, /window\.CGBFanIntent\?\.ensureAttendance/);
+  assert.match(handoffSource, /Yes, I’ll be there/);
+  assert.match(handoffSource, /No, I’m sharing it/);
   assert.match(fanIntentSource, /export async function ensureFanIntentAttendance/);
   assert.match(fanIntentSource, /return controller\.ensureIntent\(venueId\)/);
   assert.match(fanIntentSource, /ensureAttendance: ensureFanIntentAttendance/);
@@ -47,7 +52,14 @@ test('selected venue Watch Party action delegates attendance to the existing Fan
   assert.match(fanIntentControllerSource, /return performIntent\(venueId\)/);
 });
 
-test('selected venue Watch Party ownership adds no bridge, polling, or identity transport', () => {
+test('sharing a Watch Party has no attendance side effect in the handoff owner', () => {
+  const handoff = functionBody(shellSource, 'openWatchPartyUrlWithAttendanceChoice', 'watchPartyUrl');
+  assert.match(handoff, /handoff\.choice === WATCH_PARTY_ATTENDANCE_CHOICES\.attend/);
+  assert.doesNotMatch(handoffSource, /browserId|browser_id|BROWSER_ID_STORAGE_KEY|ensureAttendance/);
+  assert.match(handoff, /navigateWaitingFormWindow/);
+});
+
+test('selected venue Watch Party ownership adds no polling or identity transport', () => {
   const presentation = functionBody(profileSource, 'addPlanWatchPartyAction', 'normalizeActionLabels');
   const contribution = functionBody(shellSource, 'beginContribution', 'handleSelectedVenueWatchParty');
   const selectedAction = functionBody(shellSource, 'handleSelectedVenueWatchParty', 'handleSearchResultClick');
