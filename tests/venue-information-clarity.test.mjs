@@ -6,6 +6,7 @@ const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const [
   html,
   app,
+  core,
   mobile,
   css,
   detailCss,
@@ -24,6 +25,7 @@ const [
 ] = await Promise.all([
   read('../index.html'),
   read('../js/app.js'),
+  read('../js/core.mjs'),
   read('../js/map-mobile-refinement.mjs'),
   read('../css/design-board-4.css'),
   read('../css/venue-detail.css'),
@@ -81,9 +83,10 @@ test('initial mobile Detail render still waits for contribution adapters to regi
 
 test('one Venue Profile element and one structural builder serve mobile Detail and desktop rail', () => {
   assert.match(app, /function placeVenueProfile\(mobile\)[\s\S]*dom\.detailShell\.append\(dom\.venueDetail\)[\s\S]*dom\.traySelected\.replaceChildren\(dom\.venueDetail\)/);
-  assert.match(app, /function renderVenueProfile\(\)[\s\S]*placeVenueProfile\(mobile\)[\s\S]*createDetailLocalMap\(venue\)[\s\S]*createDetailBadges\(venue, party\)/);
+  assert.match(app, /function renderVenueProfile\(\)[\s\S]*placeVenueProfile\(mobile\)[\s\S]*createDetailLocalMap\(venue\)[\s\S]*createBadges\(venue, party\)/);
   assert.match(app, /function renderVenueProfile\(\)[\s\S]*createDetailContribution\(\)[\s\S]*createDetailActionRow\(venue\)/);
   assert.doesNotMatch(app, /function renderDetailView\(/);
+  assert.doesNotMatch(app, /function createDetailBadges\(/);
   assert.doesNotMatch(detailRefinement, /function refineVenueDetail|function refineDetailIdentity|function refineDetailAttendance|function refineDetailContribution|function refineDetailPrimaryActions/);
   assert.doesNotMatch(fanIntent, /function renderDetailActivity/);
   assert.match(detailRefinement, /syncDetailLocalMap\(hero, venue, state\)/);
@@ -170,10 +173,14 @@ test('Profile identity keeps Directions, website, address, and description in on
   assert.match(detailCss, /#tray-selected > #venue-detail \.detail-address/);
 });
 
-test('FAN-ADDED is provenance-only and suppressed for Cal Bars', () => {
-  assert.match(app, /venue\.venue_type !== 'cal_bar' && venue\.verification_status === 'user_added'/);
-  assert.match(app, /badge\.textContent = 'FAN-ADDED'/);
-  assert.match(app, /function createDetailBadges\(venue, party\)[\s\S]*createBadges\(venue, party\)/);
+test('FAN-ADDED has one provenance-only badge owner and is suppressed for Cal Bars', () => {
+  assert.match(core, /else if \(venue\?\.verification_status === 'user_added'\) badges\.push\(\{ text: 'FAN-ADDED', kind: 'fan-added' \}\)/);
+  assert.match(core, /if \(venue\?\.venue_type === 'cal_bar'\) badges\.push\(\{ text: 'CAL BAR', kind: 'cal' \}\)/);
+  assert.doesNotMatch(core, /venue\?\.venue_type === 'community_location'[^\n]*FAN-ADDED/);
+  assert.match(app, /function createBadges\(venue, party\)[\s\S]*venueBadgeDescriptors\(venue, party\)/);
+  assert.match(app, /function renderSelectedCard\(\)[\s\S]*heading\.append\(createBadges\(venue, party\)\)/);
+  assert.match(app, /function renderVenueProfile\(\)[\s\S]*hero\.append\(createBadges\(venue, party\)\)/);
+  assert.doesNotMatch(app, /createDetailBadges/);
   assert.doesNotMatch(`${app}\n${detailRefinement}\n${detailCss}`, /Fan-selected/i);
 });
 
