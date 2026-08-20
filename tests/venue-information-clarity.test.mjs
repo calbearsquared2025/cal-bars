@@ -224,7 +224,7 @@ test('persistent Profile action row resolves to Fan Intent and Share while Direc
   assert.match(detailCss, /#tray-selected > #venue-detail > \.action-row\.detail-primary-actions[\s\S]*position: sticky/);
 });
 
-test('Profile contributions retain existing URLs and are tertiary in the desktop rail', () => {
+test('Profile contributions retain existing URLs and share the mobile two-column treatment in the desktop rail', () => {
   assert.match(app, /heading\.textContent = 'Help improve this listing'/);
   assert.match(watchPartyForm, /link\.dataset\.watchPartyFormEntryPoint = 'true'/);
   assert.match(calBarNomination, /link\.dataset\.calBarNominationEntry = 'true'/);
@@ -233,8 +233,10 @@ test('Profile contributions retain existing URLs and are tertiary in the desktop
     assert.match(source, /detail-contribution__actions/);
     assert.match(source, /actions\.append\(link\)/);
   });
-  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-contribution__actions[\s\S]*grid-template-columns: 1fr/);
-  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-contribution__action[\s\S]*background: transparent/);
+  assert.match(detailCss, /\.detail-contribution__actions\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(detailCss, /\.detail-contribution__action\s*\{[\s\S]*background: transparent[\s\S]*text-decoration: underline/);
+  assert.doesNotMatch(detailCss, /#tray-selected > #venue-detail \.detail-contribution__actions\s*\{[^}]*grid-template-columns:\s*1fr/);
+  assert.doesNotMatch(detailCss, /#tray-selected > #venue-detail \.detail-contribution__action\s*\{[^}]*border-bottom/);
 });
 
 test('desktop map visibility accounts for the Profile rail instead of letting the selected marker sit behind it', () => {

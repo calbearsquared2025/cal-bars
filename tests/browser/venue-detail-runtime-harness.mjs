@@ -92,12 +92,12 @@ function ensurePhotoFormMeta() {
 
 function configureVenuePhotoFixture(venue) {
   if (!venue) return 'none';
+  ensurePhotoFormMeta();
   if (venue.slug === 'golden-bear-test-pub-berkeley') {
     venue.photo_url = `${location.origin}/tests/fixtures/venue-photo.synthetic.svg`;
     venue.photo_caption = 'Synthetic Cal gathering fixture for responsive Venue Profile testing.';
     venue.photo_credit = '@cgb-test-fixture';
     venue.photo_credit_url = 'https://example.com/cgb-test-fixture';
-    ensurePhotoFormMeta();
     return 'photo';
   }
   if (venue.slug === 'california-test-grill-san-francisco') {
@@ -157,6 +157,7 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
     check(creditLink?.href === safeExternalUrl(venue.photo_credit_url), 'Valid HTTP(S) photo credit URL should be used');
     check(creditLink?.target === '_blank' && creditLink?.rel.includes('noopener'), 'Photo credit links should open externally and safely');
     check(activeMaps().length === (mobile ? 0 : 1), 'Photo-present Profile should retain only the desktop main map when applicable');
+    check(!element('#venue-detail .detail-local-map__photo-action'), 'Photo-present Profile should not render the Add a photo map action');
     return;
   }
 
@@ -172,6 +173,17 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
   check(Number(mapNode?.dataset.zoom) === 16, 'Profile local map should use the approved wider local zoom');
   check(mapNode?.classList.contains('is-ready'), 'Profile local map should reveal only after MapLibre is ready');
   check(mapNode?.getAttribute('aria-busy') === 'false', 'Ready Profile local map should clear its busy state');
+  check(mapNode?.getAttribute('role') === 'group', 'Local-map fallback should expose its contextual action as an accessible child');
+  const photoAction = mapNode?.querySelector(':scope > .detail-local-map__photo-action');
+  check(photoAction?.textContent?.trim() === 'Add a photo', 'Local-map fallback should expose the contextual Add a photo action');
+  const mapRect = mapNode?.getBoundingClientRect();
+  const actionRect = photoAction?.getBoundingClientRect();
+  check(Boolean(mapRect && actionRect) && actionRect.right <= mapRect.right && actionRect.bottom <= mapRect.bottom,
+    'Add a photo should remain inside the local-map frame');
+  check(Boolean(mapRect && actionRect) && mapRect.right - actionRect.right <= 16 && mapRect.bottom - actionRect.bottom <= 16,
+    'Add a photo should sit at the lower-right of the local-map fallback');
+  check(actionRect?.width < mapRect?.width, 'Add a photo should remain a compact map utility rather than a full-width CTA');
+  check(getComputedStyle(photoAction).whiteSpace === 'nowrap', 'Add a photo should remain single-line at narrow widths');
   check(getComputedStyle(mapNode).visibility === 'visible', 'Ready Profile local map should be visible');
 
   const map = localMapRuntime();
@@ -271,7 +283,9 @@ function verifyContribution(venue, fixtureMode) {
   const sections = document.querySelectorAll('#venue-detail > .detail-contribution');
   check(sections.length === 1, 'Profile should render one compact contribution section');
   const section = sections[0];
-  check(section?.querySelector('h2')?.textContent?.trim() === 'Help improve this listing', 'Contribution section should use the resolved heading');
+  const heading = section?.querySelector(':scope > h2');
+  check(heading?.textContent?.trim() === 'Help improve this listing', 'Contribution section should use the resolved heading');
+  check(heading?.tagName === 'H2' && heading === section?.firstElementChild, 'Contribution heading should remain structurally distinct from its action links');
   check(!element('#venue-detail > [data-watch-party-form-entry-point]'), 'Watch Party contribution should be consolidated into the compact section');
   check(!element('#venue-detail > [data-cal-bar-nomination-entry]'), 'Cal Bar nomination should be consolidated into the compact section');
   check(!element('#venue-detail > [data-listing-update-entry]'), 'Listing report should be consolidated into the compact section');
@@ -285,18 +299,27 @@ function verifyContribution(venue, fixtureMode) {
   if (isMobile() && window.innerWidth >= 360) {
     check(columns.length === 2, 'Contribution actions should use two columns at normal mobile widths');
   } else if (!isMobile()) {
-    check(columns.length === 1, 'Desktop Profile contributions should remain a tertiary one-column list');
+    check(columns.length === 2, 'Desktop Profile contributions should use the shared compact two-column grid');
   }
+  Array.from(actionGrid?.querySelectorAll(':scope > a') || []).forEach((link) => {
+    const style = getComputedStyle(link);
+    check(style.textDecorationLine.includes('underline'), 'Contribution actions should remain lightweight underlined links');
+    check(style.borderBottomWidth === '0px', 'Contribution actions should not use divided-menu separators');
+  });
 
-  const photoLink = section?.querySelector('[data-photo-form-entry]');
+  const photoLink = section?.querySelector('[data-photo-form-entry="contribution"]');
+  check(photoLink?.textContent?.trim() === 'Submit a Photo', 'Configured photo Form should add Submit a Photo to the contribution area');
+  const url = photoLink ? new URL(photoLink.href) : null;
+  check(url?.hostname === 'docs.google.com', 'Photo contribution should use the configured Google Form');
+  check(url?.searchParams.get('entry.101') === venue.venue_id, 'Photo Form should prefill the canonical Venue ID');
+  check(url?.searchParams.get('entry.202') === venue.name, 'Photo Form should prefill the Venue name');
+  const overlay = element('#venue-detail [data-photo-form-entry="map-overlay"]');
   if (fixtureMode === 'photo') {
-    check(photoLink?.textContent?.trim() === 'Submit a Photo', 'Configured photo Form should add Submit a Photo to the contribution area');
-    const url = photoLink ? new URL(photoLink.href) : null;
-    check(url?.hostname === 'docs.google.com', 'Photo contribution should use the configured Google Form');
-    check(url?.searchParams.get('entry.101') === venue.venue_id, 'Photo Form should prefill the canonical Venue ID');
-    check(url?.searchParams.get('entry.202') === venue.name, 'Photo Form should prefill the Venue name');
+    check(!overlay, 'Photo-present Profile should not expose the missing-photo map action');
   } else {
-    check(!photoLink, 'Missing photo Form configuration should not expose a broken Submit a Photo link');
+    check(overlay?.href === photoLink?.href, 'Add a photo and Submit a Photo should share one canonical prefilled destination');
+    check(overlay?.target === photoLink?.target && overlay?.rel === photoLink?.rel,
+      'Both photo entry points should share the same external action behavior');
   }
 }
 
@@ -397,9 +420,10 @@ async function main() {
   }
 
   const fixtureMode = configureVenuePhotoFixture(venue);
-  if (fixtureMode !== 'none') window.CGBApp?.render?.();
+  window.CGBApp?.render?.();
 
   const mobile = isMobile();
+  const focusedProfile = params.get('__cgb_focus') === 'contribution-photo';
   await waitFor(() =>
     document.body.dataset.view === (mobile ? 'detail' : 'map') &&
     Boolean(element('#venue-detail .detail-hero')),
@@ -407,18 +431,51 @@ async function main() {
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'Venue photo or local-map presentation');
   await waitFor(() => Boolean(element('#venue-detail > .detail-contribution')), 'compact contribution section');
   if (mobile) {
-    await waitFor(
-      () => document.body.dataset.detailState === 'ready' &&
-        element('#detail-view')?.getAttribute('aria-busy') === 'false',
-      'settled mobile Profile first-paint gate'
-    );
+    if (!focusedProfile) {
+      await waitFor(
+        () => document.body.dataset.detailState === 'ready' &&
+          element('#detail-view')?.getAttribute('aria-busy') === 'false',
+        'settled mobile Profile first-paint gate'
+      );
+    }
   } else {
     await waitFor(
       () => element('#venue-detail')?.parentElement?.id === 'tray-selected' && visible('#map-view'),
       'settled desktop map-side Profile'
     );
   }
-  if (fixtureMode === 'photo') await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry]')), 'configured Submit a Photo contribution');
+  await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry="contribution"]')), 'configured Submit a Photo contribution');
+
+  if (focusedProfile) {
+    if (fixtureMode !== 'photo') {
+      await waitFor(() => element('#venue-detail .detail-local-map')?.classList.contains('is-ready'), 'ready Venue local map');
+      await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry="map-overlay"]')), 'Add a photo local-map action');
+    }
+    verifyLocalMapOrPhoto(venue, fixtureMode);
+    verifyContribution(venue, fixtureMode);
+
+    const priorMapNode = element('#venue-detail .detail-local-map');
+    const priorLocalMap = localMapRuntime();
+    window.CGBApp?.render?.();
+    await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'post-rerender Venue media');
+    await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry="contribution"]')), 'post-rerender Submit a Photo contribution');
+    if (fixtureMode !== 'photo') {
+      await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry="map-overlay"]')), 'post-rerender Add a photo action');
+      check(element('#venue-detail .detail-local-map') === priorMapNode, 'Profile rerender should retain the settled local-map container');
+      check(localMapRuntime() === priorLocalMap, 'Add a photo should not disturb the existing local MapLibre instance');
+    }
+    verifyLocalMapOrPhoto(venue, fixtureMode);
+    verifyContribution(venue, fixtureMode);
+    check(document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1, 'Profile polish should not create horizontal document overflow');
+
+    const marker = params.get('__cgb_harness') === 'desktop-direct'
+      ? 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE'
+      : 'CGB_PRODUCTION_DIRECT_ROUTE';
+    result.textContent = failures.length
+      ? `${marker}_FAIL\n${failures.map((failure) => `- ${failure}`).join('\n')}`
+      : `${marker}_PASS`;
+    return;
+  }
 
   const settledState = state();
   const game = settledState?.snapshot?.games?.find((candidate) => candidate.game_id === settledState.gameId);
@@ -432,6 +489,7 @@ async function main() {
   await waitFor(() => Boolean(element('#venue-detail .detail-photo') || element('#venue-detail .detail-local-map')), 'post-rerender Venue media refinement');
   if (fixtureMode !== 'photo') {
     await waitFor(() => element('#venue-detail .detail-local-map')?.classList.contains('is-ready'), 'ready Venue local map');
+    await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry="map-overlay"]')), 'Add a photo local-map action');
   }
   await sleep(50);
 

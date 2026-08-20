@@ -274,25 +274,6 @@
     color: var(--cgb-ink-500);
   }
 
-  body[data-view="detail"] .detail-contribution__actions {
-    gap: 4px 12px !important;
-  }
-
-  body[data-view="detail"] .detail-contribution__action {
-    min-height: 32px !important;
-    padding: 4px 0 !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    text-decoration: underline !important;
-    text-decoration-thickness: 1px !important;
-    text-underline-offset: 2px !important;
-  }
-
-  body[data-view="detail"] .detail-contribution__action:hover,
-  body[data-view="detail"] .detail-contribution__action:focus-visible {
-    background: transparent !important;
-  }
 }
 
 @media (max-width: 899px) and (orientation: portrait) {

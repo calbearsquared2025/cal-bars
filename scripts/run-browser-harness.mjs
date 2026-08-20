@@ -317,6 +317,36 @@ try {
       virtualTimeBudget: 30000,
       windowSize: '1440,900'
     }) && passed;
+  } else if (focusedHarness === 'profile') {
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_64902a48440e55522742d631&__cgb_harness=direct&__cgb_focus=contribution-photo',
+      marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+      label: 'Focused mobile no-photo Venue Profile harness',
+      virtualTimeBudget: 30000
+    }) && passed;
+
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_harness=direct&__cgb_focus=contribution-photo',
+      marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
+      label: 'Focused mobile photo-present Venue Profile harness',
+      virtualTimeBudget: 30000
+    }) && passed;
+
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_64902a48440e55522742d631&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
+      marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
+      label: 'Focused desktop no-photo Venue Profile harness',
+      virtualTimeBudget: 30000,
+      windowSize: '1440,900'
+    }) && passed;
+
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
+      marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
+      label: 'Focused desktop photo-present Venue Profile harness',
+      virtualTimeBudget: 30000,
+      windowSize: '1440,900'
+    }) && passed;
   } else {
   passed = await runHarness({
     path: '/__cgb_first_paint__',
@@ -403,4 +433,6 @@ console.log(focusedHarness === 'nearby'
   ? 'Focused Nearby browser harnesses passed on mobile and desktop.'
   : focusedHarness === 'search'
     ? 'Focused Search mode browser harnesses passed on mobile and desktop.'
-  : 'Browser harnesses passed: static mobile first paint without refinement modules, the reduced external-venue fixture, the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');
+    : focusedHarness === 'profile'
+      ? 'Focused Venue Profile photo and contribution harnesses passed on mobile and desktop.'
+    : 'Browser harnesses passed: static mobile first paint without refinement modules, the reduced external-venue fixture, the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');

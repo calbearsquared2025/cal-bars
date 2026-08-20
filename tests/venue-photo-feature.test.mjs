@@ -67,14 +67,38 @@ test('Submit a Photo is contextual, prefilled, and omitted when configuration is
     source('js/watch-party-form.js')
   ]);
   assert.match(adapter, /Submit a Photo/);
+  assert.match(adapter, /Add a photo/);
   assert.match(adapter, /state\?\.detailMode/);
   assert.match(adapter, /buildPhotoFormPrefillUrl/);
+  assert.equal((adapter.match(/buildPhotoFormPrefillUrl\(/g) || []).length, 1);
+  assert.match(adapter, /function createPhotoFormLink/);
+  assert.match(adapter, /entryPoint: 'contribution'/);
+  assert.match(adapter, /entryPoint: 'map-overlay'/);
+  assert.match(adapter, /const localMap = detail\.querySelector/);
   assert.match(adapter, /if \(!href\)/);
   assert.match(adapter, /target = '_blank'/);
   assert.match(config, /1FAIpQLSecvY5Pm73oPNRe4viSATCWYeERxwyDGYHwGpvPZHzQ03BmDg/);
   assert.match(config, /venueNameEntry: 'entry\.1077046729'/);
   assert.match(config, /venueIdEntry: 'entry\.893543394'/);
   assert.match(bootstrap, /initializePhotoFormEntry/);
+});
+
+test('missing-photo action is owned by the canonical Profile map and photo-form implementations', async () => {
+  const [app, adapter, enhancement, icons, css, mobileCss] = await Promise.all([
+    source('js/app.js'),
+    source('js/photo-form.js'),
+    source('js/venue-profile-enhancement.mjs'),
+    source('js/icon-upgrade.mjs'),
+    source('css/venue-detail.css'),
+    source('css/mobile-first-paint.css')
+  ]);
+  assert.match(app, /function createDetailLocalMap\(venue\)[\s\S]*if \(venue\.photo_url/);
+  assert.match(adapter, /detail\.querySelector\(':scope > \.detail-hero > \.detail-local-map'\)/);
+  assert.match(adapter, /localMap\.append\(createPhotoFormLink/);
+  assert.match(enhancement, /ensureLocalMapFallback[\s\S]*onPhotoError\?\.\(\)/);
+  assert.match(icons, /renderPhotoFormEntry\(\{ app: window\.CGBApp, documentObject: document \}\)/);
+  assert.match(css, /\.detail-local-map__photo-action\s*\{[\s\S]*right: 10px[\s\S]*bottom: 10px[\s\S]*border: 1px solid var\(--cgb-gold-500\)/);
+  assert.doesNotMatch(mobileCss, /detail-contribution__action/);
 });
 
 test('Apps Script joins the Venue_Photos publication tab into approved public Venue fields', async () => {

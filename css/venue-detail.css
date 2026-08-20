@@ -133,6 +133,38 @@ body[data-view="detail"] .detail-local-map__marker {
   pointer-events: none !important;
 }
 
+#tray-selected > #venue-detail .detail-local-map__photo-action,
+body[data-view="detail"] .detail-local-map__photo-action {
+  position: absolute !important;
+  z-index: 4 !important;
+  right: 10px !important;
+  bottom: 10px !important;
+  min-height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 6px 10px !important;
+  color: var(--cgb-navy-900) !important;
+  background: rgba(255, 255, 255, .96) !important;
+  border: 1px solid var(--cgb-gold-500) !important;
+  border-radius: 8px !important;
+  box-shadow: var(--shadow-xs) !important;
+  font-family: var(--font-condensed) !important;
+  font-size: .72rem !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+
+body[data-view="detail"] .detail-local-map__photo-action:hover,
+body[data-view="detail"] .detail-local-map__photo-action:focus-visible,
+#tray-selected > #venue-detail .detail-local-map__photo-action:hover,
+#tray-selected > #venue-detail .detail-local-map__photo-action:focus-visible {
+  background: var(--cgb-gold-50) !important;
+  border-color: var(--cgb-gold-600) !important;
+}
+
 body[data-view="detail"] .detail-local-map__fallback {
   position: absolute;
   inset: 0;
@@ -293,32 +325,37 @@ body[data-view="detail"] .detail-contribution h2 {
   line-height: 1.15;
 }
 
+#tray-selected > #venue-detail .detail-contribution__actions,
 body[data-view="detail"] .detail-contribution__actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 4px 12px;
 }
 
+#tray-selected > #venue-detail .detail-contribution__action,
 body[data-view="detail"] .detail-contribution__action {
-  min-height: 48px;
+  min-height: 32px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 9px 10px;
+  padding: 4px 0;
   color: var(--cgb-navy-900);
-  background: var(--cgb-neutral-50);
-  border: 1px solid var(--cgb-neutral-200);
-  border-radius: 10px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   font-size: var(--text-xs);
   font-weight: 800;
   line-height: 1.25;
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 body[data-view="detail"] .detail-contribution__action:hover,
-body[data-view="detail"] .detail-contribution__action:focus-visible {
-  background: var(--cgb-navy-50);
-  border-color: var(--cgb-neutral-300);
+body[data-view="detail"] .detail-contribution__action:focus-visible,
+#tray-selected > #venue-detail .detail-contribution__action:hover,
+#tray-selected > #venue-detail .detail-contribution__action:focus-visible {
+  background: transparent;
 }
 
 body[data-view="detail"] .post-join-invitation.detail-post-join-invitation {
@@ -659,34 +696,11 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
   }
 
   #tray-selected > #venue-detail .detail-contribution h2 {
-    margin: 0 0 8px !important;
+    margin: 0 0 10px !important;
     color: var(--cgb-navy-950) !important;
-    font-size: .8rem !important;
-  }
-
-  #tray-selected > #venue-detail .detail-contribution__actions {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 0 !important;
-  }
-
-  #tray-selected > #venue-detail .detail-contribution__action {
-    min-height: 36px !important;
-    display: flex !important;
-    align-items: center !important;
-    padding: 7px 0 !important;
-    color: var(--cgb-navy-800) !important;
-    background: transparent !important;
-    border: 0 !important;
-    border-bottom: 1px solid var(--cgb-neutral-200) !important;
-    border-radius: 0 !important;
-    font-size: .72rem !important;
-    font-weight: 750 !important;
-    text-decoration: none !important;
-  }
-
-  #tray-selected > #venue-detail .detail-contribution__action:last-child {
-    border-bottom: 0 !important;
+    font-family: var(--font-display) !important;
+    font-size: .9rem !important;
+    line-height: 1.15 !important;
   }
 
   #tray-selected > #venue-detail > .action-row.detail-primary-actions {

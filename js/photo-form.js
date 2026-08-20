@@ -24,10 +24,21 @@ function syncContributionVisibility(detail) {
   if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
 }
 
+function createPhotoFormLink(documentObject, { href, label, entryPoint, className }) {
+  const link = documentObject.createElement('a');
+  link.className = className;
+  link.dataset.photoFormEntry = entryPoint;
+  link.href = href;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = label;
+  return link;
+}
+
 export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = document } = {}) {
-  const existing = documentObject.querySelector(SELECTOR);
-  const detail = existing?.closest?.('#venue-detail') || documentObject.querySelector('#venue-detail');
-  existing?.remove();
+  const existing = Array.from(documentObject.querySelectorAll(SELECTOR));
+  const detail = existing[0]?.closest?.('#venue-detail') || documentObject.querySelector('#venue-detail');
+  existing.forEach((entry) => entry.remove());
   if (!detail) return '';
 
   const state = app?.getState?.();
@@ -44,14 +55,22 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
 
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
   if (!actions) return '';
-  const link = documentObject.createElement('a');
-  link.className = 'detail-contribution__action';
-  link.dataset.photoFormEntry = 'true';
-  link.href = href;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  link.textContent = 'Submit a Photo';
-  actions.append(link);
+  actions.append(createPhotoFormLink(documentObject, {
+    href,
+    label: 'Submit a Photo',
+    entryPoint: 'contribution',
+    className: 'detail-contribution__action'
+  }));
+
+  const localMap = detail.querySelector(':scope > .detail-hero > .detail-local-map');
+  if (localMap) {
+    localMap.append(createPhotoFormLink(documentObject, {
+      href,
+      label: 'Add a photo',
+      entryPoint: 'map-overlay',
+      className: 'detail-local-map__photo-action'
+    }));
+  }
   syncContributionVisibility(detail);
   return href;
 }

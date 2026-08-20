@@ -7,6 +7,7 @@ import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
 import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
+import { renderPhotoFormEntry } from './photo-form.js';
 import { enhanceVenueProfile } from './venue-profile-enhancement.mjs';
 
 let appConnected = false;
@@ -189,6 +190,7 @@ export function upgradeRenderedIcons(root = document) {
 function runRefinements() {
   const state = window.CGBApp?.getState?.();
   enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
+  renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
   upgradeRenderedIcons();
   const venue = detailVenue(state);
   const hero = document.querySelector('#venue-detail .detail-hero');

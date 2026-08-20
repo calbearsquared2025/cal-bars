@@ -582,7 +582,7 @@ function createDetailLocalMap(venue) {
   map.dataset.longitude = String(longitude);
   map.dataset.zoom = '16';
   map.dataset.markerKind = markerKind(state.snapshot, state.gameId, venue);
-  map.setAttribute('role', 'img');
+  map.setAttribute('role', 'group');
   map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
   map.setAttribute('aria-busy', 'true');
   return map;
