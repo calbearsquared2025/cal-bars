@@ -66,22 +66,16 @@ test('selected Venue uses a viewport-anchored rounded bottom sheet', async () =>
   assert.match(css, /overflow: hidden/);
 });
 
-test('mobile location control follows the visible tray in one viewport coordinate system', async () => {
-  const [script, firstPaintCss] = await Promise.all([
+test('mobile location control is owned by the List header instead of a floating map action', async () => {
+  const [html, script, css] = await Promise.all([
+    source('index.html'),
     source('js/mobile-polish.mjs'),
-    source('css/mobile-first-paint.css')
+    source('css/mobile-command-navigation.css')
   ]);
-  assert.match(script, /const MAP_ACTION_GAP = 14/);
-  assert.match(script, /function updateMapActionPosition/);
-  assert.match(script, /const trayTop = tray\.getBoundingClientRect\(\)\.top/);
-  assert.match(script, /const viewportHeight = window\.innerHeight/);
-  assert.match(script, /viewportHeight - trayTop \+ MAP_ACTION_GAP/);
-  assert.match(script, /--map-action-bottom/);
-  assert.match(script, /CGBApp\?\.subscribe\?\.\('rendered'/);
-  assert.doesNotMatch(script, /visualViewport/);
-  assert.doesNotMatch(script, /ResizeObserver/);
-  assert.match(firstPaintCss, /\.map-actions[\s\S]*top: auto !important[\s\S]*bottom: var\(--map-action-bottom, calc\(var\(--footer-height\) \+ 110px\)\) !important/);
-  assert.match(firstPaintCss, /#near-me-button[\s\S]*border-radius: 50% !important[\s\S]*clip-path: none !important[\s\S]*box-shadow: 0 6px 16px/);
+  assert.match(html, /id="list-location-button"/);
+  assert.match(css, /body\[data-command-surface="list"\] \.list-location-action/);
+  assert.doesNotMatch(html, /class="map-actions"|id="near-me-button"/);
+  assert.doesNotMatch(script, /MAP_ACTION_GAP|updateMapActionPosition|--map-action-bottom/);
 });
 
 test('header corrections preserve game-title descenders and pin the menu to the viewport edge', async () => {
@@ -89,13 +83,15 @@ test('header corrections preserve game-title descenders and pin the menu to the 
   assert.match(css, /#header-game-label[\s\S]*overflow: hidden[\s\S]*padding-bottom: \.16em[\s\S]*line-height: 1\.22/);
   assert.match(css, /\.site-header > \.site-header__brand-row > #header-about-button[\s\S]*position: absolute !important/);
   assert.match(css, /right: max\(6px, env\(safe-area-inset-right, 0px\)\) !important/);
-  assert.match(css, /#near-me-button \.ui-icon[\s\S]*translate\(-1px, 1px\)/);
 });
 
-test('secondary header compaction stays portrait-only and hidden back controls do not compress headings', async () => {
-  const css = await source('css/mobile-polish.css');
-  assert.match(css, /@media \(orientation: portrait\)[\s\S]*Secondary destinations keep game context/);
-  assert.match(css, /body\[data-command-surface="search"\] \.command-surface__header,[\s\S]*body\[data-command-surface="add"\] \.command-surface__header[\s\S]*grid-template-columns: minmax\(0, 1fr\)/);
+test('secondary destination headers retain space for their optional action', async () => {
+  const [html, refinement] = await Promise.all([
+    source('index.html'),
+    source('js/mobile-tab-location-refinement.mjs')
+  ]);
+  assert.equal((html.match(/mobile-destination-header/g) || []).length, 3);
+  assert.match(refinement, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
 });
 
 test('short landscape keeps the game selector compact at the right edge', async () => {

@@ -11,7 +11,7 @@ const [stabilization, icons, iconUpgrade, sprite] = await Promise.all([
 ]);
 
 test('Nearby and All locations preserve the List surface after application rerenders', () => {
-  assert.match(stabilization, /#mobile-list-button, #clear-search-button/);
+  assert.match(stabilization, /#mobile-list-button, #list-location-button, #clear-search-button/);
   assert.match(stabilization, /listSurfaceLocked = true/);
   assert.match(stabilization, /state\.trayState = next/);
   assert.match(stabilization, /setTrayState\('full'\)/);
@@ -31,6 +31,7 @@ test('Add preserves an existing Venue context and exposes the existing new-locat
   assert.match(stabilization, /id = 'add-location-button'/);
   assert.match(stabilization, /Add a new location/);
   assert.match(stabilization, /#mobile-search-button/);
+  assert.match(stabilization, /#search-add-location-button/);
   assert.doesNotMatch(stabilization, /fetch\(|XMLHttpRequest|joinExternalVenue/);
 });
 

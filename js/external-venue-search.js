@@ -132,7 +132,7 @@ function replaceExternalGroup(contentBuilder) {
   group.append(note);
   contentBuilder(group);
   dom.suggestions.append(group);
-  dom.suggestions.hidden = false;
+  dom.searchDropdown.hidden = false;
 }
 
 function showExternalLoading() {
@@ -242,7 +242,7 @@ function renderMappedLocationMatches(query, matches) {
   appState.origin = null;
   appState.listQuery = query;
   appState.trayState = 'full';
-  dom.suggestions.hidden = true;
+  dom.searchDropdown.hidden = true;
   renderApplicationSafely('mapped-location-search');
   window.CGBApp?.showStatus(
     `${matches.length} mapped ${matches.length === 1 ? 'location matches' : 'locations match'} ${query}`,
@@ -272,7 +272,7 @@ async function renderSubmittedZip(query) {
   appState.origin = origin;
   appState.listQuery = '';
   appState.trayState = 'full';
-  dom.suggestions.hidden = true;
+  dom.searchDropdown.hidden = true;
   const nearby = rankNearbyVenues(appState.snapshot, appState.gameId, origin);
   renderApplicationSafely('postal-area-search');
   panToSearchOriginSafely(origin);
@@ -285,6 +285,13 @@ function handleSearchSubmit(event) {
   invalidateExternalSearch();
   const query = dom.searchInput.value.trim();
   if (!query) return;
+
+  if (appState.searchMode === 'add-location') {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    scheduleExternalSearch({ immediate: true });
+    return;
+  }
 
   const mappedMatches = mappedLocationFieldMatches(appState.snapshot, query);
   if (mappedMatches.length) {
@@ -304,7 +311,11 @@ function handleSearchSubmit(event) {
   });
 }
 
-function scheduleExternalSearch() {
+function externalSearchAllowed() {
+  return appState.searchMode === 'add-location' || appState.searchMode === 'contribution-external';
+}
+
+function scheduleExternalSearch({ immediate = false } = {}) {
   const query = dom.searchInput.value.trim();
   const state = ensureExternalState();
   state.query = query;
@@ -314,15 +325,17 @@ function scheduleExternalSearch() {
   searchController?.abort();
   decorateExistingResults();
 
-  if (query.length < MINIMUM_QUERY_LENGTH) {
+  if (!externalSearchAllowed() || query.length < MINIMUM_QUERY_LENGTH) {
     dom.suggestions.querySelector(':scope > .search-result-group--external')?.remove();
     return;
   }
 
-  searchTimer = window.setTimeout(() => {
+  const run = () => {
     showExternalLoading();
     searchExternalPlaces(query, sequence);
-  }, SEARCH_DEBOUNCE_MS);
+  };
+  if (immediate) run();
+  else searchTimer = window.setTimeout(run, SEARCH_DEBOUNCE_MS);
 }
 
 function renderConfirmation() {
@@ -348,7 +361,7 @@ function selectExternalPlace(place) {
   state.selected = { ...place, gameId: appState.gameId };
   state.retry = null;
   state.error = null;
-  dom.suggestions.hidden = true;
+  dom.searchDropdown.hidden = true;
   renderConfirmation();
   if (!dom.externalDialog.open) dom.externalDialog.showModal();
   window.gtag?.('event', 'external_place_result_selected', { place_type: place.placeType });
@@ -401,7 +414,7 @@ function commitExternalVenue(response, selected) {
   appState.origin = null;
   appState.trayState = 'selected';
   dom.searchInput.value = venue.name;
-  dom.suggestions.hidden = true;
+  dom.searchDropdown.hidden = true;
   return venue;
 }
 
@@ -490,6 +503,7 @@ function cacheDom() {
   dom = {
     searchForm: document.querySelector('#location-search'),
     searchInput: document.querySelector('#location-query'),
+    searchDropdown: document.querySelector('#search-dropdown'),
     suggestions: document.querySelector('#search-suggestions'),
     externalDialog: document.querySelector('#external-venue-dialog'),
     externalName: document.querySelector('#external-venue-name'),
@@ -506,7 +520,7 @@ async function bootExternalVenueSearch() {
   ensureExternalState();
   await waitForApplicationReady();
   if (!cacheDom()) throw new Error('external_search_dom_missing');
-  dom.searchInput.addEventListener('input', scheduleExternalSearch);
+  dom.searchInput.addEventListener('input', () => scheduleExternalSearch());
   dom.searchForm.addEventListener('submit', handleSearchSubmit, { capture: true });
   dom.suggestions.addEventListener('click', (event) => {
     if (event.target.closest('button[data-venue-id]')) invalidateExternalSearch();
@@ -530,6 +544,7 @@ async function bootExternalVenueSearch() {
 
 window.CGBExternalVenueSearch = Object.freeze({
   invalidate: invalidateExternalSearch,
+  searchCurrentQuery: scheduleExternalSearch,
   retry: joinSelectedExternalVenue,
   getState: () => ensureExternalState()
 });

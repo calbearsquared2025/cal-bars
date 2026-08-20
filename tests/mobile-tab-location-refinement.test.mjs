@@ -41,31 +41,31 @@ test('Add does not duplicate selected-game context and makes Cal Bar nomination 
   assert.match(icons, /id="icon-cal-bar"/);
 });
 
-test('Locate Me stays on Map and restores Nearby preview', () => {
-  assert.match(source, /handleLocateClick/);
-  assert.match(source, /requestLocation\('map'\)/);
-  assert.match(source, /setTrayState\('peek'\)/);
-  assert.match(source, /setCommandActive\('map'\)/);
-  assert.match(source, /rankNearbyVenues/);
-  assert.match(source, /CGBApp\?\.focusLocation/);
+test('canonical application owns location lookup and Nearby focus', () => {
+  assert.match(app, /dom\.listLocation\.addEventListener\('click'/);
+  assert.match(app, /navigator\.geolocation\.getCurrentPosition/);
+  assert.match(app, /rememberNearbyOrigin\(\)/);
+  assert.match(app, /setTrayState\('full'\)/);
+  assert.match(app, /focusLocation\(state\.origin, nearby\)/);
   assert.match(app, /function focusLocation[\s\S]*fitBounds/);
+  assert.doesNotMatch(source, /handleLocateClick|requestLocation|rankNearbyVenues|focusLocation/);
 });
 
 test('mobile List toggles Nearby to all locations and back without a second geolocation request', () => {
-  assert.match(source, /state\.nearbyOrigin = userLocation\(state\.origin\)/);
-  assert.match(source, /function showAllLocations\(\)[\s\S]*CGBApp\?\.showAllLocations/);
-  assert.match(source, /function showNearbyLocations[\s\S]*state\.nearbyOrigin[\s\S]*CGBApp\?\.showNearbyLocations/);
-  assert.match(source, /label\.textContent = usingLocation \? 'All locations' : canRestoreNearby \? 'Show nearby' : 'Near me'/);
-  assert.match(source, /handleListLocationClick[\s\S]*showAllLocations\(\)[\s\S]*showNearbyLocations\('list'\)[\s\S]*requestLocation\('list'\)/);
-  assert.doesNotMatch(source, /rememberedLocation|locationFilterSuppressed/);
+  assert.match(app, /function rememberNearbyOrigin[\s\S]*state\.nearbyOrigin = location/);
+  assert.match(app, /function showAllLocations\(\)[\s\S]*state\.origin = null[\s\S]*setTrayState\('full'\)/);
+  assert.match(app, /function showNearbyLocations[\s\S]*state\.nearbyOrigin[\s\S]*state\.origin = \{ \.\.\.remembered \}/);
+  assert.match(app, /dom\.listLocationAction\.textContent = usingNearby[\s\S]*canRestoreNearby \? 'Show nearby' : 'Near me'/);
+  assert.match(app, /dom\.listLocation\.addEventListener\('click'[\s\S]*showAllLocations\(\)[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation/);
+  assert.doesNotMatch(source, /nearbyOrigin|showAllLocations|showNearbyLocations|navigator\.geolocation/);
   assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
 });
 
 test('desktop Show all preserves the resolved user location and Near me becomes Show nearby', () => {
-  assert.match(source, /function syncNearMeControl[\s\S]*state\?\.nearbyOrigin[\s\S]*canRestoreNearby \? 'Show nearby' : 'Near me'/);
+  assert.match(app, /function renderLocationControl[\s\S]*state\.nearbyOrigin[\s\S]*canRestoreNearby \? 'Show nearby' : 'Near me'/);
   assert.match(app, /function showAllLocations\(\)[\s\S]*Your location is saved for Nearby/);
   assert.match(app, /function showNearbyLocations[\s\S]*using your saved location/);
-  assert.match(source, /function handleLocateClick[\s\S]*!locate \|\| !isMobile\(\)/);
+  assert.doesNotMatch(source, /syncNearMeControl|handleLocateClick/);
 });
 
 test('Nearby sheet handle remains tappable to open the List destination', () => {

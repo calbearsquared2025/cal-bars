@@ -11,7 +11,7 @@ import {
   resolveListingUpdateVenue
 } from './listing-update-core.mjs';
 import { buildMissingLocationFormUrl } from './missing-location-core.mjs';
-import { getWatchParty, NEARBY_RADIUS_MILES } from './core.mjs';
+import { getWatchParty } from './core.mjs';
 import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
@@ -204,21 +204,28 @@ function leaveDetailForCommand() {
   return true;
 }
 
-function setDesktopAddLocationMode(active) {
+function setSearchMode(mode = 'existing', { refresh = true } = {}) {
   if (!dom) return;
-  const enabled = Boolean(active && !isMobileLayout());
-  if (enabled) document.body.dataset.desktopSearchMode = 'add-location';
-  else delete document.body.dataset.desktopSearchMode;
-  dom.desktopAddLocationButton.setAttribute('aria-pressed', String(enabled));
-  dom.desktopAddLocationHint.hidden = !enabled;
-  dom.searchInput.placeholder = enabled ? 'Search for the location to add' : 'City, ZIP, or venue';
+  const state = appState();
+  const changed = state?.searchMode !== mode;
+  if (state) state.searchMode = mode;
+  const addingLocation = mode === 'add-location';
+  document.body.dataset.searchMode = mode;
+  dom.searchTitle.textContent = addingLocation ? 'Add a location' : 'Search locations';
+  dom.searchIntro.textContent = addingLocation
+    ? 'Search for the place you want to add.'
+    : 'Find a location already listed in Cal Golden Bars.';
+  dom.searchInput.placeholder = addingLocation ? 'Search for the location to add' : 'City, ZIP, or venue';
+  dom.addLocationSearch.hidden = mode !== 'existing';
+  if (changed && refresh) dom.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  if (addingLocation && refresh) window.CGBExternalVenueSearch?.searchCurrentQuery?.({ immediate: true });
 }
 
 function showMap() {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
-  if (!isMobileLayout()) setDesktopAddLocationMode(false);
+  setSearchMode('existing');
   setSurface('map');
   if (dom.tray?.dataset.state === 'full') dom.closeList?.click();
   if (!isMobileLayout()) normalizeDesktopTray();
@@ -229,7 +236,7 @@ function showList() {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
-  if (!isMobileLayout()) setDesktopAddLocationMode(false);
+  setSearchMode('existing');
   setSurface('map');
   if (!isMobileLayout() && window.CGBApp?.showLocations) {
     currentSurface = 'list';
@@ -257,6 +264,9 @@ function showSearch(intent = '') {
   leaveDetailForCommand();
   contributionIntent = intent;
   updateSearchIntent();
+  setSearchMode(intent === CONTRIBUTION_INTENTS.watchParty || intent === CONTRIBUTION_INTENTS.calBar
+    ? 'contribution-external'
+    : intent === CONTRIBUTION_INTENTS.report ? 'contribution-existing' : 'existing');
   setSurface('search', { focus: true });
 }
 
@@ -281,27 +291,17 @@ function showAdd() {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
-  if (!isMobileLayout()) setDesktopAddLocationMode(false);
+  setSearchMode('existing');
   updateAddContext();
   setSurface('add');
 }
 
-function showDesktopAddLocation() {
-  if (isMobileLayout()) return;
-  const activating = dom.desktopAddLocationButton.getAttribute('aria-pressed') !== 'true';
+function showAddLocationSearch() {
   contributionIntent = '';
   updateSearchIntent();
-  setSurface('map');
-  setDesktopAddLocationMode(activating);
-  if (!activating) return;
-
-  dom.searchInput.value = '';
+  setSearchMode('add-location');
+  setSurface('search', { focus: true });
   configureMissingLocationLink();
-  showStatus('Search for the place you want to add. Choose it from Places if it is not already listed.', 5000);
-  requestAnimationFrame(() => {
-    dom.searchInput?.focus({ preventScroll: true });
-    dom.searchInput?.select?.();
-  });
 }
 
 function beginContribution(intent, {
@@ -365,9 +365,7 @@ function handleSearchResultClick(event) {
   const external = event.target.closest('button[data-external-place-id]');
   if (!existing && !external) return;
 
-  if (!isMobileLayout() && document.body.dataset.desktopSearchMode === 'add-location') {
-    setDesktopAddLocationMode(false);
-  }
+  requestAnimationFrame(() => setSearchMode('existing'));
 
   if (existing) {
     const venueId = existing.dataset.venueId;
@@ -421,13 +419,6 @@ function syncDesktopBrowseState() {
     dom.listEyebrow.textContent = 'Browse';
   }
 
-  if (state?.origin && !dom.clearSearchButton.hidden) {
-    dom.clearSearchButton.textContent = 'Show all';
-    dom.clearSearchButton.dataset.proximityLabel = `Nearby · within ${NEARBY_RADIUS_MILES} miles`;
-    dom.clearSearchButton.setAttribute('aria-label', 'Show all mapped locations');
-  } else {
-    delete dom.clearSearchButton.dataset.proximityLabel;
-  }
 }
 
 function syncViewState() {
@@ -472,7 +463,10 @@ function cacheDom() {
     searchForm: document.querySelector('#location-search'),
     searchInput: document.querySelector('#location-query'),
     suggestions: document.querySelector('#search-suggestions'),
+    addLocationSearch: document.querySelector('#search-add-location-button'),
     searchSurface: document.querySelector('#search-surface'),
+    searchTitle: document.querySelector('#search-surface-title'),
+    searchIntro: document.querySelector('#search-surface-intro'),
     searchSlot: document.querySelector('#search-surface-form-slot'),
     searchIntent: document.querySelector('#search-surface-intent'),
     addSurface: document.querySelector('#add-surface'),
@@ -484,11 +478,8 @@ function cacheDom() {
     reportOptions: document.querySelector('#add-report-options'),
     reportListingButton: document.querySelector('#add-report-listing-button'),
     reportPartyButton: document.querySelector('#add-report-party-button'),
-    desktopAddLocationButton: document.querySelector('#desktop-add-location-button'),
-    desktopAddLocationHint: document.querySelector('#desktop-add-location-hint'),
     listHeading: document.querySelector('#list-heading'),
     listEyebrow: document.querySelector('#tray-list .tray-list__header .eyebrow'),
-    clearSearchButton: document.querySelector('#clear-search-button'),
     tray: document.querySelector('#venue-tray'),
     trayHandle: document.querySelector('#tray-handle'),
     closeList: document.querySelector('#close-list-button'),
@@ -506,6 +497,7 @@ function cacheDom() {
 function initializeShellControls() {
   if (!cacheDom()) return;
   configureMissingLocationLink();
+  setSearchMode('existing', { refresh: false });
   setSurface('map');
 
   document.querySelector('#header-about-button')?.addEventListener('click', () => {
@@ -515,7 +507,7 @@ function initializeShellControls() {
   document.querySelector('#mobile-search-button')?.addEventListener('click', () => showSearch());
   document.querySelector('#mobile-add-button')?.addEventListener('click', showAdd);
   document.querySelector('#mobile-list-button')?.addEventListener('click', showList);
-  dom.desktopAddLocationButton.addEventListener('click', showDesktopAddLocation);
+  dom.addLocationSearch.addEventListener('click', showAddLocationSearch);
   document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
 
   document.addEventListener('click', handleSelectedVenueWatchParty);
@@ -540,12 +532,12 @@ function initializeShellControls() {
   document.addEventListener('click', (event) => {
     if (isMobileLayout()) return;
     if (!event.target.closest?.('#location-list .location-card, .cgb-marker')) return;
-    setDesktopAddLocationMode(false);
+    setSearchMode('existing');
     requestAnimationFrame(updateCommandState);
   });
 
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
-    setDesktopAddLocationMode(false);
+    setSearchMode('existing');
     moveSearchForm();
     if (!isMobileLayout()) {
       currentSurface = 'map';

@@ -33,19 +33,6 @@
     font-size: 10px !important;
   }
 
-  body[data-view="map"][data-command-surface="map"] .map-actions {
-    top: auto !important;
-    bottom: var(--map-action-bottom, calc(var(--footer-height) + 110px)) !important;
-    transition: bottom var(--motion-standard, 220ms) ease !important;
-  }
-
-  body[data-view="map"][data-command-surface="map"] .map-actions #near-me-button {
-    border-radius: 50% !important;
-    clip-path: none !important;
-    filter: none !important;
-    box-shadow: 0 6px 16px rgba(1, 1, 51, .18) !important;
-  }
-
   #map-view > #venue-tray.venue-tray::before {
     content: none !important;
     display: none !important;

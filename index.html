@@ -122,19 +122,11 @@
             <input id="location-query" type="search" autocomplete="off" autocapitalize="words" placeholder="City, ZIP, or venue">
             <button class="search-submit" type="submit">Search</button>
           </div>
-          <div id="search-suggestions" class="search-suggestions" role="listbox" hidden></div>
+          <div id="search-dropdown" class="search-suggestions" hidden>
+            <div id="search-suggestions" class="search-suggestion-results" role="listbox"></div>
+            <button id="search-add-location-button" class="search-add-location-action" type="button">Not yet listed? Add a location</button>
+          </div>
         </form>
-        <div class="map-actions">
-          <button id="near-me-button" class="secondary-button" type="button">
-            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-near-me"></use></svg>
-            Near me
-          </button>
-          <button id="desktop-add-location-button" class="secondary-button desktop-add-location-button" type="button" aria-pressed="false">
-            <span class="desktop-add-location-button__mark" aria-hidden="true">+</span>
-            Add location
-          </button>
-          <span id="desktop-add-location-hint" class="desktop-add-location-hint" role="status" hidden>Search for the place you want to add.</span>
-        </div>
       </div>
 
       <div id="map" class="map" role="region" aria-label="Map of Cal gathering locations">
@@ -167,6 +159,10 @@
               <span class="eyebrow">Browse</span>
               <h2 id="list-heading">Locations</h2>
             </div>
+            <button id="list-location-button" class="list-location-action" type="button">
+              <span id="list-location-state" class="list-location-action__state">All locations</span>
+              <span id="list-location-action-label" class="list-location-action__label">Near me</span>
+            </button>
           </header>
           <div class="tray-list__toolbar">
             <button id="clear-search-button" class="text-button" type="button" hidden>All locations</button>
@@ -194,7 +190,7 @@
             <h2 id="search-surface-title">Search locations</h2>
           </div>
         </header>
-        <p class="command-surface__intro">Search Cal Golden Bars or find another place to add to the map.</p>
+        <p id="search-surface-intro" class="command-surface__intro">Find a location already listed in Cal Golden Bars.</p>
         <div id="search-surface-intent" class="command-intent" role="status" hidden></div>
         <div id="search-surface-form-slot" class="search-surface__form-slot"></div>
       </div>

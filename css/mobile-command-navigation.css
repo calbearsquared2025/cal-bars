@@ -3,8 +3,6 @@
   display: none;
 }
 
-.desktop-add-location-button,
-.desktop-add-location-hint,
 .desktop-locations-guidance {
   display: none;
 }
@@ -135,6 +133,50 @@
   .command-surface .search-field:focus-within {
     border-color: var(--cgb-gold-400);
     box-shadow: var(--focus-ring), var(--shadow-sm);
+  }
+
+  body[data-command-surface="list"] .list-location-action {
+    align-self: end;
+    justify-self: end;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: stretch;
+    margin: 0 0 -5px 10px;
+    padding: 0;
+    overflow: hidden;
+    color: var(--cgb-navy-900);
+    background: var(--cgb-navy-50);
+    border: 1px solid var(--cgb-neutral-200);
+    border-radius: 999px;
+    font-family: var(--font-condensed, sans-serif);
+    font-size: .68rem;
+    font-weight: 850;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: none;
+  }
+
+  body[data-command-surface="list"] .list-location-action__state,
+  body[data-command-surface="list"] .list-location-action__label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+  }
+
+  body[data-command-surface="list"] .list-location-action__label {
+    color: var(--cgb-navy-800);
+    background: var(--cgb-white);
+    border-left: 1px solid var(--cgb-neutral-300);
+  }
+
+  body[data-command-surface="list"] .list-location-action:hover .list-location-action__label,
+  body[data-command-surface="list"] .list-location-action:focus-visible .list-location-action__label {
+    background: var(--cgb-gold-50);
+  }
+
+  body[data-command-surface="list"] .list-location-action:focus-visible {
+    outline: 2px solid var(--cgb-gold-400);
+    outline-offset: 2px;
   }
 
   .command-surface .search-field input {
@@ -502,84 +544,11 @@
     min-width: 0;
   }
 
-  .map-toolbar .map-actions {
-    position: static;
-    top: auto;
-    right: auto;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-self: start;
-    gap: 8px;
-  }
-
-  .map-toolbar .map-actions .secondary-button {
-    width: auto;
-    min-width: 0;
-    height: auto;
-    min-height: 38px;
-    padding: 0 12px;
-    color: var(--cgb-navy-950, #010133);
-    background: rgba(255, 255, 255, .96);
-    border: 1px solid rgba(1, 1, 51, .16);
-    border-radius: 10px;
-    clip-path: none;
-    box-shadow: var(--shadow-xs);
-    font-size: .72rem;
-    font-weight: 800;
-    white-space: nowrap;
-  }
-
-  .map-toolbar .map-actions .secondary-button:hover,
-  .map-toolbar .map-actions .secondary-button:focus-visible {
-    background: var(--cgb-gold-50, #fff7dc);
-    border-color: var(--cgb-gold-400, #fdb515);
-  }
-
-  .map-toolbar .map-actions .ui-icon {
-    width: 16px;
-    height: 16px;
-  }
-
-  .map-toolbar .desktop-add-location-button {
-    display: inline-flex;
-    color: var(--cgb-navy-950, #010133);
-    background: var(--cgb-gold-50, #fff7dc);
-    border-color: var(--cgb-gold-400, #fdb515);
-  }
-
-  .map-toolbar .desktop-add-location-button[aria-pressed="true"] {
-    background: var(--cgb-gold-400, #fdb515);
-    border-color: var(--cgb-gold-500, #e6a313);
-  }
-
-  .desktop-add-location-button__mark {
-    font-size: 1rem;
-    font-weight: 900;
-    line-height: 1;
-  }
-
-  .desktop-add-location-hint:not([hidden]) {
-    min-height: 38px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 11px;
-    color: var(--cgb-navy-900, #0b2856);
-    background: rgba(255, 255, 255, .94);
-    border: 1px solid var(--cgb-neutral-200, #dfe3e8);
-    border-radius: 10px;
-    box-shadow: var(--shadow-xs);
-    font-size: .7rem;
-    font-weight: 700;
-    line-height: 1.25;
-  }
-
-  body[data-desktop-search-mode="add-location"] .map-toolbar .search-field {
-    border-color: var(--cgb-gold-400, #fdb515);
-    box-shadow: 0 0 0 2px rgba(253, 181, 21, .16), var(--shadow-sm);
-  }
-
   .venue-tray .tray-list__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 10px;
     padding: 13px 16px 4px;
     background: var(--cgb-white, #fff);
     border-bottom: 0;
@@ -610,25 +579,23 @@
     display: none;
   }
 
-  .venue-tray #clear-search-button:not([hidden]) {
+  .venue-tray .list-location-action {
     min-height: 32px;
     display: inline-flex;
     align-items: stretch;
-    margin: 0 16px 10px;
+    margin: 0;
     padding: 0;
     overflow: hidden;
     color: var(--cgb-navy-900, #0b2856);
     background: var(--cgb-navy-50, #eef3f8);
     border: 1px solid var(--cgb-neutral-200, #dfe3e8);
     border-radius: 999px;
-    font-size: 0;
     font-weight: 800;
     line-height: 1;
     text-decoration: none;
   }
 
-  .venue-tray #clear-search-button:not([hidden])::before {
-    content: attr(data-proximity-label);
+  .venue-tray .list-location-action__state {
     display: inline-flex;
     align-items: center;
     padding: 0 9px 0 10px;
@@ -638,8 +605,7 @@
     letter-spacing: .01em;
   }
 
-  .venue-tray #clear-search-button:not([hidden])::after {
-    content: 'Show all';
+  .venue-tray .list-location-action__label {
     display: inline-flex;
     align-items: center;
     padding: 0 10px 0 9px;
@@ -650,8 +616,8 @@
     font-weight: 850;
   }
 
-  .venue-tray #clear-search-button:not([hidden]):hover::after,
-  .venue-tray #clear-search-button:not([hidden]):focus-visible::after {
+  .venue-tray .list-location-action:hover .list-location-action__label,
+  .venue-tray .list-location-action:focus-visible .list-location-action__label {
     background: var(--cgb-gold-50, #fff7dc);
   }
 

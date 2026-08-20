@@ -19,44 +19,6 @@
   color: var(--cgb-navy-950);
 }
 
-.map-actions {
-  position: absolute;
-  top: 0;
-  right: 0;
-  display: grid;
-  gap: 7px;
-}
-
-.map-actions .secondary-button,
-.map-actions .icon-button {
-  width: 46px;
-  min-width: 46px;
-  height: 46px;
-  min-height: 46px;
-  padding: 0;
-  color: var(--cgb-navy-950);
-  background: rgba(255, 255, 255, .96);
-  border: 1px solid rgba(1, 1, 51, .16);
-  border-radius: 50%;
-  box-shadow: var(--shadow-sm);
-}
-
-.map-actions .secondary-button {
-  font-size: 0;
-}
-
-.map-actions .ui-icon {
-  width: 19px;
-  height: 19px;
-}
-
-.map-actions .secondary-button:hover,
-.map-actions .icon-button:hover {
-  color: var(--cgb-navy-950);
-  background: var(--cgb-gold-400);
-  border-color: var(--cgb-gold-500);
-}
-
 .maplibregl-ctrl-top-right {
   top: 146px;
   right: 12px;

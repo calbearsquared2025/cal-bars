@@ -2,7 +2,6 @@ import { NEARBY_RADIUS_MILES } from './core.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const VALID_VIEWS = new Set(['map', 'search', 'add', 'list']);
-const MAP_ACTION_GAP = 14;
 let activeView = 'map';
 let openingList = false;
 
@@ -60,31 +59,10 @@ function normalizeSearchLabels() {
     .forEach((note) => { note.textContent = 'Not yet listed in Cal Golden Bars.'; });
 }
 
-function updateMapActionPosition() {
-  const actions = document.querySelector('.map-actions');
-  const tray = document.querySelector('#venue-tray');
-  if (!actions || !tray || !isMobile()) return;
-  if (document.body.dataset.view !== 'map' || document.body.dataset.commandSurface !== 'map') return;
-  if (getComputedStyle(tray).display === 'none') return;
-
-  // getBoundingClientRect() and innerHeight share the layout-viewport coordinate space.
-  const trayTop = tray.getBoundingClientRect().top;
-  const viewportHeight = window.innerHeight;
-  if (!Number.isFinite(trayTop) || !Number.isFinite(viewportHeight)) return;
-
-  const bottom = Math.max(MAP_ACTION_GAP, viewportHeight - trayTop + MAP_ACTION_GAP);
-  actions.style.setProperty('--map-action-bottom', `${Math.round(bottom)}px`);
-}
-
-function scheduleMapActionPosition() {
-  requestAnimationFrame(updateMapActionPosition);
-}
-
 function setActiveView(next) {
   if (!isMobile() || !VALID_VIEWS.has(next)) return;
   activeView = next;
   document.body.dataset.commandSurface = next;
-  scheduleMapActionPosition();
 }
 
 function visibleSurface() {
@@ -122,10 +100,7 @@ function handleTrayControl(event) {
 function scheduleSync() {
   requestAnimationFrame(() => {
     sync();
-    requestAnimationFrame(() => {
-      syncNavigation();
-      updateMapActionPosition();
-    });
+    requestAnimationFrame(syncNavigation);
   });
 }
 
@@ -133,7 +108,6 @@ function sync() {
   updateStatistics();
   updateListHeading();
   normalizeSearchLabels();
-  updateMapActionPosition();
 }
 
 function initializeNavigation() {
@@ -162,7 +136,6 @@ function initialize() {
   document.querySelector('#location-query')?.addEventListener('input', () => requestAnimationFrame(normalizeSearchLabels));
   document.querySelector('#location-search')?.addEventListener('submit', () => requestAnimationFrame(normalizeSearchLabels));
 
-  window.addEventListener('resize', scheduleMapActionPosition);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleSync);
   sync();
   syncNavigation();

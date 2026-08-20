@@ -171,15 +171,7 @@ body[data-view="detail"] #app {
   }
 
   .location-search {
-    width: calc(100% - 51px);
-  }
-
-  .map-actions .secondary-button,
-  .map-actions .icon-button {
-    width: 43px;
-    min-width: 43px;
-    height: 43px;
-    min-height: 43px;
+    width: 100%;
   }
 
   .selected-card {
@@ -260,7 +252,7 @@ body[data-view="detail"] #app {
   }
 
   .location-search {
-    width: calc(100% - 50px);
+    width: 100%;
   }
 
   .search-field {
@@ -269,14 +261,6 @@ body[data-view="detail"] #app {
 
   .search-submit {
     min-height: 33px;
-  }
-
-  .map-actions .secondary-button,
-  .map-actions .icon-button {
-    width: 42px;
-    min-width: 42px;
-    height: 42px;
-    min-height: 42px;
   }
 
   .maplibregl-ctrl-top-right {
@@ -473,7 +457,7 @@ body[data-view="detail"] #app {
   }
 
   .location-search {
-    width: calc(100% - 54px);
+    width: 100%;
   }
 
   .maplibregl-ctrl-top-right {

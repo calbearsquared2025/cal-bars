@@ -14,6 +14,7 @@ export const appState = {
   origin: null,
   nearbyOrigin: null,
   listQuery: '',
+  searchMode: 'existing',
   trayState: 'peek',
   map: null,
   locationFocusVenueId: null,
@@ -133,6 +134,7 @@ export function resetAppStateForTests() {
   appState.origin = null;
   appState.nearbyOrigin = null;
   appState.listQuery = '';
+  appState.searchMode = 'existing';
   appState.trayState = 'peek';
   appState.locationFocusVenueId = null;
   appState.detailMode = false;

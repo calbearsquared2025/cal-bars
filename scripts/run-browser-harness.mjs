@@ -44,6 +44,7 @@ function sendProductionHarness(response, requestUrl = '/') {
     (() => {
       const snapshot = ${runtimeSnapshotJson};
       const selections = new Map();
+      let mapTilerSearchCalls = 0;
       if (cgbPrejoinedReload) {
         const browserId = localStorage.getItem('cgb_v2_browser_id');
         const storedSelections = JSON.parse(localStorage.getItem('cgb_v2_fan_intent_selections') || '{}');
@@ -54,6 +55,7 @@ function sendProductionHarness(response, requestUrl = '/') {
       let failNextJoin = false;
       window.CGBProductionHarness = Object.freeze({
         failNextJoin() { failNextJoin = true; },
+        mapTilerSearchCalls() { return mapTilerSearchCalls; },
         seedOtherSelection(gameId, venueId) {
           const syntheticBrowserId = 'browser_' + 'other_1234567890abcdef';
           selections.set(syntheticBrowserId + '\\u0000' + gameId, { gameId, venueId });
@@ -76,6 +78,23 @@ function sendProductionHarness(response, requestUrl = '/') {
       });
       window.fetch = async (input, init = {}) => {
         const url = new URL(typeof input === 'string' ? input : input.url, location.href);
+        if (url.hostname === 'api.maptiler.com' && url.pathname.startsWith('/geocoding/')) {
+          mapTilerSearchCalls += 1;
+          return jsonResponse({ features: [{
+            id: 'poi.test-toast-place',
+            text: 'Toast Test Place',
+            place_name: 'Toast Test Place, 1 Test Way, Berkeley, California 94704, United States',
+            center: [-122.273, 37.8715],
+            place_type: ['poi'],
+            properties: { country_code: 'us' },
+            context: [
+              { id: 'postcode.94704', text: '94704' },
+              { id: 'place.berkeley', text: 'Berkeley' },
+              { id: 'region.california', text: 'California', short_code: 'US-CA' },
+              { id: 'country.us', text: 'United States', short_code: 'us' }
+            ]
+          }] });
+        }
         if (url.pathname !== '/__cgb_mock_api__') return nativeFetch(input, init);
         const method = String(init.method || input?.method || 'GET').toUpperCase();
         if (method !== 'POST') return jsonResponse({ ...snapshot, fanCounts: fanCounts() });
@@ -266,9 +285,9 @@ async function runHarness({ path, marker, label, virtualTimeBudget, windowSize =
 }
 
 let passed = true;
-const nearbyOnly = process.env.CGB_BROWSER_HARNESS_ONLY === 'nearby';
+const focusedHarness = process.env.CGB_BROWSER_HARNESS_ONLY || '';
 try {
-  if (nearbyOnly) {
+  if (focusedHarness === 'nearby') {
     passed = await runHarness({
       path: '/__cgb_production_runtime__?__cgb_harness=nearby-mobile',
       marker: 'CGB_NEARBY_MOBILE_RUNTIME_HARNESS_PASS',
@@ -280,6 +299,21 @@ try {
       path: '/__cgb_production_runtime__?__cgb_harness=nearby-desktop',
       marker: 'CGB_NEARBY_DESKTOP_RUNTIME_HARNESS_PASS',
       label: 'Focused desktop Nearby reuse harness',
+      virtualTimeBudget: 30000,
+      windowSize: '1440,900'
+    }) && passed;
+  } else if (focusedHarness === 'search') {
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?__cgb_harness=search-mobile',
+      marker: 'CGB_SEARCH_MODE_MOBILE_RUNTIME_HARNESS_PASS',
+      label: 'Focused mobile Search mode harness',
+      virtualTimeBudget: 30000
+    }) && passed;
+
+    passed = await runHarness({
+      path: '/__cgb_production_runtime__?__cgb_harness=search-desktop',
+      marker: 'CGB_SEARCH_MODE_DESKTOP_RUNTIME_HARNESS_PASS',
+      label: 'Focused desktop Search mode harness',
       virtualTimeBudget: 30000,
       windowSize: '1440,900'
     }) && passed;
@@ -365,6 +399,8 @@ try {
 
 if (!passed) process.exit(1);
 
-console.log(nearbyOnly
+console.log(focusedHarness === 'nearby'
   ? 'Focused Nearby browser harnesses passed on mobile and desktop.'
+  : focusedHarness === 'search'
+    ? 'Focused Search mode browser harnesses passed on mobile and desktop.'
   : 'Browser harnesses passed: static mobile first paint without refinement modules, the reduced external-venue fixture, the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');
