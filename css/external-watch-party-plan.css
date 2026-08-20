@@ -1,17 +1,24 @@
 .external-venue-actions {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
-.external-venue-plan-button {
+.external-venue-actions > button {
   min-width: 0;
+  width: 100%;
+}
+
+.external-venue-plan-button,
+#external-venue-cancel {
+  grid-column: 1 / -1;
 }
 
 @media (max-width: 620px) {
   .external-venue-actions {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
+  .external-venue-plan-button,
   #external-venue-cancel {
-    grid-column: 1 / -1;
+    grid-column: 1;
   }
 }
