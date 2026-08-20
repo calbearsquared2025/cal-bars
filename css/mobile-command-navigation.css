@@ -493,7 +493,7 @@
     bottom: auto;
     left: auto;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(12px, .5fr) auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
     column-gap: 0;
     width: min(390px, 34vw);
@@ -523,7 +523,8 @@
     letter-spacing: .01em;
   }
 
-  #mobile-search-button {
+  #mobile-search-button,
+  #mobile-add-button {
     display: none;
   }
 
@@ -559,33 +560,6 @@
   #mobile-map-button:disabled {
     opacity: .42;
     cursor: default;
-  }
-
-  .mobile-command--add,
-  .mobile-command--add[aria-current="page"] {
-    grid-row: 1;
-    grid-column: 4;
-    min-height: 34px;
-    margin: 0 0 0 12px;
-    padding: 5px 9px;
-    border: 1px solid var(--cgb-gold-400, #fdb515);
-    background: var(--cgb-gold-50, #fff7dc);
-    color: var(--cgb-navy-950, #010133);
-  }
-
-  .mobile-command--add:hover:not(:disabled),
-  .mobile-command--add:focus-visible {
-    background: rgba(253, 181, 21, .18);
-  }
-
-  .mobile-command__add-mark {
-    width: 15px;
-    height: 15px;
-    margin-top: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    font-size: .9rem;
   }
 
   .command-surface[hidden] {
