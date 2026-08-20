@@ -49,15 +49,15 @@ test('selected mini and full profiles share the compact useful-address formatter
   assert.match(mobile, /\[context, type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/);
 });
 
-test('the complete Venue Profile includes explicit selected-game context while retaining the global game selector', () => {
+test('the global game selector is the sole visible game context for the Venue Profile', () => {
   assert.match(html, /id="game-button"/);
   assert.match(app, /dom\.headerGameLabel\.textContent = gameTitle\(game\)/);
   assert.match(app, /dom\.headerKickoff\.textContent = formatKickoff\(game\)/);
   assert.match(app, /function selectGame\(gameId\)[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)/);
-  assert.match(app, /function renderGameContext\(game\)[\s\S]*eyebrow\.textContent = 'Selected game'[\s\S]*heading\.textContent = gameTitle\(game\)[\s\S]*kickoff\.textContent = formatKickoff\(game\)/);
-  assert.match(app, /dom\.venueDetail\.append\(renderGameContext\(game\)\)/);
-  assert.match(detailCss, /body\[data-view="detail"\] \.detail-game-context/);
-  assert.match(detailCss, /#tray-selected > #venue-detail \.detail-game-context/);
+  assert.doesNotMatch(app, /function renderGameContext\(|detail-game-context|Selected game/);
+  assert.doesNotMatch(detailCss, /detail-game-context/);
+  assert.match(detailHarness, /Global game selector should remain visible and functional/);
+  assert.match(detailHarness, /Profile should not duplicate selected-game context below the global selector/);
 });
 
 test('direct Venue first paint is viewport-aware instead of forcing desktop into standalone Detail', () => {
