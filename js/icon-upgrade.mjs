@@ -1,3 +1,4 @@
+import './issue-121-controller.mjs';
 import './final-functional-stabilization.mjs';
 import './map-mobile-refinement.mjs';
 import './map-profile-first-pass.mjs';
