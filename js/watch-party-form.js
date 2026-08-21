@@ -40,15 +40,6 @@ function removeExistingEntryPoint(detail) {
   detail.querySelector('.preview-note')?.remove();
 }
 
-function detailContributionActions(detail) {
-  return detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
-}
-
-function syncDetailContributionVisibility(detail) {
-  const section = detail.querySelector(':scope > .detail-contribution');
-  if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
-}
-
 async function launchWatchPartyForm({
   app,
   context,
@@ -102,10 +93,7 @@ export function renderWatchPartyFormEntryPoint({
     context
   );
 
-  if (!href) {
-    syncDetailContributionVisibility(detail);
-    return '';
-  }
+  if (!href) return '';
 
   const existingParty = getWatchParty(
     state?.snapshot,
@@ -114,23 +102,23 @@ export function renderWatchPartyFormEntryPoint({
   );
 
   const link = documentObject.createElement('a');
-  link.className = 'detail-contribution__action';
+  link.className = 'detail-watch-party-cta__link';
   link.dataset.watchPartyFormEntryPoint = 'true';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
   link.textContent = existingParty
     ? 'Add Another Watch Party'
-    : 'Submit a Watch Party';
+    : 'Plan a Watch Party';
   link.addEventListener('click', (event) => {
     event.preventDefault();
     launchWatchPartyForm({ app, context, href, documentObject, windowObject });
   });
 
-  const actions = detailContributionActions(detail);
+  const actions = detail.querySelector(':scope > .detail-watch-party-cta > .detail-watch-party-cta__action');
   if (!actions) return '';
-  actions.append(link);
-  syncDetailContributionVisibility(detail);
+  actions.replaceChildren(link);
+  detail.querySelector(':scope > .detail-watch-party-cta').hidden = false;
   return href;
 }
 
