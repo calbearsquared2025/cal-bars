@@ -334,6 +334,7 @@ async function runDesktopChecks() {
   check(element('#mobile-list-button span:last-child')?.textContent?.trim() === 'Locations', 'Desktop List command should be presented as Locations');
   check(!isVisible('#mobile-add-button'), 'Desktop should keep Add contextual instead of permanent');
   check(element('#mobile-map-button')?.disabled === true, 'Desktop Selected should be disabled until a Venue is selected');
+  check(element('#mobile-map-button')?.getAttribute('aria-disabled') === 'true', 'Desktop Selected should expose its disabled state to assistive technology');
   check(element('#mobile-list-button')?.getAttribute('aria-current') === 'page', 'Desktop Locations should be the active panel state initially');
   check(!selectedVenueId(), 'Initial desktop state should have no selected venue');
 

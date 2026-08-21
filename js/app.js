@@ -37,7 +37,7 @@ import { legacyActivitySeason, venueActivityPresentation } from './venue-activit
 import { createIcon } from './icons.mjs';
 
 const MAPTILER_KEY = 'jNqIsIVa4dP9qv7vQ8fy';
-const MAPTILER_STYLE = `https://api.maptiler.com/maps/019997ef-99cb-7052-b842-98cc3dbf3d7c/style.json?key=${MAPTILER_KEY}`;
+const MAPTILER_STYLE = new URL('../styles/dataviz-with-cgb-states.json', import.meta.url).href;
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -836,7 +836,7 @@ function renderSelectedCard() {
   const venue = selectedVenue();
   dom.traySelected.replaceChildren();
   if (!venue) {
-    setTrayState('peek');
+    setTrayState(isMobileLayout() ? 'peek' : 'full');
     return;
   }
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
