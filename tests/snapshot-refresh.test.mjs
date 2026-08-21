@@ -106,9 +106,9 @@ test('direct-entry venue is resolved after cached or fallback startup refreshes'
     { venue_id: 'venue_one', slug: 'first-place' },
     { venue_id: 'venue_two', slug: 'requested-place' }
   ] };
-  assert.equal(resolveDirectEntryVenueId(current, '?game=game_one&venue=requested-place'), 'venue_two');
+  assert.equal(resolveDirectEntryVenueId(current, '?game=ucla&venue=requested-place'), 'venue_two');
   assert.equal(resolveDirectEntryVenueId(current, '?venue=missing-place'), '');
-  assert.equal(resolveDirectEntryVenueId(current, '?game=game_one'), '');
+  assert.equal(resolveDirectEntryVenueId(current, '?game=ucla'), '');
 });
 
 test('browser bootstrap renders cache first and suppresses an unchanged live rerender', async () => {

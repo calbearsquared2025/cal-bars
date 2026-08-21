@@ -37,14 +37,15 @@ test('game titles use the single canonical opponent name', () => {
   assert.equal(gameTitle({ opponent_name: 'North Carolina State', home_away: 'away' }), 'at North Carolina State');
 });
 
-test('game routes use opponent-name slugs while preserving canonical IDs internally', () => {
+test('game routes use opponent-name slugs only', () => {
   const ucla = snapshot.games.find((game) => game.game_id === 'game_2026_01');
   assert.equal(gameRouteParam(ucla), 'ucla');
   assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: 'Boston College' }), 'boston-college');
   assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: "Saint Mary's" }), 'saint-marys');
+  assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: '' }), '');
   assert.equal(resolveGameRouteParam(snapshot.games, 'ucla')?.game_id, 'game_2026_01');
   assert.equal(resolveGameRouteParam(snapshot.games, 'UCLA')?.game_id, 'game_2026_01');
-  assert.equal(resolveGameRouteParam(snapshot.games, 'game_2026_01')?.game_id, 'game_2026_01');
+  assert.equal(resolveGameRouteParam(snapshot.games, 'game_2026_01'), null);
   assert.equal(resolveGameRouteParam(snapshot.games, 'not-a-game'), null);
 });
 
@@ -223,7 +224,7 @@ test('native share failure falls through to the Clipboard API', async () => {
 
 test('missing Clipboard API uses the non-Clipboard copy fallback', async () => {
   const result = await shareOrCopy({
-    url: 'https://example.com/?venue=test&game=game_1',
+    url: 'https://example.com/?venue=test&game=ucla',
     legacyCopy: async () => true
   });
   assert.deepEqual(result, { method: 'legacy-copy' });
@@ -232,16 +233,16 @@ test('missing Clipboard API uses the non-Clipboard copy fallback', async () => {
 test('Clipboard API copies when native sharing is unavailable', async () => {
   let copied = '';
   const result = await shareOrCopy({
-    url: 'https://example.com/?venue=test&game=game_1',
+    url: 'https://example.com/?venue=test&game=ucla',
     writeClipboard: async (url) => { copied = url; }
   });
   assert.deepEqual(result, { method: 'clipboard' });
-  assert.equal(copied, 'https://example.com/?venue=test&game=game_1');
+  assert.equal(copied, 'https://example.com/?venue=test&game=ucla');
 });
 
 test('Clipboard rejection uses the non-Clipboard copy fallback', async () => {
   const result = await shareOrCopy({
-    url: 'https://example.com/?venue=test&game=game_1',
+    url: 'https://example.com/?venue=test&game=ucla',
     writeClipboard: async () => { throw new Error('denied'); },
     legacyCopy: async () => true
   });
@@ -249,7 +250,7 @@ test('Clipboard rejection uses the non-Clipboard copy fallback', async () => {
 });
 
 test('failed automatic copy preserves the complete URL for manual copying', async () => {
-  const url = 'https://example.com/?venue=test&game=game_1';
+  const url = 'https://example.com/?venue=test&game=ucla';
   const result = await shareOrCopy({
     url,
     writeClipboard: async () => { throw new Error('denied'); },

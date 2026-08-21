@@ -62,17 +62,13 @@ function slugifyRoutePart(value) {
 }
 
 export function gameRouteParam(game) {
-  return slugifyRoutePart(game?.opponent_name) || String(game?.game_id || '').trim();
+  return slugifyRoutePart(game?.opponent_name);
 }
 
 export function resolveGameRouteParam(games, value) {
-  const requested = String(value || '').trim();
-  if (!requested) return null;
-  const list = games || [];
-  const byId = list.find((game) => game?.game_id === requested);
-  if (byId) return byId;
-  const requestedSlug = slugifyRoutePart(requested);
-  return list.find((game) => gameRouteParam(game) === requestedSlug) || null;
+  const requestedSlug = slugifyRoutePart(value);
+  if (!requestedSlug) return null;
+  return (games || []).find((game) => gameRouteParam(game) === requestedSlug) || null;
 }
 
 export function venueTypeLabel(venue) {

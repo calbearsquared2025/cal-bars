@@ -36,7 +36,7 @@ Canonical IDs are opaque, immutable relationship keys. They must not encode date
 
 Venue names are never identifiers. Venue slugs use lowercase kebab case, are unique, and remain stable after publication unless a collision must be corrected.
 
-The August 3, 2026 canonical-ID migration is complete. Public snapshots, browser state, and backend writes use canonical IDs. Public game URLs use a human-readable route value derived from `opponent_name` (for example `ucla` or `boston-college`); the client resolves that value to the canonical `game_id` before using application or backend state. Previously shared direct links containing a canonical `game_id` remain accepted and are canonicalized in the browser to the readable route value. Legacy Venue and Game alias mappings remain retired and are not part of the public contract.
+The August 3, 2026 canonical-ID migration is complete. Public snapshots, browser state, and backend writes use canonical IDs. Public game URLs use a human-readable route value derived from `opponent_name` (for example `ucla` or `boston-college`); the client resolves that value to the canonical `game_id` before using application or backend state. Canonical `game_id` values are not public route values. Legacy Venue and Game alias mappings remain retired and are not part of the public contract.
 
 ## Public Venue fields
 
