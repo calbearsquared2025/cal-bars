@@ -1,7 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title description">
+  <title id="title">Cal Golden Bars</title>
+  <desc id="description">A compact gold bear-paw location pin on a navy rounded square.</desc>
   <rect width="64" height="64" rx="14" fill="#071E41"/>
-  <path fill="#FDB515" d="M32 5C18.2 5 7 16.2 7 30c0 16.9 19.34 26.18 24.23 28.3a1.92 1.92 0 0 0 1.54 0C37.66 56.18 57 46.9 57 30 57 16.2 45.8 5 32 5Z"/>
-  <circle cx="32" cy="29" r="18.5" fill="#071E41"/>
-  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-width="4.5" d="M39.5 20.5a11.5 11.5 0 1 0 0 17"/>
-  <path fill="#FDB515" d="M30 31h3.5v7H30zm5.5-5h3.5v12h-3.5zm5.5-5h3.5v17H41z"/>
+  <g transform="translate(5 5) scale(.84375)">
+    <path fill="#FDB515" d="M32 2C16.54 2 4 14.54 4 30c0 18.96 21.66 29.36 27.14 31.73a2.15 2.15 0 0 0 1.72 0C38.34 59.36 60 48.96 60 30 60 14.54 47.46 2 32 2Z"/>
+    <circle cx="32" cy="29" r="21" fill="#071E41"/>
+    <g fill="#FDB515" aria-hidden="true">
+      <ellipse cx="19.8" cy="27" rx="3.15" ry="4.45" transform="rotate(-16 19.8 27)"/>
+      <ellipse cx="25.7" cy="23.8" rx="3.35" ry="4.8" transform="rotate(-8 25.7 23.8)"/>
+      <ellipse cx="32" cy="22.7" rx="3.5" ry="5"/>
+      <ellipse cx="38.3" cy="23.8" rx="3.35" ry="4.8" transform="rotate(8 38.3 23.8)"/>
+      <ellipse cx="44.2" cy="27" rx="3.15" ry="4.45" transform="rotate(16 44.2 27)"/>
+      <path d="M17.8 21.8 19.3 17.7 20.9 22.1Z M24.1 18.2 25.7 13.4 27.2 18.4Z M30.4 17 32 11.7 33.6 17Z M36.8 18.4 38.3 13.4 39.9 18.2Z M43.1 22.1 44.7 17.7 46.2 21.8Z"/>
+      <path d="M18.8 39.2c0-5.1 5.6-8.5 13.2-8.5s13.2 3.4 13.2 8.5c0 5.3-4.9 8.3-9.5 8.3-1.6 0-2.7-.7-3.7-1.5-1 .8-2.1 1.5-3.7 1.5-4.6 0-9.5-3-9.5-8.3Z"/>
+    </g>
+  </g>
 </svg>
