@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
-  buildCardSvg,
+  buildCardHtml,
   buildSharePage,
   socialCardModel,
   validateSocialSnapshot
@@ -26,24 +26,23 @@ test('social-card data uses shared game naming and snapshot counts', () => {
   );
 });
 
-test('card SVG is fixed-size, uses design-system colors, and includes the paw-pin mark', () => {
-  const svg = buildCardSvg(socialCardModel(snapshot, game));
-  assert.match(svg, /width="1200" height="630"/);
-  assert.match(svg, /#06152f/i);
-  assert.match(svg, /#fdb515/i);
-  assert.match(svg, /CAL GOLDEN BARS/);
-  assert.match(svg, /Cal vs\. UCLA/);
-  assert.match(svg, />LOCATIONS<\/text>/);
-  assert.match(svg, />MAPPED<\/text>/);
-  assert.match(svg, />WATCH<\/text>/);
-  assert.match(svg, />PARTIES<\/text>/);
-  assert.match(svg, /five-toed gold bear paw/);
-  assert.match(svg, /<ellipse[^>]+cx="32" cy="22\.7"/);
-  assert.match(svg, /id="metric-location-icon"/);
-  assert.match(svg, /id="metric-people-icon"/);
-  assert.match(svg, /M350 426h728/);
-  assert.doesNotMatch(svg, /M230 130h890/);
-  assert.doesNotMatch(svg, /M0 622h1200/);
+test('card HTML is fixed-size, uses design-system colors, and references the paw-pin mark', () => {
+  const html = buildCardHtml(socialCardModel(snapshot, game));
+  assert.match(html, /width: 1200px; height: 630px/);
+  assert.match(html, /#06152f/i);
+  assert.match(html, /#fdb515/i);
+  assert.match(html, /font-family: "Avenir Next", Avenir, "Segoe UI", Arial, sans-serif/);
+  assert.match(html, /grid-template-columns: 260px minmax\(0, 1fr\)/);
+  assert.match(html, /CAL GOLDEN BARS/);
+  assert.match(html, /Cal vs\. UCLA/);
+  assert.match(html, /game-title--default/);
+  assert.match(html, /<span>LOCATIONS<\/span><span>MAPPED<\/span>/);
+  assert.match(html, /<span>WATCH<\/span><span>PARTIES<\/span>/);
+  assert.match(html, /cgb-mark\.svg/);
+  assert.match(html, /metric-icon--location/);
+  assert.match(html, /metric-icon--people/);
+  assert.doesNotMatch(html, /scale\(/);
+  assert.doesNotMatch(html, /<text/);
 });
 
 test('share page has static Open Graph and Twitter metadata and routes to the selected game', () => {
