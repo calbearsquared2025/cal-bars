@@ -37,11 +37,25 @@ test('Show all preserves remembered coordinates and Locations browse ownership',
 });
 
 test('Search exposes the exact persistent add-location footer and canonical mode copy', () => {
-  assert.match(html, /id="search-add-location-button"[\s\S]*Not yet listed\? Add a location/);
+  assert.match(html, /id="search-add-location-button"[^>]*>Not yet listed\? <strong>Add a location\.<\/strong>/);
   assert.match(shellControls, /function setSearchMode\(mode = 'existing',[\s\S]*state\.searchMode = mode/);
   assert.match(shellControls, /'Add a location'[\s\S]*'Search for the place you want to add\.'[\s\S]*'Search for the location to add'/);
   assert.match(shellControls, /function showAddLocationSearch\(\)[\s\S]*setSearchMode\('add-location'\)[\s\S]*setSurface\('search'/);
   assert.doesNotMatch(shellControls, /showDesktopAddLocation|setDesktopAddLocationMode/);
+});
+
+test('desktop Search keeps results compact and the add-location action in a footer row', () => {
+  const desktopRules = commandCss.match(/@media \(min-width: 900px\) \{[\s\S]*$/)?.[0] ?? '';
+
+  assert.match(desktopRules, /\.map-toolbar \.search-field\s*\{[^}]*grid-template-columns: 16px minmax\(0, 1fr\) auto;[^}]*background: var\(--cgb-navy-50, #eef3f8\);[^}]*border: 2px solid var\(--cgb-navy-800, #0b2856\);[^}]*box-shadow: 0 8px 20px rgba\(1, 1, 51, \.2\);[^}]*clip-path: none;/);
+  assert.match(desktopRules, /\.map-toolbar \.search-field:focus-within\s*\{[^}]*border-color: var\(--cgb-gold-500, #fdb515\);/);
+  assert.match(desktopRules, /\.map-toolbar \.search-field input\s*\{[^}]*color: var\(--cgb-navy-950, #010133\);[^}]*font-weight: 600;/);
+  assert.match(desktopRules, /\.map-toolbar \.search-submit\s*\{[^}]*background: var\(--cgb-navy-800, #0b2856\);[^}]*clip-path: none;/);
+  assert.match(desktopRules, /\.map-toolbar \.search-suggestions\s*\{[^}]*grid-template-rows: minmax\(0, 1fr\) auto;[^}]*max-height: min\(40dvh, 286px\);[^}]*overflow: hidden;/);
+  assert.match(desktopRules, /\.map-toolbar \.search-suggestion-results\s*\{[^}]*overflow-y: auto;/);
+  assert.match(desktopRules, /\.map-toolbar #search-suggestions button\s*\{[^}]*min-height: 42px;[^}]*padding: 7px 9px;/);
+  assert.match(desktopRules, /\.map-toolbar \.search-add-location-action\s*\{[^}]*min-height: 30px;[^}]*padding: 5px 9px;[^}]*border-top: 1px solid var\(--cgb-neutral-200, #dfe3e8\);[^}]*font-size: \.68rem;[^}]*font-weight: 400;/);
+  assert.match(desktopRules, /\.map-toolbar \.search-add-location-action strong\s*\{[^}]*font-weight: 700;/);
 });
 
 test('normal Search never starts MapTiler external search', () => {

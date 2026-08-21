@@ -185,7 +185,10 @@ function updateResponsiveCommandLabels() {
   });
 
   const selectedButton = dom.commandButtons.find((button) => button.dataset.command === 'map');
-  if (selectedButton) selectedButton.disabled = !mobile && !selectedVenue();
+  if (selectedButton) {
+    selectedButton.disabled = !mobile && !selectedVenue();
+    selectedButton.setAttribute('aria-disabled', String(selectedButton.disabled));
+  }
 }
 
 function updateCommandState() {
@@ -194,7 +197,9 @@ function updateCommandState() {
   const trayState = dom.tray?.dataset.state || 'peek';
   const active = currentSurface === 'search' || currentSurface === 'add' || currentSurface === 'about'
     ? currentSurface
-    : trayState === 'full'
+    : !mobile && !selectedVenue()
+      ? 'list'
+      : trayState === 'full'
       ? 'list'
       : 'map';
 
@@ -456,8 +461,17 @@ function handleSearchResultClick(event) {
 }
 
 function normalizeDesktopTray() {
-  if (isMobileLayout() || document.body.dataset.view === 'detail') return;
-  if (dom.tray?.dataset.state === 'peek') dom.trayHandle?.click();
+  if (isMobileLayout() || document.body.dataset.view === 'detail') return false;
+  if (selectedVenue() || currentSurface === 'search' || currentSurface === 'add' || currentSurface === 'about') {
+    return false;
+  }
+
+  currentSurface = 'list';
+  if (dom.tray?.dataset.state !== 'full' && window.CGBApp?.showLocations) {
+    window.CGBApp.showLocations();
+    return true;
+  }
+  return false;
 }
 
 function syncDesktopBrowseState() {

@@ -560,6 +560,102 @@
     min-width: 0;
   }
 
+  .map-toolbar .search-field {
+    min-height: 44px;
+    grid-template-columns: 16px minmax(0, 1fr) auto;
+    gap: 7px;
+    padding: 3px 3px 3px 10px;
+    background: var(--cgb-navy-50, #eef3f8);
+    border: 2px solid var(--cgb-navy-800, #0b2856);
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(1, 1, 51, .2);
+    clip-path: none;
+  }
+
+  .map-toolbar .search-field:focus-within {
+    border-color: var(--cgb-gold-500, #fdb515);
+    box-shadow: 0 0 0 2px rgba(253, 181, 21, .22), 0 9px 22px rgba(1, 1, 51, .22);
+  }
+
+  .map-toolbar .search-field > .ui-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .map-toolbar .search-field input {
+    padding: 7px 0;
+    color: var(--cgb-navy-950, #010133);
+    font-weight: 600;
+  }
+
+  .map-toolbar .search-submit {
+    min-height: 34px;
+    padding: 6px 12px;
+    background: var(--cgb-navy-800, #0b2856);
+    border-radius: 7px;
+    clip-path: none;
+  }
+
+  .map-toolbar .search-submit:hover {
+    color: var(--cgb-white, #fff);
+    background: var(--cgb-navy-900, #071e41);
+  }
+
+  .map-toolbar .search-suggestions {
+    grid-template-rows: minmax(0, 1fr) auto;
+    max-height: min(40dvh, 286px);
+    padding: 0;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+
+  .map-toolbar .search-suggestion-results {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .map-toolbar .search-result-group {
+    gap: 0;
+    padding: 4px;
+  }
+
+  .map-toolbar .search-result-group__heading {
+    padding: 6px 8px 3px;
+  }
+
+  .map-toolbar #search-suggestions button {
+    min-height: 42px;
+    padding: 7px 9px;
+    border: 0;
+    border-radius: 7px;
+  }
+
+  .map-toolbar .search-add-location-action {
+    width: 100%;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    padding: 5px 9px;
+    color: var(--cgb-navy-800, #0b2856);
+    background: var(--cgb-neutral-50, #f2f2f2);
+    border: 0;
+    border-top: 1px solid var(--cgb-neutral-200, #dfe3e8);
+    border-radius: 0;
+    font-size: .68rem;
+    font-weight: 400;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .map-toolbar .search-add-location-action strong {
+    font-weight: 700;
+  }
+
+  .map-toolbar .search-add-location-action:hover,
+  .map-toolbar .search-add-location-action:focus-visible {
+    background: var(--cgb-navy-50, #eef3f8);
+  }
+
   .venue-tray .tray-list__header {
     display: grid;
     grid-template-columns: minmax(0, 1fr);

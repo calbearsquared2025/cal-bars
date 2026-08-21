@@ -23,7 +23,7 @@ test('search and add are dedicated mobile surfaces', async () => {
   assert.match(html, /id="search-surface"/);
   assert.match(html, /id="search-surface-form-slot"/);
   assert.match(html, /Find a location already listed in Cal Golden Bars/);
-  assert.match(html, /Not yet listed\? Add a location/);
+  assert.match(html, /Not yet listed\? <strong>Add a location\.<\/strong>/);
   assert.match(html, /id="add-surface"/);
   assert.match(html, /Plan a Watch Party/);
   assert.match(html, /Nominate a Cal Bar/);
@@ -97,7 +97,11 @@ test('desktop reuses the shared command owner as Locations and Selected only', a
   assert.match(script, /map: 'Selected'/);
   assert.match(script, /list: 'Locations'/);
   assert.match(script, /selectedButton\.disabled = !mobile && !selectedVenue\(\)/);
+  assert.match(script, /selectedButton\.setAttribute\('aria-disabled', String\(selectedButton\.disabled\)\)/);
+  assert.match(script, /!mobile && !selectedVenue\(\)[\s\S]*\? 'list'/);
   assert.match(script, /function normalizeDesktopTray\(\)/);
+  assert.match(script, /currentSurface = 'list'[\s\S]*CGBApp\?\.showLocations[\s\S]*CGBApp\.showLocations\(\)/);
+  assert.match(app, /function renderSelectedCard\(\)[\s\S]*if \(!venue\) \{[\s\S]*setTrayState\(isMobileLayout\(\) \? 'peek' : 'full'\)/);
   const sharedVenueSelections = app.match(/button\.addEventListener\('click', \(\) => selectVenue\(venue\.venue_id\)\);/g) || [];
   assert.equal(sharedVenueSelections.length >= 2, true);
   assert.doesNotMatch(script, /MutationObserver/);
