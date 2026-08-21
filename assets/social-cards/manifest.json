@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "renderer_version": 8,
+  "games": [
+    {
+      "game_id": "game_9e8f4860c6a256c0fae6007d",
+      "slug": "ucla",
+      "title": "Cal vs. UCLA",
+      "locations_mapped": 38,
+      "watch_parties": 4,
+      "image": "assets/social-cards/ucla.png",
+      "page": "share/ucla/index.html"
+    },
+    {
+      "game_id": "game_64902a48440e55522742d631",
+      "slug": "syracuse",
+      "title": "Cal at Syracuse",
+      "locations_mapped": 38,
+      "watch_parties": 2,
+      "image": "assets/social-cards/syracuse.png",
+      "page": "share/syracuse/index.html"
+    },
+    {
+      "game_id": "game_98623ba154f59012256c39ac",
+      "slug": "wagner",
+      "title": "Cal vs. Wagner",
+      "locations_mapped": 38,
+      "watch_parties": 3,
+      "image": "assets/social-cards/wagner.png",
+      "page": "share/wagner/index.html"
+    },
+    {
+      "game_id": "game_bf8616724877adc20fb78ac9",
+      "slug": "clemson",
+      "title": "Cal vs. Clemson",
+      "locations_mapped": 38,
+      "watch_parties": 3,
+      "image": "assets/social-cards/clemson.png",
+      "page": "share/clemson/index.html"
+    },
+    {
+      "game_id": "game_416f957fa7bbd325fa2d9b13",
+      "slug": "unlv",
+      "title": "Cal at UNLV",
+      "locations_mapped": 38,
+      "watch_parties": 2,
+      "image": "assets/social-cards/unlv.png",
+      "page": "share/unlv/index.html"
+    },
+    {
+      "game_id": "game_d865a3e1eac52bbbd848d545",
+      "slug": "virginia-tech",
+      "title": "Cal vs. Virginia Tech",
+      "locations_mapped": 38,
+      "watch_parties": 3,
+      "image": "assets/social-cards/virginia-tech.png",
+      "page": "share/virginia-tech/index.html"
+    },
+    {
+      "game_id": "game_2d86d2a1538503a070d1ee68",
+      "slug": "wake-forest",
+      "title": "Cal vs. Wake Forest",
+      "locations_mapped": 38,
+      "watch_parties": 3,
+      "image": "assets/social-cards/wake-forest.png",
+      "page": "share/wake-forest/index.html"
+    },
+    {
+      "game_id": "game_5f8281482583c43917f6f2a5",
+      "slug": "smu",
+      "title": "Cal at SMU",
+      "locations_mapped": 38,
+      "watch_parties": 2,
+      "image": "assets/social-cards/smu.png",
+      "page": "share/smu/index.html"
+    },
+    {
+      "game_id": "game_6bc7b90491088cca24f8ca52",
+      "slug": "nc-state",
+      "title": "Cal at NC State",
+      "locations_mapped": 38,
+      "watch_parties": 2,
+      "image": "assets/social-cards/nc-state.png",
+      "page": "share/nc-state/index.html"
+    },
+    {
+      "game_id": "game_f4ebc4f05457bb40f3bc66ab",
+      "slug": "virginia",
+      "title": "Cal at Virginia",
+      "locations_mapped": 38,
+      "watch_parties": 2,
+      "image": "assets/social-cards/virginia.png",
+      "page": "share/virginia/index.html"
+    },
+    {
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "slug": "stanford",
+      "title": "Cal vs. Stanford",
+      "locations_mapped": 38,
+      "watch_parties": 3,
+      "image": "assets/social-cards/stanford.png",
+      "page": "share/stanford/index.html"
+    },
+    {
+      "game_id": "game_1535f732d3d1061b8e8cf07e",
+      "slug": "pittsburgh",
+      "title": "Cal vs. Pittsburgh",
+      "locations_mapped": 38,
+      "watch_parties": 3,
+      "image": "assets/social-cards/pittsburgh.png",
+      "page": "share/pittsburgh/index.html"
+    }
+  ]
+}

@@ -126,8 +126,8 @@ test('desktop keeps the map-side rail and delegates the complete Venue Profile t
 
 test('placeholder mark and shared icon system remain temporary-compatible and dependency-free', () => {
   assert.match(html, /assets\/cgb-mark\.svg/);
-  assert.match(mark, /fill="#FDB515"/i);
-  assert.match(mark, /fill="#071E41"/i);
+  assert.match(mark, /(?:fill="|fill:\s*)#FDB515/i);
+  assert.match(mark, /(?:fill="|fill:\s*)#071E41/i);
 
   for (const symbol of [
     'icon-search', 'icon-location', 'icon-map', 'icon-calendar', 'icon-near-me',

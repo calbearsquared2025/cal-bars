@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title description">
-  <title id="title">Cal Golden Bars</title>
-  <desc id="description">A compact gold bear-paw location pin on a navy rounded square.</desc>
-  <rect width="64" height="64" rx="14" fill="#071E41"/>
-  <g transform="translate(5 5) scale(.84375)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title description">
+  <title id="title">Cal Golden Bars app icon</title>
+  <desc id="description">A gold bear-paw location pin on a navy rounded square.</desc>
+  <rect width="180" height="180" rx="38" fill="#071E41"/>
+  <g transform="translate(18 18) scale(2.25)">
     <path fill="#FDB515" d="M32 2C16.54 2 4 14.54 4 30c0 18.96 21.66 29.36 27.14 31.73a2.15 2.15 0 0 0 1.72 0C38.34 59.36 60 48.96 60 30 60 14.54 47.46 2 32 2Z"/>
     <circle cx="32" cy="29" r="21" fill="#071E41"/>
     <g fill="#FDB515" aria-hidden="true">
