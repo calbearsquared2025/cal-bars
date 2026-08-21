@@ -248,6 +248,7 @@ export function buildMapTilerSearchUrl(query, key, { limit = 6, language = 'en' 
   url.searchParams.set('language', language);
   url.searchParams.set('limit', String(Math.max(1, Math.min(10, Number(limit) || 6))));
   url.searchParams.set('autocomplete', 'true');
+  url.searchParams.set('country', 'us');
   url.searchParams.set('types', 'poi,address');
   return url.toString();
 }
