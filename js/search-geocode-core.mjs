@@ -65,7 +65,8 @@ export function buildUsAreaSearchUrl(query, key, { language = 'en', limit = 5 } 
 export function normalizeUsAreaOrigin(payload, query = '') {
   const features = Array.isArray(payload?.features) ? payload.features : [];
   for (const feature of features) {
-    if (countryCode(feature) !== 'US') continue;
+    const explicitCountry = countryCode(feature);
+    if (explicitCountry && explicitCountry !== 'US') continue;
     const coordinates = featureCoordinates(feature);
     if (!coordinates) continue;
     return Object.freeze({
