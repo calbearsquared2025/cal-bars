@@ -163,13 +163,14 @@ test('normalization requires a concrete POI or address with canonical address co
   assert.deepEqual(normalizeMapTilerResults({ features: [feature, feature] }).map((item) => item.placeId), ['poi.98765']);
 });
 
-test('MapTiler request uses the explicit public key, concrete result types, autocomplete, and bounded results', () => {
+test('MapTiler request uses the explicit public key, concrete result types, autocomplete, US scope, and bounded results', () => {
   const url = new URL(buildMapTilerSearchUrl('McNally Oakland', 'existing-public-key', { limit: 99 }));
   assert.equal(url.hostname, 'api.maptiler.com');
   assert.equal(url.pathname, '/geocoding/McNally%20Oakland.json');
   assert.equal(url.searchParams.get('key'), 'existing-public-key');
   assert.equal(url.searchParams.get('types'), 'poi,address');
   assert.equal(url.searchParams.get('autocomplete'), 'true');
+  assert.equal(url.searchParams.get('country'), 'us');
   assert.equal(url.searchParams.get('limit'), '10');
 });
 
