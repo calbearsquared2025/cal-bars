@@ -22,9 +22,11 @@ jobs:
           node-version: 22
       - name: Generate cards and share pages
         run: npm run generate:social-cards
+      - name: Update root current-game social preview
+        run: node scripts/update-root-social-preview.mjs
       - name: Commit refreshed outputs
         run: |
-          git add -A -- assets/social-cards share
+          git add -A -- index.html assets/social-cards share
           if git diff --cached --quiet; then
             echo "Generated outputs are already current."
             exit 0
