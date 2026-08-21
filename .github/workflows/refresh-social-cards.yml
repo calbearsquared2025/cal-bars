@@ -1,0 +1,35 @@
+name: Refresh game social cards
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-game-social-cards
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generate cards and share pages
+        run: npm run generate:social-cards
+      - name: Commit refreshed outputs
+        run: |
+          git add -A -- assets/social-cards share
+          if git diff --cached --quiet; then
+            echo "Generated outputs are already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Refresh game social cards"
+          git push

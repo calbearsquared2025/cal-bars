@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate:social-cards": "node scripts/generate-social-cards.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:migration": "node --test tests/venue-migration.test.mjs tests/venue-load-validation.test.mjs",
     "test:browser": "node scripts/run-browser-harness.mjs",
