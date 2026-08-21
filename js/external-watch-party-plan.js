@@ -132,7 +132,7 @@ function ensurePlanButton({ app, documentObject = document, windowObject = windo
   button.id = BUTTON_ID;
   button.type = 'button';
   button.className = 'secondary-button external-venue-plan-button';
-  button.textContent = 'Plan a Watch Party';
+  button.textContent = 'Add a Watch Party';
   actions.insertBefore(button, cancel);
 
   button.addEventListener('click', async () => {
