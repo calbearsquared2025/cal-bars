@@ -287,7 +287,14 @@ async function runHarness({ path, marker, label, virtualTimeBudget, windowSize =
 let passed = true;
 const focusedHarness = process.env.CGB_BROWSER_HARNESS_ONLY || '';
 try {
-  if (focusedHarness === 'nearby') {
+  if (focusedHarness === 'external') {
+    passed = await runHarness({
+      path: '/tests/browser/external-venue-harness.html',
+      marker: 'M4B_BROWSER_HARNESS_PASS',
+      label: 'Focused external-location attendance split harness',
+      virtualTimeBudget: 12000
+    }) && passed;
+  } else if (focusedHarness === 'nearby') {
     passed = await runHarness({
       path: '/__cgb_production_runtime__?__cgb_harness=nearby-mobile',
       marker: 'CGB_NEARBY_MOBILE_RUNTIME_HARNESS_PASS',

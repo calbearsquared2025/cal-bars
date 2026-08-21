@@ -9,6 +9,7 @@ const code = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 
 const canonicalIds = await readFile(new URL('../apps-script/CanonicalIds.gs', import.meta.url), 'utf8');
 const fanIntent = await readFile(new URL('../apps-script/FanIntent.gs', import.meta.url), 'utf8');
 const externalVenue = await readFile(new URL('../apps-script/ExternalVenue.gs', import.meta.url), 'utf8');
+const externalVenueContribution = await readFile(new URL('../apps-script/ExternalVenueContribution.gs', import.meta.url), 'utf8');
 
 const VENUE_HEADERS = [
   'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
@@ -272,9 +273,9 @@ function buildHarness({
     }
   });
   vm.runInContext(
-    `${code}\n${canonicalIds}\n${externalVenue}\n${fanIntent}\n` +
+    `${code}\n${canonicalIds}\n${externalVenue}\n${externalVenueContribution}\n${fanIntent}\n` +
     `getWorkbook_ = function(){ return __workbook; };\n` +
-    `globalThis.__api = { doPost, processJoinExternalVenueRequest_, parseJoinExternalVenuePayload_ };`,
+    `globalThis.__api = { doPost, processJoinExternalVenueRequest_, parseJoinExternalVenuePayload_, processAddExternalVenueRequest_, parseAddExternalVenuePayload_ };`,
     context
   );
   return { workbook, venueSheet, fanSheet, mapTilerRequests, api: context.__api };
@@ -286,6 +287,10 @@ function post(api, payload) {
 
 function joinExternal(api, place = minimalExternalPlace()) {
   return post(api, { action: 'joinExternalVenue', browserId, gameId: 'game_1', externalPlace: place });
+}
+
+function addExternal(api, place = minimalExternalPlace()) {
+  return post(api, { action: 'addExternalVenue', gameId: 'game_1', externalPlace: place });
 }
 
 function sheetObjects(sheet, headers) {
@@ -327,6 +332,25 @@ test('minimal external-place request is accepted and persists server-verified ve
   assert.equal(activeFanRows(fanSheet)[0].venue_id, created.venue_id);
   assert.match(activeFanRows(fanSheet)[0].fan_intent_id, /^fi_[a-f0-9]{24}$/);
   assert.deepEqual(response.fanCounts, [{ game_id: 'game_1', venue_id: created.venue_id, count: 1 }]);
+});
+
+test('addExternalVenue verifies, creates, and dedupes without browser identity or Fan Intent', () => {
+  const { api, venueSheet, fanSheet, mapTilerRequests } = buildHarness();
+
+  const first = addExternal(api);
+  const second = addExternal(api);
+  const venues = sheetObjects(venueSheet, VENUE_HEADERS);
+  const created = venues.filter((venue) => venue.external_place_id === 'poi.98765');
+
+  assert.equal(first.ok, true);
+  assert.equal(first.action, 'addExternalVenue');
+  assert.equal(first.venue.venue_id, created[0].venue_id);
+  assert.equal(second.venue.venue_id, first.venue.venue_id);
+  assert.equal(created.length, 1);
+  assert.equal(mapTilerRequests.length, 1);
+  assert.equal(activeFanRows(fanSheet).length, 0);
+  assert.equal(Object.hasOwn(first, 'selection'), false);
+  assert.equal(Object.hasOwn(first, 'fanCounts'), false);
 });
 
 test('sparse Albany Bulb ID verification is enriched by exact provider ID and stores California as CA', () => {

@@ -7,6 +7,12 @@ import {
   buildWatchPartyPrefillUrl,
   resolveWatchPartyFormContext
 } from './watch-party-form-core.mjs';
+import {
+  WATCH_PARTY_ATTENDANCE_CHOICES,
+  closeWaitingFormWindow,
+  navigateWaitingFormWindow,
+  requestWatchPartyAttendance
+} from './watch-party-attendance-handoff.mjs';
 
 const CTA_SELECTOR = '[data-watch-party-form-entry-point]';
 const CONFIG_META_NAMES = Object.freeze({
@@ -43,9 +49,41 @@ function syncDetailContributionVisibility(detail) {
   if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
 }
 
+async function launchWatchPartyForm({
+  app,
+  context,
+  href,
+  documentObject,
+  windowObject
+}) {
+  const handoff = await requestWatchPartyAttendance({ documentObject, windowObject });
+  if (!handoff) return false;
+
+  if (handoff.choice === WATCH_PARTY_ATTENDANCE_CHOICES.attend) {
+    const ensureAttendance = windowObject.CGBFanIntent?.ensureAttendance;
+    if (typeof ensureAttendance !== 'function') {
+      closeWaitingFormWindow(handoff.windowRef);
+      app?.showStatus?.('Attendance is temporarily unavailable. Try again or continue without checking in.', 5000);
+      return false;
+    }
+
+    const saved = await ensureAttendance(context.venueId, context.gameId);
+    if (!saved) {
+      closeWaitingFormWindow(handoff.windowRef);
+      app?.showStatus?.('Attendance was not saved. Try again or continue without checking in.', 5000);
+      return false;
+    }
+  }
+
+  const opened = navigateWaitingFormWindow(handoff.windowRef, href, windowObject);
+  if (!opened) app?.showStatus?.('Could not open the Watch Party form. Try again.', 5000);
+  return opened;
+}
+
 export function renderWatchPartyFormEntryPoint({
   app = window.CGBApp,
-  documentObject = document
+  documentObject = document,
+  windowObject = window
 } = {}) {
   const detail = documentObject.querySelector('#venue-detail');
   if (!detail) return '';
@@ -84,6 +122,10 @@ export function renderWatchPartyFormEntryPoint({
   link.textContent = existingParty
     ? 'Add Another Watch Party'
     : 'Submit a Watch Party';
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    launchWatchPartyForm({ app, context, href, documentObject, windowObject });
+  });
 
   const actions = detailContributionActions(detail);
   if (!actions) return '';
@@ -96,7 +138,7 @@ function initializeWatchPartyFormEntryPoint() {
   const app = window.CGBApp;
   if (!app?.subscribe) return;
 
-  const render = () => renderWatchPartyFormEntryPoint({ app, documentObject: document });
+  const render = () => renderWatchPartyFormEntryPoint({ app, documentObject: document, windowObject: window });
   app.subscribe('rendered', render);
   app.subscribe('ready', render);
   render();

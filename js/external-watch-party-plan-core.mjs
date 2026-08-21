@@ -4,11 +4,11 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
-export function beginExternalWatchPartyPlan({ selected, gameId } = {}) {
+export function beginExternalWatchPartyPlan({ selected, gameId, attending = false } = {}) {
   const placeId = clean(selected?.placeId);
   const selectedGameId = clean(selected?.gameId || gameId);
   if (!placeId || !selectedGameId) return null;
-  return Object.freeze({ placeId, gameId: selectedGameId });
+  return Object.freeze({ placeId, gameId: selectedGameId, attending: attending === true });
 }
 
 export function resolveExternalWatchPartyPlan(previousPlan, state = {}) {
@@ -41,7 +41,11 @@ export function resolveExternalWatchPartyPlan(previousPlan, state = {}) {
 
   return Object.freeze({
     pending: committed ? null : plan,
-    committed: committed ? Object.freeze({ venueId, gameId }) : null,
+    committed: committed ? Object.freeze({
+      venueId,
+      gameId,
+      attending: plan.attending === true
+    }) : null,
     failed: false
   });
 }
@@ -49,6 +53,6 @@ export function resolveExternalWatchPartyPlan(previousPlan, state = {}) {
 export function selectionsAfterExternalWatchPartyPlan(selections, committed) {
   const gameId = clean(committed?.gameId);
   const venueId = clean(committed?.venueId);
-  if (!gameId || !venueId) return { ...(selections || {}) };
+  if (!gameId || !venueId || committed?.attending !== true) return { ...(selections || {}) };
   return withStoredSelection(selections, gameId, venueId);
 }

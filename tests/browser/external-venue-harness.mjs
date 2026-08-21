@@ -120,11 +120,43 @@ const canonicalSecondVenue = {
   updated_at: '2026-07-29T05:02:00.000Z'
 };
 
+const canonicalThirdVenue = {
+  ...canonicalExternalVenue,
+  venue_id: 'venue_created_3',
+  slug: 'third-external-pub-richmond',
+  name: 'Third External Pub',
+  address_line_1: '300 Third St',
+  city: 'Richmond',
+  postal_code: '94801',
+  latitude: 37.9358,
+  longitude: -122.3477,
+  updated_at: '2026-07-29T05:03:00.000Z'
+};
+
+const canonicalFourthVenue = {
+  ...canonicalExternalVenue,
+  venue_id: 'venue_created_4',
+  slug: 'fourth-external-pub-alameda',
+  name: 'Fourth External Pub',
+  address_line_1: '400 Fourth St',
+  city: 'Alameda',
+  postal_code: '94501',
+  latitude: 37.7652,
+  longitude: -122.2416,
+  updated_at: '2026-07-29T05:04:00.000Z'
+};
+
 const initialVenueCount = 2;
 setCanonicalSnapshot({
   schemaVersion: '2.0',
   venues: [existingVenue, secondExistingVenue],
-  games: [{ game_id: 'game_1', game_status: 'upcoming' }],
+  games: [{
+    game_id: 'game_1',
+    game_status: 'upcoming',
+    game_date: '2026-09-05',
+    opponent_name: 'UCLA',
+    home_away: 'home'
+  }],
   watchParties: [],
   fanCounts: [],
   venueHistoryCounts: [],
@@ -140,18 +172,41 @@ let renderCount = 0;
 let backendCallCount = 0;
 let mapTilerCallCount = 0;
 let receivedWrite = null;
+const receivedWrites = [];
 let lastStatus = '';
 let focusedLocation = null;
+const appListeners = new Map();
 window.CGBApp = Object.freeze({
   mapTilerKey: 'existing-browser-key',
+  getState() { return appState; },
+  subscribe(name, listener) {
+    const listeners = appListeners.get(name) || new Set();
+    listeners.add(listener);
+    appListeners.set(name, listeners);
+    return () => listeners.delete(listener);
+  },
   render() {
     renderCount += 1;
     if (throwPostSuccessRender && backendCallCount >= 2) throw new Error('mock_post_success_render_failed');
+    (appListeners.get('rendered') || []).forEach((listener) => listener());
   },
   focusLocation(origin) { focusedLocation = origin; },
   showStatus(message) { lastStatus = message; }
 });
 window.matchMedia = window.matchMedia || (() => ({ matches: false }));
+
+const openedFormWindows = [];
+window.open = () => {
+  const opened = {
+    opener: window,
+    closed: false,
+    document: { title: '', body: { textContent: '' } },
+    location: { href: '' },
+    close() { this.closed = true; }
+  };
+  openedFormWindows.push(opened);
+  return opened;
+};
 
 let delayedSearchResolve = null;
 window.fetch = async (url, options = {}) => {
@@ -176,6 +231,26 @@ window.fetch = async (url, options = {}) => {
           longitude: -122.3,
           latitude: 37.87
         })
+      : query.includes('Third Richmond')
+        ? feature({
+            id: 'poi.33333',
+            name: 'Third External Pub',
+            address: '300 Third St',
+            city: 'Richmond',
+            postalCode: '94801',
+            longitude: -122.3477,
+            latitude: 37.9358
+          })
+        : query.includes('Fourth Alameda')
+          ? feature({
+              id: 'poi.44444',
+              name: 'Fourth External Pub',
+              address: '400 Fourth St',
+              city: 'Alameda',
+              postalCode: '94501',
+              longitude: -122.2416,
+              latitude: 37.7652
+            })
       : feature();
     return new Response(JSON.stringify({ features: [selectedFeature] }), {
       status: 200,
@@ -186,30 +261,46 @@ window.fetch = async (url, options = {}) => {
   if (parsed.hostname === 'mock.cgb.invalid') {
     backendCallCount += 1;
     receivedWrite = JSON.parse(options.body);
-    const venue = receivedWrite.externalPlace.placeId === 'poi.22222'
-      ? canonicalSecondVenue
-      : canonicalExternalVenue;
-    return new Response(JSON.stringify({
-      ok: true,
-      action: 'joinExternalVenue',
-      schemaVersion: '2.0',
-      venue,
-      selection: {
-        game_id: 'game_1',
-        venue_id: venue.venue_id,
-        status: 'attending'
-      },
-      fanCounts: [{
-        game_id: 'game_1',
-        venue_id: venue.venue_id,
-        count: 1
-      }],
-      venueHistoryCounts: [{
-        venue_id: venue.venue_id,
-        past_game_count: 0
-      }],
-      generatedAt: '2026-07-29T05:02:00.000Z'
-    }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    receivedWrites.push(receivedWrite);
+    const venuesByPlaceId = {
+      'poi.22222': canonicalSecondVenue,
+      'poi.33333': canonicalThirdVenue,
+      'poi.44444': canonicalFourthVenue
+    };
+    const venue = venuesByPlaceId[receivedWrite.externalPlace.placeId] || canonicalExternalVenue;
+    const payload = receivedWrite.action === 'addExternalVenue'
+      ? {
+          ok: true,
+          action: 'addExternalVenue',
+          schemaVersion: '2.0',
+          venue,
+          generatedAt: '2026-07-29T05:04:00.000Z'
+        }
+      : {
+          ok: true,
+          action: 'joinExternalVenue',
+          schemaVersion: '2.0',
+          venue,
+          selection: {
+            game_id: 'game_1',
+            venue_id: venue.venue_id,
+            status: 'attending'
+          },
+          fanCounts: [{
+            game_id: 'game_1',
+            venue_id: venue.venue_id,
+            count: 1
+          }],
+          venueHistoryCounts: [{
+            venue_id: venue.venue_id,
+            past_game_count: 0
+          }],
+          generatedAt: '2026-07-29T05:04:00.000Z'
+        };
+    return new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   throw new Error(`Unexpected harness request: ${url}`);
@@ -218,6 +309,16 @@ window.fetch = async (url, options = {}) => {
 try {
   markApplicationReady();
   await import('../../js/external-venue-search.js');
+  await wait(0);
+  await import('../../js/external-watch-party-cta.js');
+  await wait(0);
+
+  assert(
+    [...document.querySelectorAll('#external-venue-dialog button')]
+      .map((button) => button.textContent.trim())
+      .join('|') === 'I’ll be here|Add location only|Add a Watch Party|Cancel',
+    'External confirmation actions did not initialize in the required order'
+  );
 
   searchInput.value = '94612';
   searchInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -229,15 +330,18 @@ try {
   assert(mapTilerCallCount === 0, 'Exact mapped ZIP unnecessarily called MapTiler');
   assert(/2 mapped locations match 94612/.test(lastStatus), 'Exact mapped ZIP did not report mapped matches');
   appState.listQuery = '';
+  appState.searchMode = 'add-location';
 
   searchInput.value = 'Delayed Existing';
   searchInput.dispatchEvent(new Event('input', { bubbles: true }));
   await waitFor(() => delayedSearchResolve, 'Delayed external request did not start');
+  appState.searchMode = 'existing';
   searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   delayedSearchResolve();
   await wait(50);
   assert(!suggestions.querySelector('.external-place-result'), 'Stale external results reopened after search submit');
   assert(!suggestions.querySelector('.search-result-group--external'), 'Stale external group remained after search submit');
+  appState.searchMode = 'add-location';
 
   searchInput.value = 'McNally Oakland';
   searchInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -287,15 +391,62 @@ try {
     'Second external result did not render'
   );
   suggestions.querySelector('[data-external-place-id="poi.22222"]').click();
-  confirmButton.click();
+  document.querySelector('#external-venue-add-only').click();
   await waitFor(
     () => appState.selectedVenueId === canonicalSecondVenue.venue_id,
-    'Successful write was not committed when post-success UI effects threw'
+    'Add location only did not commit the canonical Venue'
   );
-  assert(backendCallCount === 2, 'Second combined write was not sent exactly once');
-  assert(!dialog.open, 'Confirmation remained open after successful write with UI exceptions');
-  assert(window.CGBExternalVenueSearch.getState().retry === null, 'Successful write incorrectly retained retry state');
-  assert(!/Nothing was created|Could not add/.test(lastStatus), 'Successful write displayed creation-failure copy');
+  throwPostSuccessRender = false;
+  assert(backendCallCount === 2, 'Add-only write was not sent exactly once');
+  assert(receivedWrite.action === 'addExternalVenue', 'Add location only used the attendance write path');
+  assert(!Object.hasOwn(receivedWrite, 'browserId'), 'Add location only sent browser identity');
+  assert(appState.fanIntent.selections.game_1 === canonicalExternalVenue.venue_id, 'Add location only moved existing attendance');
+  assert(!dialog.open, 'Confirmation remained open after add-only success');
+
+  searchInput.value = 'Third Richmond';
+  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(
+    () => suggestions.querySelector('[data-external-place-id="poi.33333"]'),
+    'Attending Watch Party external result did not render'
+  );
+  suggestions.querySelector('[data-external-place-id="poi.33333"]').click();
+  document.querySelector('#external-venue-plan-watch-party').click();
+  await waitFor(
+    () => document.querySelector('[data-watch-party-attendance-choice="attend"]'),
+    'Watch Party attendance choice did not open'
+  );
+  document.querySelector('[data-watch-party-attendance-choice="attend"]').click();
+  await waitFor(
+    () => openedFormWindows[0]?.location.href,
+    'Attending Watch Party Form did not open after the write'
+  );
+  assert(receivedWrites[2].action === 'joinExternalVenue', 'Attending Watch Party used the no-attendance path');
+  assert(appState.selectedVenueId === canonicalThirdVenue.venue_id, 'Attending Watch Party did not create/select its Venue');
+  assert(appState.fanIntent.selections.game_1 === canonicalThirdVenue.venue_id, 'Attending Watch Party did not save attendance');
+  assert(new URL(openedFormWindows[0].location.href).searchParams.get('entry.100') === canonicalThirdVenue.venue_id, 'Attending Watch Party Form omitted the canonical Venue');
+
+  searchInput.value = 'Fourth Alameda';
+  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(
+    () => suggestions.querySelector('[data-external-place-id="poi.44444"]'),
+    'Sharing Watch Party external result did not render'
+  );
+  suggestions.querySelector('[data-external-place-id="poi.44444"]').click();
+  document.querySelector('#external-venue-plan-watch-party').click();
+  await waitFor(
+    () => document.querySelector('[data-watch-party-attendance-choice="share"]'),
+    'Watch Party sharing choice did not open'
+  );
+  document.querySelector('[data-watch-party-attendance-choice="share"]').click();
+  await waitFor(
+    () => openedFormWindows[1]?.location.href,
+    'Sharing Watch Party Form did not open after the write'
+  );
+  assert(receivedWrites[3].action === 'addExternalVenue', 'Sharing Watch Party used the attendance path');
+  assert(!Object.hasOwn(receivedWrites[3], 'browserId'), 'Sharing Watch Party sent browser identity');
+  assert(appState.selectedVenueId === canonicalFourthVenue.venue_id, 'Sharing Watch Party did not create/select its Venue');
+  assert(appState.fanIntent.selections.game_1 === canonicalThirdVenue.venue_id, 'Sharing Watch Party moved attendance');
+  assert(new URL(openedFormWindows[1].location.href).searchParams.get('entry.100') === canonicalFourthVenue.venue_id, 'Sharing Watch Party Form omitted the canonical Venue');
 
   document.documentElement.dataset.harness = 'pass';
   result.textContent = 'M4B_BROWSER_HARNESS_PASS';

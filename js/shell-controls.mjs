@@ -17,6 +17,12 @@ import {
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
 import { subscribeAppEvent } from './app-state.mjs';
+import {
+  WATCH_PARTY_ATTENDANCE_CHOICES,
+  closeWaitingFormWindow,
+  navigateWaitingFormWindow,
+  requestWatchPartyAttendance
+} from './watch-party-attendance-handoff.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const CONTRIBUTION_INTENTS = Object.freeze({
@@ -66,6 +72,39 @@ function openExternalUrl(href) {
   document.body.append(link);
   link.click();
   link.remove();
+  return true;
+}
+
+function openWatchPartyUrlWithAttendanceChoice(href, venueId, gameId) {
+  if (!href || !venueId || !gameId) return false;
+
+  void (async () => {
+    const handoff = await requestWatchPartyAttendance({
+      documentObject: document,
+      windowObject: window
+    });
+    if (!handoff) return;
+
+    if (handoff.choice === WATCH_PARTY_ATTENDANCE_CHOICES.attend) {
+      const ensureAttendance = window.CGBFanIntent?.ensureAttendance;
+      if (typeof ensureAttendance !== 'function') {
+        closeWaitingFormWindow(handoff.windowRef);
+        showStatus('Attendance is temporarily unavailable. Try again or continue without checking in.', 5000);
+        return;
+      }
+      const saved = await ensureAttendance(venueId, gameId);
+      if (!saved) {
+        closeWaitingFormWindow(handoff.windowRef);
+        showStatus('Attendance was not saved. Try again or continue without checking in.', 5000);
+        return;
+      }
+    }
+
+    if (!navigateWaitingFormWindow(handoff.windowRef, href, window)) {
+      showStatus('Could not open the Watch Party form. Try again.', 5000);
+    }
+  })();
+
   return true;
 }
 
@@ -314,8 +353,7 @@ function showAddLocationSearch() {
 }
 
 function beginContribution(intent, {
-  venueId: requestedVenueId = '',
-  ensureAttendance = false
+  venueId: requestedVenueId = ''
 } = {}) {
   const state = appState();
   const venue = requestedVenueId
@@ -340,10 +378,9 @@ function beginContribution(intent, {
   }
 
   if (href) {
-    const opened = openExternalUrl(href);
-    if (opened && ensureAttendance && intent === CONTRIBUTION_INTENTS.watchParty) {
-      void window.CGBFanIntent?.ensureAttendance?.(venueId, selectedGame(state)?.game_id);
-    }
+    const opened = intent === CONTRIBUTION_INTENTS.watchParty
+      ? openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame(state)?.game_id)
+      : openExternalUrl(href);
     setSurface('map');
     return opened;
   }
@@ -363,10 +400,7 @@ function handleSelectedVenueWatchParty(event) {
   if (!venueId) return;
 
   event.preventDefault();
-  beginContribution(CONTRIBUTION_INTENTS.watchParty, {
-    venueId,
-    ensureAttendance: true
-  });
+  beginContribution(CONTRIBUTION_INTENTS.watchParty, { venueId });
 }
 
 function handleSearchResultClick(event) {
@@ -391,9 +425,15 @@ function handleSearchResultClick(event) {
       return;
     }
     if (contributionIntent) {
-      const href = contributionUrl(contributionIntent, venueId);
-      if (href) openExternalUrl(href);
-      else if (contributionIntent === CONTRIBUTION_INTENTS.calBar) {
+      const intent = contributionIntent;
+      const href = contributionUrl(intent, venueId);
+      if (href) {
+        if (intent === CONTRIBUTION_INTENTS.watchParty) {
+          openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame()?.game_id);
+        } else {
+          openExternalUrl(href);
+        }
+      } else if (intent === CONTRIBUTION_INTENTS.calBar) {
         showStatus('Only Community Locations can be nominated as Cal Bars.');
       } else {
         showStatus('That contribution is not available for the selected place or game.');
