@@ -3,7 +3,7 @@
  * a Watch Party but is not committing Fan Intent attendance.
  *
  * This reuses the verified MapTiler matching and canonical Venue creation
- * helpers in ExternalVenue.gs while deliberately avoiding Fan_Intent writes.
+ * helpers in ExternalVenue.gs while deliberately avoiding attendance writes.
  */
 
 function parseAddExternalVenueRequest_(event) {

@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="cgb-data-endpoint" content="https://mock.cgb.invalid/exec">
   <meta name="cgb-missing-location-form-url" content="">
+  <meta name="cgb-watch-party-form-url" content="https://docs.google.com/forms/d/e/test/viewform">
+  <meta name="cgb-watch-party-venue-id-entry" content="entry.100">
+  <meta name="cgb-watch-party-venue-name-entry" content="entry.200">
+  <meta name="cgb-watch-party-game-id-entry" content="entry.300">
   <title>Milestone 4B browser harness</title>
 </head>
 <body>
@@ -25,8 +29,10 @@
     <p id="external-venue-address"></p>
     <p id="external-venue-context"></p>
     <p id="external-venue-error" hidden></p>
-    <button id="external-venue-confirm" type="button">I’ll be here</button>
-    <button id="external-venue-cancel" type="button">Cancel</button>
+    <div class="external-venue-actions">
+      <button id="external-venue-confirm" type="button">I’ll be here</button>
+      <button id="external-venue-cancel" type="button">Cancel</button>
+    </div>
   </dialog>
 
   <output id="harness-result">M4B_BROWSER_HARNESS_RUNNING</output>
