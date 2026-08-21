@@ -18,6 +18,12 @@ function readConfig(documentObject = document) {
   };
 }
 
+function contributionCopy(venueType) {
+  return venueType === 'cal_bar'
+    ? 'Tell us what makes this Cal Bar special'
+    : 'Is this your local Cal Bar? Tell us why';
+}
+
 export function renderCalBarNominationEntry({ app = window.CGBApp, documentObject = document } = {}) {
   const existing = documentObject.querySelector(SELECTOR);
   const existingDetail = existing?.closest?.('#venue-detail');
@@ -30,7 +36,7 @@ export function renderCalBarNominationEntry({ app = window.CGBApp, documentObjec
   if (!state?.detailMode) return '';
   const venue = resolveCalBarNominationVenue(state.snapshot, state.selectedVenueId);
   const href = buildCalBarNominationPrefillUrl(readConfig(documentObject), venue);
-  if (!href) return '';
+  if (!href || !venue) return '';
 
   const detail = documentObject.querySelector('#venue-detail');
   if (!detail) return '';
@@ -40,7 +46,7 @@ export function renderCalBarNominationEntry({ app = window.CGBApp, documentObjec
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = 'Nominate as a Cal Bar';
+  link.textContent = contributionCopy(venue.venueType);
 
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
   if (!actions) return '';
