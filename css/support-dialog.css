@@ -232,8 +232,8 @@
   padding-bottom: .08em !important;
 }
 
-.about-support .secondary-button > span:last-child {
-  text-transform: lowercase;
+.about-support .secondary-button > span:first-child {
+  font-weight: 400;
 }
 
 @media (max-width: 899px) {
