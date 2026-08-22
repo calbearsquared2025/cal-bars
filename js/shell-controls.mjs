@@ -508,6 +508,15 @@ function syncViewState() {
     searchSubmissionPending = false;
     contributionIntent = '';
     updateSearchIntent();
+
+    if (isMobileLayout()) {
+      const state = appState();
+      if (trayState === 'full' && state) state.selectedVenueId = '';
+      if (trayState === 'full' && state?.listQuery) showList();
+      else showMap();
+      return;
+    }
+
     setSurface(trayState === 'full' ? 'list' : 'map');
   }
 }
@@ -597,9 +606,13 @@ function initializeShellControls() {
 
   dom.suggestions.addEventListener('click', handleSearchResultClick, { capture: true });
   dom.searchForm.addEventListener('submit', () => {
-    searchSubmissionPending = Boolean(dom.searchInput.value.trim());
+    const state = appState();
+    searchSubmissionPending = Boolean(dom.searchInput.value.trim() && state?.searchMode !== 'add-location');
   }, { capture: true });
-  dom.searchInput.addEventListener('input', configureMissingLocationLink);
+  dom.searchInput.addEventListener('input', () => {
+    searchSubmissionPending = false;
+    configureMissingLocationLink();
+  });
   document.addEventListener('click', (event) => {
     if (isMobileLayout()) return;
     if (!event.target.closest?.('#location-list .location-card, .cgb-marker')) return;
