@@ -17,8 +17,9 @@ test('venue title and mobile address actions preserve descenders and align compa
   assert.match(css, /#venue-detail \.detail-directions-inline,[\s\S]*min-height: auto !important;[\s\S]*line-height: 1\.2 !important;/);
 });
 
-test('support copy displays lower-case buy me a beer and sparse desktop lists shrink to content', () => {
-  assert.match(css, /\.about-support \.secondary-button > span:last-child[\s\S]*text-transform: lowercase;/);
+test('support lead-in is regular weight and sparse desktop lists shrink to content', () => {
+  assert.match(css, /\.about-support \.secondary-button > span:first-child[\s\S]*font-weight: 400;/);
+  assert.doesNotMatch(css, /text-transform: lowercase/);
   assert.match(css, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\.tray--full:has\(#location-list > :only-child\)[\s\S]*bottom: auto !important;/);
   assert.match(css, /\.venue-tray\.tray--full:has\(#location-list > :only-child\) \.tray-list[\s\S]*flex: 0 1 auto !important;/);
 });
