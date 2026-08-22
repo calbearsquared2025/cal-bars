@@ -76,8 +76,8 @@ function syncCalBarNominationAction() {
   if (iconUse) iconUse.setAttribute('href', 'assets/icons.svg#icon-cal-bar');
 
   const venue = selectedVenue();
-  const canNominate = !venue || venue.venue_type === 'community_location';
-  button.hidden = !canNominate;
+  const supportedVenue = !venue || ['community_location', 'cal_bar'].includes(venue.venue_type);
+  button.hidden = !supportedVenue;
 
   if (!venue) {
     label.textContent = 'Nominate a Cal Bar';
@@ -85,8 +85,14 @@ function syncCalBarNominationAction() {
     return;
   }
 
-  label.textContent = 'Nominate as a Cal Bar';
-  copy.textContent = 'Think Cal fans gather here regularly? Tell us why it should be recognized.';
+  if (venue.venue_type === 'cal_bar') {
+    label.textContent = 'Tell us what makes this Cal Bar special';
+    copy.textContent = 'Share what makes this a recurring Cal gathering place.';
+    return;
+  }
+
+  label.textContent = 'Is this your local Cal Bar? Tell us why';
+  copy.textContent = 'Do Cal fans gather here regularly? Tell us what makes it a Cal Bar.';
 }
 
 function syncCorrectionLanguage() {
