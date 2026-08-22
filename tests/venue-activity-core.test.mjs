@@ -65,7 +65,7 @@ test('current-game Fan Intent suppresses the last-season baseline before archive
   });
 });
 
-test('zero current and archived Fan Intent keeps only the evergreen historical context', () => {
+test('zero current and archived Fan Intent shows the evergreen last-season baseline', () => {
   assert.deepEqual(venueActivityPresentation({
     snapshot: snapshot(),
     game: upcomingGame,
@@ -73,7 +73,10 @@ test('zero current and archived Fan Intent keeps only the evergreen historical c
     currentCopy: 'No Bears are watching here yet. Be the first.'
   }), {
     primary: 'No Bears are watching here yet. Be the first.',
-    secondary: ['Bears watched Cal games here last season.']
+    secondary: [
+      'Bears watched Cal games here last season.',
+      'Be part of the 2026 season.'
+    ]
   });
 });
 
@@ -88,7 +91,10 @@ test('venue description text does not determine whether the baseline appears', (
   };
   const expected = {
     primary: 'No Bears are watching here yet. Be the first.',
-    secondary: ['Bears watched Cal games here last season.']
+    secondary: [
+      'Bears watched Cal games here last season.',
+      'Be part of the 2026 season.'
+    ]
   };
 
   assert.deepEqual(venueActivityPresentation({
