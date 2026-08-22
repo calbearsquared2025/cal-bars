@@ -11,11 +11,9 @@ test('search focus uses a restrained navy border with an inset gold accent and c
   assert.match(css, /\.location-search > \.search-suggestions,[\s\S]*margin-top: 0 !important;[\s\S]*border-top: 0 !important;/);
 });
 
-test('venue title preserves descenders and wrapped selected-card Directions aligns to the location edge', () => {
+test('venue title preserves descenders without adding selected-card Directions overrides', () => {
   assert.match(css, /#venue-detail \.detail-hero h1[\s\S]*overflow: visible !important;[\s\S]*padding-bottom: \.08em !important;/);
-  assert.match(css, /tray--selected \.venue-location[\s\S]*column-gap: 8px !important;[\s\S]*row-gap: 0 !important;/);
-  assert.match(css, /\.selected-card__location-separator[\s\S]*display: none !important;/);
-  assert.doesNotMatch(css.slice(css.indexOf('Recovered #121 visual polish')), /detail-directions-inline|detail-address-actions/);
+  assert.doesNotMatch(css.slice(css.indexOf('Recovered #121 visual polish')), /selected-card__directions-inline|selected-card__location-separator|tray--selected \.venue-location/);
 });
 
 test('support lead-in is regular weight and sparse desktop lists shrink to content', () => {
