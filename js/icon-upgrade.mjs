@@ -1,11 +1,10 @@
-import './issue-121-controller.mjs';
-import './issue-121-search-ui.mjs';
 import './final-functional-stabilization.mjs';
 import './map-mobile-refinement.mjs';
 import './map-profile-first-pass.mjs';
 import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
+import './map-profile-final-pass.mjs';
 import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
 import { renderPhotoFormEntry } from './photo-form.js';

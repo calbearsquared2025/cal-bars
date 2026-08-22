@@ -194,15 +194,13 @@ test('index uses the verified reviewed Form routing configuration', () => {
   assert.match(indexHtml, /css\/watch-party-form\.css/);
 });
 
-test('browser adapter fills the dedicated Watch Party section without joining listing maintenance actions', () => {
+test('browser adapter fills the base-owned compact contribution section and removes the generic preview', () => {
   assert.match(browserAdapter, /link\.target = '_blank'/);
   assert.match(browserAdapter, /link\.rel = 'noopener noreferrer'/);
   assert.match(browserAdapter, /detail\.querySelector\('\.preview-note'\)\?\.remove\(\)/);
-  assert.match(browserAdapter, /detail-watch-party-cta > \.detail-watch-party-cta__action/);
+  assert.match(browserAdapter, /detail-contribution__actions/);
   assert.match(browserAdapter, /link\.dataset\.watchPartyFormEntryPoint = 'true'/);
-  assert.match(browserAdapter, /Plan a Watch Party/);
-  assert.match(browserAdapter, /actions\.replaceChildren\(link\)/);
-  assert.doesNotMatch(browserAdapter, /detail-contribution__actions/);
+  assert.match(browserAdapter, /Submit a Watch Party/);
 });
 
 test('existing selected-game Watch Parties use an add-another CTA', () => {
