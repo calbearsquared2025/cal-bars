@@ -67,7 +67,7 @@ test('Submit a Photo is contextual, prefilled, and omitted when configuration is
     source('js/watch-party-form.js')
   ]);
   assert.match(adapter, /Submit a Photo/);
-  assert.match(adapter, /Add a photo/);
+  assert.match(adapter, /Add a Photo!/);
   assert.match(adapter, /state\?\.detailMode/);
   assert.match(adapter, /buildPhotoFormPrefillUrl/);
   assert.equal((adapter.match(/buildPhotoFormPrefillUrl\(/g) || []).length, 1);

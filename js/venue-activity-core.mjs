@@ -66,7 +66,7 @@ export function venueActivityPresentation({ snapshot, game, venue, currentCopy =
   if (season) {
     return {
       primary: currentCopy,
-      secondary: [lastSeasonActivityCopy(), `Be part of the ${season} season.`]
+      secondary: [lastSeasonActivityCopy()]
     };
   }
   return { primary: currentCopy, secondary: [] };
