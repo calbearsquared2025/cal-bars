@@ -1238,15 +1238,47 @@ function restoreSelection({ preserveCurrentWhenEmpty = false } = {}) {
   return before !== state.selectedVenueId;
 }
 
+function mapTilerCountryCode(feature) {
+  const items = [feature, ...(Array.isArray(feature?.context) ? feature.context : [])].filter(Boolean);
+  const country = items.find((item) => {
+    const id = String(item?.id || '').toLowerCase();
+    const types = [item?.type, item?.place_type]
+      .flat()
+      .filter(Boolean)
+      .map((value) => String(value).toLowerCase());
+    return id.startsWith('country.') || types.includes('country');
+  });
+  const raw = country?.short_code || country?.properties?.short_code ||
+    country?.country_code || country?.properties?.country_code ||
+    feature?.properties?.country_code || feature?.country_code || '';
+  const parts = String(raw).toUpperCase().split(/[-_]/).filter(Boolean);
+  const code = parts.at(-1)?.replace(/[^A-Z]/g, '') || '';
+  if (code === 'USA') return 'US';
+  return code.length === 2 ? code : '';
+}
+
 async function geocode(query) {
-  const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json?key=${MAPTILER_KEY}&language=en&limit=1`;
+  const url = new URL(`https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json`);
+  url.searchParams.set('key', MAPTILER_KEY);
+  url.searchParams.set('language', 'en');
+  url.searchParams.set('limit', '5');
+  url.searchParams.set('autocomplete', 'false');
+  url.searchParams.set('country', 'us');
   const response = await fetch(url);
   if (!response.ok) throw new Error('Location search failed');
   const data = await response.json();
-  const feature = data.features?.[0];
-  const coordinates = feature?.center || feature?.geometry?.coordinates;
-  if (!coordinates || coordinates.length < 2) throw new Error('Location not found');
-  return { lon: Number(coordinates[0]), lat: Number(coordinates[1]), label: feature.place_name || query };
+  const features = Array.isArray(data?.features) ? data.features : [];
+  for (const feature of features) {
+    const explicitCountry = mapTilerCountryCode(feature);
+    if (explicitCountry && explicitCountry !== 'US') continue;
+    const coordinates = feature?.center || feature?.geometry?.coordinates;
+    if (!coordinates || coordinates.length < 2) continue;
+    const lon = Number(coordinates[0]);
+    const lat = Number(coordinates[1]);
+    if (!Number.isFinite(lon) || lon < -180 || lon > 180 || !Number.isFinite(lat) || lat < -90 || lat > 90) continue;
+    return { lon, lat, label: feature.place_name || feature.matching_place_name || feature.text || feature.name || query };
+  }
+  throw new Error('Location not found');
 }
 
 function queryMatchesMappedLocationField(query) {
