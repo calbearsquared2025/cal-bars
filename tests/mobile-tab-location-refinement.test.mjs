@@ -7,6 +7,7 @@ const source = await readFile(new URL('js/mobile-tab-location-refinement.mjs', r
 const mobilePolish = await readFile(new URL('js/mobile-polish.mjs', root), 'utf8');
 const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
 const app = await readFile(new URL('js/app.js', root), 'utf8');
+const shellControls = await readFile(new URL('js/shell-controls.mjs', root), 'utf8');
 const iconUpgrade = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 const icons = await readFile(new URL('assets/icons.svg', root), 'utf8');
 
@@ -30,15 +31,18 @@ test('mobile tab refinement does not override the accepted desktop selected-prof
   assert.doesNotMatch(source, /selected-card__details/);
 });
 
-test('Add does not duplicate selected-game context and makes Cal Bar nomination contextual', () => {
+test('Add does not duplicate selected-game context and makes Cal Bar contribution contextual', () => {
   assert.doesNotMatch(source, /add-game-context|Current game|gameTitle\(|formatKickoff\(/);
   assert.match(source, /function syncCalBarNominationAction/);
-  assert.match(source, /venue\.venue_type === 'community_location'/);
-  assert.match(source, /button\.hidden = !canNominate/);
-  assert.match(source, /Nominate as a Cal Bar/);
+  assert.match(source, /\['community_location', 'cal_bar'\]\.includes\(venue\.venue_type\)/);
+  assert.match(source, /button\.hidden = !supportedVenue/);
+  assert.match(source, /Tell us what makes this Cal Bar special/);
+  assert.match(source, /Is this your local Cal Bar\? Tell us why/);
+  assert.match(source, /Do Cal fans gather here regularly\? Tell us what makes it a Cal Bar\./);
   assert.match(source, /regular Cal gathering place/);
   assert.match(source, /assets\/icons\.svg#icon-cal-bar/);
   assert.match(icons, /id="icon-cal-bar"/);
+  assert.match(shellControls, /!\['community_location', 'cal_bar'\]\.includes\(venue\.venue_type\)/);
 });
 
 test('canonical application owns location lookup and Nearby focus', () => {
