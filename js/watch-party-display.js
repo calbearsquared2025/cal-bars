@@ -105,7 +105,7 @@ function replaceRenderedParties(container, parties, snapshot) {
 
   const detail = container.id === 'venue-detail';
   const anchor = detail
-    ? container.querySelector(':scope > .detail-contribution, :scope > .action-row')
+    ? container.querySelector(':scope > .detail-watch-party-cta, :scope > .detail-contribution, :scope > .action-row')
     : container.querySelector('.action-row, .venue-website, .watch-party-contribution, .preview-note');
   const fragment = document.createDocumentFragment();
   parties.forEach((party, index) => fragment.append(renderParty(
