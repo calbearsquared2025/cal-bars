@@ -203,3 +203,68 @@
     height: min(560px, calc(82dvh - 104px));
   }
 }
+
+/* Recovered #121 visual polish. Static CSS only: no render reconciliation or observers. */
+.search-field:focus-within,
+.command-surface .search-field:focus-within {
+  border-color: var(--cgb-navy-900, #0b2856) !important;
+  outline: 0 !important;
+  box-shadow: inset 0 -3px 0 var(--cgb-gold-400, #fdb515), var(--shadow-sm) !important;
+}
+
+.location-search:has(.search-suggestions:not([hidden])) .search-field {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  clip-path: none !important;
+}
+
+.location-search > .search-suggestions,
+.command-surface .location-search > .search-suggestions {
+  margin-top: 0 !important;
+  border-top: 0 !important;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+#venue-detail .detail-hero h1 {
+  overflow: visible !important;
+  line-height: 1.08 !important;
+  padding-bottom: .08em !important;
+}
+
+.about-support .secondary-button > span:last-child {
+  text-transform: lowercase;
+}
+
+@media (max-width: 899px) {
+  #venue-detail .detail-address-actions {
+    align-items: baseline !important;
+  }
+
+  #venue-detail .detail-directions-inline,
+  #venue-detail .detail-website-inline {
+    min-height: auto !important;
+    padding-block: 2px !important;
+    line-height: 1.2 !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .map-toolbar .search-field {
+    border-width: 1px !important;
+    border-color: rgba(11, 40, 86, .46) !important;
+  }
+
+  .map-toolbar .search-field:focus-within {
+    border-color: var(--cgb-navy-900, #0b2856) !important;
+  }
+
+  .venue-tray.tray--full:has(#location-list > :only-child) {
+    bottom: auto !important;
+    max-height: calc(100% - 44px) !important;
+  }
+
+  .venue-tray.tray--full:has(#location-list > :only-child) .tray-list {
+    flex: 0 1 auto !important;
+  }
+}
