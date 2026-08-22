@@ -101,11 +101,17 @@ test('external-search failure leaves existing CGB results available', () => {
   assert.match(core, /Existing CGB locations are still available/);
 });
 
-test('normal Search is existing-only until the canonical add-location mode is active', () => {
+test('external module intercepts submit only for Add Location while canonical app owns normal Search', () => {
+  const submit = functionBlock(client, 'handleSearchSubmit', 'externalSearchAllowed');
   assert.match(client, /function externalSearchAllowed\(\)[\s\S]*appState\.searchMode === 'add-location'/);
   assert.match(client, /if \(!externalSearchAllowed\(\) \|\| query\.length < MINIMUM_QUERY_LENGTH\)/);
   assert.match(client, /searchCurrentQuery: scheduleExternalSearch/);
-  assert.match(client, /if \(appState\.searchMode === 'add-location'\)[\s\S]*scheduleExternalSearch\(\{ immediate: true \}\)/);
+  assert.match(submit, /appState\.searchMode !== 'add-location'\) return/);
+  assert.match(submit, /event\.preventDefault\(\)/);
+  assert.match(submit, /event\.stopImmediatePropagation\(\)/);
+  assert.match(submit, /scheduleExternalSearch\(\{ immediate: true \}\)/);
+  assert.doesNotMatch(client, /mappedLocationFieldMatches|US_ZIP_PATTERN|renderSubmittedZip|buildMapTilerPostalSearchUrl/);
+  assert.match(app, /dom\.searchForm\.addEventListener\('submit'[\s\S]*runSearch\(query\)/);
 });
 
 test('game switching clears stale external confirmation but keeps permanent canonical venues', () => {
