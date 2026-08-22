@@ -101,8 +101,6 @@ function syncDesktopSearchUi() {
   const state = appState();
   const input = document.querySelector('#location-query');
   const dropdown = document.querySelector('#search-dropdown');
-  const listToggle = document.querySelector('#list-location-toggle');
-  const clearSearch = document.querySelector('#clear-search-button');
   const listEyebrow = document.querySelector('#tray-list .tray-list__header .eyebrow');
   if (!button || !input) return;
 
@@ -123,8 +121,6 @@ function syncDesktopSearchUi() {
   /* The desktop CTA lives outside the dropdown, so an empty results shell is unnecessary. */
   if (dropdown && existingMode && (!query || matchCount === 0)) dropdown.hidden = true;
 
-  if (listToggle) listToggle.hidden = Boolean(listQuery);
-  if (clearSearch) clearSearch.textContent = listQuery ? 'Clear search' : 'All locations';
   if (listEyebrow) listEyebrow.textContent = listQuery ? 'Search results' : 'Browse';
 }
 
