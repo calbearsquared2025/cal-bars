@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/search-map-refinement.mjs', root), 'utf8');
+const app = await readFile(new URL('js/app.js', root), 'utf8');
 const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
 const supportCss = await readFile(new URL('css/support-dialog.css', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
@@ -37,10 +38,19 @@ test('desktop Add Location stays in the existing search form without a second ac
   assert.doesNotMatch(source, /MutationObserver|stopImmediatePropagation/);
 });
 
-test('desktop filtered list chrome distinguishes Search results from All locations', () => {
-  assert.match(source, /listToggle\.hidden = Boolean\(listQuery\)/);
-  assert.match(source, /clearSearch\.textContent = listQuery \? 'Clear search' : 'All locations'/);
+test('desktop filtered list chrome labels Search results without taking ownership of range controls', () => {
   assert.match(source, /listEyebrow\.textContent = listQuery \? 'Search results' : 'Browse'/);
+  assert.doesNotMatch(source, /listToggle|clearSearch/);
+});
+
+test('canonical range toggle represents All, Nearby, and filtered search states', () => {
+  assert.match(app, /const usingNearby = Boolean\(normalizedUserLocation\(state\.origin\)\)/);
+  assert.match(app, /const filteringSearch = Boolean\(state\.listQuery \|\| \(state\.origin && !usingNearby\)\)/);
+  assert.match(app, /const browsingAll = !usingNearby && !filteringSearch/);
+  assert.match(app, /listLocationNearby\.setAttribute\('aria-pressed', String\(usingNearby\)\)/);
+  assert.match(app, /listLocationAll\.setAttribute\('aria-pressed', String\(browsingAll\)\)/);
+  assert.match(app, /if \(state\.origin \|\| state\.listQuery\) showAllLocations\(\)/);
+  assert.doesNotMatch(app, /clearSearch|clearSearchResults/);
 });
 
 test('desktop search results and Add Location action form one connected stack', () => {
