@@ -1,17 +1,13 @@
 import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';
-import { NEARBY_RADIUS_MILES, rankNearbyVenues } from './core.mjs';
 import {
   INTENT_SELECTIONS_STORAGE_KEY,
   applyAggregateResponse,
   withStoredSelection
 } from './fan-intent-core.mjs';
 import {
-  buildMapTilerPostalSearchUrl,
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
-  mappedLocationFieldMatches,
-  normalizeMapTilerPostalOrigin,
   normalizeMapTilerResults,
   upsertCanonicalVenue,
   validateJoinExternalVenueResponse
@@ -27,7 +23,6 @@ const SEARCH_TIMEOUT_MS = 8000;
 const WRITE_TIMEOUT_MS = 12000;
 const MINIMUM_QUERY_LENGTH = 3;
 const MISSING_LOCATION_COPY = 'Can’t find the location? Suggest it here.';
-const US_ZIP_PATTERN = /^\d{5}(?:-\d{4})?$/;
 
 let searchTimer = null;
 let searchSequence = 0;
@@ -238,77 +233,14 @@ function invalidateExternalSearch() {
   dom?.suggestions?.querySelector(':scope > .search-result-group--external')?.remove();
 }
 
-function renderMappedLocationMatches(query, matches) {
-  appState.origin = null;
-  appState.listQuery = query;
-  appState.trayState = 'full';
-  dom.searchDropdown.hidden = true;
-  renderApplicationSafely('mapped-location-search');
-  window.CGBApp?.showStatus(
-    `${matches.length} mapped ${matches.length === 1 ? 'location matches' : 'locations match'} ${query}`,
-    3200
-  );
-}
-
-function panToSearchOriginSafely(origin) {
-  try {
-    appState.map?.easeTo?.({
-      center: [origin.lon, origin.lat],
-      zoom: 10,
-      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 500
-    });
-  } catch (error) {
-    console.error('Submitted ZIP map movement failed.', error);
-  }
-}
-
-async function renderSubmittedZip(query) {
-  const key = configuredMapTilerKey();
-  if (!key) throw Object.assign(new Error('maptiler_not_configured'), { code: 'maptiler_not_configured' });
-  const payload = await fetchJson(buildMapTilerPostalSearchUrl(query, key));
-  const origin = normalizeMapTilerPostalOrigin(payload, query);
-  if (!origin) throw new Error('postal_code_not_found');
-
-  appState.origin = origin;
-  appState.listQuery = '';
-  appState.trayState = 'full';
-  dom.searchDropdown.hidden = true;
-  const nearby = rankNearbyVenues(appState.snapshot, appState.gameId, origin);
-  renderApplicationSafely('postal-area-search');
-  panToSearchOriginSafely(origin);
-  window.CGBApp?.showStatus(nearby.length
-    ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles of ${origin.label}`
-    : `No listed locations within ${NEARBY_RADIUS_MILES} miles of ${origin.label}`);
-}
-
 function handleSearchSubmit(event) {
   invalidateExternalSearch();
   const query = dom.searchInput.value.trim();
-  if (!query) return;
+  if (!query || appState.searchMode !== 'add-location') return;
 
-  if (appState.searchMode === 'add-location') {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    scheduleExternalSearch({ immediate: true });
-    return;
-  }
-
-  const mappedMatches = mappedLocationFieldMatches(appState.snapshot, query);
-  if (mappedMatches.length) {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    renderMappedLocationMatches(query, mappedMatches);
-    return;
-  }
-
-  if (!US_ZIP_PATTERN.test(query)) return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  window.CGBApp?.showStatus('Finding that ZIP…', 5000);
-  renderSubmittedZip(query).catch((error) => {
-    console.error('Submitted ZIP search failed.', error);
-    window.CGBApp?.showStatus('Location not found');
-  });
+  scheduleExternalSearch({ immediate: true });
 }
 
 function externalSearchAllowed() {
