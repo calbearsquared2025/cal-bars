@@ -21,7 +21,7 @@ function readConfig(documentObject = document) {
 function contributionCopy(venueType) {
   return venueType === 'cal_bar'
     ? 'Tell us what makes this Cal Bar special'
-    : 'Is this your local Cal Bar? Tell us why';
+    : 'Is this your local Cal Bar?';
 }
 
 export function renderCalBarNominationEntry({ app = window.CGBApp, documentObject = document } = {}) {
