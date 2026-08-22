@@ -57,8 +57,9 @@ test('search state separates active list filtering from visible input text', () 
   assert.match(app, /function renderLocationList\(query = state\.listQuery\)/);
   assert.match(app, /findExactVenueMatch\(mappedMatches\.map/);
   assert.match(app, /if \(mappedMatches\.length && !queryMatchesMappedLocationField\(normalizedQuery\)\) \{/);
-  assert.match(html, /id="clear-search-button"/);
-  assert.match(app, /function clearSearchResults\(\)/);
+  assert.match(app, /function showAllLocations\(\)/);
+  assert.match(app, /if \(state\.origin \|\| state\.listQuery\) showAllLocations\(\)/);
+  assert.doesNotMatch(app, /function clearSearchResults\(\)/);
   assert.doesNotMatch(app, /function renderLocationList\(query = dom\.searchInput\.value\)/);
   assert.doesNotMatch(app, /rankVenues\(state\.snapshot, state\.gameId, state\.origin, normalized\)\[0\]/);
 });
