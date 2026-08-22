@@ -372,7 +372,6 @@ body[data-view="detail"] #app {
   :root {
     --header-height: 104px;
     --footer-height: 30px;
-    --selected-tray-max-height: calc(100% - 48px);
   }
 
   .site-header {
@@ -474,13 +473,14 @@ body[data-view="detail"] #app {
   .venue-tray {
     top: 22px;
     right: 24px;
-    bottom: 22px;
+    bottom: auto;
     left: auto;
     display: flex;
     flex-direction: column;
     width: min(390px, 34vw);
     height: auto;
-    max-height: none;
+    min-height: min(260px, calc(100% - 44px));
+    max-height: calc(100% - 44px);
     padding-top: 52px;
     overflow: hidden;
     border-radius: var(--radius-lg);
@@ -494,9 +494,9 @@ body[data-view="detail"] #app {
 
   .venue-tray .tray-selected,
   .venue-tray .tray-list {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-height: 0;
-    max-height: none;
+    max-height: 100%;
     overflow-y: auto;
   }
 
