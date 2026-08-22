@@ -15,6 +15,7 @@ import {
 } from './watch-party-attendance-handoff.mjs';
 
 const CTA_SELECTOR = '[data-watch-party-form-entry-point]';
+const SECTION_SELECTOR = '[data-watch-party-form-section]';
 const CONFIG_META_NAMES = Object.freeze({
   formUrl: 'cgb-watch-party-form-url',
   venueIdEntry: 'cgb-watch-party-venue-id-entry',
@@ -36,17 +37,44 @@ export function readWatchPartyFormConfig(documentObject = document) {
 }
 
 function removeExistingEntryPoint(detail) {
+  detail.querySelector(SECTION_SELECTOR)?.remove();
   detail.querySelector(CTA_SELECTOR)?.remove();
   detail.querySelector('.preview-note')?.remove();
-}
-
-function detailContributionActions(detail) {
-  return detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
 }
 
 function syncDetailContributionVisibility(detail) {
   const section = detail.querySelector(':scope > .detail-contribution');
   if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
+}
+
+function createWatchPartySection(documentObject, { existingParty, href, onActivate }) {
+  const section = documentObject.createElement('section');
+  section.className = 'detail-watch-party-cta';
+  section.dataset.watchPartyFormSection = 'true';
+
+  const title = documentObject.createElement('strong');
+  title.className = 'detail-watch-party-cta__title';
+  title.textContent = existingParty ? 'Another Watch Party?' : 'Watch Party';
+
+  const prompt = documentObject.createElement('p');
+  prompt.className = 'detail-watch-party-cta__prompt';
+  prompt.textContent = existingParty
+    ? 'Hosting another gathering here? Add another Watch Party for this game.'
+    : 'No Watch Party planned yet. Be the first to plan one for this game.';
+
+  const link = documentObject.createElement('a');
+  link.className = 'detail-watch-party-cta__action';
+  link.dataset.watchPartyFormEntryPoint = 'true';
+  link.href = href;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = existingParty
+    ? 'Add Another Watch Party'
+    : 'Plan a Watch Party';
+  link.addEventListener('click', onActivate);
+
+  section.append(title, prompt, link);
+  return section;
 }
 
 async function launchWatchPartyForm({
@@ -112,24 +140,18 @@ export function renderWatchPartyFormEntryPoint({
     context?.gameId,
     context?.venueId
   );
+  const maintenance = detail.querySelector(':scope > .detail-contribution');
+  if (!maintenance) return '';
 
-  const link = documentObject.createElement('a');
-  link.className = 'detail-contribution__action';
-  link.dataset.watchPartyFormEntryPoint = 'true';
-  link.href = href;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  link.textContent = existingParty
-    ? 'Add Another Watch Party'
-    : 'Submit a Watch Party';
-  link.addEventListener('click', (event) => {
-    event.preventDefault();
-    launchWatchPartyForm({ app, context, href, documentObject, windowObject });
+  const section = createWatchPartySection(documentObject, {
+    existingParty,
+    href,
+    onActivate(event) {
+      event.preventDefault();
+      launchWatchPartyForm({ app, context, href, documentObject, windowObject });
+    }
   });
-
-  const actions = detailContributionActions(detail);
-  if (!actions) return '';
-  actions.append(link);
+  maintenance.before(section);
   syncDetailContributionVisibility(detail);
   return href;
 }
