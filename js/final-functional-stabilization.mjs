@@ -240,7 +240,7 @@ function schedulePostRender() {
 }
 
 function setListLockFromEvent(event) {
-  if (event.target.closest?.('#mobile-list-button, #list-location-toggle, #clear-search-button')) {
+  if (event.target.closest?.('#mobile-list-button, #list-location-toggle')) {
     listSurfaceLocked = true;
     return;
   }
