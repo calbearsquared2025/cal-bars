@@ -282,17 +282,4 @@
   .map-toolbar .location-search:has(.search-add-location-action:not([hidden])) .search-field {
     clip-path: none !important;
   }
-
-  .venue-tray.tray--full:has(#location-list > :only-child) {
-    bottom: auto !important;
-    max-height: calc(100% - 44px) !important;
-  }
-
-  .venue-tray.tray--full:has(#location-list > :only-child) .tray-list {
-    flex: 0 1 auto !important;
-  }
-
-  .venue-tray.tray--full:has(#location-list > :only-child) .location-list {
-    padding-bottom: 10px !important;
-  }
 }

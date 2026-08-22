@@ -10,7 +10,7 @@ test('search focus uses navy structure with a restrained outer gold accent and c
   assert.doesNotMatch(css.slice(css.indexOf('Recovered #121 visual polish')), /var\(--focus-ring\)/);
   assert.match(css, /\.location-search:has\(\.search-suggestions:not\(\[hidden\]\)\) \.search-field/);
   assert.match(css, /\.location-search > \.search-suggestions,[\s\S]*top: 100% !important;[\s\S]*margin-top: 0 !important;[\s\S]*border-top: 0 !important;/);
-  assert.match(css, /\.map-toolbar \.search-suggestions[\s\S]*max-height: calc\(100dvh - var\(--header-height\) - 72px\) !important;/);
+  assert.match(css, /\.map-toolbar \.search-suggestions[\s\S]*max-height: calc\(100dvh - var\(--header-height\) - 104px\) !important;/);
 });
 
 test('venue title preserves descenders and PR B leaves selected-card Directions untouched', () => {
@@ -18,10 +18,9 @@ test('venue title preserves descenders and PR B leaves selected-card Directions 
   assert.doesNotMatch(css.slice(css.indexOf('Recovered #121 visual polish')), /selected-card__directions-inline|selected-card__location-separator|tray--selected \.venue-location/);
 });
 
-test('support CTA is regular weight and sparse desktop lists shrink without extra bottom padding', () => {
+test('support CTA is regular weight and visual-polish CSS no longer owns tray sizing', () => {
   assert.match(css, /\.about-support \.secondary-button > span[\s\S]*font-weight: 400 !important;/);
   assert.doesNotMatch(css.slice(css.indexOf('Recovered #121 visual polish')), /text-transform: lowercase/);
-  assert.match(css, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\.tray--full:has\(#location-list > :only-child\)[\s\S]*bottom: auto !important;/);
-  assert.match(css, /\.venue-tray\.tray--full:has\(#location-list > :only-child\) \.tray-list[\s\S]*flex: 0 1 auto !important;/);
-  assert.match(css, /\.venue-tray\.tray--full:has\(#location-list > :only-child\) \.location-list[\s\S]*padding-bottom: 10px !important;/);
+  assert.doesNotMatch(css, /#location-list > :only-child/);
+  assert.doesNotMatch(css, /\.venue-tray\.tray--full:has/);
 });
