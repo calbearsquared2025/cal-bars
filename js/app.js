@@ -101,7 +101,6 @@ function cacheDom() {
     trayList: document.querySelector('#tray-list'),
     browseButton: document.querySelector('#browse-locations-button'),
     closeList: document.querySelector('#close-list-button'),
-    clearSearch: document.querySelector('#clear-search-button'),
     listLocationNearby: document.querySelector('#list-location-nearby'),
     listLocationAll: document.querySelector('#list-location-all'),
     listHeading: document.querySelector('#list-heading'),
@@ -884,27 +883,25 @@ function renderSelectedCard() {
   dom.traySelected.append(card);
 }
 
-function updateClearSearchVisibility() {
-  const active = Boolean(state.listQuery || dom.searchInput.value.trim());
-  dom.clearSearch.hidden = !active;
-}
-
 function renderLocationControl() {
-  const usingNearby = Boolean(state.origin);
+  const usingNearby = Boolean(normalizedUserLocation(state.origin));
+  const filteringSearch = Boolean(state.listQuery || (state.origin && !usingNearby));
+  const browsingAll = !usingNearby && !filteringSearch;
   const canRestoreNearby = !usingNearby && Boolean(normalizedUserLocation(state.nearbyOrigin));
   dom.listLocationNearby.setAttribute('aria-pressed', String(usingNearby));
-  dom.listLocationAll.setAttribute('aria-pressed', String(!usingNearby));
+  dom.listLocationAll.setAttribute('aria-pressed', String(browsingAll));
   dom.listLocationNearby.setAttribute('aria-label', usingNearby
     ? `Near me selected, showing locations within ${NEARBY_RADIUS_MILES} miles`
     : canRestoreNearby
       ? 'Show nearby locations using your saved location'
       : 'Use my location to show nearby locations');
-  dom.listLocationAll.setAttribute('aria-label', usingNearby
-    ? 'Show all mapped locations'
-    : 'All locations selected');
+  dom.listLocationAll.setAttribute('aria-label', browsingAll
+    ? 'All locations selected'
+    : 'Show all mapped locations');
 }
 
 function renderLocationList(query = state.listQuery) {
+  renderLocationControl();
   const ranked = rankedVisibleVenues(query);
   dom.locationList.replaceChildren();
   dom.listHeading.textContent = query
@@ -926,7 +923,6 @@ function renderLocationList(query = state.listQuery) {
       empty.textContent = 'No mapped locations match this search.';
     }
     dom.locationList.append(empty);
-    updateClearSearchVisibility();
     return;
   }
 
@@ -966,7 +962,6 @@ function renderLocationList(query = state.listQuery) {
     button.addEventListener('click', () => selectVenue(venue.venue_id));
     dom.locationList.append(button);
   });
-  updateClearSearchVisibility();
 }
 
 function renderTray() {
@@ -1106,7 +1101,6 @@ function renderAll() {
   if (!state.snapshot) return;
   renderHeaderAndStats();
   renderGameDialog();
-  renderLocationControl();
   const mobile = isMobileLayout();
 
   if (!mobile && state.selectedVenueId && !state.detailMode && state.trayState !== 'full') {
@@ -1277,7 +1271,6 @@ async function runSearch(query) {
     state.listQuery = '';
     renderUserMarker();
     selectVenue(exact.venue_id);
-    updateClearSearchVisibility();
     return;
   }
 
@@ -1347,7 +1340,6 @@ function renderSuggestions() {
       dom.searchDropdown.hidden = true;
       renderUserMarker();
       selectVenue(venue.venue_id);
-      updateClearSearchVisibility();
     });
     dom.suggestions.append(button);
   });
@@ -1356,10 +1348,6 @@ function renderSuggestions() {
   renderLocationList();
   renderMarkers();
   emitRendered();
-}
-
-function clearSearchResults() {
-  showAllLocations();
 }
 
 function wireTrayDrag() {
@@ -1411,7 +1399,6 @@ function wireEvents() {
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
   dom.browseButton.addEventListener('click', () => setTrayState('full'));
   dom.closeList.addEventListener('click', () => setTrayState(state.selectedVenueId ? 'selected' : 'peek'));
-  dom.clearSearch.addEventListener('click', clearSearchResults);
   dom.searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const query = dom.searchInput.value.trim();
@@ -1429,10 +1416,10 @@ function wireEvents() {
     if (!dom.searchForm.contains(event.target)) dom.searchDropdown.hidden = true;
   });
   dom.listLocationAll.addEventListener('click', () => {
-    if (state.origin) showAllLocations();
+    if (state.origin || state.listQuery) showAllLocations();
   });
   dom.listLocationNearby.addEventListener('click', () => {
-    if (state.origin) return;
+    if (normalizedUserLocation(state.origin)) return;
     if (showNearbyLocations()) return;
     if (!navigator.geolocation) return showStatus('Location is not available in this browser');
     dom.listLocationNearby.disabled = true;
@@ -1446,7 +1433,6 @@ function wireEvents() {
       renderLocationList();
       renderMarkers();
       setTrayState('full');
-      renderLocationControl();
       focusLocation(state.origin, nearby);
       dom.listLocationNearby.disabled = false;
       showStatus(nearby.length
