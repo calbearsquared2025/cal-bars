@@ -11,15 +11,16 @@ test('search focus uses a restrained navy border with an inset gold accent and c
   assert.match(css, /\.location-search > \.search-suggestions,[\s\S]*margin-top: 0 !important;[\s\S]*border-top: 0 !important;/);
 });
 
-test('venue title and mobile address actions preserve descenders and align compactly', () => {
+test('venue title preserves descenders and wrapped selected-card Directions aligns to the location edge', () => {
   assert.match(css, /#venue-detail \.detail-hero h1[\s\S]*overflow: visible !important;[\s\S]*padding-bottom: \.08em !important;/);
-  assert.match(css, /@media \(max-width: 899px\)[\s\S]*#venue-detail \.detail-address-actions[\s\S]*align-items: baseline !important;/);
-  assert.match(css, /#venue-detail \.detail-directions-inline,[\s\S]*min-height: auto !important;[\s\S]*line-height: 1\.2 !important;/);
+  assert.match(css, /tray--selected \.venue-location[\s\S]*column-gap: 8px !important;[\s\S]*row-gap: 0 !important;/);
+  assert.match(css, /\.selected-card__location-separator[\s\S]*display: none !important;/);
+  assert.doesNotMatch(css.slice(css.indexOf('Recovered #121 visual polish')), /detail-directions-inline|detail-address-actions/);
 });
 
 test('support lead-in is regular weight and sparse desktop lists shrink to content', () => {
-  assert.match(css, /\.about-support \.secondary-button > span:first-child[\s\S]*font-weight: 400;/);
-  assert.doesNotMatch(css, /text-transform: lowercase/);
+  assert.match(css, /\.about-support \.secondary-button > span:first-child[\s\S]*font-weight: 400 !important;/);
+  assert.doesNotMatch(css.slice(css.indexOf('Recovered #121 visual polish')), /text-transform: lowercase/);
   assert.match(css, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\.tray--full:has\(#location-list > :only-child\)[\s\S]*bottom: auto !important;/);
   assert.match(css, /\.venue-tray\.tray--full:has\(#location-list > :only-child\) \.tray-list[\s\S]*flex: 0 1 auto !important;/);
 });
