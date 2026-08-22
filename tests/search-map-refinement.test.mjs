@@ -4,6 +4,8 @@ import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/search-map-refinement.mjs', root), 'utf8');
+const shell = await readFile(new URL('js/shell-controls.mjs', root), 'utf8');
+const external = await readFile(new URL('js/external-venue-search.js', root), 'utf8');
 const app = await readFile(new URL('js/app.js', root), 'utf8');
 const html = await readFile(new URL('index.html', root), 'utf8');
 const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
@@ -15,19 +17,37 @@ test('Search never displays a selected or Nearby mini tray', () => {
   assert.doesNotMatch(source, /has-selected-venue/);
 });
 
-test('submitted searches and existing CGB result clicks are tracked as map-return actions', () => {
-  assert.match(source, /handleSearchSubmit/);
-  assert.match(source, /#location-search/);
-  assert.match(source, /handleSearchResultClick/);
-  assert.match(source, /#search-suggestions button\[data-venue-id\]/);
-  assert.match(source, /PENDING_TIMEOUT_MS = 8000/);
+test('mobile Search handoff is owned by the shell instead of a second refinement state machine', () => {
+  assert.doesNotMatch(source, /searchResultPending|PENDING_TIMEOUT_MS|handleSearchSubmit|handleSearchResultClick|mobile-map-button/);
+  assert.match(shell, /let searchSubmissionPending = false/);
+  assert.match(shell, /state\?\.searchMode !== 'add-location'/);
+  assert.match(shell, /searchSubmissionPending = false;[\s\S]*configureMissingLocationLink\(\)/);
+  assert.match(shell, /if \(isMobileLayout\(\)\)[\s\S]*trayState === 'full' && state\) state\.selectedVenueId = ''/);
+  assert.match(shell, /trayState === 'full' && state\?\.listQuery\) showList\(\);[\s\S]*else showMap\(\)/);
 });
 
-test('selected results preserve the selection while area and multi-match results clear stale selections', () => {
-  assert.match(source, /trayState !== 'selected' && trayState !== 'full'/);
-  assert.match(source, /if \(trayState === 'full' && state\) state\.selectedVenueId = ''/);
-  assert.match(source, /mobile-map-button/);
-  assert.match(source, /CGBApp\?\.render/);
+test('normal Search submit stays with canonical app while external submit interception is Add Location only', () => {
+  assert.match(app, /dom\.searchForm\.addEventListener\('submit'[\s\S]*runSearch\(query\)/);
+  assert.match(external, /appState\.searchMode !== 'add-location'\) return/);
+  assert.doesNotMatch(external, /mappedLocationFieldMatches|US_ZIP_PATTERN|renderSubmittedZip/);
+});
+
+test('canonical area geocoding is US-scoped and rejects explicit non-US results before map movement', () => {
+  assert.match(app, /url\.searchParams\.set\('country', 'us'\)/);
+  assert.match(app, /url\.searchParams\.set\('autocomplete', 'false'\)/);
+  assert.match(app, /const explicitCountry = mapTilerCountryCode\(feature\)/);
+  assert.match(app, /if \(explicitCountry && explicitCountry !== 'US'\) continue/);
+  assert.match(app, /Number\.isFinite\(lon\)[\s\S]*Number\.isFinite\(lat\)/);
+  assert.match(app, /throw new Error\('Location not found'\)/);
+  assert.match(app, /const origin = await geocode\(normalizedQuery\)/);
+  assert.match(app, /catch \(_\) \{\s*showStatus\('Location not found'\);\s*\}/);
+});
+
+test('successful non-exact searches clear stale venue framing only after the result resolves', () => {
+  assert.match(app, /if \(mappedMatches\.length[\s\S]*state\.selectedVenueId = null;[\s\S]*state\.detailMode = false;[\s\S]*setTrayState\('full'\)/);
+  assert.match(app, /const origin = await geocode\(normalizedQuery\);[\s\S]*state\.selectedVenueId = null;[\s\S]*state\.detailMode = false;[\s\S]*state\.origin = origin;[\s\S]*state\.map\?\.easeTo/);
+  assert.match(app, /state\.detailMode = false;[\s\S]*updateRouteForGame\(\);/);
+  assert.doesNotMatch(app, /showStatus\('Finding that area…'[\s\S]*state\.selectedVenueId = null;[\s\S]*const origin = await geocode/);
 });
 
 test('desktop Add Location stays in the existing search form without a second action owner', () => {

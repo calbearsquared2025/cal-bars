@@ -4,7 +4,7 @@ const US_REGION_CODES = Object.freeze({
   colorado: 'CO', connecticut: 'CT', delaware: 'DE', florida: 'FL', georgia: 'GA',
   hawaii: 'HI', idaho: 'ID', illinois: 'IL', indiana: 'IN', iowa: 'IA', kansas: 'KS',
   kentucky: 'KY', louisiana: 'LA', maine: 'ME', maryland: 'MD', massachusetts: 'MA',
-  michigan: 'MI', minnesota: 'MN', mississippi: 'MS', missouri: 'MO', montana: 'MT',
+  michigan: 'MI', minnesota: 'MN', missouri: 'MO', montana: 'MT',
   nebraska: 'NE', nevada: 'NV', 'new hampshire': 'NH', 'new jersey': 'NJ',
   'new mexico': 'NM', 'new york': 'NY', 'north carolina': 'NC', 'north dakota': 'ND',
   ohio: 'OH', oklahoma: 'OK', oregon: 'OR', pennsylvania: 'PA', 'rhode island': 'RI',
@@ -226,19 +226,6 @@ export function normalizeMapTilerResults(payload, maximum = 6) {
   return results;
 }
 
-export function mappedLocationFieldMatches(snapshot, query) {
-  const normalizedQuery = normalizeComparable(query);
-  if (!normalizedQuery) return [];
-  return (snapshot?.venues || []).filter((venue) => {
-    const candidates = [
-      venue?.postal_code,
-      venue?.city,
-      [venue?.city, venue?.region].filter(Boolean).join(' ')
-    ];
-    return candidates.some((value) => normalizeComparable(value) === normalizedQuery);
-  });
-}
-
 export function buildMapTilerSearchUrl(query, key, { limit = 6, language = 'en' } = {}) {
   const normalizedQuery = cleanText(query, 240);
   const normalizedKey = cleanText(key, 240);
@@ -251,43 +238,6 @@ export function buildMapTilerSearchUrl(query, key, { limit = 6, language = 'en' 
   url.searchParams.set('country', 'us');
   url.searchParams.set('types', 'poi,address');
   return url.toString();
-}
-
-export function buildMapTilerPostalSearchUrl(query, key, { language = 'en' } = {}) {
-  const normalizedQuery = cleanText(query, 20);
-  const normalizedKey = cleanText(key, 240);
-  if (!/^\d{5}(?:-\d{4})?$/.test(normalizedQuery) || !normalizedKey) {
-    throw new Error('maptiler_not_configured');
-  }
-  const url = new URL(`https://api.maptiler.com/geocoding/${encodeURIComponent(normalizedQuery)}.json`);
-  url.searchParams.set('key', normalizedKey);
-  url.searchParams.set('language', language);
-  url.searchParams.set('limit', '5');
-  url.searchParams.set('autocomplete', 'false');
-  url.searchParams.set('country', 'us');
-  url.searchParams.set('types', 'postal_code');
-  return url.toString();
-}
-
-export function normalizeMapTilerPostalOrigin(payload, query) {
-  const normalizedQuery = normalizeComparable(query);
-  const features = Array.isArray(payload?.features) ? payload.features : [];
-  for (const feature of features) {
-    if (!featureTypes(feature).includes('postal_code') || countryCode(feature) !== 'US') continue;
-    const resultPostalCode = cleanText(
-      feature?.text || feature?.name || hierarchyText(feature, ['postal_code', 'postcode']),
-      20
-    );
-    if (normalizeComparable(resultPostalCode) !== normalizedQuery) continue;
-    const coordinates = coordinatesFor(feature);
-    if (!coordinates) continue;
-    return Object.freeze({
-      lat: coordinates.latitude,
-      lon: coordinates.longitude,
-      label: cleanText(feature.place_name || resultPostalCode, 300)
-    });
-  }
-  return null;
 }
 
 export function responseContainsPrivateExternalFields(value) {
