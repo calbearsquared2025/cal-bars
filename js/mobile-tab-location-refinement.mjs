@@ -91,8 +91,8 @@ function syncCalBarNominationAction() {
     return;
   }
 
-  label.textContent = 'Is this your local Cal Bar? Tell us why';
-  copy.textContent = 'Do Cal fans gather here regularly? Tell us what makes it a Cal Bar.';
+  label.textContent = 'Is this your local Cal Bar?';
+  copy.textContent = 'Do Cal fans gather here regularly? Share what makes it a Cal Bar.';
 }
 
 function syncCorrectionLanguage() {
