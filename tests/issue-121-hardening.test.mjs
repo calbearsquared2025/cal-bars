@@ -89,6 +89,18 @@ test('mobile Add separates selected-place actions from global Add location', () 
   assert.match(controller, /globalGroup\.querySelector\('\.add-actions--global'\)\.append\(addLocation\)/);
 });
 
+test('Add surface observer copy updates are idempotent and cannot self-trigger indefinitely', () => {
+  assert.match(controller, /function setTextIfChanged\(node, nextText\)/);
+  assert.match(controller, /if \(node && node\.textContent !== nextText\) node\.textContent = nextText/);
+  const addGroups = controller.match(/function ensureAddGroups\(\)[\s\S]*?\n\}/)?.[0] || '';
+  assert.match(addGroups, /setTextIfChanged\(title, 'Tell us what makes this Cal Bar special'\)/);
+  assert.match(addGroups, /setTextIfChanged\(helper, 'Share what makes this a recurring Cal gathering place\.'\)/);
+  assert.match(addGroups, /setTextIfChanged\(title, 'Is this your local Cal Bar\? Tell us why'\)/);
+  assert.match(addGroups, /setTextIfChanged\(helper, 'Do Cal fans gather here regularly\? Tell us what makes it a Cal Bar\.'\)/);
+  assert.doesNotMatch(addGroups, /if \(title\) title\.textContent =/);
+  assert.doesNotMatch(addGroups, /if \(helper\) helper\.textContent =/);
+});
+
 test('desktop tray sizing distinguishes zero, one, and many results', () => {
   assert.match(controller, /tray\.dataset\.resultCount = count === 0 \? 'zero' : count === 1 \? 'one' : 'many'/);
   assert.match(controller, /venue-tray\[data-result-count="zero"\]\.tray--full/);

@@ -47,6 +47,10 @@ function clean(value) {
   return String(value ?? '').replace(/\s+/g, ' ').trim();
 }
 
+function setTextIfChanged(node, nextText) {
+  if (node && node.textContent !== nextText) node.textContent = nextText;
+}
+
 function configuredMapTilerKey() {
   return clean(app()?.mapTilerKey);
 }
@@ -370,11 +374,11 @@ function ensureAddGroups() {
     const title = calBarAction.querySelector('strong');
     const helper = calBarAction.querySelector('small');
     if (venue.venue_type === 'cal_bar') {
-      if (title) title.textContent = 'Tell us what makes this Cal Bar special';
-      if (helper) helper.textContent = 'Share what makes this a recurring Cal gathering place.';
+      setTextIfChanged(title, 'Tell us what makes this Cal Bar special');
+      setTextIfChanged(helper, 'Share what makes this a recurring Cal gathering place.');
     } else {
-      if (title) title.textContent = 'Is this your local Cal Bar? Tell us why';
-      if (helper) helper.textContent = 'Do Cal fans gather here regularly? Tell us what makes it a Cal Bar.';
+      setTextIfChanged(title, 'Is this your local Cal Bar? Tell us why');
+      setTextIfChanged(helper, 'Do Cal fans gather here regularly? Tell us what makes it a Cal Bar.');
     }
   }
 }
