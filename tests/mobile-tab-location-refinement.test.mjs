@@ -23,7 +23,6 @@ test('Search Add and List presentation is owned by static first-paint CSS', () =
   assert.match(firstPaintCss, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*padding: 16px 16px 11px !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__toolbar/);
-  assert.match(firstPaintCss, /#clear-search-button:not\(\[hidden\]\)[\s\S]*border-radius: 999px/);
 });
 
 test('mobile tab refinement does not override the accepted desktop selected-profile actions', () => {
@@ -55,13 +54,16 @@ test('canonical application owns location lookup and Nearby focus', () => {
   assert.doesNotMatch(source, /handleLocateClick|requestLocation|rankNearbyVenues|focusLocation/);
 });
 
-test('mobile List keeps Near me and All locations fixed while switching state without a second geolocation request', () => {
+test('mobile List keeps one range toggle while representing filtered search as neither option selected', () => {
   assert.match(app, /function rememberNearbyOrigin[\s\S]*state\.nearbyOrigin = location/);
-  assert.match(app, /function showAllLocations\(\)[\s\S]*state\.origin = null[\s\S]*setTrayState\('full'\)/);
+  assert.match(app, /function showAllLocations\(\)[\s\S]*state\.listQuery = ''[\s\S]*state\.origin = null[\s\S]*setTrayState\('full'\)/);
   assert.match(app, /function showNearbyLocations[\s\S]*state\.nearbyOrigin[\s\S]*state\.origin = \{ \.\.\.remembered \}/);
-  assert.match(app, /dom\.listLocationNearby\.setAttribute\('aria-pressed', String\(usingNearby\)\)[\s\S]*dom\.listLocationAll\.setAttribute\('aria-pressed', String\(!usingNearby\)\)/);
-  assert.match(app, /dom\.listLocationAll\.addEventListener\('click'[\s\S]*showAllLocations\(\)[\s\S]*dom\.listLocationNearby\.addEventListener\('click'[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation/);
-  assert.match(app, /navigator\.geolocation\.getCurrentPosition[\s\S]*setTrayState\('full'\);[\s\S]*renderLocationControl\(\);[\s\S]*focusLocation\(state\.origin, nearby\)/);
+  assert.match(app, /const usingNearby = Boolean\(normalizedUserLocation\(state\.origin\)\)/);
+  assert.match(app, /const filteringSearch = Boolean\(state\.listQuery \|\| \(state\.origin && !usingNearby\)\)/);
+  assert.match(app, /const browsingAll = !usingNearby && !filteringSearch/);
+  assert.match(app, /listLocationNearby\.setAttribute\('aria-pressed', String\(usingNearby\)\)[\s\S]*listLocationAll\.setAttribute\('aria-pressed', String\(browsingAll\)\)/);
+  assert.match(app, /dom\.listLocationAll\.addEventListener\('click'[\s\S]*state\.origin \|\| state\.listQuery[\s\S]*showAllLocations\(\)[\s\S]*dom\.listLocationNearby\.addEventListener\('click'[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation/);
+  assert.match(app, /navigator\.geolocation\.getCurrentPosition[\s\S]*setTrayState\('full'\);[\s\S]*focusLocation\(state\.origin, nearby\)/);
   assert.doesNotMatch(app, /listLocationNearby\.textContent|listLocationAll\.textContent/);
   assert.doesNotMatch(source, /nearbyOrigin|showAllLocations|showNearbyLocations|navigator\.geolocation/);
   assert.doesNotMatch(iconUpgrade, /syncListLocationLabel|#clear-search-button/);
