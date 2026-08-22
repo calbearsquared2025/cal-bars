@@ -1307,8 +1307,11 @@ async function runSearch(query) {
   }
 
   if (mappedMatches.length && !queryMatchesMappedLocationField(normalizedQuery)) {
+    state.selectedVenueId = null;
+    state.detailMode = false;
     state.origin = null;
     state.listQuery = normalizedQuery;
+    updateRouteForGame();
     renderUserMarker();
     renderLocationList();
     renderMarkers();
@@ -1320,8 +1323,12 @@ async function runSearch(query) {
 
   showStatus('Finding that area…', 5000);
   try {
-    state.origin = await geocode(normalizedQuery);
+    const origin = await geocode(normalizedQuery);
+    state.selectedVenueId = null;
+    state.detailMode = false;
+    state.origin = origin;
     state.listQuery = '';
+    updateRouteForGame();
     renderUserMarker();
     const nearby = rankedVisibleVenues();
     renderLocationList();
