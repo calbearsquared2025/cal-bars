@@ -128,10 +128,6 @@ function syncDesktopSearchUi() {
   if (listEyebrow) listEyebrow.textContent = listQuery ? 'Search results' : 'Browse';
 }
 
-function scheduleDesktopSearchUiSync() {
-  requestAnimationFrame(syncDesktopSearchUi);
-}
-
 function initialize() {
   const searchInput = document.querySelector('#location-query');
 
@@ -142,7 +138,6 @@ function initialize() {
     syncDesktopSearchUi();
   });
   searchInput?.addEventListener('focus', syncDesktopSearchUi);
-  document.addEventListener('click', scheduleDesktopSearchUiSync);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
     clearPending();
     syncDesktopSearchUi();
