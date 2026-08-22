@@ -203,3 +203,20 @@
     height: min(560px, calc(82dvh - 104px));
   }
 }
+
+/* Keep gold as a compact active-state accent instead of a full control halo. */
+.command-surface .search-field:focus-within {
+  border-color: var(--cgb-navy-800, #0a2d57);
+  box-shadow:
+    inset 0 -3px 0 var(--cgb-gold-400, #fdb515),
+    var(--shadow-sm, 0 5px 16px rgba(6, 21, 47, .12));
+}
+
+@media (min-width: 900px) {
+  .map-toolbar .search-field:focus-within {
+    border-color: var(--cgb-navy-800, #0a2d57);
+    box-shadow:
+      inset 0 -3px 0 var(--cgb-gold-400, #fdb515),
+      0 9px 22px rgba(1, 1, 51, .22);
+  }
+}
