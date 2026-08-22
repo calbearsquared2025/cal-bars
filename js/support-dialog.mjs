@@ -35,10 +35,10 @@ function initializeSupportDialog() {
       Math.max(16, trayRect ? trayRect.left - width - ABOUT_POPOVER_GAP : fallbackLeft),
       window.innerWidth - width - 16
     );
-    const bottom = Math.max(16, trayRect ? window.innerHeight - trayRect.bottom : 16);
+    const bottom = 16;
 
     aboutDialog.style.setProperty('--about-popover-left', `${Math.round(left)}px`);
-    aboutDialog.style.setProperty('--about-popover-bottom', `${Math.round(bottom)}px`);
+    aboutDialog.style.setProperty('--about-popover-bottom', `${bottom}px`);
     aboutDialog.classList.add('about-dialog--footer-popover');
     aboutDialog.show();
   };
