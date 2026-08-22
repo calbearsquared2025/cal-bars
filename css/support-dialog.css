@@ -254,20 +254,32 @@
   }
 
   .map-toolbar .search-suggestions {
-    max-height: calc(100dvh - var(--header-height) - 72px) !important;
+    position: static !important;
+    top: auto !important;
+    max-height: calc(100dvh - var(--header-height) - 104px) !important;
     overflow-y: auto !important;
   }
 
-  .venue-tray.tray--full:has(#location-list > :only-child) {
-    bottom: auto !important;
-    max-height: calc(100% - 44px) !important;
+  .map-toolbar .search-add-location-action:not([hidden]) {
+    width: 100%;
+    min-height: 30px;
+    display: block;
+    margin: 0;
+    padding: 5px 8px 6px;
+    color: var(--cgb-navy-900, #0b2856);
+    background: rgba(255, 255, 255, .97);
+    border: 1px solid rgba(11, 40, 86, .22);
+    border-top: 0;
+    border-radius: 0;
+    font-family: var(--font-ui, sans-serif);
+    font-size: .68rem;
+    font-weight: 550;
+    line-height: 1.25;
+    text-align: left;
+    box-shadow: var(--shadow-xs);
   }
 
-  .venue-tray.tray--full:has(#location-list > :only-child) .tray-list {
-    flex: 0 1 auto !important;
-  }
-
-  .venue-tray.tray--full:has(#location-list > :only-child) .location-list {
-    padding-bottom: 10px !important;
+  .map-toolbar .location-search:has(.search-add-location-action:not([hidden])) .search-field {
+    clip-path: none !important;
   }
 }

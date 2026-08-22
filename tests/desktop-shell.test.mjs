@@ -15,12 +15,12 @@ test('desktop map owns the complete application canvas without a legacy grid spl
   assert.doesNotMatch(designSystemCss, /\.map-view\s*\{[^}]*grid-template-columns:/);
 });
 
-test('desktop rail geometry and independent scrolling have one authoritative rule', () => {
-  assert.match(desktopCss, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\s*\{[^}]*top:\s*22px[^}]*right:\s*24px[^}]*bottom:\s*22px[^}]*display:\s*flex[^}]*flex-direction:\s*column[^}]*width:\s*min\(390px, 34vw\)[^}]*height:\s*auto[^}]*max-height:\s*none/);
+test('desktop rail sizes to content until the available map height is exhausted', () => {
+  assert.match(desktopCss, /@media \(min-width: 900px\)[\s\S]*\.venue-tray\s*\{[^}]*top:\s*22px[^}]*right:\s*24px[^}]*bottom:\s*auto[^}]*display:\s*flex[^}]*flex-direction:\s*column[^}]*width:\s*min\(390px, 34vw\)[^}]*height:\s*auto[^}]*min-height:\s*min\(260px, calc\(100% - 44px\)\)[^}]*max-height:\s*calc\(100% - 44px\)/);
   assert.match(desktopCss, /\.venue-tray\s*\{[^}]*padding-top:\s*52px[^}]*overflow:\s*hidden/);
-  assert.match(desktopCss, /\.venue-tray \.tray-selected,\s*\.venue-tray \.tray-list\s*\{[^}]*flex:\s*1 1 auto[^}]*min-height:\s*0[^}]*max-height:\s*none[^}]*overflow-y:\s*auto/);
+  assert.match(desktopCss, /\.venue-tray \.tray-selected,\s*\.venue-tray \.tray-list\s*\{[^}]*flex:\s*0 1 auto[^}]*min-height:\s*0[^}]*max-height:\s*100%[^}]*overflow-y:\s*auto/);
   assert.match(desktopCss, /\.venue-tray \.tray-selected\[hidden\],\s*\.venue-tray \.tray-list\[hidden\]\s*\{[^}]*display:\s*none !important/);
-  assert.doesNotMatch(desktopCss, /\.venue-tray \.tray-selected:not\(:empty\)/);
+  assert.doesNotMatch(desktopCss, /\.venue-tray\s*\{[^}]*bottom:\s*22px/);
   assert.doesNotMatch(baseCss, /\.venue-tray\s*\{[^}]*height:\s*auto\s*!important/);
   assert.doesNotMatch(desktopLayer, /\.tray--(?:peek|selected|full)\s*\{[^}]*\b(?:top|height|max-height)\s*:/);
 });
