@@ -233,19 +233,17 @@
 }
 
 .about-support .secondary-button > span:first-child {
-  font-weight: 400;
+  font-weight: 400 !important;
 }
 
 @media (max-width: 899px) {
-  #venue-detail .detail-address-actions {
-    align-items: baseline !important;
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-location {
+    column-gap: 8px !important;
+    row-gap: 0 !important;
   }
 
-  #venue-detail .detail-directions-inline,
-  #venue-detail .detail-website-inline {
-    min-height: auto !important;
-    padding-block: 2px !important;
-    line-height: 1.2 !important;
+  .selected-card__location-separator {
+    display: none !important;
   }
 }
 
