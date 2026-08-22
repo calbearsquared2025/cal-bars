@@ -39,8 +39,15 @@ test('canonical area geocoding is US-scoped and rejects explicit non-US results 
   assert.match(app, /if \(explicitCountry && explicitCountry !== 'US'\) continue/);
   assert.match(app, /Number\.isFinite\(lon\)[\s\S]*Number\.isFinite\(lat\)/);
   assert.match(app, /throw new Error\('Location not found'\)/);
-  assert.match(app, /state\.origin = await geocode\(normalizedQuery\)/);
+  assert.match(app, /const origin = await geocode\(normalizedQuery\)/);
   assert.match(app, /catch \(_\) \{\s*showStatus\('Location not found'\);\s*\}/);
+});
+
+test('successful non-exact searches clear stale venue framing only after the result resolves', () => {
+  assert.match(app, /if \(mappedMatches\.length[\s\S]*state\.selectedVenueId = null;[\s\S]*state\.detailMode = false;[\s\S]*setTrayState\('full'\)/);
+  assert.match(app, /const origin = await geocode\(normalizedQuery\);[\s\S]*state\.selectedVenueId = null;[\s\S]*state\.detailMode = false;[\s\S]*state\.origin = origin;[\s\S]*state\.map\?\.easeTo/);
+  assert.match(app, /state\.detailMode = false;[\s\S]*updateRouteForGame\(\);/);
+  assert.doesNotMatch(app, /showStatus\('Finding that area…'[\s\S]*state\.selectedVenueId = null;[\s\S]*const origin = await geocode/);
 });
 
 test('desktop Add Location stays in the existing search form without a second action owner', () => {
