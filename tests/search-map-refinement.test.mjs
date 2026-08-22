@@ -5,6 +5,7 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/search-map-refinement.mjs', root), 'utf8');
 const app = await readFile(new URL('js/app.js', root), 'utf8');
+const html = await readFile(new URL('index.html', root), 'utf8');
 const firstPaintCss = await readFile(new URL('css/mobile-first-paint.css', root), 'utf8');
 const supportCss = await readFile(new URL('css/support-dialog.css', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
@@ -43,7 +44,8 @@ test('desktop filtered list chrome labels Search results without taking ownershi
   assert.doesNotMatch(source, /listToggle|clearSearch/);
 });
 
-test('canonical range toggle represents All, Nearby, and filtered search states', () => {
+test('canonical range toggle replaces the legacy clear-search control and represents filtered state', () => {
+  assert.doesNotMatch(html, /id="clear-search-button"/);
   assert.match(app, /const usingNearby = Boolean\(normalizedUserLocation\(state\.origin\)\)/);
   assert.match(app, /const filteringSearch = Boolean\(state\.listQuery \|\| \(state\.origin && !usingNearby\)\)/);
   assert.match(app, /const browsingAll = !usingNearby && !filteringSearch/);
