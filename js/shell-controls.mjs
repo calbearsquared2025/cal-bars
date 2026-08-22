@@ -376,8 +376,8 @@ function beginContribution(intent, {
     return;
   }
 
-  if (intent === CONTRIBUTION_INTENTS.calBar && venue && venue.venue_type !== 'community_location') {
-    showStatus('The selected place is already classified. Search for a Community Location to nominate.');
+  if (intent === CONTRIBUTION_INTENTS.calBar && venue && !['community_location', 'cal_bar'].includes(venue.venue_type)) {
+    showStatus('The selected place cannot use the Cal Bar contribution form. Search for a Community Location to nominate.');
     showSearch(intent);
     return;
   }
@@ -439,7 +439,7 @@ function handleSearchResultClick(event) {
           openExternalUrl(href);
         }
       } else if (intent === CONTRIBUTION_INTENTS.calBar) {
-        showStatus('Only Community Locations can be nominated as Cal Bars.');
+        showStatus('Only Community Locations and existing Cal Bars can use this contribution form.');
       } else {
         showStatus('That contribution is not available for the selected place or game.');
       }
