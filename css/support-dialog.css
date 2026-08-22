@@ -236,17 +236,6 @@
   font-weight: 400 !important;
 }
 
-@media (max-width: 899px) {
-  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-location {
-    column-gap: 8px !important;
-    row-gap: 0 !important;
-  }
-
-  .selected-card__location-separator {
-    display: none !important;
-  }
-}
-
 @media (min-width: 900px) {
   .map-toolbar .search-field {
     border-width: 1px !important;
