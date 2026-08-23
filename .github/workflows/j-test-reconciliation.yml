@@ -27,5 +27,5 @@ jobs:
           set +e
           npm run test:browser > /tmp/browser.log 2>&1
           status=$?
-          grep -E 'harness failed|_FAIL($|:)|^- ' /tmp/browser.log || true
+          grep -E 'harness failed|_FAIL($|:)|PROGRESS:|^- ' /tmp/browser.log || true
           exit $status
