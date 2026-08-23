@@ -23,6 +23,63 @@
   text-align: center;
 }
 
+.detail-watch-party-cta {
+  display: grid;
+  gap: 7px;
+  margin: 14px 16px 0;
+  padding: 13px 14px 14px;
+  color: var(--cgb-navy-950);
+  background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 84%);
+  border: 1px solid var(--cgb-gold-200);
+  border-left: 4px solid var(--cgb-gold-400);
+  border-radius: 14px;
+  text-align: left;
+}
+
+.detail-watch-party-cta__title,
+.detail-watch-party-cta__prompt {
+  margin: 0;
+}
+
+.detail-watch-party-cta__title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1.15;
+}
+
+.detail-watch-party-cta__prompt {
+  color: var(--cgb-ink-700);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.detail-watch-party-cta__action {
+  width: fit-content;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  padding: 8px 14px;
+  color: var(--cgb-navy-950);
+  background: var(--cgb-gold-400);
+  border: 1px solid var(--cgb-gold-500);
+  border-radius: 10px;
+  font-family: var(--font-condensed);
+  font-size: .8rem;
+  font-weight: 850;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.detail-watch-party-cta__action:hover,
+.detail-watch-party-cta__action:focus-visible {
+  background: var(--cgb-gold-300);
+  border-color: var(--cgb-gold-600);
+}
+
 .watch-party-attendance-handoff {
   width: min(92vw, 420px);
   max-width: 420px;
@@ -102,7 +159,8 @@
 }
 
 @media (max-width: 599px) {
-  .watch-party-contribution__action {
+  .watch-party-contribution__action,
+  .detail-watch-party-cta__action {
     width: 100%;
   }
 
@@ -114,5 +172,30 @@
 
   .watch-party-attendance-handoff__panel {
     padding: 1.2rem;
+  }
+}
+
+@media (min-width: 900px) {
+  #tray-selected > #venue-detail .detail-watch-party-cta {
+    margin: 0;
+    padding: 14px 18px;
+    border: 0;
+    border-top: 1px solid var(--cgb-gold-200);
+    border-left: 4px solid var(--cgb-gold-400);
+    border-radius: 0;
+  }
+
+  #tray-selected > #venue-detail .detail-watch-party-cta__title {
+    font-size: .9rem;
+  }
+
+  #tray-selected > #venue-detail .detail-watch-party-cta__prompt {
+    font-size: .75rem;
+  }
+
+  #tray-selected > #venue-detail .detail-watch-party-cta__action {
+    width: 100%;
+    min-height: 42px;
+    font-size: .78rem;
   }
 }
