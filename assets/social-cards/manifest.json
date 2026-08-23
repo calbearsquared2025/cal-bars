@@ -16,7 +16,7 @@
       "slug": "syracuse",
       "title": "Cal at Syracuse",
       "locations_mapped": 37,
-      "watch_parties": 2,
+      "watch_parties": 3,
       "image": "assets/social-cards/syracuse.png",
       "page": "share/syracuse/index.html"
     },
@@ -43,7 +43,7 @@
       "slug": "unlv",
       "title": "Cal at UNLV",
       "locations_mapped": 37,
-      "watch_parties": 2,
+      "watch_parties": 3,
       "image": "assets/social-cards/unlv.png",
       "page": "share/unlv/index.html"
     },
