@@ -1,5 +1,3 @@
-import { createIcon } from './icons.mjs';
-
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-final-functional-stabilization';
 const CONTEXTUAL_ADD_SELECTOR = [
@@ -177,40 +175,6 @@ function restoreContextForAddAction(event) {
   if (state && venueById(addContextVenueId, state)) state.selectedVenueId = addContextVenueId;
 }
 
-function ensureAddLocationOption() {
-  if (document.querySelector('#add-location-button')) return;
-  const watchParty = document.querySelector('#add-watch-party-button');
-  const actions = watchParty?.parentElement;
-  if (!watchParty || !actions) return;
-
-  const button = document.createElement('button');
-  button.id = 'add-location-button';
-  button.className = 'add-action';
-  button.type = 'button';
-
-  const icon = createIcon('location', { className: 'ui-icon add-action__icon' });
-  const copy = document.createElement('span');
-  const title = document.createElement('strong');
-  title.textContent = 'Add a new location';
-  const detail = document.createElement('small');
-  detail.textContent = 'Search for a place that is not yet listed.';
-  copy.append(title, detail);
-  const chevron = createIcon('chevron-right');
-  button.append(icon, copy, chevron);
-  watchParty.after(button);
-
-  button.addEventListener('click', () => {
-    clearAddContext();
-    const input = document.querySelector('#location-query');
-    if (input) {
-      input.value = '';
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    document.querySelector('#mobile-search-button')?.click();
-    requestAnimationFrame(() => document.querySelector('#search-add-location-button')?.click());
-  });
-}
-
 function fixDirectionsSeparator() {
   document.querySelectorAll('.selected-card__directions-inline').forEach((link) => {
     link.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
@@ -230,7 +194,6 @@ function schedulePostRender() {
   postRenderFrame = window.requestAnimationFrame(() => {
     installStyles();
     ensureSafeAreaFills();
-    ensureAddLocationOption();
     fixDirectionsSeparator();
 
     if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
@@ -276,7 +239,6 @@ function initialize() {
   queueMicrotask(() => {
     installStyles();
     ensureSafeAreaFills();
-    ensureAddLocationOption();
     fixDirectionsSeparator();
   });
 
