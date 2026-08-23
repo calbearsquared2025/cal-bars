@@ -74,6 +74,9 @@ function initialize() {
 
   searchInput?.addEventListener('input', syncDesktopSearchUi);
   searchInput?.addEventListener('focus', syncDesktopSearchUi);
+  document.querySelector('#add-new-location-button')?.addEventListener('click', () => {
+    document.querySelector('#search-add-location-button')?.click();
+  });
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', syncDesktopSearchUi);
   window.CGBApp?.subscribe?.('rendered', syncDesktopSearchUi);
   window.CGBApp?.subscribe?.('ready', syncDesktopSearchUi);
