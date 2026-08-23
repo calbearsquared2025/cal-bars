@@ -1,3 +1,4 @@
+import { bearCountCopy, getFanCount } from './core.mjs';
 import { createIcon } from './icons.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
@@ -286,20 +287,35 @@ function installStyles() {
   document.head.append(style);
 }
 
+function selectedAttendanceContext(count) {
+  const state = window.CGBApp?.getState?.();
+  const venueId = count.closest('.selected-card[data-venue-id]')?.dataset.venueId || state?.selectedVenueId || '';
+  if (!state?.snapshot || !state.gameId || !venueId) return null;
+  const game = state.snapshot.games?.find((item) => item.game_id === state.gameId) || null;
+  if (!game) return null;
+  return {
+    game,
+    number: getFanCount(state.snapshot, state.gameId, venueId)
+  };
+}
+
 function refineAttendance(root = document) {
   const count = root.querySelector('#map-view .tray--selected .selected-card .bear-count');
   if (!count) return;
-  const alreadyRefined = Boolean(count.querySelector('.bear-count__number, .bear-count__prompt'));
-  const raw = alreadyRefined
-    ? count.dataset.originalCopy || count.textContent.trim()
-    : count.textContent.trim();
-  count.dataset.originalCopy = raw;
-  const match = raw.match(/^(\d+)\s+Bear(?:s)?\s+watching here/i);
-  const number = match ? Number(match[1]) : 0;
-  const empty = number === 0;
+  const context = selectedAttendanceContext(count);
+  if (!context) return;
+  const { game, number } = context;
 
+  if (game.game_status === 'completed') {
+    count.classList.remove('bear-count--empty');
+    count.setAttribute('aria-label', count.textContent.trim());
+    return;
+  }
+
+  const raw = bearCountCopy(number);
+  const empty = number === 0;
   count.classList.toggle('bear-count--empty', empty);
-  count.setAttribute('aria-label', raw || 'No Bears watching here yet. Be the first.');
+  count.setAttribute('aria-label', raw);
 
   const icon = createIcon('users', { className: 'ui-icon bear-count__icon' });
   if (empty) {
