@@ -209,7 +209,7 @@ test('Profile attendance separates the numeral from the singular/plural label', 
 
 test('Watch Party treatment and adapters remain attached to the shared Profile element', () => {
   assert.match(watchPartyDisplay, /if \(detail\) link\.append\(createIcon\('external'\), document\.createTextNode\('External event details'\)\)/);
-  assert.match(watchPartyDisplay, /container\.querySelector\(':scope > \.detail-contribution, :scope > \.action-row'\)/);
+  assert.match(watchPartyDisplay, /container\.querySelector\(':scope > \.detail-watch-party-cta, :scope > \.detail-contribution, :scope > \.action-row'\)/);
   assert.match(detailCss, /#tray-selected > #venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
   assert.match(watchPartyDisplay, /party-module__report/);
 });
@@ -224,12 +224,15 @@ test('persistent Profile action row resolves to Fan Intent and Share while Direc
   assert.match(detailCss, /#tray-selected > #venue-detail > \.action-row\.detail-primary-actions[\s\S]*position: sticky/);
 });
 
-test('Profile contributions retain existing URLs and share the mobile two-column treatment in the desktop rail', () => {
+test('Profile maintenance contributions retain their existing URLs and two-column treatment', () => {
   assert.match(app, /heading\.textContent = 'Help improve this listing'/);
-  assert.match(watchPartyForm, /link\.dataset\.watchPartyFormEntryPoint = 'true'/);
+  assert.match(watchPartyForm, /section\.className = 'detail-watch-party-cta'/);
+  assert.match(watchPartyForm, /Plan a Watch Party/);
+  assert.match(watchPartyForm, /maintenance\.before\(section\)/);
+  assert.doesNotMatch(watchPartyForm, /link\.className = 'detail-contribution__action'/);
   assert.match(calBarNomination, /link\.dataset\.calBarNominationEntry = 'true'/);
   assert.match(listingUpdate, /link\.dataset\.listingUpdateEntry = 'true'/);
-  [watchPartyForm, calBarNomination, listingUpdate].forEach((source) => {
+  [calBarNomination, listingUpdate].forEach((source) => {
     assert.match(source, /detail-contribution__actions/);
     assert.match(source, /actions\.append\(link\)/);
   });
