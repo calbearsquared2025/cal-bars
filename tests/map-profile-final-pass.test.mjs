@@ -45,6 +45,12 @@ test('attendance refinement reads the canonical game and venue count instead of 
   assert.doesNotMatch(source, /dataset\.originalCopy/);
 });
 
+test('local active selection cannot render as zero while the public aggregate is stale', () => {
+  assert.match(source, /const publicCount = getFanCount\(state\.snapshot, state\.gameId, venueId\)/);
+  assert.match(source, /const selectedByThisBrowser = state\.fanIntent\?\.selections\?\.\[state\.gameId\] === venueId/);
+  assert.match(source, /number: selectedByThisBrowser \? Math\.max\(publicCount, 1\) : publicCount/);
+});
+
 test('completed-game activity copy is preserved instead of being rewritten as zero attendance', () => {
   assert.match(source, /if \(game\.game_status === 'completed'\) \{[\s\S]*count\.classList\.remove\('bear-count--empty'\);[\s\S]*count\.setAttribute\('aria-label', count\.textContent\.trim\(\)\);[\s\S]*return;/);
 });
