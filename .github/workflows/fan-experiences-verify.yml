@@ -1,0 +1,22 @@
+name: Fan Experiences verification
+
+on:
+  push:
+    branches:
+      - feature/fan-experiences
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      - run: npm run test:browser
+      - run: npm run validate:data
+      - run: npm run validate:venue-load
