@@ -77,8 +77,8 @@ jobs:
           {
             echo "unit_exit=$unit_exit"
             echo "browser_exit=$browser_exit"
-            echo "--- unit failing subtests ---"
-            grep '^not ok' /tmp/unit.log || true
+            echo "--- unit failure detail ---"
+            grep -B 2 -A 18 '^not ok' /tmp/unit.log || true
             echo "--- unit summary ---"
             tail -n 9 /tmp/unit.log
             echo "--- browser failure summaries ---"
