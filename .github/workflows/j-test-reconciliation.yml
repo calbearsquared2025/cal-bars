@@ -33,7 +33,7 @@ jobs:
               path = Path(name)
               text = path.read_text()
               old = "  failures.push(`Timed out waiting for ${label}`);\n  return false;"
-              replacement = "  throw new Error(`Timed out waiting for ${label}`);"
+              replacement = "  throw new Error(`Timed out waiting for ${label}; state=${JSON.stringify({ gameId: state()?.gameId, dataSource: state()?.dataSource, selectedVenueId: state()?.selectedVenueId, search: location.search })}`);"
               if old not in text:
                   raise SystemExit(f'Expected waitFor timeout block not found in {name}')
               path.write_text(text.replace(old, replacement, 1))
