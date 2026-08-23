@@ -1,0 +1,31 @@
+name: Apply Fan Experience integration fix
+
+on:
+  push:
+    branches:
+      - feature/fan-experiences
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/fan-experiences
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/fix-fan-experience-integration.mjs
+      - name: Commit integration fix
+        run: |
+          if git diff --quiet -- apps-script/Code.gs apps-script/FanExperienceAutomation.gs scripts/validate-v2-data.mjs css/venue-profile.css; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps-script/Code.gs apps-script/FanExperienceAutomation.gs scripts/validate-v2-data.mjs css/venue-profile.css
+          git commit -m "Fix Fan Experience snapshot integration"
+          git push origin HEAD:feature/fan-experiences
