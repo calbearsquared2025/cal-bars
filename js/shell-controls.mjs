@@ -283,7 +283,7 @@ function showList() {
   updateSearchIntent();
   setSearchMode('existing');
   setSurface('map');
-  if (!isMobileLayout() && window.CGBApp?.showLocations) {
+  if (window.CGBApp?.showLocations) {
     currentSurface = 'list';
     window.CGBApp.showLocations();
     updateCommandState();
