@@ -129,7 +129,8 @@ body[data-view="detail"] .detail-editorial {
   border-radius: 0;
 }
 
-body[data-view="detail"] .detail-editorial h2 {
+body[data-view="detail"] .detail-editorial h2,
+body[data-view="detail"] .detail-fan-experiences h2 {
   margin: 0 0 6px;
   color: var(--cgb-navy-950);
   font-family: var(--font-display);
@@ -144,6 +145,69 @@ body[data-view="detail"] .detail-editorial__copy {
   color: var(--cgb-ink-700);
   font-size: var(--text-sm);
   line-height: 1.48;
+}
+
+body[data-view="detail"] .detail-fan-experiences {
+  margin: 0 !important;
+  padding: 16px;
+  background: color-mix(in srgb, var(--cgb-blue-100, #e8f1fb) 76%, white);
+  border: 0;
+  border-bottom: 1px solid rgba(1, 1, 51, .12);
+  border-radius: 0;
+}
+
+body[data-view="detail"] .detail-editorial + .detail-fan-experiences {
+  border-top: 0;
+}
+
+body[data-view="detail"] .detail-fan-experiences__quotes {
+  display: grid;
+  gap: 10px;
+}
+
+body[data-view="detail"] .detail-fan-experiences__quote,
+body[data-view="detail"] .detail-fan-experiences__prompt,
+body[data-view="detail"] .detail-fan-experiences__guidance {
+  margin: 0;
+  color: var(--cgb-ink-700);
+  font-size: var(--text-sm);
+  line-height: 1.48;
+}
+
+body[data-view="detail"] .detail-fan-experiences__prompt {
+  color: var(--cgb-navy-950);
+  font-weight: 750;
+}
+
+body[data-view="detail"] .detail-fan-experiences__guidance {
+  margin-top: 2px;
+}
+
+body[data-view="detail"] .detail-fan-experiences__quote + .detail-fan-experiences__quote {
+  padding-top: 10px;
+  border-top: 1px solid rgba(1, 1, 51, .09);
+}
+
+body[data-view="detail"] .detail-fan-experiences__toggle,
+body[data-view="detail"] .detail-fan-experiences__share {
+  width: fit-content;
+  margin-top: 10px;
+  padding: 0;
+  color: var(--cgb-navy-900);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 780;
+  line-height: 1.35;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+body[data-view="detail"] .detail-fan-experiences__share {
+  display: inline-block;
 }
 
 body[data-view="detail"] .detail-contribution {
@@ -161,6 +225,10 @@ body[data-view="detail"] .detail-contribution {
 
   body[data-view="detail"] .back-link {
     left: 20px !important;
+  }
+
+  body[data-view="detail"] .detail-fan-experiences {
+    padding: 14px 12px;
   }
 }
 
