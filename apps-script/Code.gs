@@ -148,6 +148,7 @@ function buildPublicSnapshot_() {
   const gamesRaw = readSheetObjects_(workbook, 'Games');
   const partiesRaw = readSheetObjects_(workbook, 'Watch_Parties');
   const intentRaw = readSheetObjects_(workbook, 'Fan_Intent');
+  const fanExperiencesRaw = readSheetObjects_(workbook, CGB_FAN_EXPERIENCE_RAW_TAB);
 
   const venues = mergePublishedVenuePhotos_(venuesRaw, venuePhotosRaw)
     .filter(function(row) {
@@ -179,6 +180,7 @@ function buildPublicSnapshot_() {
     fanCounts: buildFanCounts_(intentRaw, publishedVenueIds, gameIds),
     venueHistoryCounts: buildVenueHistoryCounts_(intentRaw, publishedVenueIds, gameIds),
     venueSeasonCounts: buildVenueSeasonCounts_(intentRaw, publishedVenueIds, games),
+    fanExperiences: buildPublishedFanExperiences_(fanExperiencesRaw, publishedVenueIds),
     generatedAt: new Date().toISOString()
   };
 }
