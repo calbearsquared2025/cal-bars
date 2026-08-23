@@ -1,0 +1,284 @@
+unit_exit=1
+browser_exit=1
+--- unit tail ---
+  duration_ms: 0.392095
+  type: 'test'
+  ...
+# Subtest: selected-Game changes produce independent Game and Watch Party context
+ok 528 - selected-Game changes produce independent Game and Watch Party context
+  ---
+  duration_ms: 0.426565
+  type: 'test'
+  ...
+# Subtest: inactive and unpublished Watch Parties are excluded before report links render
+ok 529 - inactive and unpublished Watch Parties are excluded before report links render
+  ---
+  duration_ms: 0.18389
+  type: 'test'
+  ...
+# Subtest: Form URL encoding preserves punctuation and non-ASCII text
+ok 530 - Form URL encoding preserves punctuation and non-ASCII text
+  ---
+  duration_ms: 0.262405
+  type: 'test'
+  ...
+# Subtest: generated URL contains no report, submitter, Fan Intent, or other private values
+ok 531 - generated URL contains no report, submitter, Fan Intent, or other private values
+  ---
+  duration_ms: 0.512172
+  type: 'test'
+  ...
+# Subtest: configuration rejects unsafe URLs, missing IDs, and duplicate entry IDs
+ok 532 - configuration rejects unsafe URLs, missing IDs, and duplicate entry IDs
+  ---
+  duration_ms: 0.203699
+  type: 'test'
+  ...
+# Subtest: direct-route refresh and renders use the canonical party cards without a second report control
+ok 533 - direct-route refresh and renders use the canonical party cards without a second report control
+  ---
+  duration_ms: 10.569559
+  type: 'test'
+  ...
+# Subtest: report links perform no automatic Watch Party or Venue mutation
+ok 534 - report links perform no automatic Watch Party or Venue mutation
+  ---
+  duration_ms: 1.292787
+  type: 'test'
+  ...
+# Subtest: Watch Party host name is emphasized without bolding the Hosted by label
+ok 535 - Watch Party host name is emphasized without bolding the Hosted by label
+  ---
+  duration_ms: 0.998335
+  type: 'test'
+  ...
+# Subtest: Watch Party external links use text-only presentation
+ok 536 - Watch Party external links use text-only presentation
+  ---
+  duration_ms: 0.249196
+  type: 'test'
+  ...
+# Subtest: Share actions settle as text-only controls
+ok 537 - Share actions settle as text-only controls
+  ---
+  duration_ms: 0.181686
+  type: 'test'
+  ...
+# Subtest: Report an Issue is a right-aligned muted utility link
+ok 538 - Report an Issue is a right-aligned muted utility link
+  ---
+  duration_ms: 0.253162
+  type: 'test'
+  ...
+# Subtest: missing required finalized Form fields fail with specific private error codes
+ok 539 - missing required finalized Form fields fail with specific private error codes
+  ---
+  duration_ms: 2.223062
+  type: 'test'
+  ...
+# Subtest: blank optional age and audio fields normalize to public unknown values
+ok 540 - blank optional age and audio fields normalize to public unknown values
+  ---
+  duration_ms: 0.314601
+  type: 'test'
+  ...
+# Subtest: canonical Game IDs are accepted and retired legacy IDs are not remapped
+ok 541 - canonical Game IDs are accepted and retired legacy IDs are not remapped
+  ---
+  duration_ms: 0.863928
+  type: 'test'
+  ...
+# Subtest: redelivery reuses one submission ID and one Watch Party per game
+ok 542 - redelivery reuses one submission ID and one Watch Party per game
+  ---
+  duration_ms: 6.337229
+  type: 'test'
+  ...
+# Subtest: a partially published multi-game submission creates only missing games
+ok 543 - a partially published multi-game submission creates only missing games
+  ---
+  duration_ms: 2.217855
+  type: 'test'
+  ...
+# Subtest: retry repairs a failure after canonical write without publishing a duplicate
+ok 544 - retry repairs a failure after canonical write without publishing a duplicate
+  ---
+  duration_ms: 1.752942
+  type: 'test'
+  ...
+# Subtest: lock timeout makes no canonical or raw processing-state change
+ok 545 - lock timeout makes no canonical or raw processing-state change
+  ---
+  duration_ms: 0.98818
+  type: 'test'
+  ...
+1..545
+# tests 545
+# suites 0
+# pass 516
+# fail 29
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2163.032914
+--- browser tail ---
+- Timed out waiting for mobile Profile List navigation
+[3914:3936:0823/061416.608304:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3936:0823/061416.609070:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3936:0823/061416.618255:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3936:0823/061416.648219:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3914:0823/061416.711749:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3936:0823/061416.711869:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3914:0823/061416.711890:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3936:0823/061416.711928:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3914:0823/061416.712256:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3914:0823/061416.714447:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3914:0823/061416.746328:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3914:0823/061416.748835:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3936:0823/061416.750424:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3914:0823/061416.775489:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[3914:3914:0823/061416.775996:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3936:0823/061416.776167:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3914:0823/061416.792500:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[3914:3936:0823/061416.793889:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[3914:3914:0823/061416.813550:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+
+Small-portrait fan-added Watch Party Detail harness failed.
+CGB_PRODUCTION_DIRECT_ROUTE_FAIL
+- Timed out waiting for settled mobile Profile first-paint gate
+- Profile Share should remain text-only without a later icon upgrade
+- Base short_description should immediately follow the address action area
+- Profile primary row should retain Fan Intent
+- Global game selector should preserve known or TBD kickoff behavior
+- Local-map fallback should expose the contextual Add a photo action
+- Settled Venue Profile should not leave eligible editorial description inside the identity hero
+- Profile primary row should retain Fan Intent
+- Changing games should change the canonical game route parameter
+- Timed out waiting for original game option
+- Timed out waiting for Profile game restore
+- Timed out waiting for mobile Profile List navigation
+[4068:4089:0823/061417.840814:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4089:0823/061417.841599:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4089:0823/061417.849529:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4089:0823/061417.881205:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4068:0823/061417.948769:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4068:0823/061417.948896:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4089:0823/061417.948900:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4089:0823/061417.948947:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4068:0823/061417.949335:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4068:0823/061417.951733:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4068:0823/061417.975391:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4068:0823/061417.976226:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4089:0823/061417.979204:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4068:0823/061418.013406:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4068:0823/061418.013472:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[4068:4089:0823/061418.013612:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4068:0823/061418.033642:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4068:4089:0823/061418.033734:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4068:4068:0823/061418.064121:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+
+Short-landscape plain fan-added Detail harness failed.
+CGB_PRODUCTION_DIRECT_ROUTE_FAIL
+- Timed out waiting for settled mobile Profile first-paint gate
+- Profile Share should remain text-only without a later icon upgrade
+- Base short_description should immediately follow the address action area
+- Profile primary row should retain Fan Intent
+- Global game selector should preserve known or TBD kickoff behavior
+- Local-map fallback should expose the contextual Add a photo action
+- Profile primary row should retain Fan Intent
+- Timed out waiting for original game option
+- Timed out waiting for Profile game restore
+- Timed out waiting for mobile Profile List navigation
+[4215:4236:0823/061418.885795:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4236:0823/061418.886737:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4236:0823/061418.893284:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4236:0823/061418.927092:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4215:0823/061418.997321:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4215:0823/061418.997634:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4236:0823/061418.997671:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4215:0823/061418.997860:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4236:0823/061418.998448:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4215:0823/061419.001449:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4215:0823/061419.036885:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4215:0823/061419.046606:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4236:0823/061419.046762:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4215:0823/061419.075694:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[4215:4215:0823/061419.078474:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4236:0823/061419.078678:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4215:0823/061419.091571:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4215:4236:0823/061419.091741:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4215:4215:0823/061419.117306:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+
+Desktop production runtime regression harness failed.
+CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_FAIL
+- Desktop should not expose a standalone Near me map action
+- Desktop fixture should contain a Cal Bar with a Watch Party
+- Desktop Locations should preserve the Watch Party badge
+- Desktop Locations should preserve the Cal Bar badge
+[4369:4390:0823/061419.952211:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4390:0823/061419.954351:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4390:0823/061419.961501:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4390:0823/061419.996280:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4369:0823/061420.061899:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4369:0823/061420.061991:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4369:0823/061420.062249:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4390:0823/061420.063275:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4390:0823/061420.063292:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4369:0823/061420.065293:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4369:0823/061420.094456:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4369:0823/061420.094890:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4390:0823/061420.096431:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4369:0823/061420.120813:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[4369:4369:0823/061420.129818:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4390:0823/061420.129959:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4369:0823/061420.146120:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4369:4390:0823/061420.146397:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4369:4369:0823/061420.170395:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+
+Desktop production direct-route refresh harness failed.
+CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_FAIL
+- Profile Share should remain text-only without a later icon upgrade
+- Watch Party should not create its own internal scroll container
+- Watch Party should not impose a max-height
+- Report an Issue should remain a small muted utility action
+- Timed out waiting for post-rerender Venue media refinement
+- Desktop Profile should not expose the mobile bottom navigation
+- Desktop Profile should not manufacture a Back to map control
+- Photo-present Profile should render the approved photo figure
+- Approved Venue photo should lead the Profile identity
+- Venue photo should use the approved photo URL
+- Venue photo alt text should prefer the approved caption
+- Photo caption should render directly under the image
+- Photo credit should render as understated attribution
+- Only the photo credit identity should be linkable
+- Valid HTTP(S) photo credit URL should be used
+- Photo credit links should open externally and safely
+- Settled Venue Profile should not leave eligible editorial description inside the identity hero
+- Watch Party should not create its own internal scroll container
+- Watch Party should not impose a max-height
+- Report an Issue should remain a small muted utility action
+- Timed out waiting for restored Fan Intent selection
+- Refresh should restore Fan Intent state
+- Timed out waiting for contextual Invite more action
+- Selected Profile should use Invite more for the contextual share action
+- Contextual Invite more action should remain text-only
+[4522:4544:0823/061421.150454:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4544:0823/061421.152233:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4544:0823/061421.159978:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4544:0823/061421.189889:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4522:0823/061421.257587:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4522:0823/061421.257668:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4522:0823/061421.257882:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4544:0823/061421.258907:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4544:0823/061421.258923:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4522:0823/061421.259673:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4522:0823/061421.280995:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4522:0823/061421.281360:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4544:0823/061421.281484:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4522:0823/061421.299191:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
+[4522:4522:0823/061421.299886:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4544:0823/061421.301648:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4522:0823/061421.320217:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[4522:4544:0823/061421.321418:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+[4522:4522:0823/061421.357862:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+
