@@ -24,15 +24,14 @@ test('Nearby and All locations preserve the List surface after application reren
   assert.doesNotMatch(stabilization, /app\.render\s*=/);
 });
 
-test('Add preserves an existing Venue context and exposes the existing new-location search path', () => {
+test('Add preserves an existing Venue context without injecting another new-location action', () => {
   assert.match(stabilization, /let addContextVenueId = ''/);
   assert.match(stabilization, /captureAddContext/);
   assert.match(stabilization, /state\.selectedVenueId = addContextVenueId/);
   assert.doesNotMatch(stabilization, /\.selected-card__plan-party/);
-  assert.match(stabilization, /id = 'add-location-button'/);
-  assert.match(stabilization, /Add a new location/);
-  assert.match(stabilization, /#mobile-search-button/);
-  assert.match(stabilization, /#search-add-location-button/);
+  assert.doesNotMatch(stabilization, /ensureAddLocationOption/);
+  assert.doesNotMatch(stabilization, /id = 'add-location-button'/);
+  assert.doesNotMatch(stabilization, /Add a new location/);
   assert.doesNotMatch(stabilization, /fetch\(|XMLHttpRequest|joinExternalVenue/);
 });
 
