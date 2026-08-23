@@ -1,9 +1,6 @@
 unit_exit=1
 browser_exit=1
 --- unit failing subtests ---
-not ok 81 - mobile shell uses Map, Search, Add, List with dedicated contribution surfaces
-not ok 87 - desktop map toolbar contains Search without a standalone Nearby or Add shelf
-not ok 88 - Locations owns one canonical fixed-position range toggle on desktop and mobile
 not ok 21 - tests/external-venue-core.test.mjs
 not ok 123 - successful external attendance settles through the shared contextual invite lifecycle
 not ok 183 - confirmed attendance reuses the existing share action instead of rendering a second invitation control
@@ -34,12 +31,12 @@ not ok 431 - Detail finishing treatment uses the approved contribution grid and 
 1..545
 # tests 545
 # suites 0
-# pass 516
-# fail 29
+# pass 519
+# fail 26
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2262.783053
+# duration_ms 2445.685421
 --- browser failure summaries ---
 Milestone 4B browser harness failed.
 Production TBD direct-route refresh harness failed.
@@ -76,17 +73,6 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Timed out waiting for Profile game restore
 - Timed out waiting for mobile Profile List navigation
 Short-landscape plain fan-added Detail harness failed.
-CGB_PRODUCTION_DIRECT_ROUTE_FAIL
-- Timed out waiting for settled mobile Profile first-paint gate
-- Profile Share should remain text-only without a later icon upgrade
-- Base short_description should immediately follow the address action area
-- Profile primary row should retain Fan Intent
-- Global game selector should preserve known or TBD kickoff behavior
-- Local-map fallback should expose the contextual Add a photo action
-- Profile primary row should retain Fan Intent
-- Timed out waiting for original game option
-- Timed out waiting for Profile game restore
-- Timed out waiting for mobile Profile List navigation
 Desktop production runtime regression harness failed.
 CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_FAIL
 - Desktop should not expose a standalone Near me map action
