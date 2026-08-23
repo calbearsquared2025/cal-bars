@@ -22,4 +22,10 @@ jobs:
       - name: Run source and unit tests
         run: npm test
       - name: Run browser regression harnesses
-        run: npm run test:browser
+        shell: bash
+        run: |
+          set +e
+          npm run test:browser > /tmp/browser.log 2>&1
+          status=$?
+          grep -E 'harness failed|_FAIL($|:)|^- ' /tmp/browser.log || true
+          exit $status
