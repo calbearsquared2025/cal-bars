@@ -1,37 +1,16 @@
-unit_exit=1
+unit_exit=0
 browser_exit=1
 --- unit failure detail ---
-  ...
-# Subtest: Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
-not ok 439 - Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
-  ---
-  duration_ms: 5.886214
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-photo-feature.test.mjs:43:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\] \.back-link/. Input:
-    
-    'body[data-view="detail"] #map-view {\n' +
-      '  display: none !important;\n' +
-      '}\n' +
-      '\n' +
-      'body[data-view="detail"] #detail-view[hidden] {\n' +
-      '  display: block !important;\n' +
-      '}\n' +
-      '\n' +
-      'body[data-view="detail"][data-detail-state="pending"] #detail-view {\n' +
-      '  opacity: 0 !important;\n' +
 --- unit summary ---
 1..553
 # tests 553
 # suites 0
-# pass 552
-# fail 1
+# pass 553
+# fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2189.58474
+# duration_ms 2254.209386
 --- browser failure summaries ---
 Milestone 4B browser harness failed.
 Production TBD direct-route refresh harness failed.
@@ -49,6 +28,17 @@ Production runtime regression harness failed.
 Production direct-route refresh harness failed.
 CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile Share should remain text-only without a later icon upgrade
+- Timed out waiting for post-rerender Venue media refinement
+- Photo-present Profile should render the approved photo figure
+- Approved Venue photo should lead the Profile identity
+- Venue photo should use the approved photo URL
+- Venue photo alt text should prefer the approved caption
+- Photo caption should render directly under the image
+- Photo credit should render as understated attribution
+- Only the photo credit identity should be linkable
+- Valid HTTP(S) photo credit URL should be used
+- Photo credit links should open externally and safely
+- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Timed out waiting for restored Fan Intent selection
 - Refresh should restore Fan Intent state
 - Timed out waiting for contextual Invite more action
@@ -62,7 +52,6 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile primary row should retain Fan Intent
 - Global game selector should preserve known or TBD kickoff behavior
 - Local-map fallback should expose the contextual Add a photo action
-- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Profile primary row should retain Fan Intent
 - Changing games should change the canonical game route parameter
 - Timed out waiting for original game option
@@ -86,7 +75,6 @@ CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_FAIL
 - Desktop fixture should contain a Cal Bar with a Watch Party
 - Desktop Locations should preserve the Watch Party badge
 - Desktop Locations should preserve the Cal Bar badge
-- Timed out waiting for desktop Selected control state
 Desktop production direct-route refresh harness failed.
 CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile Share should remain text-only without a later icon upgrade
