@@ -63,6 +63,7 @@ jobs:
           replace('tests/venue-information-clarity.test.mjs', "/if \\(detail\\) link\\.append\\(createIcon\\('external'\\), document\\.createTextNode\\('External event details'\\)\\)/", "/link\\.textContent = detail \\? 'External event details' : 'Open event information'/")
 
           replace('tests/venue-photo-feature.test.mjs', "const label = isSelected \\? 'Invite more' : 'Share'", "const label = isSelected \\? 'Invite Others' : 'Share'")
+          replace('tests/venue-photo-feature.test.mjs', "  assert.match(detailCss, /@media \\(min-width: 900px\\)[\\s\\S]*body\\[data-view=\"detail\"\\] \\.back-link/);\n", "  assert.doesNotMatch(detailCss, /@media \\(min-width: 900px\\)[\\s\\S]*body\\[data-view=\"detail\"\\] \\.back-link/);\n")
           PY
 
           if ! git diff --quiet; then
