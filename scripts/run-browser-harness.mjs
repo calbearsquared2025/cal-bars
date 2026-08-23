@@ -377,14 +377,14 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?__cgb_harness=main',
+    path: '/__cgb_production_runtime__?game=ucla&__cgb_harness=main',
     marker: 'CGB_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Production runtime regression harness',
     virtualTimeBudget: 60000
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?__cgb_harness=landscape',
+    path: '/__cgb_production_runtime__?game=ucla&__cgb_harness=landscape',
     marker: 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS_PASS',
     label: 'Short landscape production runtime regression harness',
     virtualTimeBudget: 30000,
@@ -415,7 +415,7 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?__cgb_harness=desktop',
+    path: '/__cgb_production_runtime__?game=ucla&__cgb_harness=desktop',
     marker: 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Desktop production runtime regression harness',
     virtualTimeBudget: 60000,

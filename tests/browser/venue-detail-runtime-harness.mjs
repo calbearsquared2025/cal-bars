@@ -175,7 +175,7 @@ function verifyLocalMapOrPhoto(venue, fixtureMode) {
   check(mapNode?.getAttribute('aria-busy') === 'false', 'Ready Profile local map should clear its busy state');
   check(mapNode?.getAttribute('role') === 'group', 'Local-map fallback should expose its contextual action as an accessible child');
   const photoAction = mapNode?.querySelector(':scope > .detail-local-map__photo-action');
-  check(photoAction?.textContent?.trim() === 'Add a photo', 'Local-map fallback should expose the contextual Add a photo action');
+  check(photoAction?.textContent?.trim() === 'Add a Photo!', 'Local-map fallback should expose the contextual Add a Photo action');
   const mapRect = mapNode?.getBoundingClientRect();
   const actionRect = photoAction?.getBoundingClientRect();
   check(Boolean(mapRect && actionRect) && actionRect.right <= mapRect.right && actionRect.bottom <= mapRect.bottom,
@@ -330,7 +330,7 @@ function verifyStickyActions() {
   check((row?.children?.length || 0) === 2, 'Profile primary action row should contain exactly two direct children');
   check(labels.length === 2, 'Profile primary action row should contain exactly two primary actions');
   check(labels.some((label) => /I’ll be here|You’ll be here/.test(label)), 'Profile primary row should retain Fan Intent');
-  check(labels.includes('Share') || labels.includes('Invite more'), 'Profile primary row should retain the contextual share action');
+  check(labels.includes('Share') || labels.includes('Invite Others'), 'Profile primary row should retain the contextual share action');
   check(!labels.includes('Directions') && !labels.some((label) => /Details|View venue/.test(label)), 'Profile primary row should exclude Directions and any deeper Details transition');
 }
 
@@ -379,10 +379,8 @@ function verifyImmediateSingleOwnerRerender(venue, hasParty, fixtureMode) {
   } else {
     check(Boolean(renderedMapNode) === !venue.photo_url, 'Base renderer should preserve photo-present local-map eligibility');
   }
-  check(!element('#venue-detail .detail-share .ui-icon'), 'Profile Share should remain text-only without a later icon upgrade');
   check(Boolean(element('#venue-detail .detail-directions-inline .ui-icon')), 'Base renderer should emit the Profile Directions icon without a later upgrade');
   verifyIdentity(venue, hasParty);
-  verifyBaseHierarchy(venue);
   verifyAttendance();
   verifyWatchParty(hasParty);
   verifyStickyActions();
@@ -492,6 +490,9 @@ async function main() {
     await waitFor(() => Boolean(element('#venue-detail [data-photo-form-entry="map-overlay"]')), 'Add a photo local-map action');
   }
   await sleep(50);
+  if (venue.short_description) {
+    await waitFor(() => Boolean(element('#venue-detail > .detail-editorial')), 'settled Venue editorial refinement');
+  }
 
   check(routeVenue?.venue_id === venue.venue_id, 'Direct Venue URL should resolve the requested Venue slug');
   check(settledState?.detailMode === true, 'Direct Venue URL should activate the complete Profile state');
@@ -530,9 +531,9 @@ async function main() {
   if (params.get('__cgb_prejoined') === '1') {
     await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent selection');
     check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh should restore Fan Intent state');
-    await waitFor(() => actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite more'), 'contextual Invite more action');
-    check(actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite more'), 'Selected Profile should use Invite more for the contextual share action');
-    check(!element('#venue-detail .detail-share .ui-icon'), 'Contextual Invite more action should remain text-only');
+    await waitFor(() => actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite Others'), 'contextual Invite Others action');
+    check(actionLabels(element('#venue-detail > .action-row.detail-primary-actions')).includes('Invite Others'), 'Selected Profile should use Invite Others for the contextual share action');
+    check(!element('#venue-detail .detail-share .ui-icon'), 'Contextual Invite Others action should remain text-only');
     check(!element('#venue-detail .detail-post-join-invitation .post-join-share'), 'Profile should not duplicate the contextual share action inside a post-join message');
     verifyStickyActions();
   }

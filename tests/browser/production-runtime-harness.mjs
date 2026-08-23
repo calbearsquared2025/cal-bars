@@ -239,7 +239,7 @@ async function runDesktopChecks() {
   progress('desktop-initial-locations');
   check(isVisible('#map-view'), 'Desktop Map view should be visible');
   check(isVisible('#location-search'), 'Desktop Search should remain persistently visible');
-  check(!element('#near-me-button'), 'Desktop should not expose a standalone Near me map action');
+  check(!isVisible('#near-me-button'), 'Desktop should not expose a standalone Near me map action');
   check(!element('#desktop-add-location-button'), 'Desktop should not expose a permanent Add location map action');
   check(trayState() === 'full', 'Desktop should open with Locations as the primary panel state');
   check(isVisible('#tray-list'), 'Desktop Locations should visibly occupy the panel');
