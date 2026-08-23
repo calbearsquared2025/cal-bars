@@ -222,32 +222,43 @@
         </header>
         <p class="command-surface__intro">Choose what you would like to add or correct.</p>
         <section class="add-context" aria-live="polite" hidden>
-          <span class="eyebrow">Current place</span>
+          <span class="eyebrow">Selected place</span>
           <strong id="add-context-name">Selected place</strong>
           <p id="add-context-copy"></p>
-        </section>
-        <div class="add-actions">
-          <button id="add-watch-party-button" class="add-action add-action--primary" type="button">
-            <span class="add-action__icon" aria-hidden="true">★</span>
-            <span><strong>Plan a Watch Party</strong><small>Create a gathering for the selected game.</small></span>
-            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
-          </button>
-          <button id="add-cal-bar-button" class="add-action" type="button">
-            <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-location"></use></svg>
-            <span><strong>Nominate a Cal Bar</strong><small>Recommend a regular Cal-friendly location.</small></span>
-            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
-          </button>
-          <button id="add-report-button" class="add-action" type="button" aria-expanded="false" aria-controls="add-report-options">
-            <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-info"></use></svg>
-            <span><strong>Report a problem</strong><small>Correct a Venue or Watch Party listing.</small></span>
-            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
-          </button>
-          <div id="add-report-options" class="add-report-options" hidden>
-            <button id="add-report-listing-button" type="button">Report the Venue listing</button>
-            <button id="add-report-party-button" type="button" hidden>Report this Watch Party</button>
+          <div class="add-actions">
+            <button id="add-watch-party-button" class="add-action add-action--primary" type="button">
+              <span class="add-action__icon" aria-hidden="true">★</span>
+              <span><strong>Plan a Watch Party</strong><small>Create a gathering for the selected game.</small></span>
+              <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
+            </button>
+            <button id="add-cal-bar-button" class="add-action" type="button">
+              <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-location"></use></svg>
+              <span><strong>Nominate a Cal Bar</strong><small>Recommend a regular Cal-friendly location.</small></span>
+              <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
+            </button>
+            <button id="add-report-button" class="add-action" type="button" aria-expanded="false" aria-controls="add-report-options">
+              <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-info"></use></svg>
+              <span><strong>Report a problem</strong><small>Correct a Venue or Watch Party listing.</small></span>
+              <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
+            </button>
+            <div id="add-report-options" class="add-report-options" hidden>
+              <button id="add-report-listing-button" type="button">Report the Venue listing</button>
+              <button id="add-report-party-button" type="button" hidden>Report this Watch Party</button>
+            </div>
           </div>
-        </div>
-        <a id="add-missing-location-link" class="add-missing-location" href="#" target="_blank" rel="noopener" hidden>Can’t find the location? Suggest it here.</a>
+        </section>
+        <section class="add-somewhere-else" aria-labelledby="add-somewhere-else-title">
+          <span class="eyebrow" id="add-somewhere-else-title">Add somewhere else</span>
+          <p class="command-surface__intro">Search for a place that isn’t listed in Cal Golden Bars yet.</p>
+          <div class="add-actions">
+            <button id="add-new-location-button" class="add-action" type="button">
+              <svg class="ui-icon add-action__icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-location"></use></svg>
+              <span><strong>Add a new location</strong><small>Search MapTiler for the place you want to add.</small></span>
+              <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-right"></use></svg>
+            </button>
+          </div>
+          <a id="add-missing-location-link" class="add-missing-location" href="#" target="_blank" rel="noopener" hidden>Can’t find the location? Suggest it here.</a>
+        </section>
       </div>
     </section>
 
