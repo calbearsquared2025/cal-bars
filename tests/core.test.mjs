@@ -166,7 +166,7 @@ test('tray state transitions expose all states through up, down, and toggle acti
   assert.equal(resolveTrayState('full', 'toggle', true), 'selected');
 });
 
-test('minimal pan does not move a visible selected marker', () => {
+test('selected marker inside the comfort zone remains stable', () => {
   assert.deepEqual(calculateMinimalPan({
     point: { x: 180, y: 280 },
     viewport: { width: 390, height: 700 },
@@ -174,28 +174,42 @@ test('minimal pan does not move a visible selected marker', () => {
   }), { x: 0, y: 0 });
 });
 
-test('minimal pan moves a marker only above the actual tray boundary', () => {
+test('mobile selected marker recenters within the exposed area above the tray', () => {
   const shorterTray = calculateMinimalPan({
-    point: { x: 180, y: 600 },
+    point: { x: 195, y: 430 },
     viewport: { width: 390, height: 700 },
-    insets: { top: 130, right: 16, bottom: 200, left: 16 }
+    insets: { top: 100, right: 16, bottom: 220, left: 16 }
   });
   const tallerTray = calculateMinimalPan({
-    point: { x: 180, y: 600 },
+    point: { x: 195, y: 430 },
     viewport: { width: 390, height: 700 },
-    insets: { top: 130, right: 16, bottom: 350, left: 16 }
+    insets: { top: 100, right: 16, bottom: 340, left: 16 }
   });
 
-  assert.deepEqual(shorterTray, { x: 0, y: -112 });
-  assert.deepEqual(tallerTray, { x: 0, y: -262 });
+  assert.deepEqual(shorterTray, { x: 0, y: -116 });
+  assert.deepEqual(tallerTray, { x: 0, y: -176 });
 });
 
-test('minimal pan brings an offscreen marker into the horizontal safe area', () => {
+test('desktop selected marker near the profile rail recenters left into the usable map area', () => {
+  assert.deepEqual(calculateMinimalPan({
+    point: { x: 850, y: 424 },
+    viewport: { width: 1400, height: 800 },
+    insets: { top: 16, right: 440, bottom: 16, left: 16 }
+  }), { x: -362, y: 0 });
+
+  assert.deepEqual(calculateMinimalPan({
+    point: { x: 700, y: 424 },
+    viewport: { width: 1400, height: 800 },
+    insets: { top: 16, right: 440, bottom: 16, left: 16 }
+  }), { x: 0, y: 0 });
+});
+
+test('offscreen marker recenters instead of hugging the nearest safe-area edge', () => {
   assert.deepEqual(calculateMinimalPan({
     point: { x: -20, y: 250 },
     viewport: { width: 390, height: 700 },
     insets: { top: 120, right: 16, bottom: 250, left: 16 }
-  }), { x: 67, y: 0 });
+  }), { x: 215, y: 59 });
 });
 
 test('native share success remains the first sharing path', async () => {
