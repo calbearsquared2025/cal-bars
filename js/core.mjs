@@ -247,7 +247,8 @@ export function calculateMinimalPan({
   viewport,
   insets = {},
   marker = { width: 38, height: 48 },
-  gap = 12
+  gap = 12,
+  comfortRatio = 0.15
 } = {}) {
   const width = Number(viewport?.width);
   const height = Number(viewport?.height);
@@ -264,6 +265,7 @@ export function calculateMinimalPan({
   const markerWidth = Math.max(0, Number(marker.width) || 0);
   const markerHeight = Math.max(0, Number(marker.height) || 0);
   const safeGap = Math.max(0, Number(gap) || 0);
+  const comfortableInset = clamp(Number(comfortRatio) || 0, 0, 0.45);
 
   let minimumX = left + markerWidth / 2 + safeGap;
   let maximumX = width - right - markerWidth / 2 - safeGap;
@@ -273,9 +275,20 @@ export function calculateMinimalPan({
   if (maximumX < minimumX) minimumX = maximumX = width / 2;
   if (maximumY < minimumY) minimumY = maximumY;
 
+  const comfortX = (maximumX - minimumX) * comfortableInset;
+  const comfortY = (maximumY - minimumY) * comfortableInset;
+  const comfortableMinimumX = minimumX + comfortX;
+  const comfortableMaximumX = maximumX - comfortX;
+  const comfortableMinimumY = minimumY + comfortY;
+  const comfortableMaximumY = maximumY - comfortY;
+  const comfortablyVisible = pointX >= comfortableMinimumX && pointX <= comfortableMaximumX &&
+    pointY >= comfortableMinimumY && pointY <= comfortableMaximumY;
+
+  if (comfortablyVisible) return { x: 0, y: 0 };
+
   return {
-    x: clamp(pointX, minimumX, maximumX) - pointX,
-    y: clamp(pointY, minimumY, maximumY) - pointY
+    x: (minimumX + maximumX) / 2 - pointX,
+    y: (minimumY + maximumY) / 2 - pointY
   };
 }
 
