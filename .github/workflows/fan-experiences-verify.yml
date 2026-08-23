@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Full repository verification for this feature branch.
       - run: npm test
       - run: npm run test:browser
       - run: npm run validate:data
