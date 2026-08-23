@@ -86,7 +86,7 @@ function syncCalBarNominationAction() {
   }
 
   if (venue.venue_type === 'cal_bar') {
-    label.textContent = 'Tell us what makes this Cal Bar special';
+    label.textContent = 'What makes this Cal Bar special';
     copy.textContent = 'Share what makes this a recurring Cal gathering place.';
     return;
   }
