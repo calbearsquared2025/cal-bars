@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - fix/121-test-reconciliation
+  pull_request:
+    branches:
+      - main
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
@@ -16,133 +19,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Apply final reconciliation patches
-        shell: bash
-        run: |
-          python <<'PY'
-          from pathlib import Path
-
-          def replace(path, old, new):
-              p = Path(path)
-              text = p.read_text()
-              if old not in text:
-                  return False
-              p.write_text(text.replace(old, new))
-              return True
-
-          # Genuine H1/J navigation regression: List must use the canonical Locations owner,
-          # not the tray handle whose semantics are now collapse/restore.
-          replace('js/shell-controls.mjs', """function showList() {
-  leaveDetailForCommand();
-  contributionIntent = '';
-  updateSearchIntent();
-  setSearchMode('existing');
-  setSurface('map');
-  if (!isMobileLayout() && window.CGBApp?.showLocations) {
-    currentSurface = 'list';
-    window.CGBApp.showLocations();
-    updateCommandState();
-    return;
-  }
-  if (dom.tray?.dataset.state !== 'full') dom.trayHandle?.click();
-  currentSurface = 'list';
-  updateCommandState();
-}
-""", """function showList() {
-  leaveDetailForCommand();
-  contributionIntent = '';
-  updateSearchIntent();
-  setSearchMode('existing');
-  setSurface('map');
-  if (window.CGBApp?.showLocations) {
-    currentSurface = 'list';
-    window.CGBApp.showLocations();
-    updateCommandState();
-    return;
-  }
-  if (dom.tray?.dataset.state !== 'full') dom.trayHandle?.click();
-  currentSurface = 'list';
-  updateCommandState();
-}
-""")
-
-          # The reduced external harness should test external Add Location ownership only;
-          # normal Search/ZIP submission belongs to app.js after PR #128.
-          replace('tests/browser/external-venue-harness.mjs', """  searchInput.value = '94612';
-  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-  searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-  await wait(25);
-  assert(appState.listQuery === '94612', 'Exact mapped ZIP did not become the canonical list query');
-  assert(appState.origin === null, 'Exact mapped ZIP incorrectly used an external geocode origin');
-  assert(appState.trayState === 'full', 'Exact mapped ZIP did not open the location list');
-  assert(mapTilerCallCount === 0, 'Exact mapped ZIP unnecessarily called MapTiler');
-  assert(/2 mapped locations match 94612/.test(lastStatus), 'Exact mapped ZIP did not report mapped matches');
-  appState.listQuery = '';
-  appState.searchMode = 'add-location';
-""", """  appState.searchMode = 'add-location';
-""")
-
-          # Browser prejoined fixtures seed canonical local intent directly; persistence parsing is
-          # covered by source/unit tests and this avoids a flaky reload inside --dump-dom.
-          replace('tests/browser/venue-detail-runtime-harness.mjs', """  if (params.get('__cgb_prejoined') === '1' && sessionStorage.getItem('cgb_prejoined_reload') !== 'ready') {
-    localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
-    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [requestedGameId]: venue.venue_id }));
-    sessionStorage.setItem('cgb_prejoined_reload', 'ready');
-    location.reload();
-    return;
-  }
-""", """  if (params.get('__cgb_prejoined') === '1') {
-    currentState.fanIntent.selections = {
-      ...currentState.fanIntent.selections,
-      [requestedGameId]: venue.venue_id
-    };
-    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify(currentState.fanIntent.selections));
-  }
-""")
-
-          # Use canonical fixture IDs in broad runtime runs so Watch Party fixture expectations
-          # are independent of route-alias behavior tested elsewhere.
-          for old, new in [
-            ('?game=ucla&__cgb_harness=main', '?game=game_2026_01&__cgb_harness=main'),
-            ('?game=ucla&__cgb_harness=landscape', '?game=game_2026_01&__cgb_harness=landscape'),
-            ('?game=ucla&__cgb_harness=desktop', '?game=game_2026_01&__cgb_harness=desktop')
-          ]:
-              replace('scripts/run-browser-harness.mjs', old, new)
-
-          if any(Path(path).exists() for path in ['js/shell-controls.mjs']):
-              pass
-          PY
-
-          if ! git diff --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add js tests scripts
-            git commit -m "Fix mobile List handoff and reconcile runtime fixtures"
-            git push
-          fi
-      - name: Run validation and record result
-        shell: bash
-        run: |
-          set +e
-          npm test > /tmp/unit.log 2>&1
-          unit_exit=$?
-          npm run test:browser > /tmp/browser.log 2>&1
-          browser_exit=$?
-          {
-            echo "unit_exit=$unit_exit"
-            echo "browser_exit=$browser_exit"
-            echo "--- unit failing subtests ---"
-            grep '^not ok' /tmp/unit.log || true
-            echo "--- unit summary ---"
-            tail -n 9 /tmp/unit.log
-            echo "--- browser failure summaries ---"
-            grep -E 'harness failed|_FAIL$|^- ' /tmp/browser.log || true
-          } > .j-test-result.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .j-test-result.txt
-          if ! git diff --cached --quiet; then
-            git commit -m "Refresh temporary J validation result"
-            git push
-          fi
-          exit 0
+      - name: Run source and unit tests
+        run: npm test
+      - name: Run browser regression harnesses
+        run: npm run test:browser
