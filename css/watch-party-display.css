@@ -92,4 +92,15 @@
   .party-module--multiple {
     max-height: 24rem;
   }
+
+  #tray-selected > #venue-detail > .party-module.party-module--multiple {
+    max-height: none;
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+
+  #tray-selected > #venue-detail > .party-module .party-module__report {
+    font-size: .65rem;
+    font-weight: 650;
+  }
 }

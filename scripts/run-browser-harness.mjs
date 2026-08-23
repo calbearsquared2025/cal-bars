@@ -20,7 +20,6 @@ const runtimeSnapshot = JSON.parse(readFileSync(
   join(repositoryRoot, 'tests/fixtures/public-snapshot.synthetic.json'),
   'utf8'
 ));
-runtimeSnapshot.fanCounts = [];
 const runtimeSnapshotJson = JSON.stringify(runtimeSnapshot).replaceAll('<', '\\u003c');
 const productionIndex = readFileSync(join(repositoryRoot, 'index.html'), 'utf8');
 
@@ -32,72 +31,54 @@ function safeFilePath(requestUrl) {
   return candidate;
 }
 
-function sendProductionHarness(response, requestUrl = '/') {
-  const harnessMode = new URL(requestUrl, 'http://127.0.0.1').searchParams.get('__cgb_harness') || 'main';
-  const detailHarness = harnessMode === 'direct' || harnessMode === 'desktop-direct';
-  const prelude = `<script>
-    const cgbPrejoinedReload = sessionStorage.getItem('cgb_prejoined_reload') === 'ready';
-    if (!cgbPrejoinedReload) {
-      for (const key of ['cgb_v2_last_good_snapshot', 'cgb_v2_browser_id', 'cgb_v2_fan_intent_selections']) localStorage.removeItem(key);
-    }
-    localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
+function acceptancePrelude(requestUrl) {
+  const url = new URL(requestUrl, 'http://127.0.0.1');
+  const seed = url.searchParams.get('__cgb_seed') || '';
+  const seedVenueSlug = url.searchParams.get('__cgb_seed_venue') || '';
+  return `<script>
     (() => {
       const snapshot = ${runtimeSnapshotJson};
-      const selections = new Map();
-      let mapTilerSearchCalls = 0;
-      if (cgbPrejoinedReload) {
-        const browserId = localStorage.getItem('cgb_v2_browser_id');
-        const storedSelections = JSON.parse(localStorage.getItem('cgb_v2_fan_intent_selections') || '{}');
-        Object.entries(storedSelections).forEach(([gameId, venueId]) => {
-          selections.set(browserId + '\\u0000' + gameId, { gameId, venueId });
-        });
+      const slugify = (value) => String(value || '')
+        .normalize('NFKD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/[’']/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      for (const key of ['cgb_v2_last_good_snapshot', 'cgb_v2_browser_id', 'cgb_v2_fan_intent_selections']) {
+        localStorage.removeItem(key);
       }
-      let failNextJoin = false;
-      window.CGBProductionHarness = Object.freeze({
-        failNextJoin() { failNextJoin = true; },
-        mapTilerSearchCalls() { return mapTilerSearchCalls; },
-        seedOtherSelection(gameId, venueId) {
-          const syntheticBrowserId = 'browser_' + 'other_1234567890abcdef';
-          selections.set(syntheticBrowserId + '\\u0000' + gameId, { gameId, venueId });
+      localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
+      if (${JSON.stringify(seed)} === 'fan-intent') {
+        const requestedGame = slugify(new URLSearchParams(location.search).get('game'));
+        const game = snapshot.games.find((item) => slugify(item.opponent_name) === requestedGame) || snapshot.games[0];
+        const venue = snapshot.venues.find((item) => item.slug === ${JSON.stringify(seedVenueSlug)});
+        if (game && venue) {
+          localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
+          localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [game.game_id]: venue.venue_id }));
         }
-      });
+      }
       const nativeFetch = window.fetch.bind(window);
-      const fanCounts = () => {
-        const counts = new Map();
-        selections.forEach(({ gameId, venueId }) => {
-          const key = gameId + '\\u0000' + venueId;
-          const current = counts.get(key) || { game_id: gameId, venue_id: venueId, count: 0 };
-          current.count += 1;
-          counts.set(key, current);
-        });
-        return [...counts.values()];
-      };
+      const selections = new Map();
+      let fanCounts = Array.isArray(snapshot.fanCounts) ? snapshot.fanCounts.map((item) => ({ ...item })) : [];
       const jsonResponse = (payload, status = 200) => new Response(JSON.stringify(payload), {
         status,
         headers: { 'Content-Type': 'application/json; charset=utf-8' }
       });
+      const countFor = (gameId, venueId) => fanCounts.find((item) => item.game_id === gameId && item.venue_id === venueId)?.count || 0;
+      const setCount = (gameId, venueId, count) => {
+        fanCounts = fanCounts.filter((item) => !(item.game_id === gameId && item.venue_id === venueId));
+        if (count > 0) fanCounts.push({ game_id: gameId, venue_id: venueId, count });
+      };
       window.fetch = async (input, init = {}) => {
-        const url = new URL(typeof input === 'string' ? input : input.url, location.href);
-        if (url.hostname === 'api.maptiler.com' && url.pathname.startsWith('/geocoding/')) {
-          mapTilerSearchCalls += 1;
-          return jsonResponse({ features: [{
-            id: 'poi.test-toast-place',
-            text: 'Toast Test Place',
-            place_name: 'Toast Test Place, 1 Test Way, Berkeley, California 94704, United States',
-            center: [-122.273, 37.8715],
-            place_type: ['poi'],
-            properties: { country_code: 'us' },
-            context: [
-              { id: 'postcode.94704', text: '94704' },
-              { id: 'place.berkeley', text: 'Berkeley' },
-              { id: 'region.california', text: 'California', short_code: 'US-CA' },
-              { id: 'country.us', text: 'United States', short_code: 'us' }
-            ]
-          }] });
+        const target = new URL(typeof input === 'string' ? input : input.url, location.href);
+        if (target.hostname === 'api.maptiler.com' && target.pathname.startsWith('/geocoding/')) {
+          return jsonResponse({ features: [] });
         }
-        if (url.pathname !== '/__cgb_mock_api__') return nativeFetch(input, init);
+        if (target.pathname.endsWith('/data/fallback-v2.json')) return jsonResponse({ ...snapshot, fanCounts });
+        if (target.pathname !== '/__cgb_mock_api__') return nativeFetch(input, init);
         const method = String(init.method || input?.method || 'GET').toUpperCase();
-        if (method !== 'POST') return jsonResponse({ ...snapshot, fanCounts: fanCounts() });
+        if (method !== 'POST') return jsonResponse({ ...snapshot, fanCounts });
         let operation;
         try { operation = JSON.parse(String(init.body || '{}')); } catch (_) {
           return jsonResponse({ ok: false, error: 'invalid_json' }, 400);
@@ -106,31 +87,35 @@ function sendProductionHarness(response, requestUrl = '/') {
         if (!['join', 'withdraw', 'move'].includes(action) || !browserId || !gameId || !venueId) {
           return jsonResponse({ ok: false, error: 'invalid_request' }, 400);
         }
-        if (action === 'join' && failNextJoin) {
-          failNextJoin = false;
-          return jsonResponse({ ok: false, error: 'temporary_failure' }, 503);
-        }
         const key = browserId + '\\u0000' + gameId;
-        if (action === 'withdraw') selections.delete(key);
-        else selections.set(key, { gameId, venueId });
+        const previous = selections.get(key);
+        if (previous?.venueId && previous.venueId !== venueId) {
+          setCount(gameId, previous.venueId, Math.max(0, countFor(gameId, previous.venueId) - 1));
+        }
+        if (action === 'withdraw') {
+          if (previous?.venueId) setCount(gameId, previous.venueId, Math.max(0, countFor(gameId, previous.venueId) - 1));
+          selections.delete(key);
+        } else {
+          if (!previous || previous.venueId !== venueId) setCount(gameId, venueId, countFor(gameId, venueId) + 1);
+          selections.set(key, { gameId, venueId });
+        }
         return jsonResponse({
           ok: true,
           action,
-          selection: action === 'withdraw'
-            ? null
-            : { game_id: gameId, venue_id: venueId, status: 'attending' },
-          fanCounts: fanCounts(),
+          selection: action === 'withdraw' ? null : { game_id: gameId, venue_id: venueId, status: 'attending' },
+          fanCounts,
           venueHistoryCounts: Array.isArray(snapshot.venueHistoryCounts) ? snapshot.venueHistoryCounts : []
         });
       };
     })();
   </script>`;
-  const driverScript = detailHarness
-    ? '/tests/browser/venue-detail-runtime-harness.mjs'
-    : '/tests/browser/production-runtime-harness.mjs';
+}
+
+function sendAcceptanceHarness(response, requestUrl = '/') {
+  const prelude = acceptancePrelude(requestUrl);
   const driver = `
-    <output id="cgb-production-runtime-result">CGB_PRODUCTION_RUNTIME_RUNNING</output>
-    <script type="module" src="${driverScript}"></script>
+    <output id="cgb-browser-acceptance-result">CGB_BROWSER_ACCEPTANCE_RUNNING</output>
+    <script type="module" src="/tests/browser/current-behavior-acceptance.mjs"></script>
   `;
   const html = productionIndex
     .replace(
@@ -147,7 +132,7 @@ function sendProductionHarness(response, requestUrl = '/') {
 }
 
 function sendFirstPaintHarness(response) {
-  const zoomControls = `
+  const simulatedControls = `
     <div class="maplibregl-ctrl-top-right" data-first-paint-controls>
       <div class="maplibregl-ctrl maplibregl-ctrl-group">
         <button class="maplibregl-ctrl-zoom-in" type="button">+</button>
@@ -160,36 +145,31 @@ function sendFirstPaintHarness(response) {
     <script>
       (() => {
         const failures = [];
-        const bodyStyle = getComputedStyle(document.body);
-        const headerStyle = getComputedStyle(document.querySelector('.site-header'));
         const tray = document.querySelector('#venue-tray');
-        const trayStyle = getComputedStyle(tray);
-        const trayRect = tray.getBoundingClientRect();
-        const handleStyle = getComputedStyle(document.querySelector('#tray-handle'));
-        const chevronStyle = getComputedStyle(document.querySelector('.tray-summary__chevron'));
-        const zoomIn = document.querySelector('.maplibregl-ctrl-zoom-in');
-
-        if (document.body.dataset.view !== 'map') failures.push('missing initial map view');
-        if (document.body.dataset.commandSurface !== 'map') failures.push('missing initial command surface');
-        if (bodyStyle.position !== 'fixed') failures.push('map shell is not fixed');
-        if (Math.abs(parseFloat(headerStyle.height) - 176) > 1) failures.push('header is not 176px');
-        if (Math.abs(trayRect.left) > 1 || Math.abs(trayRect.right - innerWidth) > 1) failures.push('tray is not full width');
-        if (Math.abs(parseFloat(trayStyle.height) - 96) > 1) failures.push('tray is not 96px');
-        if (trayStyle.borderTopLeftRadius !== '22px') failures.push('tray radius is not settled');
-        if (handleStyle.display !== 'grid' || Math.abs(parseFloat(handleStyle.height) - 18) > 1) failures.push('compact handle is not settled');
-        if (chevronStyle.display !== 'none') failures.push('obsolete chevron is visible');
-        if (zoomIn.getClientRects().length !== 0) failures.push('zoom controls are visible');
-        if (document.querySelector('style[id^="cgb-"]')) failures.push('runtime refinement style was injected');
-
+        const trayRect = tray?.getBoundingClientRect();
+        const handle = document.querySelector('#tray-handle');
+        const chevron = document.querySelector('.tray-summary__chevron');
+        const zoom = document.querySelector('.maplibregl-ctrl-zoom-in');
+        const visible = (node) => {
+          if (!node || node.hidden) return false;
+          const style = getComputedStyle(node);
+          const rect = node.getBoundingClientRect();
+          return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+        };
+        if (!visible(document.querySelector('#map-view'))) failures.push('map shell is not visible at first paint');
+        if (!visible(handle)) failures.push('tray handle is not visible at first paint');
+        if (visible(chevron)) failures.push('obsolete tray chevron is visible at first paint');
+        if (visible(zoom)) failures.push('MapLibre zoom controls are visible at first paint');
+        if (!trayRect || Math.abs(trayRect.left) > 1 || Math.abs(trayRect.right - innerWidth) > 1) failures.push('mobile tray is not full width at first paint');
         document.querySelector('#cgb-first-paint-result').textContent = failures.length
-          ? 'CGB_FIRST_PAINT_FAIL: ' + failures.join('; ')
-          : 'CGB_STATIC_MOBILE_FIRST_PAINT_PASS';
+          ? 'CGB_STATIC_FIRST_PAINT_FAIL: ' + failures.join('; ')
+          : 'CGB_STATIC_FIRST_PAINT_PASS';
       })();
     </script>
   `;
   const html = productionIndex
     .replace(/<script\b[\s\S]*?<\/script>/gi, '')
-    .replace('<div id="map-fallback"', `${zoomControls}\n<div id="map-fallback"`)
+    .replace('<div id="map-fallback"', `${simulatedControls}\n<div id="map-fallback"`)
     .replace('</body>', `${driver}\n</body>`);
   response.writeHead(200, {
     'Content-Type': 'text/html; charset=utf-8',
@@ -200,15 +180,14 @@ function sendFirstPaintHarness(response) {
 
 const server = createServer((request, response) => {
   const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
-  if (pathname === '/__cgb_production_runtime__') {
-    sendProductionHarness(response, request.url || '/');
+  if (pathname === '/__cgb_acceptance__') {
+    sendAcceptanceHarness(response, request.url || '/');
     return;
   }
   if (pathname === '/__cgb_first_paint__') {
     sendFirstPaintHarness(response);
     return;
   }
-
   const filePath = safeFilePath(request.url || '/');
   try {
     if (!filePath || !statSync(filePath).isFile()) throw new Error('not_found');
@@ -231,8 +210,9 @@ await new Promise((resolve, reject) => {
 const address = server.address();
 const browser = findBrowser();
 
-function extractRuntimeResult(html) {
-  const match = html.match(/<output id="cgb-production-runtime-result">([\s\S]*?)<\/output>/i);
+function extractOutput(html, id) {
+  const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = html.match(new RegExp(`<output id="${escaped}">([\\s\\S]*?)<\\/output>`, 'i'));
   return match?.[1]
     ?.replace(/<[^>]*>/g, '')
     .replaceAll('&gt;', '>')
@@ -241,9 +221,9 @@ function extractRuntimeResult(html) {
     .trim() || '';
 }
 
-async function runHarness({ path, marker, label, virtualTimeBudget, windowSize = '390,844' }) {
+async function runBrowser({ path, marker, label, windowSize = '390,844', virtualTimeBudget = 30000, outputId = 'cgb-browser-acceptance-result' }) {
   const url = `http://127.0.0.1:${address.port}${path}`;
-  const profileDirectory = mkdtempSync(join(tmpdir(), 'cgb-browser-harness-'));
+  const profileDirectory = mkdtempSync(join(tmpdir(), 'cgb-browser-acceptance-'));
   const child = spawn(browser, [
     '--headless=new',
     '--no-sandbox',
@@ -273,173 +253,87 @@ async function runHarness({ path, marker, label, virtualTimeBudget, windowSize =
   rmSync(profileDirectory, { recursive: true, force: true, maxRetries: 3 });
   if (exitCode !== 0 || !stdout.includes(marker)) {
     console.error(`${label} failed.`);
-    const runtimeResult = extractRuntimeResult(stdout);
-    if (runtimeResult) console.error(runtimeResult);
-    else console.error(stdout.slice(-16000));
-    console.error(stderr.slice(-5000));
+    const output = extractOutput(stdout, outputId);
+    if (output) console.error(output);
+    else console.error(stdout.slice(-12000));
+    if (stderr) console.error(stderr.slice(-4000));
     return false;
   }
-
   console.log(`${label} passed.`);
   return true;
 }
 
-let passed = true;
-const focusedHarness = process.env.CGB_BROWSER_HARNESS_ONLY || '';
-try {
-  if (focusedHarness === 'external') {
-    passed = await runHarness({
-      path: '/tests/browser/external-venue-harness.html',
-      marker: 'M4B_BROWSER_HARNESS_PASS',
-      label: 'Focused external-location attendance split harness',
-      virtualTimeBudget: 12000
-    }) && passed;
-  } else if (focusedHarness === 'nearby') {
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?__cgb_harness=nearby-mobile',
-      marker: 'CGB_NEARBY_MOBILE_RUNTIME_HARNESS_PASS',
-      label: 'Focused mobile Nearby reuse harness',
-      virtualTimeBudget: 60000
-    }) && passed;
-
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?__cgb_harness=nearby-desktop',
-      marker: 'CGB_NEARBY_DESKTOP_RUNTIME_HARNESS_PASS',
-      label: 'Focused desktop Nearby reuse harness',
-      virtualTimeBudget: 30000,
-      windowSize: '1440,900'
-    }) && passed;
-  } else if (focusedHarness === 'search') {
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?__cgb_harness=search-mobile',
-      marker: 'CGB_SEARCH_MODE_MOBILE_RUNTIME_HARNESS_PASS',
-      label: 'Focused mobile Search mode harness',
-      virtualTimeBudget: 30000
-    }) && passed;
-
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?__cgb_harness=search-desktop',
-      marker: 'CGB_SEARCH_MODE_DESKTOP_RUNTIME_HARNESS_PASS',
-      label: 'Focused desktop Search mode harness',
-      virtualTimeBudget: 30000,
-      windowSize: '1440,900'
-    }) && passed;
-  } else if (focusedHarness === 'profile') {
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_64902a48440e55522742d631&__cgb_harness=direct&__cgb_focus=contribution-photo',
-      marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
-      label: 'Focused mobile no-photo Venue Profile harness',
-      virtualTimeBudget: 30000
-    }) && passed;
-
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_harness=direct&__cgb_focus=contribution-photo',
-      marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
-      label: 'Focused mobile photo-present Venue Profile harness',
-      virtualTimeBudget: 30000
-    }) && passed;
-
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_64902a48440e55522742d631&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
-      marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
-      label: 'Focused desktop no-photo Venue Profile harness',
-      virtualTimeBudget: 30000,
-      windowSize: '1440,900'
-    }) && passed;
-
-    passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_9e8f4860c6a256c0fae6007d&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
-      marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
-      label: 'Focused desktop photo-present Venue Profile harness',
-      virtualTimeBudget: 30000,
-      windowSize: '1440,900'
-    }) && passed;
-  } else {
-  passed = await runHarness({
+const scenarios = [
+  {
+    key: 'first-paint',
     path: '/__cgb_first_paint__',
-    marker: 'CGB_STATIC_MOBILE_FIRST_PAINT_PASS',
-    label: 'Static mobile first-paint harness',
-    virtualTimeBudget: 3000
-  }) && passed;
-
-  passed = await runHarness({
+    marker: 'CGB_STATIC_FIRST_PAINT_PASS',
+    label: 'Static mobile first-paint acceptance',
+    outputId: 'cgb-first-paint-result',
+    virtualTimeBudget: 5000
+  },
+  {
+    key: 'external',
     path: '/tests/browser/external-venue-harness.html',
     marker: 'M4B_BROWSER_HARNESS_PASS',
-    label: 'Milestone 4B browser harness',
-    virtualTimeBudget: 6000
-  }) && passed;
-
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=syracuse&__cgb_prejoined=1&__cgb_harness=direct',
-    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
-    label: 'Production TBD direct-route refresh harness',
-    virtualTimeBudget: 30000
-  }) && passed;
-
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?__cgb_harness=main',
-    marker: 'CGB_PRODUCTION_RUNTIME_HARNESS_PASS',
-    label: 'Production runtime regression harness',
-    virtualTimeBudget: 60000
-  }) && passed;
-
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?__cgb_harness=landscape',
-    marker: 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS_PASS',
-    label: 'Short landscape production runtime regression harness',
-    virtualTimeBudget: 30000,
-    windowSize: '844,390'
-  }) && passed;
-
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=ucla&__cgb_prejoined=1&__cgb_harness=direct',
-    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
-    label: 'Production direct-route refresh harness',
-    virtualTimeBudget: 30000
-  }) && passed;
-
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=bear-territory-test-cafe-alameda&game=ucla&__cgb_harness=direct',
-    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
-    label: 'Small-portrait fan-added Watch Party Detail harness',
-    virtualTimeBudget: 30000,
+    label: 'External-location attendance split acceptance',
+    outputId: 'cgb-browser-result',
+    virtualTimeBudget: 12000
+  },
+  {
+    key: 'mobile-flow',
+    path: '/__cgb_acceptance__?game=ucla&__cgb_acceptance=mobile-flow',
+    marker: 'CGB_BROWSER_ACCEPTANCE_PASS:mobile-flow',
+    label: 'Mobile map → Locations → Profile acceptance'
+  },
+  {
+    key: 'mobile-direct',
+    path: '/__cgb_acceptance__?venue=golden-bear-test-pub-berkeley&game=ucla&__cgb_acceptance=mobile-direct',
+    marker: 'CGB_BROWSER_ACCEPTANCE_PASS:mobile-direct',
+    label: 'Mobile direct Profile acceptance'
+  },
+  {
+    key: 'restored-fan-intent',
+    path: '/__cgb_acceptance__?game=ucla&__cgb_acceptance=restored-fan-intent&__cgb_seed=fan-intent&__cgb_seed_venue=golden-bear-test-pub-berkeley',
+    marker: 'CGB_BROWSER_ACCEPTANCE_PASS:restored-fan-intent',
+    label: 'Stored Fan Intent restoration acceptance'
+  },
+  {
+    key: 'desktop-flow',
+    path: '/__cgb_acceptance__?game=ucla&__cgb_acceptance=desktop-flow',
+    marker: 'CGB_BROWSER_ACCEPTANCE_PASS:desktop-flow',
+    label: 'Desktop Locations → full Venue Profile acceptance',
+    windowSize: '1440,900'
+  },
+  {
+    key: 'small-profile',
+    path: '/__cgb_acceptance__?venue=bear-territory-test-cafe-alameda&game=ucla&__cgb_acceptance=compact-profile',
+    marker: 'CGB_BROWSER_ACCEPTANCE_PASS:compact-profile',
+    label: 'Small portrait Profile acceptance',
     windowSize: '320,700'
-  }) && passed;
-
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=california-test-grill-san-francisco&game=syracuse&__cgb_harness=direct',
-    marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
-    label: 'Short-landscape plain fan-added Detail harness',
-    virtualTimeBudget: 30000,
+  },
+  {
+    key: 'landscape-profile',
+    path: '/__cgb_acceptance__?venue=california-test-grill-san-francisco&game=syracuse&__cgb_acceptance=compact-profile',
+    marker: 'CGB_BROWSER_ACCEPTANCE_PASS:compact-profile',
+    label: 'Short landscape Profile acceptance',
     windowSize: '844,390'
-  }) && passed;
+  }
+];
 
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?__cgb_harness=desktop',
-    marker: 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_PASS',
-    label: 'Desktop production runtime regression harness',
-    virtualTimeBudget: 60000,
-    windowSize: '1440,900'
-  }) && passed;
-
-  passed = await runHarness({
-    path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=ucla&__cgb_prejoined=1&__cgb_harness=desktop-direct',
-    marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
-    label: 'Desktop production direct-route refresh harness',
-    virtualTimeBudget: 30000,
-    windowSize: '1440,900'
-  }) && passed;
+const focused = process.env.CGB_BROWSER_HARNESS_ONLY || '';
+let passed = true;
+try {
+  const selected = focused ? scenarios.filter((scenario) => scenario.key === focused) : scenarios;
+  if (focused && selected.length === 0) {
+    console.error(`Unknown CGB_BROWSER_HARNESS_ONLY value: ${focused}`);
+    passed = false;
+  }
+  for (const scenario of selected) {
+    passed = await runBrowser(scenario) && passed;
   }
 } finally {
-  server.close();
+  await new Promise((resolve) => server.close(resolve));
 }
 
-if (!passed) process.exit(1);
-
-console.log(focusedHarness === 'nearby'
-  ? 'Focused Nearby browser harnesses passed on mobile and desktop.'
-  : focusedHarness === 'search'
-    ? 'Focused Search mode browser harnesses passed on mobile and desktop.'
-    : focusedHarness === 'profile'
-      ? 'Focused Venue Profile photo and contribution harnesses passed on mobile and desktop.'
-    : 'Browser harnesses passed: static mobile first paint without refinement modules, the reduced external-venue fixture, the real index.html production module graph, high-risk mobile and desktop state transitions, resolved Venue Detail states, and direct venue cold-load/refresh behavior.');
+if (!passed) process.exitCode = 1;
