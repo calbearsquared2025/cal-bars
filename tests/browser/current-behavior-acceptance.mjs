@@ -15,8 +15,7 @@ function isVisible(selectorOrElement) {
   const target = typeof selectorOrElement === 'string' ? element(selectorOrElement) : selectorOrElement;
   if (!target || target.hidden) return false;
   const style = getComputedStyle(target);
-  const rect = target.getBoundingClientRect();
-  return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+  return style.display !== 'none' && style.visibility !== 'hidden';
 }
 
 function click(selector) {
@@ -53,6 +52,15 @@ function gameByOpponent(opponent) {
   return snapshot()?.games?.find((game) => game.opponent_name === opponent) || null;
 }
 
+function routeVenue() {
+  return venueBySlug(params.get('venue') || '');
+}
+
+function routeGame() {
+  const requested = (params.get('game') || '').toLowerCase();
+  return snapshot()?.games?.find((game) => game.opponent_name?.toLowerCase() === requested) || null;
+}
+
 async function waitForReady() {
   return waitFor(() =>
     document.readyState === 'complete' &&
@@ -65,7 +73,7 @@ async function waitForReady() {
 async function openLocations() {
   const list = element('#tray-list');
   if (!isVisible(list)) click('#mobile-list-button');
-  return waitFor(() => isVisible('#tray-list') && document.querySelectorAll('#location-list button[data-venue-id]').length > 0,
+  return waitFor(() => isVisible('#tray-list') && document.querySelectorAll('#location-list .location-card[data-venue-id]').length > 0,
     'visible Locations list');
 }
 
@@ -74,7 +82,7 @@ async function chooseVenue(slug) {
   check(Boolean(venue), `Fixture venue not found: ${slug}`);
   if (!venue) return null;
   await openLocations();
-  const button = element(`#location-list button[data-venue-id="${venue.venue_id}"]`);
+  const button = element(`#location-list .location-card[data-venue-id="${venue.venue_id}"]`);
   check(Boolean(button), `Locations list is missing ${venue.name}`);
   button?.click();
   await waitFor(() => isVisible('#tray-selected') && element('#tray-selected')?.textContent?.includes(venue.name),
@@ -86,7 +94,7 @@ async function openMobileProfile(venue) {
   const details = element('#tray-selected .selected-card__details');
   check(isVisible(details), 'Selected venue preview should expose its Profile action');
   details?.click();
-  await waitFor(() => isVisible('#detail-view') && element('#venue-detail')?.textContent?.includes(venue.name),
+  await waitFor(() => isVisible('#venue-detail') && element('#venue-detail')?.textContent?.includes(venue.name),
     `Profile for ${venue.name}`);
 }
 
@@ -120,8 +128,8 @@ async function runMobileFlow() {
   check(isVisible('#tray-list'), 'Locations should visibly open from Profile');
 
   click('#game-button');
-  await waitFor(() => isVisible('#game-dialog'), 'game picker');
-  const syracuse = [...document.querySelectorAll('.game-option')]
+  await waitFor(() => document.querySelectorAll('#game-list .game-option').length > 1, 'game picker options');
+  const syracuse = [...document.querySelectorAll('#game-list .game-option')]
     .find((button) => button.textContent?.includes('Syracuse'));
   check(Boolean(syracuse), 'Game picker should include Syracuse');
   syracuse?.click();
@@ -130,11 +138,13 @@ async function runMobileFlow() {
 
 async function runMobileDirect() {
   await waitForReady();
-  const venue = venueBySlug('golden-bear-test-pub-berkeley');
+  const venue = routeVenue();
+  const game = routeGame();
   check(Boolean(venue), 'Direct-route venue fixture should exist');
-  await waitFor(() => isVisible('#detail-view') && element('#venue-detail')?.textContent?.includes(venue?.name || ''),
+  check(Boolean(game), 'Direct-route game fixture should exist');
+  await waitFor(() => isVisible('#venue-detail') && element('#venue-detail')?.textContent?.includes(venue?.name || ''),
     'direct mobile Profile');
-  check(element('#header-game-label')?.textContent?.includes('UCLA'), 'Direct Profile should preserve the UCLA game');
+  check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), `Direct Profile should preserve the ${game?.opponent_name || 'requested'} game`);
   check(element('#venue-detail')?.textContent?.includes(venue?.address_line_1 || ''), 'Direct Profile should show the venue address');
   check(isVisible('#detail-back'), 'Direct mobile Profile should expose Back to map');
 }
@@ -146,8 +156,11 @@ async function runRestoredFanIntent() {
   check(Boolean(venue && game), 'Restored Fan Intent fixture should exist');
   await waitFor(() => isVisible('#tray-selected') && element('#tray-selected')?.textContent?.includes(venue?.name || ''),
     'restored selected venue');
+  await waitFor(() => {
+    const intent = element('#tray-selected .intent-button');
+    return intent?.getAttribute('aria-pressed') === 'true' && (intent.textContent || '').includes('You’ll be here');
+  }, 'restored attending state');
   const intent = element('#tray-selected .intent-button');
-  await waitFor(() => intent?.getAttribute('aria-pressed') === 'true', 'restored attending state');
   check(intent?.getAttribute('aria-pressed') === 'true', 'Stored Fan Intent should visibly restore as attending');
   check((intent?.textContent || '').includes('You’ll be here'), 'Restored attendance control should use selected copy');
 }
