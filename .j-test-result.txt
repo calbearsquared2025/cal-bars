@@ -1,23 +1,6 @@
 unit_exit=1
 browser_exit=1
 --- unit failing subtests ---
-not ok 131 - successful external attendance settles through the shared contextual invite lifecycle
-not ok 191 - confirmed attendance reuses the existing share action instead of rendering a second invitation control
-not ok 198 - refresh, game switching, direct URLs, and cross-tab state use canonical game selection
-not ok 236 - bottom navigation uses a pale navy treatment
-not ok 253 - selected profile uses a restrained identity band and compact contribution action
-not ok 254 - attendance rendering is delegated while secondary actions remain readable
-not ok 268 - Search Add and List retain parallel destination header markup
-not ok 269 - mobile styling removes the permanent map search and presents full command surfaces
-not ok 272 - desktop reuses the shared command owner as Locations and Selected only
-not ok 276 - mobile Detail uses the compact header and a flush white page surface without a navy under-page flash
-not ok 277 - Search Add and List use the same destination-header component with a dedicated optional List action
-not ok 305 - mobile location range is owned by the List header while polish only positions map actions
-not ok 307 - secondary destination headers retain space for their optional action
-not ok 312 - Search Add and List presentation is owned by static first-paint CSS
-not ok 338 - mobile selected-profile upward handle swipe opens Venue Detail
-not ok 363 - support entry points use the CGB Ko-fi panel without loading it at first paint
-not ok 366 - desktop footer About uses the consolidated anchored popover treatment
 not ok 381 - no-photo local map stays hidden and busy until its MapLibre load event
 not ok 382 - readiness belongs to one local-map instance and photo-present Detail creates none
 not ok 383 - unchanged snapshot rerenders retain the settled map container and instance
@@ -30,12 +13,12 @@ not ok 439 - Detail finishing treatment uses the approved contribution grid and 
 1..553
 # tests 553
 # suites 0
-# pass 528
-# fail 25
+# pass 545
+# fail 8
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2526.728278
+# duration_ms 2137.949972
 --- browser failure summaries ---
 Milestone 4B browser harness failed.
 Production TBD direct-route refresh harness failed.
@@ -43,7 +26,6 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile Share should remain text-only without a later icon upgrade
 - Base short_description should immediately follow the address action area
 - Local-map fallback should expose the contextual Add a photo action
-- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Timed out waiting for restored Fan Intent selection
 - Refresh should restore Fan Intent state
 - Timed out waiting for contextual Invite more action
