@@ -77,7 +77,7 @@ test('successful external attendance settles through the shared contextual invit
   assert.match(join, /appState\.fanIntent\.pending = null[\s\S]*renderApplicationSafely\('settled-state'\)/);
   assert.match(fanClient, /subscribeAppEvent\('rendered', renderIntentButtons\)/);
   assert.match(fanClient, /syncDetailPresence\(venueId, isSelected\)/);
-  assert.match(fanClient, /const label = isSelected \? 'Invite more' : 'Share'/);
+  assert.match(fanClient, /const label = isSelected \? 'Invite Others' : 'Share'/);
   assert.doesNotMatch(fanClient, /renderPostJoinInvitation|post-join-invitation/);
   assert.doesNotMatch(client, /notifySuccessfulCommit|postJoinInvitation/);
 });

@@ -19,7 +19,9 @@ test('Search Add and List hide the map and Search does not show a selected tray'
 });
 
 test('Search Add and List presentation is owned by static first-paint CSS', () => {
-  assert.doesNotMatch(source, /command-surface__header|command-surface__back|tray-list__header|close-list-button/);
+  assert.doesNotMatch(source, /command-surface__back|close-list-button/);
+  assert.match(source, /mobile-destination-header/);
+  assert.match(source, /tray-list__header/);
   assert.match(firstPaintCss, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__header\.mobile-destination-header[\s\S]*padding: 16px 16px 11px !important/);
   assert.match(firstPaintCss, /data-command-surface="list"[\s\S]*tray-list__toolbar/);

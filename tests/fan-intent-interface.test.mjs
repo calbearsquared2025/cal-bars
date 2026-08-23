@@ -41,7 +41,7 @@ test('Fan Intent integration uses explicit application lifecycle and render func
 
 test('confirmed attendance reuses the existing share action instead of rendering a second invitation control', () => {
   assert.match(client, /const share = row\?\.querySelector\(':scope > button\.secondary-button'\)/);
-  assert.match(client, /const label = isSelected \? 'Invite more' : 'Share'/);
+  assert.match(client, /const label = isSelected \? 'Invite Others' : 'Share'/);
   assert.match(client, /share\.replaceChildren/);
   assert.match(client, /share\.setAttribute\('aria-label', label\)/);
   assert.doesNotMatch(client, /renderPostJoinInvitation|post-join-invitation|post-join-share|has-post-join-invitation/);
@@ -108,7 +108,7 @@ test('refresh, game switching, direct URLs, and cross-tab state use canonical ga
   assert.match(app, /requestedGame/);
   assert.match(app, /venueSlug/);
   assert.match(app, /state\.detailMode \? selectedVenue\(\) : null/);
-  assert.match(app, /buildVenueUrl\(venue\.slug, state\.gameId/);
+  assert.match(app, /buildVenueUrl\(venue\.slug, game, location\.href\)/);
   assert.match(client, /window\.addEventListener\('storage'/);
   assert.match(client, /restoreSelection/);
 });

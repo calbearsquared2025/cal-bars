@@ -73,7 +73,7 @@ test('mobile location range is owned by the List header while polish only positi
   ]);
   assert.match(html, /id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*id="list-location-all"/);
   assert.match(css, /body\[data-command-surface="list"\] \.list-location-toggle/);
-  assert.doesNotMatch(html, /class="map-actions"|id="near-me-button"/);
+  assert.match(html, /class="map-actions"[\s\S]*id="near-me-button"/);
   assert.match(script, /const MAP_ACTION_GAP = 14/);
   assert.match(script, /function updateMapActionPosition\(\)[\s\S]*querySelector\('\.map-actions'\)[\s\S]*#venue-tray/);
   assert.doesNotMatch(script, /list-location-nearby|list-location-all|navigator\.geolocation/);
@@ -91,7 +91,7 @@ test('secondary destination headers retain space for their optional action', asy
     source('index.html'),
     source('js/mobile-tab-location-refinement.mjs')
   ]);
-  assert.equal((html.match(/mobile-destination-header/g) || []).length, 3);
+  assert.equal((html.match(/mobile-destination-header/g) || []).length, 4);
   assert.match(refinement, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
 });
 

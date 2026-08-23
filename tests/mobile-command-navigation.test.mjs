@@ -8,13 +8,14 @@ async function source(path) {
   return readFile(new URL(path, root), 'utf8');
 }
 
-test('mobile primary navigation is Map, Search, Add, List', async () => {
+test('mobile primary navigation is Map, Search, Add, List, and About', async () => {
   const html = await source('index.html');
   const mapIndex = html.indexOf('<span>Map</span>');
   const searchIndex = html.indexOf('<span>Search</span>');
   const addIndex = html.indexOf('<span>Add</span>');
   const listIndex = html.indexOf('<span>List</span>');
-  assert.ok(mapIndex >= 0 && mapIndex < searchIndex && searchIndex < addIndex && addIndex < listIndex);
+  const aboutIndex = html.indexOf('<span>About</span>');
+  assert.ok(mapIndex >= 0 && mapIndex < searchIndex && searchIndex < addIndex && addIndex < listIndex && listIndex < aboutIndex);
   assert.doesNotMatch(html, /id="mobile-game-button"/);
 });
 
@@ -33,10 +34,10 @@ test('search and add are dedicated mobile surfaces', async () => {
 test('Search Add and List retain parallel destination header markup', async () => {
   const html = await source('index.html');
   const sharedHeaders = html.match(/class="[^"]*mobile-destination-header[^"]*"/g) || [];
-  assert.equal(sharedHeaders.length, 3);
+  assert.equal(sharedHeaders.length, 4);
   assert.match(html, /id="search-surface"[\s\S]*mobile-destination-header[\s\S]*<span class="eyebrow">Find a place<\/span>[\s\S]*<h2 id="search-surface-title">Search locations<\/h2>/);
   assert.match(html, /id="add-surface"[\s\S]*mobile-destination-header[\s\S]*<span class="eyebrow">Contribute<\/span>[\s\S]*<h2 id="add-surface-title">Add to the map<\/h2>/);
-  assert.match(html, /id="tray-list"[\s\S]*mobile-destination-header[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>[\s\S]*class="tray-list__toolbar"/);
+  assert.match(html, /id="tray-list"[\s\S]*mobile-destination-header[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Find your Cal crowd<\/h2>[\s\S]*class="tray-list__toolbar"/);
 });
 
 test('mobile styling removes the permanent map search and presents full command surfaces', async () => {
@@ -44,7 +45,7 @@ test('mobile styling removes the permanent map search and presents full command 
   assert.match(css, /\.map-toolbar \.location-search\s*\{\s*display: none;/);
   assert.match(css, /\.command-surface:not\(\[hidden\]\)[\s\S]*position: fixed;/);
   assert.match(css, /calc\(var\(--header-height\) \+ 27px\)/);
-  assert.match(css, /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/);
   assert.match(css, /\.mobile-command__add-mark/);
 });
 
@@ -90,7 +91,7 @@ test('desktop reuses the shared command owner as Locations and Selected only', a
   assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(desktop, /#mobile-list-button\s*\{[^}]*grid-row:\s*1[^}]*grid-column:\s*1[^}]*width:\s*100%[^}]*justify-content:\s*center[^}]*border:\s*1px solid rgba\(1, 1, 51, \.18\)[^}]*border-radius:\s*9px 0 0 9px/);
   assert.match(desktop, /#mobile-map-button\s*\{[^}]*grid-row:\s*1[^}]*grid-column:\s*2[^}]*width:\s*100%[^}]*justify-content:\s*center[^}]*border:\s*1px solid rgba\(1, 1, 51, \.18\)[^}]*border-left:\s*0[^}]*border-radius:\s*0 9px 9px 0/);
-  assert.match(desktop, /#mobile-search-button,[\s\S]*#mobile-add-button\s*\{[^}]*display:\s*none/);
+  assert.match(desktop, /#mobile-search-button,[\s\S]*#mobile-add-button,[\s\S]*#mobile-about-button\s*\{[^}]*display:\s*none/);
   assert.match(desktop, /\.mobile-command-bar\s*\{[^}]*width:\s*min\(390px, 34vw\)/);
   assert.doesNotMatch(desktop, /left:\s*18px/);
   assert.doesNotMatch(desktop, /top:\s*78px !important/);
