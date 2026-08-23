@@ -48,6 +48,7 @@ const TRAY_SWIPE_THRESHOLD = 48;
 
 const dom = {};
 let previousMobileLayout = MOBILE_MEDIA.matches;
+let lastExpandedTrayState = null;
 
 function isMobileLayout() {
   return MOBILE_MEDIA.matches;
@@ -525,9 +526,35 @@ function trayHandleLabel(next) {
   return 'Collapse to mini profile';
 }
 
-function setTrayState(next) {
+function restoredTrayState() {
+  if (lastExpandedTrayState === 'selected' && !state.selectedVenueId) return 'full';
+  return lastExpandedTrayState || (state.selectedVenueId ? 'selected' : 'full');
+}
+
+function animateTrayHeight(previousHeight) {
+  if (!isMobileLayout() || REDUCED_MOTION || typeof dom.tray?.animate !== 'function') return;
+  const nextHeight = dom.tray.getBoundingClientRect().height;
+  if (!Number.isFinite(previousHeight) || !Number.isFinite(nextHeight) || Math.abs(previousHeight - nextHeight) < 1) return;
+  const animation = dom.tray.animate([
+    { height: `${previousHeight}px` },
+    { height: `${nextHeight}px` }
+  ], {
+    duration: 220,
+    easing: 'ease-out'
+  });
+  animation.addEventListener('finish', () => {
+    state.map?.resize();
+    scheduleSelectedVenueVisibility();
+  }, { once: true });
+}
+
+function setTrayState(next, { animate = false } = {}) {
   const changed = state.trayState !== next;
+  const previousHeight = animate && changed && dom.tray && isMobileLayout() && !REDUCED_MOTION
+    ? dom.tray.getBoundingClientRect().height
+    : null;
   state.trayState = next;
+  if (next !== 'peek') lastExpandedTrayState = next;
   if (!dom.tray) return changed;
   dom.tray.dataset.state = next;
   dom.tray.className = `venue-tray tray--${next}`;
@@ -536,6 +563,7 @@ function setTrayState(next) {
   dom.trayPeek.hidden = next !== 'peek';
   dom.traySelected.hidden = next !== 'selected';
   dom.trayList.hidden = next !== 'full';
+  if (previousHeight !== null) animateTrayHeight(previousHeight);
   requestAnimationFrame(() => state.map?.resize());
   if (changed) scheduleSelectedVenueVisibility();
   return changed;
@@ -863,7 +891,7 @@ function renderSelectedCard() {
   collapse.className = 'icon-button';
   collapse.textContent = '⌄';
   collapse.setAttribute('aria-label', 'Collapse selected venue');
-  collapse.addEventListener('click', () => setTrayState('peek'));
+  collapse.addEventListener('click', () => setTrayState('peek', { animate: true }));
   header.append(collapse);
   card.append(header);
 
@@ -1393,9 +1421,28 @@ function wireTrayDrag() {
   let startY = null;
   let pointerId = null;
   let suppressNextClick = false;
+  let pendingSwipeState = '';
+  let pendingSwipeFrame = null;
+
   const reset = () => { startY = null; pointerId = null; };
+  const clearPendingSwipe = () => {
+    if (pendingSwipeFrame !== null) cancelAnimationFrame(pendingSwipeFrame);
+    pendingSwipeFrame = null;
+    pendingSwipeState = '';
+  };
+  const applyPendingSwipe = () => {
+    if (!pendingSwipeState) return;
+    const next = pendingSwipeState;
+    clearPendingSwipe();
+    setTrayState(next, { animate: true });
+  };
+  const suppressGeneratedClick = () => {
+    suppressNextClick = true;
+    window.setTimeout(() => { suppressNextClick = false; }, 350);
+  };
 
   dom.trayHandle.addEventListener('pointerdown', (event) => {
+    clearPendingSwipe();
     startY = event.clientY;
     pointerId = event.pointerId;
     dom.trayHandle.setPointerCapture?.(event.pointerId);
@@ -1405,22 +1452,38 @@ function wireTrayDrag() {
     if (startY === null || event.pointerId !== pointerId) return;
     const delta = event.clientY - startY;
     reset();
-    if (Math.abs(delta) > TRAY_SWIPE_THRESHOLD) {
-      suppressNextClick = true;
-      window.setTimeout(() => { suppressNextClick = false; }, 0);
-      setTrayState('peek');
+    if (Math.abs(delta) <= TRAY_SWIPE_THRESHOLD) return;
+
+    if (delta > 0) {
+      suppressGeneratedClick();
+      setTrayState('peek', { animate: true });
+      return;
     }
+
+    if (state.trayState === 'peek') {
+      pendingSwipeState = restoredTrayState();
+      pendingSwipeFrame = requestAnimationFrame(applyPendingSwipe);
+      return;
+    }
+
+    suppressGeneratedClick();
   });
 
   dom.trayHandle.addEventListener('pointercancel', reset);
   dom.trayHandle.addEventListener('lostpointercapture', reset);
   dom.trayHandle.addEventListener('click', (event) => {
+    if (pendingSwipeState) {
+      event.preventDefault();
+      applyPendingSwipe();
+      return;
+    }
     if (suppressNextClick) {
       suppressNextClick = false;
       event.preventDefault();
       return;
     }
-    setTrayState('peek');
+    const next = state.trayState === 'peek' ? restoredTrayState() : 'peek';
+    setTrayState(next, { animate: true });
   });
 }
 

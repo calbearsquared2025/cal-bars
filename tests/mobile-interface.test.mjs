@@ -23,12 +23,16 @@ test('mobile shell includes game selection, map, search, and tray states', () =>
   assert.match(css, /tray--full/);
 });
 
-test('tray handle is a keyboard button and controls all tray surfaces', () => {
+test('tray handle is a keyboard button and toggles or swipes between existing tray states', () => {
   assert.match(html, /id="tray-handle"[^>]*type="button"/);
   assert.match(html, /aria-controls="tray-peek tray-selected tray-list"/);
   assert.match(app, /trayHandle\.addEventListener\('click'/);
   assert.match(app, /trayHandle\.addEventListener\('pointercancel'/);
-  assert.match(app, /resolveTrayState\(state\.trayState, action/);
+  assert.match(app, /function restoredTrayState\(\)/);
+  assert.match(app, /if \(delta > 0\)[\s\S]*setTrayState\('peek', \{ animate: true \}\)/);
+  assert.match(app, /if \(state\.trayState === 'peek'\)[\s\S]*pendingSwipeState = restoredTrayState\(\)/);
+  assert.match(app, /const next = state\.trayState === 'peek' \? restoredTrayState\(\) : 'peek'/);
+  assert.match(app, /dom\.tray\.animate\(/);
   assert.match(css, /--tray-handle-height:\s*44px/);
 });
 
