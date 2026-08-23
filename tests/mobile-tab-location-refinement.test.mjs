@@ -77,9 +77,13 @@ test('desktop All locations preserves resolved coordinates and fixed Near me res
   assert.doesNotMatch(source, /syncNearMeControl|handleLocateClick/);
 });
 
-test('Nearby sheet handle remains tappable to open the List destination', () => {
+test('browse preview opens List while the tray handle remains the canonical tray toggle', () => {
   assert.match(firstPaintCss, /tray--peek \.tray-handle[\s\S]*display: grid !important/);
-  assert.match(mobilePolish, /function handleTrayControl[\s\S]*openListFromMap\(event\)/);
-  assert.match(mobilePolish, /trayHandle\?\.addEventListener\('click', handleTrayControl, \{ capture: true \}\)/);
+  assert.match(mobilePolish, /function openListFromMap\(event\)[\s\S]*#mobile-list-button/);
+  assert.match(mobilePolish, /#browse-locations-button'\)\?\.addEventListener\('click', openListFromMap, \{ capture: true \}\)/);
+  assert.match(mobilePolish, /trayHandle\?\.addEventListener\('pointerup', scheduleSync\)/);
+  assert.doesNotMatch(mobilePolish, /trayHandle\?\.addEventListener\('click', openListFromMap/);
+  assert.match(app, /dom\.trayHandle\.addEventListener\('click'/);
+  assert.match(app, /const next = state\.trayState === 'peek' \? restoredTrayState\(\) : 'peek'/);
   assert.doesNotMatch(source, /disablePeekHandleNavigation/);
 });
