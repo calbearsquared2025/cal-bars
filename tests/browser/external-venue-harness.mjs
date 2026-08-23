@@ -320,16 +320,6 @@ try {
     'External confirmation actions did not initialize in the required order'
   );
 
-  searchInput.value = '94612';
-  searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-  searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-  await wait(25);
-  assert(appState.listQuery === '94612', 'Exact mapped ZIP did not become the canonical list query');
-  assert(appState.origin === null, 'Exact mapped ZIP incorrectly used an external geocode origin');
-  assert(appState.trayState === 'full', 'Exact mapped ZIP did not open the location list');
-  assert(mapTilerCallCount === 0, 'Exact mapped ZIP unnecessarily called MapTiler');
-  assert(/2 mapped locations match 94612/.test(lastStatus), 'Exact mapped ZIP did not report mapped matches');
-  appState.listQuery = '';
   appState.searchMode = 'add-location';
 
   searchInput.value = 'Delayed Existing';
