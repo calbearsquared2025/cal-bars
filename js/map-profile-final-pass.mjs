@@ -293,9 +293,11 @@ function selectedAttendanceContext(count) {
   if (!state?.snapshot || !state.gameId || !venueId) return null;
   const game = state.snapshot.games?.find((item) => item.game_id === state.gameId) || null;
   if (!game) return null;
+  const publicCount = getFanCount(state.snapshot, state.gameId, venueId);
+  const selectedByThisBrowser = state.fanIntent?.selections?.[state.gameId] === venueId;
   return {
     game,
-    number: getFanCount(state.snapshot, state.gameId, venueId)
+    number: selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount
   };
 }
 
