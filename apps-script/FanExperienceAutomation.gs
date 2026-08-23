@@ -180,37 +180,3 @@ function isKnownCanonicalFanExperienceVenue_(workbook, venueId) {
     return String(row.venue_id || '').trim() === venueId;
   });
 }
-
-function fanExperienceRawValue_(row, logicalField) {
-  const aliases = CGB_FAN_EXPERIENCE_FORM_ALIASES[logicalField] || [];
-  for (let index = 0; index < aliases.length; index += 1) {
-    const value = row && row[aliases[index]];
-    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
-  }
-  return '';
-}
-
-function buildPublishedFanExperiences_(rows, publishedVenueIds) {
-  return (rows || []).map(function(row, index) {
-    const venueId = cleanFanExperienceIdentifier_(fanExperienceRawValue_(row, 'venue_id'));
-    const text = cleanFanExperienceText_(row && row.public_text);
-    const timestamp = fanExperienceRawValue_(row, 'timestamp');
-    const parsedTimestamp = Date.parse(String(timestamp || ''));
-    return {
-      venue_id: venueId,
-      text: text,
-      moderation_status: String((row && row.moderation_status) || '').trim(),
-      timestamp_sort: Number.isFinite(parsedTimestamp) ? parsedTimestamp : 0,
-      row_sort: index
-    };
-  }).filter(function(row) {
-    return row.moderation_status === 'published' &&
-      /^venue_[a-f0-9]{24}$/.test(row.venue_id) &&
-      publishedVenueIds.has(row.venue_id) &&
-      row.text.length > 0 && row.text.length <= CGB_FAN_EXPERIENCE_MAX_LENGTH;
-  }).sort(function(a, b) {
-    return b.timestamp_sort - a.timestamp_sort || b.row_sort - a.row_sort;
-  }).map(function(row) {
-    return { venue_id: row.venue_id, text: row.text };
-  });
-}

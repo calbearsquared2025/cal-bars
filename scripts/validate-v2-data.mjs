@@ -195,7 +195,7 @@ function validateFanExperience(experience, index, venueIds, errors) {
   if (!venueIds.has(experience.venue_id)) errors.push(`${path}.venue_id does not reference a public venue`);
   if (typeof experience.text === 'string') {
     if (experience.text.length > 500) errors.push(`${path}.text must be at most 500 characters`);
-    if (/[^\P{Cc}\t\n\r]/u.test(experience.text)) errors.push(`${path}.text contains control characters`);
+    if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(experience.text)) errors.push(`${path}.text contains control characters`);
   }
 }
 

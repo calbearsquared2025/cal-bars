@@ -148,7 +148,7 @@ function buildPublicSnapshot_() {
   const gamesRaw = readSheetObjects_(workbook, 'Games');
   const partiesRaw = readSheetObjects_(workbook, 'Watch_Parties');
   const intentRaw = readSheetObjects_(workbook, 'Fan_Intent');
-  const fanExperiencesRaw = readSheetObjects_(workbook, CGB_FAN_EXPERIENCE_RAW_TAB);
+  const fanExperiencesRaw = readSheetObjects_(workbook, 'Fan_Experiences_Raw');
 
   const venues = mergePublishedVenuePhotos_(venuesRaw, venuePhotosRaw)
     .filter(function(row) {
@@ -292,6 +292,51 @@ function buildVenueSeasonCounts_(rows, venueIds, games) {
       venue_id: key.slice(separator + 2),
       count: counts[key]
     };
+  });
+}
+
+function fanExperienceSnapshotValue_(row, aliases) {
+  for (let index = 0; index < aliases.length; index += 1) {
+    const value = row && row[aliases[index]];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+  }
+  return '';
+}
+
+function cleanFanExperienceSnapshotText_(value) {
+  return String(value === null || value === undefined ? '' : value)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 500)
+    .trim();
+}
+
+function buildPublishedFanExperiences_(rows, publishedVenueIds) {
+  const timestampAliases = ['Timestamp', 'timestamp', 'response_timestamp'];
+  const venueIdAliases = ['Venue ID', 'Selected Venue ID', 'venue_id'];
+
+  return (rows || []).map(function(row, index) {
+    const venueId = String(fanExperienceSnapshotValue_(row, venueIdAliases) || '').trim();
+    const text = cleanFanExperienceSnapshotText_(row && row.public_text);
+    const timestamp = fanExperienceSnapshotValue_(row, timestampAliases);
+    const parsedTimestamp = Date.parse(String(timestamp || ''));
+    return {
+      venue_id: venueId,
+      text: text,
+      moderation_status: String((row && row.moderation_status) || '').trim(),
+      timestamp_sort: Number.isFinite(parsedTimestamp) ? parsedTimestamp : 0,
+      row_sort: index
+    };
+  }).filter(function(row) {
+    return row.moderation_status === 'published' &&
+      /^venue_[a-f0-9]{24}$/.test(row.venue_id) &&
+      publishedVenueIds.has(row.venue_id) &&
+      row.text.length > 0 && row.text.length <= 500;
+  }).sort(function(a, b) {
+    return b.timestamp_sort - a.timestamp_sort || b.row_sort - a.row_sort;
+  }).map(function(row) {
+    return { venue_id: row.venue_id, text: row.text };
   });
 }
 

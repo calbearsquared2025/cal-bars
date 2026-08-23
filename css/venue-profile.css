@@ -150,7 +150,7 @@ body[data-view="detail"] .detail-editorial__copy {
 body[data-view="detail"] .detail-fan-experiences {
   margin: 0 !important;
   padding: 16px;
-  background: color-mix(in srgb, var(--cgb-blue-100, #e8f1fb) 76%, white);
+  background: #f1f6fb;
   border: 0;
   border-bottom: 1px solid rgba(1, 1, 51, .12);
   border-radius: 0;
