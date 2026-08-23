@@ -1,0 +1,22 @@
+name: Temporary Issue 121 reconciliation validation
+
+on:
+  push:
+    branches:
+      - fix/121-test-reconciliation
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run unit and source tests
+        run: npm test
+      - name: Run browser harness
+        run: npm run test:browser
