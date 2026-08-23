@@ -37,9 +37,16 @@ test('zero attendance collapses to the invitation without a redundant numeral an
   assert.match(source, /if \(empty\) \{[\s\S]*prompt\.textContent = 'Be the first\.';[\s\S]*count\.replaceChildren\(icon, prompt\);[\s\S]*return;/);
 });
 
-test('attendance refinement refreshes source copy after live count text changes', () => {
-  assert.match(source, /const alreadyRefined = Boolean\(count\.querySelector\('\.bear-count__number, \.bear-count__prompt'\)\)/);
-  assert.match(source, /alreadyRefined[\s\S]*count\.dataset\.originalCopy[\s\S]*count\.textContent\.trim\(\)/);
+test('attendance refinement reads the canonical game and venue count instead of formatted DOM copy', () => {
+  assert.match(source, /import \{ bearCountCopy, getFanCount \} from '\.\/core\.mjs';/);
+  assert.match(source, /function selectedAttendanceContext\(count\)[\s\S]*window\.CGBApp\?\.getState\?\.\(\)[\s\S]*getFanCount\(state\.snapshot, state\.gameId, venueId\)/);
+  assert.match(source, /const raw = bearCountCopy\(number\)/);
+  assert.doesNotMatch(source, /raw\.match\(/);
+  assert.doesNotMatch(source, /dataset\.originalCopy/);
+});
+
+test('completed-game activity copy is preserved instead of being rewritten as zero attendance', () => {
+  assert.match(source, /if \(game\.game_status === 'completed'\) \{[\s\S]*count\.classList\.remove\('bear-count--empty'\);[\s\S]*count\.setAttribute\('aria-label', count\.textContent\.trim\(\)\);[\s\S]*return;/);
 });
 
 test('Directions moves beside the location and Share sits beside RSVP', () => {
