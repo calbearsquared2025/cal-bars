@@ -88,7 +88,7 @@
   ],
   "games": [
     {
-      "game_id": "game_2026_01",
+      "game_id": "game_9e8f4860c6a256c0fae6007d",
       "season": 2026,
       "schedule_order": 1,
       "opponent_name": "UCLA",
@@ -100,7 +100,7 @@
       "updated_at": "2026-07-31T16:31:00Z"
     },
     {
-      "game_id": "game_2026_02",
+      "game_id": "game_64902a48440e55522742d631",
       "season": 2026,
       "schedule_order": 2,
       "opponent_name": "Syracuse",
@@ -116,7 +116,7 @@
     {
       "watch_party_id": "wp_000001",
       "venue_id": "ven_000001",
-      "game_id": "game_2026_01",
+      "game_id": "game_9e8f4860c6a256c0fae6007d",
       "organizer_name": "Test Alumni Group",
       "organizer_type": "alumni_group",
       "official_event_url": "",
@@ -132,7 +132,7 @@
     {
       "watch_party_id": "wp_000002",
       "venue_id": "ven_000003",
-      "game_id": "game_2026_01",
+      "game_id": "game_9e8f4860c6a256c0fae6007d",
       "organizer_name": "Community Test Host",
       "organizer_type": "individual",
       "official_event_url": "",
@@ -148,17 +148,17 @@
   ],
   "fanCounts": [
     {
-      "game_id": "game_2026_01",
+      "game_id": "game_9e8f4860c6a256c0fae6007d",
       "venue_id": "ven_000001",
       "count": 3
     },
     {
-      "game_id": "game_2026_01",
+      "game_id": "game_9e8f4860c6a256c0fae6007d",
       "venue_id": "ven_000002",
       "count": 1
     },
     {
-      "game_id": "game_2026_02",
+      "game_id": "game_64902a48440e55522742d631",
       "venue_id": "ven_000003",
       "count": 2
     }
