@@ -1,531 +1,36 @@
 unit_exit=1
 browser_exit=1
---- unit failures ---
-  ...
-# Subtest: mobile shell uses Map, Search, Add, List with dedicated contribution surfaces
+--- unit failing subtests ---
 not ok 81 - mobile shell uses Map, Search, Add, List with dedicated contribution surfaces
-  ---
-  duration_ms: 9.1071
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/design-system.test.mjs:59:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/. Input:
-    
-    '/* Milestone 8A — mobile Map / Search / Add / List / About information architecture. */\n' +
-      '.command-surface {\n' +
-      '  display: none;\n' +
-      '}\n' +
-      '\n' +
-      '.location-card__top > div {\n' +
---
-  ...
-# Subtest: desktop map toolbar contains Search without a standalone Nearby or Add shelf
 not ok 87 - desktop map toolbar contains Search without a standalone Nearby or Add shelf
-  ---
-  duration_ms: 4.054535
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/desktop-interaction-cleanup.test.mjs:18:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input was expected to not match the regular expression /class="map-actions"|id="near-me-button"|id="desktop-add-location-button"|id="desktop-add-location-hint"/. Input:
-    
-    '<!doctype html>\n' +
-      '<html lang="en">\n' +
-      '<head>\n' +
-      '  <meta charset="utf-8">\n' +
-      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
-      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
---
-  ...
-# Subtest: Locations owns one canonical fixed-position range toggle on desktop and mobile
 not ok 88 - Locations owns one canonical fixed-position range toggle on desktop and mobile
-  ---
-  duration_ms: 1.626684
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/desktop-interaction-cleanup.test.mjs:24:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /id="list-heading">Locations<\/h2>[\s\S]*id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*>Near me<\/button>[\s\S]*id="list-location-all"[\s\S]*>All locations<\/button>/. Input:
-    
-    '<!doctype html>\n' +
-      '<html lang="en">\n' +
-      '<head>\n' +
-      '  <meta charset="utf-8">\n' +
-      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
-      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
---
-# Node.js v22.23.2
-# Subtest: tests/external-venue-core.test.mjs
 not ok 21 - tests/external-venue-core.test.mjs
-  ---
-  duration_ms: 61.006112
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/external-venue-core.test.mjs:1:1'
-  failureType: 'testCodeFailure'
-  exitCode: 1
-  signal: ~
-  error: 'test failed'
-  code: 'ERR_TEST_FAILURE'
-  ...
-# Subtest: existing CGB and external MapTiler results render as separate labeled groups
-ok 118 - existing CGB and external MapTiler results render as separate labeled groups
-  ---
-  duration_ms: 3.360718
---
-  ...
-# Subtest: successful external attendance settles through the shared contextual invite lifecycle
 not ok 123 - successful external attendance settles through the shared contextual invite lifecycle
-  ---
-  duration_ms: 5.818096
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/external-venue-interface.test.mjs:74:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /const label = isSelected \? 'Invite more' : 'Share'/. Input:
-    
-    "import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';\n" +
-      "import { getFanCount } from './core.mjs';\n" +
-      'import {\n' +
-      '  BROWSER_ID_STORAGE_KEY,\n' +
-      '  INTENT_SELECTIONS_STORAGE_KEY,\n' +
-      '  compactListFanCountCopy,\n' +
---
-  ...
-# Subtest: confirmed attendance reuses the existing share action instead of rendering a second invitation control
 not ok 183 - confirmed attendance reuses the existing share action instead of rendering a second invitation control
-  ---
-  duration_ms: 2.985031
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/fan-intent-interface.test.mjs:42:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /const label = isSelected \? 'Invite more' : 'Share'/. Input:
-    
-    "import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';\n" +
-      "import { getFanCount } from './core.mjs';\n" +
-      'import {\n' +
-      '  BROWSER_ID_STORAGE_KEY,\n' +
-      '  INTENT_SELECTIONS_STORAGE_KEY,\n' +
-      '  compactListFanCountCopy,\n' +
---
-  ...
-# Subtest: refresh, game switching, direct URLs, and cross-tab state use canonical game selection
 not ok 190 - refresh, game switching, direct URLs, and cross-tab state use canonical game selection
-  ---
-  duration_ms: 0.841114
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/fan-intent-interface.test.mjs:106:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /buildVenueUrl\(venue\.slug, state\.gameId/. Input:
-    
-    'import {\n' +
-      '  bearCountCopy,\n' +
-      '  buildGameUrl,\n' +
-      '  buildVenueShareMessage,\n' +
-      '  buildVenueUrl,\n' +
-      '  calculateMinimalPan,\n' +
---
-  ...
-# Subtest: bottom navigation uses a pale navy treatment
 not ok 228 - bottom navigation uses a pale navy treatment
-  ---
-  duration_ms: 1.508902
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/map-profile-aesthetic-refinement.test.mjs:40:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /#f4f7ff/. Input:
-    
-    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
-      "const STYLE_ID = 'cgb-map-profile-aesthetic-refinement';\n" +
-      '\n' +
-      'function isMobile() {\n' +
-      '  return window.matchMedia(MOBILE_QUERY).matches;\n' +
-      '}\n' +
---
-  ...
-# Subtest: selected profile uses a restrained identity band and compact contribution action
 not ok 245 - selected profile uses a restrained identity band and compact contribution action
-  ---
-  duration_ms: 2.668816
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/map-profile-first-pass.test.mjs:30:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /border-left: 4px solid var\(--cgb-navy-900\)/. Input:
-    
-    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
-      "const STYLE_ID = 'cgb-map-profile-first-pass';\n" +
-      '\n' +
-      'function isMobile() {\n' +
-      '  return window.matchMedia(MOBILE_QUERY).matches;\n' +
-      '}\n' +
---
-  ...
-# Subtest: attendance rendering is delegated while secondary actions remain readable
 not ok 246 - attendance rendering is delegated while secondary actions remain readable
-  ---
-  duration_ms: 1.440412
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/map-profile-first-pass.test.mjs:37:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /node\.textContent = 'Details'/. Input:
-    
-    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
-      "const STYLE_ID = 'cgb-map-profile-first-pass';\n" +
-      '\n' +
-      'function isMobile() {\n' +
-      '  return window.matchMedia(MOBILE_QUERY).matches;\n' +
-      '}\n' +
---
-  ...
-# Subtest: Search Add and List retain parallel destination header markup
 not ok 260 - Search Add and List retain parallel destination header markup
-  ---
-  duration_ms: 5.075597
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-command-navigation.test.mjs:33:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Expected values to be strictly equal:
-    
-    4 !== 3
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 3
-  actual: 4
---
-  ...
-# Subtest: mobile styling removes the permanent map search and presents full command surfaces
 not ok 261 - mobile styling removes the permanent map search and presents full command surfaces
-  ---
-  duration_ms: 7.580435
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-command-navigation.test.mjs:42:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/. Input:
-    
-    '/* Milestone 8A — mobile Map / Search / Add / List / About information architecture. */\n' +
-      '.command-surface {\n' +
-      '  display: none;\n' +
-      '}\n' +
-      '\n' +
-      '.location-card__top > div {\n' +
---
-  ...
-# Subtest: desktop reuses the shared command owner as Locations and Selected only
 not ok 264 - desktop reuses the shared command owner as Locations and Selected only
-  ---
-  duration_ms: 4.243281
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-command-navigation.test.mjs:82:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /#mobile-search-button,[\s\S]*#mobile-add-button\s*\{[^}]*display:\s*none/. Input:
-    
-    '@media (min-width: 900px) {\n' +
-      '  .map-toolbar {\n' +
-      '    grid-template-columns: minmax(0, 1fr);\n' +
-      '    align-items: start;\n' +
-      '    gap: 7px;\n' +
-      '  }\n' +
---
-  ...
-# Subtest: mobile Detail uses the compact header and a flush white page surface without a navy under-page flash
 not ok 268 - mobile Detail uses the compact header and a flush white page surface without a navy under-page flash
-  ---
-  duration_ms: 2.90999
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-first-paint.test.mjs:62:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /<meta name="theme-color" content="#ffffff">/. Input:
-    
-    '<!doctype html>\n' +
-      '<html lang="en">\n' +
-      '<head>\n' +
-      '  <meta charset="utf-8">\n' +
-      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
-      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
---
-  ...
-# Subtest: Search Add and List use the same destination-header component with a dedicated optional List action
 not ok 269 - Search Add and List use the same destination-header component with a dedicated optional List action
-  ---
-  duration_ms: 0.93468
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-first-paint.test.mjs:72:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Expected values to be strictly equal:
-    
-    4 !== 3
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 3
-  actual: 4
---
-  ...
-# Subtest: mobile location range is owned by the List header while polish only positions map actions
 not ok 297 - mobile location range is owned by the List header while polish only positions map actions
-  ---
-  duration_ms: 6.425549
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-polish.test.mjs:68:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input was expected to not match the regular expression /class="map-actions"|id="near-me-button"/. Input:
-    
-    '<!doctype html>\n' +
-      '<html lang="en">\n' +
-      '<head>\n' +
-      '  <meta charset="utf-8">\n' +
-      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
-      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
---
-  ...
-# Subtest: secondary destination headers retain space for their optional action
 not ok 299 - secondary destination headers retain space for their optional action
-  ---
-  duration_ms: 2.55988
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-polish.test.mjs:89:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    Expected values to be strictly equal:
-    
-    4 !== 3
-    
-  code: 'ERR_ASSERTION'
-  name: 'AssertionError'
-  expected: 3
-  actual: 4
---
-  ...
-# Subtest: Search Add and List presentation is owned by static first-paint CSS
 not ok 304 - Search Add and List presentation is owned by static first-paint CSS
-  ---
-  duration_ms: 2.125472
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-tab-location-refinement.test.mjs:21:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input was expected to not match the regular expression /command-surface__header|command-surface__back|tray-list__header|close-list-button/. Input:
-    
-    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
-      "const STYLE_ID = 'cgb-mobile-tab-location-refinement';\n" +
-      '\n' +
-      'function appState() {\n' +
-      '  return window.CGBApp?.getState?.() || null;\n' +
-      '}\n' +
---
-  ...
-# Subtest: mobile selected-profile upward handle swipe opens Venue Detail
 not ok 330 - mobile selected-profile upward handle swipe opens Venue Detail
-  ---
-  duration_ms: 6.708643
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/selected-profile-swipe.test.mjs:8:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /window\.location\.assign\(buildVenueUrl\(venue\.slug, state\.gameId, window\.location\.href\)\)/. Input:
-    
-    'import {\n' +
-      '  bearCountCopy,\n' +
-      '  buildVenueUrl,\n' +
-      '  compactVenueLocation,\n' +
-      '  markerKind,\n' +
-      '  NEARBY_RADIUS_MILES,\n' +
---
-  ...
-# Subtest: support entry points use the CGB Ko-fi panel without loading it at first paint
 not ok 355 - support entry points use the CGB Ko-fi panel without loading it at first paint
-  ---
-  duration_ms: 6.438624
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/support-dialog.test.mjs:9:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /data-support-open>Buy me a beer<\/button>/. Input:
-    
-    '<!doctype html>\n' +
-      '<html lang="en">\n' +
-      '<head>\n' +
-      '  <meta charset="utf-8">\n' +
-      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
-      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
---
-  ...
-# Subtest: desktop footer About uses the consolidated anchored popover treatment
 not ok 358 - desktop footer About uses the consolidated anchored popover treatment
-  ---
-  duration_ms: 1.687097
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/support-dialog.test.mjs:31:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /Cal Golden Bars is powered by <strong>CrowdMap<\/strong>/. Input:
-    
-    '<!doctype html>\n' +
-      '<html lang="en">\n' +
-      '<head>\n' +
-      '  <meta charset="utf-8">\n' +
-      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
-      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
---
-  ...
-# Subtest: no-photo local map stays hidden and busy until its MapLibre load event
 not ok 373 - no-photo local map stays hidden and busy until its MapLibre load event
-  ---
-  duration_ms: 3.054932
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:15:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /Ready Detail local map should be visible/. Input:
-    
-    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
-      'const failures = [];\n' +
-      '\n' +
-      'function check(condition, message) {\n' +
-      '  if (!condition) failures.push(message);\n' +
-      '}\n' +
---
-  ...
-# Subtest: readiness belongs to one local-map instance and photo-present Detail creates none
 not ok 374 - readiness belongs to one local-map instance and photo-present Detail creates none
-  ---
-  duration_ms: 2.288207
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:26:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /Photo-present Detail should retain no active local-map instance/. Input:
-    
-    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
-      'const failures = [];\n' +
-      '\n' +
-      'function check(condition, message) {\n' +
-      '  if (!condition) failures.push(message);\n' +
-      '}\n' +
---
-  ...
-# Subtest: unchanged snapshot rerenders retain the settled map container and instance
 not ok 375 - unchanged snapshot rerenders retain the settled map container and instance
-  ---
-  duration_ms: 1.1044
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:34:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /Snapshot rerender should retain exactly one MapLibre instance/. Input:
-    
-    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
-      'const failures = [];\n' +
-      '\n' +
-      'function check(condition, message) {\n' +
-      '  if (!condition) failures.push(message);\n' +
-      '}\n' +
---
-  ...
-# Subtest: direct Detail routes reveal the complete settled view in one paint
 not ok 376 - direct Detail routes reveal the complete settled view in one paint
-  ---
-  duration_ms: 0.950259
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:41:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /settled Detail first-paint gate/. Input:
-    
-    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
-      'const failures = [];\n' +
-      '\n' +
-      'function check(condition, message) {\n' +
-      '  if (!condition) failures.push(message);\n' +
-      '}\n' +
---
-  ...
-# Subtest: selected mini and full profiles share the compact useful-address formatter
 not ok 377 - selected mini and full profiles share the compact useful-address formatter
-  ---
-  duration_ms: 4.147871
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:47:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /\[context, type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/. Input:
-    
-    'import {\n' +
-      '  bearCountCopy,\n' +
-      '  buildVenueUrl,\n' +
-      '  compactVenueLocation,\n' +
-      '  markerKind,\n' +
-      '  NEARBY_RADIUS_MILES,\n' +
---
-  ...
-# Subtest: desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
 not ok 383 - desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
-  ---
-  duration_ms: 0.910635
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:107:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /detail\.textContent = 'View details'/. Input:
-    
-    'function createActionRow(venue, { details = true } = {}) {\n' +
-      "  const row = document.createElement('div');\n" +
-      "  row.className = 'action-row';\n" +
-      '  row.dataset.venueId = venue.venue_id;\n' +
-      '\n' +
-      "  const intent = document.createElement('button');\n" +
---
-  ...
-# Subtest: Watch Party treatment and adapters remain attached to the shared Profile element
 not ok 394 - Watch Party treatment and adapters remain attached to the shared Profile element
-  ---
-  duration_ms: 0.830925
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:210:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /if \(detail\) link\.append\(createIcon\('external'\), document\.createTextNode\('External event details'\)\)/. Input:
-    
-    "import { formatGameDate, gameTitle } from './core.mjs';\n" +
-      "import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';\n" +
-      'import {\n' +
-      '  buildWatchPartyIssueUrl,\n' +
-      '  resolveWatchPartyIssueContext\n' +
-      "} from './watch-party-issue-core.mjs';\n" +
---
-  ...
-# Subtest: Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
 not ok 431 - Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
-  ---
-  duration_ms: 5.382506
-  type: 'test'
-  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-photo-feature.test.mjs:43:1'
-  failureType: 'testCodeFailure'
-  error: |-
-    The input did not match the regular expression /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\] \.back-link/. Input:
-    
-    'body[data-view="detail"] #map-view {\n' +
-      '  display: none !important;\n' +
-      '}\n' +
-      '\n' +
-      'body[data-view="detail"] #detail-view[hidden] {\n' +
-      '  display: block !important;\n' +
 --- unit summary ---
-  duration_ms: 0.971429
-  type: 'test'
-  ...
 1..545
 # tests 545
 # suites 0
@@ -534,7 +39,7 @@ not ok 431 - Detail finishing treatment uses the approved contribution grid and 
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2360.537076
+# duration_ms 2262.783053
 --- browser failure summaries ---
 Milestone 4B browser harness failed.
 Production TBD direct-route refresh harness failed.
@@ -542,7 +47,6 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile Share should remain text-only without a later icon upgrade
 - Base short_description should immediately follow the address action area
 - Local-map fallback should expose the contextual Add a photo action
-- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Timed out waiting for restored Fan Intent selection
 - Refresh should restore Fan Intent state
 - Timed out waiting for contextual Invite more action
@@ -565,6 +69,7 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile primary row should retain Fan Intent
 - Global game selector should preserve known or TBD kickoff behavior
 - Local-map fallback should expose the contextual Add a photo action
+- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Profile primary row should retain Fan Intent
 - Changing games should change the canonical game route parameter
 - Timed out waiting for original game option
@@ -572,7 +77,16 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Timed out waiting for mobile Profile List navigation
 Short-landscape plain fan-added Detail harness failed.
 CGB_PRODUCTION_DIRECT_ROUTE_FAIL
-- TypeError: parameter 1 is not of type 'Element'.
+- Timed out waiting for settled mobile Profile first-paint gate
+- Profile Share should remain text-only without a later icon upgrade
+- Base short_description should immediately follow the address action area
+- Profile primary row should retain Fan Intent
+- Global game selector should preserve known or TBD kickoff behavior
+- Local-map fallback should expose the contextual Add a photo action
+- Profile primary row should retain Fan Intent
+- Timed out waiting for original game option
+- Timed out waiting for Profile game restore
+- Timed out waiting for mobile Profile List navigation
 Desktop production runtime regression harness failed.
 CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_FAIL
 - Desktop should not expose a standalone Near me map action
