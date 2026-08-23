@@ -24,8 +24,26 @@ jobs:
       - name: Run browser regression harnesses
         shell: bash
         run: |
+          python - <<'PY'
+          from pathlib import Path
+          for name in (
+              'tests/browser/production-runtime-harness.mjs',
+              'tests/browser/venue-detail-runtime-harness.mjs',
+          ):
+              path = Path(name)
+              text = path.read_text()
+              old = "  failures.push(`Timed out waiting for ${label}`);\n  return false;"
+              replacement = "  throw new Error(`Timed out waiting for ${label}`);"
+              if old not in text:
+                  raise SystemExit(f'Expected waitFor timeout block not found in {name}')
+              path.write_text(text.replace(old, replacement, 1))
+          PY
           set +e
           npm run test:browser > /tmp/browser.log 2>&1
           status=$?
-          grep -E 'harness failed|_FAIL($|:)|PROGRESS:|^- ' /tmp/browser.log || true
+          if [ "$status" -ne 0 ]; then
+            tail -n 500 /tmp/browser.log
+          else
+            cat /tmp/browser.log
+          fi
           exit $status
