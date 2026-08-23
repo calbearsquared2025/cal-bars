@@ -26,6 +26,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+
           for name in (
               'tests/browser/production-runtime-harness.mjs',
               'tests/browser/venue-detail-runtime-harness.mjs',
@@ -33,10 +34,18 @@ jobs:
               path = Path(name)
               text = path.read_text()
               old = "  failures.push(`Timed out waiting for ${label}`);\n  return false;"
-              replacement = "  throw new Error(`Timed out waiting for ${label}; state=${JSON.stringify({ gameId: state()?.gameId, dataSource: state()?.dataSource, selectedVenueId: state()?.selectedVenueId, search: location.search })}`);"
+              replacement = "  throw new Error(`Timed out waiting for ${label}; state=${JSON.stringify({ gameId: state()?.gameId, dataSource: state()?.dataSource, selectedVenueId: state()?.selectedVenueId, bodyView: document.body.dataset.view, detailState: document.body.dataset.detailState, detailBusy: element('#detail-view')?.getAttribute('aria-busy'), commandSurface: document.body.dataset.commandSurface, trayState: element('#venue-tray')?.dataset?.state, search: location.search })}`);"
               if old not in text:
                   raise SystemExit(f'Expected waitFor timeout block not found in {name}')
               path.write_text(text.replace(old, replacement, 1))
+
+          runner = Path('scripts/run-browser-harness.mjs')
+          text = runner.read_text()
+          old = "        if (url.pathname !== '/__cgb_mock_api__') return nativeFetch(input, init);"
+          replacement = "        if (url.pathname.endsWith('/data/fallback-v2.json')) return jsonResponse(snapshot);\n        if (url.pathname !== '/__cgb_mock_api__') return nativeFetch(input, init);"
+          if old not in text:
+              raise SystemExit('Expected browser runner fetch passthrough not found')
+          runner.write_text(text.replace(old, replacement, 1))
           PY
           set +e
           npm run test:browser > /tmp/browser.log 2>&1
