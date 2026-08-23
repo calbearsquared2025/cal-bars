@@ -1162,6 +1162,21 @@ function showLocations() {
   renderAll();
 }
 
+function showSelectedVenue() {
+  if (!state.selectedVenueId) {
+    setTrayState('peek');
+    return;
+  }
+  if (isMobileLayout()) {
+    setTrayState('selected');
+    return;
+  }
+  state.detailMode = true;
+  setTrayState('selected');
+  updateRouteForGame();
+  renderAll();
+}
+
 function showAllLocations() {
   const savedLocation = Boolean(rememberNearbyOrigin());
   state.listQuery = '';
@@ -1500,7 +1515,7 @@ function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
   dom.browseButton.addEventListener('click', () => setTrayState('full'));
-  dom.closeList.addEventListener('click', () => setTrayState(state.selectedVenueId ? 'selected' : 'peek'));
+  dom.closeList.addEventListener('click', showSelectedVenue);
   dom.searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
     const query = dom.searchInput.value.trim();

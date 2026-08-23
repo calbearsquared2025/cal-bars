@@ -75,3 +75,10 @@ test('desktop Locations remains a canonical browse transition', () => {
   assert.match(app, /function showLocations\(\)[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('full'\)[\s\S]*renderAll\(\)/);
   assert.match(shellControls, /function showList\(\)[\s\S]*CGBApp\?\.showLocations[\s\S]*CGBApp\.showLocations\(\)/);
 });
+
+test('desktop Selected restores the canonical Venue Profile after Locations', () => {
+  assert.match(app, /function showSelectedVenue\(\)[\s\S]*if \(!state\.selectedVenueId\)[\s\S]*if \(isMobileLayout\(\)\)[\s\S]*state\.detailMode = true[\s\S]*setTrayState\('selected'\)[\s\S]*updateRouteForGame\(\)[\s\S]*renderAll\(\)/);
+  assert.match(app, /dom\.closeList\.addEventListener\('click', showSelectedVenue\)/);
+  assert.match(shellControls, /function showMap\(\)[\s\S]*dom\.closeList\?\.click\(\)/);
+  assert.match(app, /function placeVenueProfile\(mobile\)[\s\S]*dom\.traySelected\.replaceChildren\(dom\.venueDetail\)/);
+});
