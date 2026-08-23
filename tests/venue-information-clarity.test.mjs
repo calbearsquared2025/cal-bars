@@ -46,7 +46,7 @@ const fixture = JSON.parse(fixtureText);
 
 test('selected mini and full profiles share the compact useful-address formatter', () => {
   assert.match(app, /locationLine\.textContent = \[compactVenueLocation\(venue\), formatDistance\(distance\)\]/);
-  assert.match(mobile, /\[context, type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/);
+  assert.match(mobile, /\[type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/);
 });
 
 test('the global selector owns full game context while Watch Party modules carry compact game identity', () => {
@@ -107,7 +107,7 @@ test('desktop Venue selection keeps the map active, opens the complete Profile, 
 test('desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition', () => {
   const compactActions = app.match(/function createActionRow\(venue, \{ details = true \} = \{\}\)[\s\S]*?function createDetailActionRow/)?.[0] || '';
   const fullActions = app.match(/function createDetailActionRow\(venue\)[\s\S]*?function createDetailContribution/)?.[0] || '';
-  assert.match(compactActions, /detail\.textContent = 'View details'/);
+  assert.match(compactActions, /detail\.textContent = 'More About This Location'/);
   assert.match(fullActions, /row\.append\(intent, share\)/);
   assert.doesNotMatch(fullActions, /View details|View venue|details = true/);
   assert.match(app, /function renderSelectedCard\(\)[\s\S]*card\.append\(createActionRow\(venue\)\)/);
@@ -208,7 +208,7 @@ test('Profile attendance separates the numeral from the singular/plural label', 
 });
 
 test('Watch Party treatment and adapters remain attached to the shared Profile element', () => {
-  assert.match(watchPartyDisplay, /if \(detail\) link\.append\(createIcon\('external'\), document\.createTextNode\('External event details'\)\)/);
+  assert.match(watchPartyDisplay, /link\.textContent = detail \? 'External event details' : 'Open event information'/);
   assert.match(watchPartyDisplay, /container\.querySelector\(':scope > \.detail-watch-party-cta, :scope > \.detail-contribution, :scope > \.action-row'\)/);
   assert.match(detailCss, /#tray-selected > #venue-detail > \.party-module[\s\S]*background: linear-gradient\(135deg, var\(--cgb-gold-50\)/);
   assert.match(watchPartyDisplay, /party-module__report/);

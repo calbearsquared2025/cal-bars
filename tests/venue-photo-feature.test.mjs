@@ -51,7 +51,7 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.doesNotMatch(detailCss, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
   assert.match(detailCss, /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\] \.back-link/);
   assert.match(fanIntent, /const share = row\?\.querySelector\(':scope > button\.secondary-button'\)/);
-  assert.match(fanIntent, /const label = isSelected \? 'Invite more' : 'Share'/);
+  assert.match(fanIntent, /const label = isSelected \? 'Invite Others' : 'Share'/);
   assert.match(fanIntent, /share\.replaceChildren/);
   assert.doesNotMatch(fanIntent, /syncDetailShareAction/);
   assert.match(fanIntent, /presence\.textContent = detailPresenceCopy\(count\)/);
