@@ -28,9 +28,13 @@ import {
 const snapshot = JSON.parse(
   await readFile(new URL('./fixtures/public-snapshot.synthetic.json', import.meta.url), 'utf8')
 );
+const uclaGame = snapshot.games.find((game) => game.opponent_name === 'UCLA');
+const syracuseGame = snapshot.games.find((game) => game.opponent_name === 'Syracuse');
+const UCLA_GAME_ID = uclaGame?.game_id;
+const SYRACUSE_GAME_ID = syracuseGame?.game_id;
 
 test('next upcoming game is the default', () => {
-  assert.equal(selectDefaultGame(snapshot.games, new Date('2026-07-26T12:00:00Z')).game_id, 'game_2026_01');
+  assert.equal(selectDefaultGame(snapshot.games, new Date('2026-07-26T12:00:00Z')).game_id, UCLA_GAME_ID);
 });
 
 test('game titles use the single canonical opponent name', () => {
@@ -38,21 +42,19 @@ test('game titles use the single canonical opponent name', () => {
 });
 
 test('game routes use opponent-name slugs only', () => {
-  const ucla = snapshot.games.find((game) => game.game_id === 'game_2026_01');
-  assert.equal(gameRouteParam(ucla), 'ucla');
+  assert.equal(gameRouteParam(uclaGame), 'ucla');
   assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: 'Boston College' }), 'boston-college');
   assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: "Saint Mary's" }), 'saint-marys');
   assert.equal(gameRouteParam({ game_id: 'game_test', opponent_name: '' }), '');
-  assert.equal(resolveGameRouteParam(snapshot.games, 'ucla')?.game_id, 'game_2026_01');
-  assert.equal(resolveGameRouteParam(snapshot.games, 'UCLA')?.game_id, 'game_2026_01');
+  assert.equal(resolveGameRouteParam(snapshot.games, 'ucla')?.game_id, UCLA_GAME_ID);
+  assert.equal(resolveGameRouteParam(snapshot.games, 'UCLA')?.game_id, UCLA_GAME_ID);
   assert.equal(resolveGameRouteParam(snapshot.games, 'game_2026_01'), null);
   assert.equal(resolveGameRouteParam(snapshot.games, 'not-a-game'), null);
 });
 
 test('game and venue URLs expose the opponent slug instead of the canonical game ID', () => {
-  const game = snapshot.games.find((item) => item.game_id === 'game_2026_01');
-  const gameUrl = new URL(buildGameUrl(game, 'https://example.com/index.html?old=1'));
-  const venueUrl = new URL(buildVenueUrl('golden-bear-test-pub-berkeley', game, 'https://example.com/index.html?old=1'));
+  const gameUrl = new URL(buildGameUrl(uclaGame, 'https://example.com/index.html?old=1'));
+  const venueUrl = new URL(buildVenueUrl('golden-bear-test-pub-berkeley', uclaGame, 'https://example.com/index.html?old=1'));
   assert.equal(gameUrl.searchParams.get('game'), 'ucla');
   assert.equal(venueUrl.searchParams.get('venue'), 'golden-bear-test-pub-berkeley');
   assert.equal(venueUrl.searchParams.get('game'), 'ucla');
@@ -79,20 +81,20 @@ test('selected-game events and internal venue type determine marker treatment', 
   const calBar = snapshot.venues.find((item) => item.venue_id === 'ven_000001');
   const communityLocation = snapshot.venues.find((item) => item.venue_id === 'ven_000003');
   const communityLocationWithoutParty = snapshot.venues.find((item) => item.venue_id === 'ven_000004');
-  assert.equal(markerKind(snapshot, 'game_2026_01', calBar), 'watch-party');
-  assert.equal(markerKind(snapshot, 'game_2026_02', calBar), 'cal-bar');
-  assert.equal(markerKind(snapshot, 'game_2026_01', communityLocation), 'watch-party');
-  assert.equal(markerKind(snapshot, 'game_2026_01', communityLocationWithoutParty), 'community-location');
+  assert.equal(markerKind(snapshot, UCLA_GAME_ID, calBar), 'watch-party');
+  assert.equal(markerKind(snapshot, SYRACUSE_GAME_ID, calBar), 'cal-bar');
+  assert.equal(markerKind(snapshot, UCLA_GAME_ID, communityLocation), 'watch-party');
+  assert.equal(markerKind(snapshot, UCLA_GAME_ID, communityLocationWithoutParty), 'community-location');
 });
 
 test('rank order is Watch Party, Cal Bar, then Community Location', () => {
-  const ranked = rankVenues(snapshot, 'game_2026_01');
+  const ranked = rankVenues(snapshot, UCLA_GAME_ID);
   assert.equal(ranked[0].category, 0);
   assert.ok(ranked.findIndex((item) => item.category === 1) < ranked.findIndex((item) => item.category === 2));
 });
 
 test('public aggregate counts are resolved by game and venue', () => {
-  assert.equal(getFanCount(snapshot, 'game_2026_01', 'ven_000001'), 3);
+  assert.equal(getFanCount(snapshot, UCLA_GAME_ID, 'ven_000001'), 3);
   assert.equal(getHistoryCount(snapshot, 'ven_000001'), 5);
 });
 
@@ -136,8 +138,8 @@ test('exact venue matching does not treat city or ZIP searches as a venue select
   assert.equal(findExactVenueMatch(snapshot.venues, 'golden bear test pub')?.venue_id, 'ven_000001');
   assert.equal(findExactVenueMatch(snapshot.venues, 'Berkeley'), null);
   assert.equal(findExactVenueMatch(snapshot.venues, '94704'), null);
-  assert.equal(rankVenues(snapshot, 'game_2026_01', null, 'Berkeley').length, 1);
-  assert.equal(rankVenues(snapshot, 'game_2026_01', null, 'CA').length, 4);
+  assert.equal(rankVenues(snapshot, UCLA_GAME_ID, null, 'Berkeley').length, 1);
+  assert.equal(rankVenues(snapshot, UCLA_GAME_ID, null, 'CA').length, 4);
 });
 
 test('nearby results use the approved 25-mile boundary', () => {
@@ -148,10 +150,10 @@ test('nearby results use the approved 25-mile boundary', () => {
       ? { ...venue, latitude: 37.8717, longitude: -122.2728 }
       : { ...venue, latitude: 34.0522 + index / 100, longitude: -118.2437 })
   };
-  const nearby = rankNearbyVenues(radiusSnapshot, 'game_2026_01', { lat: 37.8717, lon: -122.2728 });
+  const nearby = rankNearbyVenues(radiusSnapshot, UCLA_GAME_ID, { lat: 37.8717, lon: -122.2728 });
   assert.deepEqual(nearby.map(({ venue }) => venue.venue_id), ['ven_000001']);
   assert.ok(nearby.every(({ distance }) => distance <= NEARBY_RADIUS_MILES));
-  assert.equal(rankNearbyVenues(radiusSnapshot, 'game_2026_01', { lat: 40.7128, lon: -74.0060 }).length, 0);
+  assert.equal(rankNearbyVenues(radiusSnapshot, UCLA_GAME_ID, { lat: 40.7128, lon: -74.0060 }).length, 0);
 });
 
 test('tray state transitions expose all states through up, down, and toggle actions', () => {
@@ -274,8 +276,7 @@ test('failed automatic copy preserves the complete URL for manual copying', asyn
 });
 
 test('venue share URL preserves venue and readable game context', () => {
-  const game = snapshot.games.find((item) => item.game_id === 'game_2026_01');
-  const url = new URL(buildVenueUrl('golden-bear-test-pub-berkeley', game, 'https://example.com/index.html?old=1'));
+  const url = new URL(buildVenueUrl('golden-bear-test-pub-berkeley', uclaGame, 'https://example.com/index.html?old=1'));
   assert.equal(url.searchParams.get('venue'), 'golden-bear-test-pub-berkeley');
   assert.equal(url.searchParams.get('game'), 'ucla');
   assert.equal(url.searchParams.has('old'), false);
