@@ -1,115 +1,529 @@
 unit_exit=1
 browser_exit=1
---- unit tail ---
-  duration_ms: 0.392095
-  type: 'test'
+--- unit failures ---
   ...
-# Subtest: selected-Game changes produce independent Game and Watch Party context
-ok 528 - selected-Game changes produce independent Game and Watch Party context
+# Subtest: mobile shell uses Map, Search, Add, List with dedicated contribution surfaces
+not ok 81 - mobile shell uses Map, Search, Add, List with dedicated contribution surfaces
   ---
-  duration_ms: 0.426565
+  duration_ms: 9.1071
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/design-system.test.mjs:59:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/. Input:
+    
+    '/* Milestone 8A — mobile Map / Search / Add / List / About information architecture. */\n' +
+      '.command-surface {\n' +
+      '  display: none;\n' +
+      '}\n' +
+      '\n' +
+      '.location-card__top > div {\n' +
+--
   ...
-# Subtest: inactive and unpublished Watch Parties are excluded before report links render
-ok 529 - inactive and unpublished Watch Parties are excluded before report links render
+# Subtest: desktop map toolbar contains Search without a standalone Nearby or Add shelf
+not ok 87 - desktop map toolbar contains Search without a standalone Nearby or Add shelf
   ---
-  duration_ms: 0.18389
+  duration_ms: 4.054535
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/desktop-interaction-cleanup.test.mjs:18:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /class="map-actions"|id="near-me-button"|id="desktop-add-location-button"|id="desktop-add-location-hint"/. Input:
+    
+    '<!doctype html>\n' +
+      '<html lang="en">\n' +
+      '<head>\n' +
+      '  <meta charset="utf-8">\n' +
+      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
+--
   ...
-# Subtest: Form URL encoding preserves punctuation and non-ASCII text
-ok 530 - Form URL encoding preserves punctuation and non-ASCII text
+# Subtest: Locations owns one canonical fixed-position range toggle on desktop and mobile
+not ok 88 - Locations owns one canonical fixed-position range toggle on desktop and mobile
   ---
-  duration_ms: 0.262405
+  duration_ms: 1.626684
   type: 'test'
-  ...
-# Subtest: generated URL contains no report, submitter, Fan Intent, or other private values
-ok 531 - generated URL contains no report, submitter, Fan Intent, or other private values
+  location: '/home/runner/work/cal-bars/cal-bars/tests/desktop-interaction-cleanup.test.mjs:24:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /id="list-heading">Locations<\/h2>[\s\S]*id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*>Near me<\/button>[\s\S]*id="list-location-all"[\s\S]*>All locations<\/button>/. Input:
+    
+    '<!doctype html>\n' +
+      '<html lang="en">\n' +
+      '<head>\n' +
+      '  <meta charset="utf-8">\n' +
+      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
+--
+# Node.js v22.23.2
+# Subtest: tests/external-venue-core.test.mjs
+not ok 21 - tests/external-venue-core.test.mjs
   ---
-  duration_ms: 0.512172
+  duration_ms: 61.006112
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/external-venue-core.test.mjs:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
   ...
-# Subtest: configuration rejects unsafe URLs, missing IDs, and duplicate entry IDs
-ok 532 - configuration rejects unsafe URLs, missing IDs, and duplicate entry IDs
+# Subtest: existing CGB and external MapTiler results render as separate labeled groups
+ok 118 - existing CGB and external MapTiler results render as separate labeled groups
   ---
-  duration_ms: 0.203699
+  duration_ms: 3.360718
+--
+  ...
+# Subtest: successful external attendance settles through the shared contextual invite lifecycle
+not ok 123 - successful external attendance settles through the shared contextual invite lifecycle
+  ---
+  duration_ms: 5.818096
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/external-venue-interface.test.mjs:74:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /const label = isSelected \? 'Invite more' : 'Share'/. Input:
+    
+    "import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';\n" +
+      "import { getFanCount } from './core.mjs';\n" +
+      'import {\n' +
+      '  BROWSER_ID_STORAGE_KEY,\n' +
+      '  INTENT_SELECTIONS_STORAGE_KEY,\n' +
+      '  compactListFanCountCopy,\n' +
+--
   ...
-# Subtest: direct-route refresh and renders use the canonical party cards without a second report control
-ok 533 - direct-route refresh and renders use the canonical party cards without a second report control
+# Subtest: confirmed attendance reuses the existing share action instead of rendering a second invitation control
+not ok 183 - confirmed attendance reuses the existing share action instead of rendering a second invitation control
   ---
-  duration_ms: 10.569559
+  duration_ms: 2.985031
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/fan-intent-interface.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /const label = isSelected \? 'Invite more' : 'Share'/. Input:
+    
+    "import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';\n" +
+      "import { getFanCount } from './core.mjs';\n" +
+      'import {\n' +
+      '  BROWSER_ID_STORAGE_KEY,\n' +
+      '  INTENT_SELECTIONS_STORAGE_KEY,\n' +
+      '  compactListFanCountCopy,\n' +
+--
   ...
-# Subtest: report links perform no automatic Watch Party or Venue mutation
-ok 534 - report links perform no automatic Watch Party or Venue mutation
+# Subtest: refresh, game switching, direct URLs, and cross-tab state use canonical game selection
+not ok 190 - refresh, game switching, direct URLs, and cross-tab state use canonical game selection
   ---
-  duration_ms: 1.292787
+  duration_ms: 0.841114
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/fan-intent-interface.test.mjs:106:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /buildVenueUrl\(venue\.slug, state\.gameId/. Input:
+    
+    'import {\n' +
+      '  bearCountCopy,\n' +
+      '  buildGameUrl,\n' +
+      '  buildVenueShareMessage,\n' +
+      '  buildVenueUrl,\n' +
+      '  calculateMinimalPan,\n' +
+--
   ...
-# Subtest: Watch Party host name is emphasized without bolding the Hosted by label
-ok 535 - Watch Party host name is emphasized without bolding the Hosted by label
+# Subtest: bottom navigation uses a pale navy treatment
+not ok 228 - bottom navigation uses a pale navy treatment
   ---
-  duration_ms: 0.998335
+  duration_ms: 1.508902
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/map-profile-aesthetic-refinement.test.mjs:40:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /#f4f7ff/. Input:
+    
+    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
+      "const STYLE_ID = 'cgb-map-profile-aesthetic-refinement';\n" +
+      '\n' +
+      'function isMobile() {\n' +
+      '  return window.matchMedia(MOBILE_QUERY).matches;\n' +
+      '}\n' +
+--
   ...
-# Subtest: Watch Party external links use text-only presentation
-ok 536 - Watch Party external links use text-only presentation
+# Subtest: selected profile uses a restrained identity band and compact contribution action
+not ok 245 - selected profile uses a restrained identity band and compact contribution action
   ---
-  duration_ms: 0.249196
+  duration_ms: 2.668816
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/map-profile-first-pass.test.mjs:30:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /border-left: 4px solid var\(--cgb-navy-900\)/. Input:
+    
+    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
+      "const STYLE_ID = 'cgb-map-profile-first-pass';\n" +
+      '\n' +
+      'function isMobile() {\n' +
+      '  return window.matchMedia(MOBILE_QUERY).matches;\n' +
+      '}\n' +
+--
   ...
-# Subtest: Share actions settle as text-only controls
-ok 537 - Share actions settle as text-only controls
+# Subtest: attendance rendering is delegated while secondary actions remain readable
+not ok 246 - attendance rendering is delegated while secondary actions remain readable
   ---
-  duration_ms: 0.181686
+  duration_ms: 1.440412
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/map-profile-first-pass.test.mjs:37:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /node\.textContent = 'Details'/. Input:
+    
+    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
+      "const STYLE_ID = 'cgb-map-profile-first-pass';\n" +
+      '\n' +
+      'function isMobile() {\n' +
+      '  return window.matchMedia(MOBILE_QUERY).matches;\n' +
+      '}\n' +
+--
   ...
-# Subtest: Report an Issue is a right-aligned muted utility link
-ok 538 - Report an Issue is a right-aligned muted utility link
+# Subtest: Search Add and List retain parallel destination header markup
+not ok 260 - Search Add and List retain parallel destination header markup
   ---
-  duration_ms: 0.253162
+  duration_ms: 5.075597
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-command-navigation.test.mjs:33:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 3
+  actual: 4
+--
   ...
-# Subtest: missing required finalized Form fields fail with specific private error codes
-ok 539 - missing required finalized Form fields fail with specific private error codes
+# Subtest: mobile styling removes the permanent map search and presents full command surfaces
+not ok 261 - mobile styling removes the permanent map search and presents full command surfaces
   ---
-  duration_ms: 2.223062
+  duration_ms: 7.580435
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-command-navigation.test.mjs:42:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/. Input:
+    
+    '/* Milestone 8A — mobile Map / Search / Add / List / About information architecture. */\n' +
+      '.command-surface {\n' +
+      '  display: none;\n' +
+      '}\n' +
+      '\n' +
+      '.location-card__top > div {\n' +
+--
   ...
-# Subtest: blank optional age and audio fields normalize to public unknown values
-ok 540 - blank optional age and audio fields normalize to public unknown values
+# Subtest: desktop reuses the shared command owner as Locations and Selected only
+not ok 264 - desktop reuses the shared command owner as Locations and Selected only
   ---
-  duration_ms: 0.314601
+  duration_ms: 4.243281
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-command-navigation.test.mjs:82:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /#mobile-search-button,[\s\S]*#mobile-add-button\s*\{[^}]*display:\s*none/. Input:
+    
+    '@media (min-width: 900px) {\n' +
+      '  .map-toolbar {\n' +
+      '    grid-template-columns: minmax(0, 1fr);\n' +
+      '    align-items: start;\n' +
+      '    gap: 7px;\n' +
+      '  }\n' +
+--
   ...
-# Subtest: canonical Game IDs are accepted and retired legacy IDs are not remapped
-ok 541 - canonical Game IDs are accepted and retired legacy IDs are not remapped
+# Subtest: mobile Detail uses the compact header and a flush white page surface without a navy under-page flash
+not ok 268 - mobile Detail uses the compact header and a flush white page surface without a navy under-page flash
   ---
-  duration_ms: 0.863928
+  duration_ms: 2.90999
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-first-paint.test.mjs:62:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /<meta name="theme-color" content="#ffffff">/. Input:
+    
+    '<!doctype html>\n' +
+      '<html lang="en">\n' +
+      '<head>\n' +
+      '  <meta charset="utf-8">\n' +
+      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
+--
   ...
-# Subtest: redelivery reuses one submission ID and one Watch Party per game
-ok 542 - redelivery reuses one submission ID and one Watch Party per game
+# Subtest: Search Add and List use the same destination-header component with a dedicated optional List action
+not ok 269 - Search Add and List use the same destination-header component with a dedicated optional List action
   ---
-  duration_ms: 6.337229
+  duration_ms: 0.93468
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-first-paint.test.mjs:72:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 3
+  actual: 4
+--
   ...
-# Subtest: a partially published multi-game submission creates only missing games
-ok 543 - a partially published multi-game submission creates only missing games
+# Subtest: mobile location range is owned by the List header while polish only positions map actions
+not ok 297 - mobile location range is owned by the List header while polish only positions map actions
   ---
-  duration_ms: 2.217855
+  duration_ms: 6.425549
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-polish.test.mjs:68:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /class="map-actions"|id="near-me-button"/. Input:
+    
+    '<!doctype html>\n' +
+      '<html lang="en">\n' +
+      '<head>\n' +
+      '  <meta charset="utf-8">\n' +
+      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
+--
   ...
-# Subtest: retry repairs a failure after canonical write without publishing a duplicate
-ok 544 - retry repairs a failure after canonical write without publishing a duplicate
+# Subtest: secondary destination headers retain space for their optional action
+not ok 299 - secondary destination headers retain space for their optional action
   ---
-  duration_ms: 1.752942
+  duration_ms: 2.55988
   type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-polish.test.mjs:89:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    4 !== 3
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 3
+  actual: 4
+--
   ...
-# Subtest: lock timeout makes no canonical or raw processing-state change
-ok 545 - lock timeout makes no canonical or raw processing-state change
+# Subtest: Search Add and List presentation is owned by static first-paint CSS
+not ok 304 - Search Add and List presentation is owned by static first-paint CSS
   ---
-  duration_ms: 0.98818
+  duration_ms: 2.125472
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/mobile-tab-location-refinement.test.mjs:21:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input was expected to not match the regular expression /command-surface__header|command-surface__back|tray-list__header|close-list-button/. Input:
+    
+    "const MOBILE_QUERY = '(max-width: 899px)';\n" +
+      "const STYLE_ID = 'cgb-mobile-tab-location-refinement';\n" +
+      '\n' +
+      'function appState() {\n' +
+      '  return window.CGBApp?.getState?.() || null;\n' +
+      '}\n' +
+--
+  ...
+# Subtest: mobile selected-profile upward handle swipe opens Venue Detail
+not ok 330 - mobile selected-profile upward handle swipe opens Venue Detail
+  ---
+  duration_ms: 6.708643
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/selected-profile-swipe.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /window\.location\.assign\(buildVenueUrl\(venue\.slug, state\.gameId, window\.location\.href\)\)/. Input:
+    
+    'import {\n' +
+      '  bearCountCopy,\n' +
+      '  buildVenueUrl,\n' +
+      '  compactVenueLocation,\n' +
+      '  markerKind,\n' +
+      '  NEARBY_RADIUS_MILES,\n' +
+--
+  ...
+# Subtest: support entry points use the CGB Ko-fi panel without loading it at first paint
+not ok 355 - support entry points use the CGB Ko-fi panel without loading it at first paint
+  ---
+  duration_ms: 6.438624
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/support-dialog.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /data-support-open>Buy me a beer<\/button>/. Input:
+    
+    '<!doctype html>\n' +
+      '<html lang="en">\n' +
+      '<head>\n' +
+      '  <meta charset="utf-8">\n' +
+      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
+--
+  ...
+# Subtest: desktop footer About uses the consolidated anchored popover treatment
+not ok 358 - desktop footer About uses the consolidated anchored popover treatment
+  ---
+  duration_ms: 1.687097
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/support-dialog.test.mjs:31:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Cal Golden Bars is powered by <strong>CrowdMap<\/strong>/. Input:
+    
+    '<!doctype html>\n' +
+      '<html lang="en">\n' +
+      '<head>\n' +
+      '  <meta charset="utf-8">\n' +
+      '  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n' +
+      '  <meta name="description" content="Find where Cal fans are gathering for the selected football game.">\n' +
+--
+  ...
+# Subtest: no-photo local map stays hidden and busy until its MapLibre load event
+not ok 373 - no-photo local map stays hidden and busy until its MapLibre load event
+  ---
+  duration_ms: 3.054932
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Ready Detail local map should be visible/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: readiness belongs to one local-map instance and photo-present Detail creates none
+not ok 374 - readiness belongs to one local-map instance and photo-present Detail creates none
+  ---
+  duration_ms: 2.288207
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Photo-present Detail should retain no active local-map instance/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: unchanged snapshot rerenders retain the settled map container and instance
+not ok 375 - unchanged snapshot rerenders retain the settled map container and instance
+  ---
+  duration_ms: 1.1044
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:34:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Snapshot rerender should retain exactly one MapLibre instance/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: direct Detail routes reveal the complete settled view in one paint
+not ok 376 - direct Detail routes reveal the complete settled view in one paint
+  ---
+  duration_ms: 0.950259
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:41:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /settled Detail first-paint gate/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: selected mini and full profiles share the compact useful-address formatter
+not ok 377 - selected mini and full profiles share the compact useful-address formatter
+  ---
+  duration_ms: 4.147871
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:47:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /\[context, type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/. Input:
+    
+    'import {\n' +
+      '  bearCountCopy,\n' +
+      '  buildVenueUrl,\n' +
+      '  compactVenueLocation,\n' +
+      '  markerKind,\n' +
+      '  NEARBY_RADIUS_MILES,\n' +
+--
+  ...
+# Subtest: desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
+not ok 383 - desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
+  ---
+  duration_ms: 0.910635
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:107:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /detail\.textContent = 'View details'/. Input:
+    
+    'function createActionRow(venue, { details = true } = {}) {\n' +
+      "  const row = document.createElement('div');\n" +
+      "  row.className = 'action-row';\n" +
+      '  row.dataset.venueId = venue.venue_id;\n' +
+      '\n' +
+      "  const intent = document.createElement('button');\n" +
+--
+  ...
+# Subtest: Watch Party treatment and adapters remain attached to the shared Profile element
+not ok 394 - Watch Party treatment and adapters remain attached to the shared Profile element
+  ---
+  duration_ms: 0.830925
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:210:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /if \(detail\) link\.append\(createIcon\('external'\), document\.createTextNode\('External event details'\)\)/. Input:
+    
+    "import { formatGameDate, gameTitle } from './core.mjs';\n" +
+      "import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';\n" +
+      'import {\n' +
+      '  buildWatchPartyIssueUrl,\n' +
+      '  resolveWatchPartyIssueContext\n' +
+      "} from './watch-party-issue-core.mjs';\n" +
+--
+  ...
+# Subtest: Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
+not ok 431 - Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
+  ---
+  duration_ms: 5.382506
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-photo-feature.test.mjs:43:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\] \.back-link/. Input:
+    
+    'body[data-view="detail"] #map-view {\n' +
+      '  display: none !important;\n' +
+      '}\n' +
+      '\n' +
+      'body[data-view="detail"] #detail-view[hidden] {\n' +
+      '  display: block !important;\n' +
+--- unit summary ---
+  duration_ms: 0.971429
   type: 'test'
   ...
 1..545
@@ -120,29 +534,29 @@ ok 545 - lock timeout makes no canonical or raw processing-state change
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2163.032914
---- browser tail ---
+# duration_ms 2360.537076
+--- browser failure summaries ---
+Milestone 4B browser harness failed.
+Production TBD direct-route refresh harness failed.
+CGB_PRODUCTION_DIRECT_ROUTE_FAIL
+- Profile Share should remain text-only without a later icon upgrade
+- Base short_description should immediately follow the address action area
+- Local-map fallback should expose the contextual Add a photo action
+- Settled Venue Profile should not leave eligible editorial description inside the identity hero
+- Timed out waiting for restored Fan Intent selection
+- Refresh should restore Fan Intent state
+- Timed out waiting for contextual Invite more action
+- Selected Profile should use Invite more for the contextual share action
 - Timed out waiting for mobile Profile List navigation
-[3914:3936:0823/061416.608304:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3936:0823/061416.609070:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3936:0823/061416.618255:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3936:0823/061416.648219:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3914:0823/061416.711749:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3936:0823/061416.711869:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3914:0823/061416.711890:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3936:0823/061416.711928:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3914:0823/061416.712256:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3914:0823/061416.714447:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3914:0823/061416.746328:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3914:0823/061416.748835:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3936:0823/061416.750424:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3914:0823/061416.775489:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
-[3914:3914:0823/061416.775996:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3936:0823/061416.776167:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3914:0823/061416.792500:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[3914:3936:0823/061416.793889:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[3914:3914:0823/061416.813550:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-
+Production runtime regression harness failed.
+Production direct-route refresh harness failed.
+CGB_PRODUCTION_DIRECT_ROUTE_FAIL
+- Profile Share should remain text-only without a later icon upgrade
+- Timed out waiting for restored Fan Intent selection
+- Refresh should restore Fan Intent state
+- Timed out waiting for contextual Invite more action
+- Selected Profile should use Invite more for the contextual share action
+- Timed out waiting for mobile Profile List navigation
 Small-portrait fan-added Watch Party Detail harness failed.
 CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Timed out waiting for settled mobile Profile first-paint gate
@@ -151,109 +565,28 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile primary row should retain Fan Intent
 - Global game selector should preserve known or TBD kickoff behavior
 - Local-map fallback should expose the contextual Add a photo action
-- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Profile primary row should retain Fan Intent
 - Changing games should change the canonical game route parameter
 - Timed out waiting for original game option
 - Timed out waiting for Profile game restore
 - Timed out waiting for mobile Profile List navigation
-[4068:4089:0823/061417.840814:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4089:0823/061417.841599:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4089:0823/061417.849529:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4089:0823/061417.881205:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4068:0823/061417.948769:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4068:0823/061417.948896:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4089:0823/061417.948900:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4089:0823/061417.948947:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4068:0823/061417.949335:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4068:0823/061417.951733:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4068:0823/061417.975391:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4068:0823/061417.976226:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4089:0823/061417.979204:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4068:0823/061418.013406:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4068:0823/061418.013472:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
-[4068:4089:0823/061418.013612:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4068:0823/061418.033642:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4068:4089:0823/061418.033734:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4068:4068:0823/061418.064121:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-
 Short-landscape plain fan-added Detail harness failed.
 CGB_PRODUCTION_DIRECT_ROUTE_FAIL
-- Timed out waiting for settled mobile Profile first-paint gate
-- Profile Share should remain text-only without a later icon upgrade
-- Base short_description should immediately follow the address action area
-- Profile primary row should retain Fan Intent
-- Global game selector should preserve known or TBD kickoff behavior
-- Local-map fallback should expose the contextual Add a photo action
-- Profile primary row should retain Fan Intent
-- Timed out waiting for original game option
-- Timed out waiting for Profile game restore
-- Timed out waiting for mobile Profile List navigation
-[4215:4236:0823/061418.885795:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4236:0823/061418.886737:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4236:0823/061418.893284:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4236:0823/061418.927092:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4215:0823/061418.997321:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4215:0823/061418.997634:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4236:0823/061418.997671:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4215:0823/061418.997860:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4236:0823/061418.998448:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4215:0823/061419.001449:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4215:0823/061419.036885:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4215:0823/061419.046606:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4236:0823/061419.046762:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4215:0823/061419.075694:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
-[4215:4215:0823/061419.078474:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4236:0823/061419.078678:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4215:0823/061419.091571:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4215:4236:0823/061419.091741:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4215:4215:0823/061419.117306:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-
+- TypeError: parameter 1 is not of type 'Element'.
 Desktop production runtime regression harness failed.
 CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_FAIL
 - Desktop should not expose a standalone Near me map action
 - Desktop fixture should contain a Cal Bar with a Watch Party
 - Desktop Locations should preserve the Watch Party badge
 - Desktop Locations should preserve the Cal Bar badge
-[4369:4390:0823/061419.952211:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4390:0823/061419.954351:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4390:0823/061419.961501:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4390:0823/061419.996280:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4369:0823/061420.061899:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4369:0823/061420.061991:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4369:0823/061420.062249:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4390:0823/061420.063275:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4390:0823/061420.063292:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4369:0823/061420.065293:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4369:0823/061420.094456:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4369:0823/061420.094890:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4390:0823/061420.096431:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4369:0823/061420.120813:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
-[4369:4369:0823/061420.129818:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4390:0823/061420.129959:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4369:0823/061420.146120:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4369:4390:0823/061420.146397:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4369:4369:0823/061420.170395:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-
 Desktop production direct-route refresh harness failed.
 CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile Share should remain text-only without a later icon upgrade
 - Watch Party should not create its own internal scroll container
 - Watch Party should not impose a max-height
 - Report an Issue should remain a small muted utility action
-- Timed out waiting for post-rerender Venue media refinement
 - Desktop Profile should not expose the mobile bottom navigation
 - Desktop Profile should not manufacture a Back to map control
-- Photo-present Profile should render the approved photo figure
-- Approved Venue photo should lead the Profile identity
-- Venue photo should use the approved photo URL
-- Venue photo alt text should prefer the approved caption
-- Photo caption should render directly under the image
-- Photo credit should render as understated attribution
-- Only the photo credit identity should be linkable
-- Valid HTTP(S) photo credit URL should be used
-- Photo credit links should open externally and safely
-- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Watch Party should not create its own internal scroll container
 - Watch Party should not impose a max-height
 - Report an Issue should remain a small muted utility action
@@ -261,24 +594,3 @@ CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_FAIL
 - Refresh should restore Fan Intent state
 - Timed out waiting for contextual Invite more action
 - Selected Profile should use Invite more for the contextual share action
-- Contextual Invite more action should remain text-only
-[4522:4544:0823/061421.150454:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4544:0823/061421.152233:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4544:0823/061421.159978:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4544:0823/061421.189889:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4522:0823/061421.257587:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4522:0823/061421.257668:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4522:0823/061421.257882:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4544:0823/061421.258907:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4544:0823/061421.258923:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4522:0823/061421.259673:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4522:0823/061421.280995:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4522:0823/061421.281360:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4544:0823/061421.281484:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4522:0823/061421.299191:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.UPower was not provided by any .service files
-[4522:4522:0823/061421.299886:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4544:0823/061421.301648:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4522:0823/061421.320217:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[4522:4544:0823/061421.321418:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[4522:4522:0823/061421.357862:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-
