@@ -11,6 +11,8 @@ import {
 
 const indexHtml = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const browserAdapter = await readFile(new URL('../js/watch-party-form.js', import.meta.url), 'utf8');
+const watchPartyDisplay = await readFile(new URL('../js/watch-party-display.js', import.meta.url), 'utf8');
+const watchPartyCss = await readFile(new URL('../css/watch-party-form.css', import.meta.url), 'utf8');
 
 const CONFIG = Object.freeze({
   formUrl: 'https://docs.google.com/forms/d/e/test-form/viewform?embedded=true#form',
@@ -194,18 +196,31 @@ test('index uses the verified reviewed Form routing configuration', () => {
   assert.match(indexHtml, /css\/watch-party-form\.css/);
 });
 
-test('browser adapter fills the base-owned compact contribution section and removes the generic preview', () => {
+test('browser adapter promotes Watch Party planning ahead of listing-maintenance actions', () => {
   assert.match(browserAdapter, /link\.target = '_blank'/);
   assert.match(browserAdapter, /link\.rel = 'noopener noreferrer'/);
   assert.match(browserAdapter, /detail\.querySelector\('\.preview-note'\)\?\.remove\(\)/);
-  assert.match(browserAdapter, /detail-contribution__actions/);
-  assert.match(browserAdapter, /link\.dataset\.watchPartyFormEntryPoint = 'true'/);
-  assert.match(browserAdapter, /Submit a Watch Party/);
+  assert.match(browserAdapter, /section\.className = 'detail-watch-party-cta'/);
+  assert.match(browserAdapter, /section\.dataset\.watchPartyFormSection = 'true'/);
+  assert.match(browserAdapter, /maintenance\.before\(section\)/);
+  assert.match(browserAdapter, /Plan a Watch Party/);
+  assert.doesNotMatch(browserAdapter, /link\.className = 'detail-contribution__action'/);
 });
 
-test('existing selected-game Watch Parties use an add-another CTA', () => {
+test('existing selected-game Watch Parties preserve the add-another CTA', () => {
   assert.match(browserAdapter, /getWatchParty\(/);
   assert.match(browserAdapter, /Add Another Watch Party/);
+  assert.match(browserAdapter, /Hosting another gathering here\?/);
+});
+
+test('rendered Watch Party details stay ahead of the promoted profile CTA', () => {
+  assert.match(watchPartyDisplay, /:scope > \.detail-watch-party-cta, :scope > \.detail-contribution/);
+});
+
+test('promoted Watch Party action uses event treatment and left-aligned profile copy', () => {
+  assert.match(watchPartyCss, /\.detail-watch-party-cta \{[\s\S]*border-left: 4px solid var\(--cgb-gold-400\);[\s\S]*text-align: left;/);
+  assert.match(watchPartyCss, /\.detail-watch-party-cta__action \{[\s\S]*background: var\(--cgb-gold-400\);/);
+  assert.match(watchPartyCss, /#tray-selected > #venue-detail \.detail-watch-party-cta \{[\s\S]*border-radius: 0;/);
 });
 
 test('browser adapter subscribes to canonical renders so direct routes and selected-game changes stay synchronized', () => {

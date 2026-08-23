@@ -50,8 +50,8 @@ test('Directions moves beside the location and Share sits beside RSVP', () => {
   assert.match(source, /selected-card__details/);
 });
 
-test('Watch Party content is compact and reporting is subordinate', () => {
-  assert.match(source, /party-module__title[\s\S]*display: none !important/);
+test('Watch Party content stays compact while retaining its event identity', () => {
+  assert.match(source, /party-module__title[\s\S]*display: flex !important/);
   assert.match(source, /Event information/);
   assert.match(source, /Report an Issue/);
   assert.match(source, /party-module__report[\s\S]*font-size: \.64rem/);
