@@ -27,16 +27,16 @@ jobs:
           {
             echo "unit_exit=$unit_exit"
             echo "browser_exit=$browser_exit"
-            echo "--- unit failures ---"
-            grep -B 2 -A 14 '^not ok' /tmp/unit.log || true
+            echo "--- unit failing subtests ---"
+            grep '^not ok' /tmp/unit.log || true
             echo "--- unit summary ---"
-            tail -n 12 /tmp/unit.log
+            tail -n 9 /tmp/unit.log
             echo "--- browser failure summaries ---"
-            grep -E 'harness failed|_FAIL$|^- |failed\.$|Timed out waiting' /tmp/browser.log || true
+            grep -E 'harness failed|_FAIL$|^- ' /tmp/browser.log || true
           } > .j-test-result.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .j-test-result.txt
-          git commit -m "Refresh temporary J validation result"
+          git commit -m "Condense temporary J validation result"
           git push
           exit 0
