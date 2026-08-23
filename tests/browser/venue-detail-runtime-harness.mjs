@@ -41,6 +41,22 @@ async function waitFor(predicate, label, timeout = 10000) {
   return false;
 }
 
+function slugifyRoute(value) {
+  return String(value || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[’']/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function routeGameId(snapshot, routeValue) {
+  const routeSlug = slugifyRoute(routeValue);
+  if (!routeSlug) return '';
+  return snapshot?.games?.find((game) => slugifyRoute(game.opponent_name) === routeSlug)?.game_id || '';
+}
+
 function actionLabels(row) {
   return [...(row?.children || [])]
     .filter((node) => node.matches?.('a, button'))
@@ -225,15 +241,20 @@ async function verifyGameSelectorRoundTrip(originalGameId, venueId) {
 async function main() {
   const params = new URLSearchParams(location.search);
   const requestedSlug = params.get('venue');
-  await waitFor(() =>
-    element('#app')?.getAttribute('aria-busy') === 'false' &&
-    state()?.dataSource === 'live' &&
-    state()?.snapshot?.venues?.some((venue) => venue.slug === requestedSlug),
-  'live direct-route fixture', 15000);
+  const requestedGameRoute = params.get('game');
+  await waitFor(() => {
+    const current = state();
+    const expectedGameId = routeGameId(current?.snapshot, requestedGameRoute);
+    return element('#app')?.getAttribute('aria-busy') === 'false' &&
+      current?.dataSource === 'live' &&
+      current?.snapshot?.venues?.some((venue) => venue.slug === requestedSlug) &&
+      Boolean(expectedGameId) &&
+      current?.gameId === expectedGameId;
+  }, 'live direct-route fixture', 15000);
 
   const initialState = state();
   const venue = initialState?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug) || null;
-  const requestedGameId = initialState?.gameId;
+  const requestedGameId = routeGameId(initialState?.snapshot, requestedGameRoute);
   const marker = params.get('__cgb_harness') === 'desktop-direct'
     ? 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE'
     : 'CGB_PRODUCTION_DIRECT_ROUTE';
