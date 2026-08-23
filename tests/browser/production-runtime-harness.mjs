@@ -84,7 +84,7 @@ async function waitForApplicationReady(label = 'application ready') {
     Boolean(state()?.snapshot) &&
     state()?.dataSource === 'live' &&
     window.matchMedia('(max-width: 899px)').matches &&
-    document.querySelectorAll('.mobile-command[data-command]').length === 4 &&
+    document.querySelectorAll('.mobile-command[data-command]').length === 5 &&
     Boolean(element('#cgb-mobile-tab-location-refinement')) &&
     Boolean(element('#cgb-map-profile-final-pass')) &&
     Boolean(document.body.dataset.commandSurface), label, 7000);
@@ -97,7 +97,7 @@ async function waitForDesktopApplicationReady(label = 'desktop application ready
     Boolean(state()?.snapshot) &&
     state()?.dataSource === 'live' &&
     !window.matchMedia('(max-width: 899px)').matches &&
-    document.querySelectorAll('.mobile-command[data-command]').length === 4 &&
+    document.querySelectorAll('.mobile-command[data-command]').length === 5 &&
     Boolean(element('#cgb-mobile-tab-location-refinement')) &&
     Boolean(element('#cgb-map-profile-final-pass')), label, 7000);
 }
@@ -232,89 +232,6 @@ function finish(marker) {
   }
 }
 
-async function runDirectRouteCheck() {
-  progress('direct-ready');
-  await waitForApplicationReady('direct venue application ready');
-  const params = new URLSearchParams(location.search);
-  const requestedSlug = params.get('venue');
-  const requestedGame = params.get('game');
-  const venue = state()?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug);
-
-  if (params.get('__cgb_prejoined') === '1' && sessionStorage.getItem('cgb_prejoined_reload') !== 'ready') {
-    localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
-    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [requestedGame]: venue?.venue_id }));
-    sessionStorage.setItem('cgb_prejoined_reload', 'ready');
-    location.reload();
-    return;
-  }
-
-  check(Boolean(venue), 'Direct-route fixture venue should exist');
-  check(state()?.detailMode === true, 'Direct venue URL should enter detail mode');
-  check(state()?.gameId === requestedGame, 'Direct venue URL should preserve selected game');
-  check(selectedVenueId() === venue?.venue_id, 'Direct venue URL should select the requested venue');
-  check(element('#detail-view')?.hidden === false, 'Direct venue URL should render the venue detail view');
-  check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Direct venue detail should preserve venue identity');
-  const game = state()?.snapshot?.games?.find((candidate) => candidate.game_id === requestedGame);
-  const gameHeading = element('#header-game-label')?.textContent?.trim() || '';
-  const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
-  check(gameHeading.includes('Cal') && gameHeading.includes(game?.opponent_name || ''), 'Direct venue detail should identify Cal and the selected opponent');
-  check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Direct venue detail should preserve known or TBD kickoff context');
-  check(element('#venue-detail .detail-address')?.textContent?.includes(venue?.address_line_1 || ''), 'Direct venue detail should preserve the useful street address');
-  check(element('#venue-detail .detail-hero')?.classList.contains('detail-hero--no-photo') === !venue?.photo_url, 'Direct venue detail should identify the no-photo launch state');
-  const heroRect = element('#venue-detail .detail-hero')?.getBoundingClientRect();
-  check(Boolean(venue?.photo_url) || (heroRect?.height || Infinity) < window.innerHeight * .55, 'No-photo detail should not reserve most of the initial viewport for an empty photo plane');
-  const badges = badgeTexts('#venue-detail');
-  const hasParty = currentPartyVenueIds().has(venue?.venue_id);
-  check(badges.includes('WATCH PARTY') === hasParty, 'Direct venue detail should preserve selected-game Watch Party identity');
-  check(badges.includes('CAL BAR') === (venue?.venue_type === 'cal_bar'), 'Direct venue detail should preserve Cal Bar identity');
-  check(!badges.includes('COMMUNITY LOCATION'), 'Direct venue detail should not render a Community Location badge');
-  await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'restored Fan Intent after refresh');
-  check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Refresh fixture should restore the existing Fan Intent selection');
-  await waitFor(() => invitationHeading('#venue-detail') === "You're starting the Cal crowd here.", 'restored invitation after refresh');
-  checkPostJoinInvitationLayout('Restored invitation after refresh', '#venue-detail');
-  finish('CGB_PRODUCTION_DIRECT_ROUTE');
-}
-
-async function runDesktopDirectRouteCheck() {
-  progress('desktop-direct-ready');
-  await waitForDesktopApplicationReady('desktop direct venue application ready');
-  const params = new URLSearchParams(location.search);
-  const requestedSlug = params.get('venue');
-  const requestedGame = params.get('game');
-  const venue = state()?.snapshot?.venues?.find((candidate) => candidate.slug === requestedSlug);
-
-  if (params.get('__cgb_prejoined') === '1' && sessionStorage.getItem('cgb_prejoined_reload') !== 'ready') {
-    localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
-    localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [requestedGame]: venue?.venue_id }));
-    sessionStorage.setItem('cgb_prejoined_reload', 'ready');
-    location.reload();
-    return;
-  }
-
-  check(Boolean(venue), 'Desktop direct-route fixture venue should exist');
-  check(state()?.detailMode === true, 'Desktop direct venue URL should enter detail mode');
-  check(state()?.gameId === requestedGame, 'Desktop direct venue URL should preserve selected game');
-  check(selectedVenueId() === venue?.venue_id, 'Desktop direct venue URL should select the requested venue');
-  check(isVisible('#detail-view'), 'Desktop direct venue URL should visibly render the venue detail view');
-  check(element('#venue-detail')?.dataset?.venueId === venue?.venue_id, 'Desktop direct venue detail should preserve venue identity');
-  const game = state()?.snapshot?.games?.find((candidate) => candidate.game_id === requestedGame);
-  const gameHeading = element('#header-game-label')?.textContent?.trim() || '';
-  const kickoff = element('#header-kickoff')?.textContent?.trim() || '';
-  check(gameHeading.includes('Cal') && gameHeading.includes(game?.opponent_name || ''), 'Desktop direct venue detail should identify Cal and the selected opponent');
-  check(game?.kickoff_status === 'tbd' ? kickoff.includes('Time TBD') : /\d/.test(kickoff), 'Desktop direct venue detail should preserve known or TBD kickoff context');
-  check(element('#venue-detail .detail-address')?.textContent?.includes(venue?.address_line_1 || ''), 'Desktop direct venue detail should preserve the useful street address');
-  check(element('#venue-detail .detail-hero')?.classList.contains('detail-hero--no-photo') === !venue?.photo_url, 'Desktop direct venue detail should identify the no-photo launch state');
-  const badges = badgeTexts('#venue-detail');
-  check(badges.includes('WATCH PARTY'), 'Desktop direct venue detail should preserve the Watch Party badge');
-  check(badges.includes('CAL BAR'), 'Desktop direct venue detail should preserve the Cal Bar badge');
-  check(!badges.includes('COMMUNITY LOCATION'), 'Desktop direct venue detail should not render a Community Location badge');
-  await waitFor(() => element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop restored Fan Intent after refresh');
-  check(element('#venue-detail .intent-button')?.getAttribute('aria-pressed') === 'true', 'Desktop refresh fixture should restore the existing Fan Intent selection');
-  await waitFor(() => invitationHeading('#venue-detail') === "You're starting the Cal crowd here.", 'desktop restored invitation after refresh');
-  checkPostJoinInvitationLayout('Desktop restored invitation after refresh', '#venue-detail');
-  finish('CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE');
-}
-
 async function runDesktopChecks() {
   progress('desktop-ready');
   await waitForDesktopApplicationReady();
@@ -333,6 +250,7 @@ async function runDesktopChecks() {
   check(element('#mobile-map-button span:last-child')?.textContent?.trim() === 'Selected', 'Desktop Map command should be presented as Selected');
   check(element('#mobile-list-button span:last-child')?.textContent?.trim() === 'Locations', 'Desktop List command should be presented as Locations');
   check(!isVisible('#mobile-add-button'), 'Desktop should keep Add contextual instead of permanent');
+  check(!isVisible('#mobile-about-button'), 'Desktop should keep About outside the panel toggle');
   check(element('#mobile-map-button')?.disabled === true, 'Desktop Selected should be disabled until a Venue is selected');
   check(element('#mobile-map-button')?.getAttribute('aria-disabled') === 'true', 'Desktop Selected should expose its disabled state to assistive technology');
   check(element('#mobile-list-button')?.getAttribute('aria-current') === 'page', 'Desktop Locations should be the active panel state initially');
@@ -361,134 +279,58 @@ async function runDesktopChecks() {
   check(!communityListBadges.includes('COMMUNITY LOCATION'), 'Desktop Locations should omit the Community Location badge');
   check(partyListBadges.includes('WATCH PARTY'), 'Desktop Locations should preserve the Watch Party badge');
   check(partyListBadges.includes('CAL BAR'), 'Desktop Locations should preserve the Cal Bar badge');
-  const communityPartyVenue = firstVenue((venue) => venue.venue_type === 'community_location' && partyVenueIds.has(venue.venue_id));
-  const communityPartyBadges = badgeTexts(`#location-list .location-card[data-venue-id="${communityPartyVenue?.venue_id}"]`);
-  check(communityPartyBadges.includes('WATCH PARTY') && !communityPartyBadges.includes('CAL BAR'), 'Desktop Watch Party at a Community Location should remain distinct from a Cal Bar');
-
-  progress('desktop-add-without-selection');
-  click('#mobile-add-button');
-  await waitFor(() => activeCommand() === 'add' && element('#add-surface')?.hidden === false, 'desktop Locations to Add without selection');
-  check(isVisible('#add-surface'), 'Desktop Add should be visibly usable without a selected Venue');
-  check(element('#add-surface .add-context:not(.add-game-context)')?.hidden === true, 'Desktop Add should omit selected-place context when no Venue is selected');
-  check(isVisible('#add-game-context'), 'Desktop Add should preserve the shared selected-Game context');
-  check(element('#mobile-add-button')?.getAttribute('aria-current') !== 'page', 'Desktop Add should behave as an action rather than an active panel tab');
-  click('#add-surface [data-command-close]');
-  await waitFor(() => activeCommand() === 'map' && element('#add-surface')?.hidden && trayState() === 'full', 'desktop Add back to Locations without selection');
 
   progress('desktop-select-from-list');
   const noPartyCard = noPartyVenue && element(`#location-list .location-card[data-venue-id="${noPartyVenue.venue_id}"]`);
   check(Boolean(noPartyCard), 'Desktop venue should render in shared Locations');
   noPartyCard?.click();
-  await waitFor(() => selectedVenueId() === noPartyVenue?.venue_id && trayState() === 'selected', 'desktop Locations selection');
+  await waitFor(() =>
+    selectedVenueId() === noPartyVenue?.venue_id &&
+    trayState() === 'selected' &&
+    state()?.detailMode === true &&
+    element('#venue-detail')?.parentElement?.id === 'tray-selected',
+  'desktop Locations selection');
   await waitFor(() => element('#mobile-map-button')?.disabled === false && element('#mobile-map-button')?.getAttribute('aria-current') === 'page', 'desktop Selected control state');
-  await waitFor(() => Boolean(element('#tray-selected .bear-count__prompt')) && Boolean(element('#tray-selected .selected-card__plan-party')), 'desktop shared selected-card refinement');
-  check(isVisible('#tray-selected .selected-card'), 'Desktop selected Venue should render a visible selected card');
-  check(!isVisible('#tray-list'), 'Desktop selected Venue should not stack Locations underneath');
+  check(isVisible('#tray-selected'), 'Desktop Selected should visibly occupy the panel');
+  check(!isVisible('#tray-list'), 'Desktop Selected should not stack Locations underneath');
+  check(element('#detail-view')?.hidden === true, 'Desktop should not open the standalone mobile Detail surface');
+  check(element('#venue-detail')?.dataset?.venueId === noPartyVenue?.venue_id, 'Desktop Selected should render the canonical Venue Profile identity');
+  check(element('#venue-detail')?.dataset?.profilePresentation === 'desktop', 'Desktop Selected should use the desktop Venue Profile presentation');
+  check(element('#venue-detail h1')?.textContent?.trim() === noPartyVenue?.name, 'Desktop Venue Profile should preserve the selected Venue name');
+  check(element('#venue-detail .detail-address')?.textContent?.includes(noPartyVenue?.address_line_1 || ''), 'Desktop Venue Profile should preserve useful street information');
+  check(isVisible('#venue-detail .detail-primary-actions .intent-button'), 'Desktop Venue Profile should preserve Fan Intent');
+  check(isVisible('#venue-detail .detail-primary-actions .detail-share'), 'Desktop Venue Profile should preserve Share');
+  check(!element('#tray-selected .selected-card'), 'Desktop Selected should not leak the obsolete compact selected card');
   check(getComputedStyle(element('#tray-selected')).overflowY === 'auto', 'Desktop Selected should own the available panel scroll region');
-  check(!element('#tray-selected .party-module'), 'Desktop no-Watch-Party Venue should not render a Watch Party module');
-  check(Boolean(element('#tray-selected .bear-count__prompt')), 'Desktop selected card should use the shared zero-attendance component');
-  check(Boolean(element('#tray-selected .selected-card__plan-party')), 'Desktop selected card should use the shared no-Watch-Party contribution component');
-  check(!badgeTexts('#tray-selected .selected-card').includes('COMMUNITY LOCATION'), 'Desktop selected card should omit the Community Location badge');
-  check(element('#tray-selected .venue-location')?.textContent?.includes(noPartyVenue?.address_line_1 || ''), 'Desktop selected profile should show useful street information');
-  const selectedCountStyle = getComputedStyle(element('#tray-selected .bear-count'));
-  const selectedIntentRect = element('#tray-selected .intent-button')?.getBoundingClientRect();
-  const selectedShare = element('#tray-selected .selected-card__share');
-  const selectedShareRect = selectedShare?.getBoundingClientRect();
-  const selectedDetailsRect = element('#tray-selected .selected-card__details')?.getBoundingClientRect();
-  check(selectedCountStyle.justifyItems === 'center' && selectedCountStyle.textAlign === 'center', 'Desktop Bear count should use the centered status presentation');
-  check((selectedIntentRect?.width || 0) > (selectedShareRect?.width || Infinity) * 1.75 && (selectedIntentRect?.height || 0) >= 48, 'Desktop Fan Intent should remain the wide primary action');
-  check(selectedShare?.textContent?.trim() === 'Share' && (selectedShareRect?.width || 0) >= 90 && (selectedShareRect?.height || 0) >= 48, 'Desktop Share should remain a labeled secondary action');
-  check(Math.abs((selectedDetailsRect?.width || 0) - 44) < 1 && Math.abs((selectedDetailsRect?.height || 0) - 44) < 1, 'Desktop Details should retain its existing compact treatment');
 
   progress('desktop-locations-roundtrip');
   click('#mobile-list-button');
-  await waitFor(() => trayState() === 'full' && isVisible('#tray-list') && !isVisible('#tray-selected'), 'desktop Selected to Locations');
+  await waitFor(() => trayState() === 'full' && state()?.detailMode === false && isVisible('#tray-list') && !isVisible('#tray-selected'), 'desktop Selected to Locations');
   check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Locations should preserve selected Venue identity');
   check(element('#mobile-list-button')?.getAttribute('aria-current') === 'page', 'Desktop Locations should become the active panel state');
   click('#mobile-map-button');
-  await waitFor(() => trayState() === 'selected' && isVisible('#tray-selected') && !isVisible('#tray-list'), 'desktop Locations to Selected');
+  await waitFor(() =>
+    trayState() === 'selected' &&
+    state()?.detailMode === true &&
+    isVisible('#tray-selected') &&
+    !isVisible('#tray-list') &&
+    element('#venue-detail')?.parentElement?.id === 'tray-selected' &&
+    element('#venue-detail')?.dataset?.venueId === noPartyVenue?.venue_id,
+  'desktop Locations to Selected canonical profile');
+  check(!element('#tray-selected .selected-card'), 'Desktop Locations → Selected should restore the canonical Venue Profile rather than the compact card');
+  check(element('#venue-detail h1')?.textContent?.trim() === noPartyVenue?.name, 'Desktop Locations → Selected should restore the same Venue Profile');
 
-  progress('desktop-rsvp');
-  check(attendanceNumber() === 0, 'Desktop mocked Venue should begin at zero attendance');
-  window.CGBProductionHarness?.seedOtherSelection?.(state()?.gameId, noPartyVenue?.venue_id);
-  await window.CGBFanIntent?.refresh?.();
-  await waitFor(() => attendanceNumber() === 1, 'desktop ordinary-join baseline');
-  click('#tray-selected .intent-button');
-  await waitFor(() => attendanceNumber() === 2 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop ordinary RSVP 1 to 2');
-  await waitFor(() => invitationHeading() === "You're in. Bring more Bears.", 'desktop ordinary post-join invitation');
-  await waitFor(() => !element('#tray-selected .bear-count')?.classList.contains('bear-count--empty'), 'desktop positive attendance refinement');
-  check(!isVisible('#tray-selected .bear-count__icon'), 'Desktop positive attendance should hide the people icon');
-  check(isCanonicalAttendancePresentation(attendancePresentation()), 'Desktop should use the canonical attendance-card presentation');
-  check(trayState() === 'selected', 'Desktop ordinary RSVP should preserve selected Venue state');
-  checkPostJoinInvitationLayout('Desktop ordinary post-join invitation');
-  await waitForIntentSettled('desktop ordinary RSVP transaction completion');
-  window.CGBApp?.render?.();
-  await waitFor(() => invitationHeading() === "You're in. Bring more Bears.", 'desktop invitation after selected-profile rerender');
-  click('#tray-selected .intent-button');
-  await waitFor(() => attendanceNumber() === 1 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false', 'desktop Undo 2 to 1');
-  check(!postJoinInvitation(), 'Desktop Undo should remove the invitation');
-  check(trayState() === 'selected', 'Desktop Undo should preserve selected Venue state');
-  await waitForIntentSettled('desktop Undo transaction completion');
-  click('#tray-selected .intent-button');
-  await waitFor(() => attendanceNumber() === 2 && element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true', 'desktop rejoin 1 to 2');
-  await waitFor(() => invitationHeading() === "You're in. Bring more Bears.", 'desktop rejoin invitation');
-  checkPostJoinInvitationLayout('Desktop rejoin invitation');
-  await waitForIntentSettled('desktop rejoin transaction completion');
-
-  progress('desktop-selected-add');
-  click('#mobile-add-button');
-  await waitFor(() => activeCommand() === 'add' && element('#add-surface')?.hidden === false, 'desktop selected Venue to Add');
-  check(isVisible('#add-surface'), 'Desktop Add should be visibly usable with a selected Venue');
-  check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Add should preserve selected Venue identity');
-  check(isVisible('#add-surface .add-context:not(.add-game-context)'), 'Desktop Add should visibly render selected-place context');
-  check(element('#add-context-name')?.textContent?.trim() === noPartyVenue?.name, 'Desktop Add should preserve selected Venue content');
-  check(isVisible('#add-game-context'), 'Desktop selected Add should visibly preserve selected-Game context');
-  window.CGBApp?.render?.();
-  await waitFor(() => activeCommand() === 'add' && selectedVenueId() === noPartyVenue?.venue_id, 'desktop selected Add after application rerender', 4000);
-  check(isVisible('#add-surface .add-context:not(.add-game-context)'), 'Desktop selected-place Add context should survive a shared application rerender');
-  click('#add-surface [data-command-close]');
-  await waitFor(() => activeCommand() === 'map' && trayState() === 'selected', 'desktop selected Add back to Selected');
-
-  progress('desktop-nearby-all');
+  progress('desktop-locations-roundtrip-repeat');
   click('#mobile-list-button');
-  await waitFor(() => trayState() === 'full', 'desktop Locations before Nearby');
-  let desktopGeolocationCalls = 0;
-  try {
-    Object.defineProperty(navigator, 'geolocation', {
-      configurable: true,
-      value: {
-        getCurrentPosition(success) {
-          desktopGeolocationCalls += 1;
-          success({ coords: { latitude: 37.8715, longitude: -122.2730 } });
-        }
-      }
-    });
-  } catch (error) {
-    failures.push(`Could not install deterministic desktop geolocation mock: ${error.message}`);
-  }
-  check(locationToggleIsStable(), 'Desktop location toggle should keep Near me left and All locations right');
-  check(locationModeSelected('all'), 'Desktop All locations should be selected initially');
-  click('#list-location-nearby');
-  await waitFor(() => Boolean(state()?.origin), 'desktop Nearby location state');
-  check(desktopGeolocationCalls === 1, 'Desktop initial Nearby should request geolocation once');
-  check(Boolean(state()?.nearbyOrigin), 'Desktop Nearby should retain coordinates in canonical app state');
-  check(isVisible('#location-list'), 'Desktop Nearby should keep Locations visible');
-  check(locationToggleIsStable(), 'Desktop Nearby should not change location toggle labels or order');
-  check(locationModeSelected('nearby') && !locationModeSelected('all'), 'Desktop Nearby should select only Near me');
-  click('#list-location-all');
-  await waitFor(() => !state()?.origin && trayState() === 'full' && state()?.detailMode === false, 'desktop Show all browse state');
-  check(isVisible('#location-list'), 'Desktop All locations should keep Locations visible');
-  check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Show all should preserve selected Venue identity');
-  check(locationToggleIsStable(), 'Desktop All locations should not change location toggle labels or order');
-  check(locationModeSelected('all') && !locationModeSelected('nearby'), 'Desktop All locations should select only All locations');
-  click('#mobile-list-button');
-  await waitFor(() => trayState() === 'full' && state()?.detailMode === false, 'desktop Locations after Show all');
-  check(locationModeSelected('all') && locationToggleIsStable(), 'Desktop Locations should preserve the fixed All locations selection');
-  click('#list-location-nearby');
-  await waitFor(() => Boolean(state()?.origin) && trayState() === 'full' && state()?.detailMode === false, 'desktop saved Nearby restore');
-  check(desktopGeolocationCalls === 1, 'Desktop Show nearby should reuse coordinates without geolocation');
-  check(locationModeSelected('nearby') && locationToggleIsStable(), 'Desktop saved Nearby should restore the fixed Near me selection');
-  check(selectedVenueId() === noPartyVenue?.venue_id, 'Desktop Show nearby should preserve selected Venue identity');
+  await waitFor(() => trayState() === 'full' && state()?.detailMode === false, 'desktop repeated Selected to Locations');
+  click('#mobile-map-button');
+  await waitFor(() =>
+    trayState() === 'selected' &&
+    state()?.detailMode === true &&
+    element('#venue-detail')?.parentElement?.id === 'tray-selected' &&
+    element('#venue-detail')?.dataset?.venueId === noPartyVenue?.venue_id,
+  'desktop repeated Locations to Selected');
+  check(!element('#tray-selected .selected-card'), 'Repeated desktop roundtrip should not recreate the obsolete compact card');
 
   progress('desktop-game-dialog');
   click('#game-button');
@@ -597,7 +439,7 @@ async function runMainChecks() {
   check(element('#tray-summary-copy')?.textContent?.includes(noPartyVenue?.address_line_1 || ''), 'Mini profile should show useful street information');
 
   progress('mini-to-selected');
-  click('#browse-locations-button');
+  click('#tray-handle');
   await waitFor(() => trayState() === 'selected' && selectedVenueId() === noPartyVenue?.venue_id, 'mini profile → full selected profile');
   await waitFor(() =>
     isVisible('#tray-selected .selected-card__details') &&
@@ -901,27 +743,19 @@ const mode = new URLSearchParams(location.search).get('__cgb_harness');
     ? runSearchModeChecks()
   : mode === 'search-desktop'
     ? runSearchModeChecks({ desktop: true })
-  : mode === 'direct'
-  ? runDirectRouteCheck()
   : mode === 'landscape'
     ? runShortLandscapeChecks()
-  : mode === 'desktop'
-    ? runDesktopChecks()
-    : mode === 'desktop-direct'
-      ? runDesktopDirectRouteCheck()
+    : mode === 'desktop'
+      ? runDesktopChecks()
       : runMainChecks()).catch((error) => {
   failures.push(error?.stack || String(error));
   finish(mode === 'nearby-mobile'
     ? 'CGB_NEARBY_MOBILE_RUNTIME_HARNESS'
     : mode === 'nearby-desktop'
       ? 'CGB_NEARBY_DESKTOP_RUNTIME_HARNESS'
-    : mode === 'direct'
-    ? 'CGB_PRODUCTION_DIRECT_ROUTE'
-    : mode === 'landscape'
-      ? 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS'
-    : mode === 'desktop'
-      ? 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS'
-      : mode === 'desktop-direct'
-        ? 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE'
-        : 'CGB_PRODUCTION_RUNTIME_HARNESS');
+      : mode === 'landscape'
+        ? 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS'
+        : mode === 'desktop'
+          ? 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS'
+          : 'CGB_PRODUCTION_RUNTIME_HARNESS');
 });
