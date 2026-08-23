@@ -1,14 +1,181 @@
 unit_exit=1
 browser_exit=1
---- unit failing subtests ---
+--- unit failure detail ---
+  ...
+# Subtest: no-photo local map stays hidden and busy until its MapLibre load event
 not ok 381 - no-photo local map stays hidden and busy until its MapLibre load event
+  ---
+  duration_ms: 8.055133
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:15:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Ready Detail local map should be visible/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+      '\n' +
+      'function element(selector) {\n' +
+      '  return document.querySelector(selector);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: readiness belongs to one local-map instance and photo-present Detail creates none
 not ok 382 - readiness belongs to one local-map instance and photo-present Detail creates none
+  ---
+  duration_ms: 3.094858
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Photo-present Detail should retain no active local-map instance/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+      '\n' +
+      'function element(selector) {\n' +
+      '  return document.querySelector(selector);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: unchanged snapshot rerenders retain the settled map container and instance
 not ok 383 - unchanged snapshot rerenders retain the settled map container and instance
+  ---
+  duration_ms: 2.233883
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:34:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /Snapshot rerender should retain exactly one MapLibre instance/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+      '\n' +
+      'function element(selector) {\n' +
+      '  return document.querySelector(selector);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: direct Detail routes reveal the complete settled view in one paint
 not ok 384 - direct Detail routes reveal the complete settled view in one paint
+  ---
+  duration_ms: 1.856159
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-detail-local-map-readiness.test.mjs:41:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /settled Detail first-paint gate/. Input:
+    
+    "const result = document.querySelector('#cgb-production-runtime-result');\n" +
+      'const failures = [];\n' +
+      '\n' +
+      'function check(condition, message) {\n' +
+      '  if (!condition) failures.push(message);\n' +
+      '}\n' +
+      '\n' +
+      'function element(selector) {\n' +
+      '  return document.querySelector(selector);\n' +
+      '}\n' +
+--
+  ...
+# Subtest: selected mini and full profiles share the compact useful-address formatter
 not ok 385 - selected mini and full profiles share the compact useful-address formatter
+  ---
+  duration_ms: 4.545171
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:47:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /\[context, type, compactVenueLocation\(venue\), formatDistance\(distance\)\]/. Input:
+    
+    'import {\n' +
+      '  bearCountCopy,\n' +
+      '  buildVenueUrl,\n' +
+      '  compactVenueLocation,\n' +
+      '  markerKind,\n' +
+      '  NEARBY_RADIUS_MILES,\n' +
+      '  rankVenues,\n' +
+      '  TRAY_GUIDANCE_COPY\n' +
+      "} from './core.mjs';\n" +
+      "import { clearSelectedMapVenue } from './app-state.mjs';\n" +
+--
+  ...
+# Subtest: desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
 not ok 391 - desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
+  ---
+  duration_ms: 0.71416
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:107:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /detail\.textContent = 'View details'/. Input:
+    
+    'function createActionRow(venue, { details = true } = {}) {\n' +
+      "  const row = document.createElement('div');\n" +
+      "  row.className = 'action-row';\n" +
+      '  row.dataset.venueId = venue.venue_id;\n' +
+      '\n' +
+      "  const intent = document.createElement('button');\n" +
+      "  intent.type = 'button';\n" +
+      "  intent.className = 'primary-button intent-button';\n" +
+      '  intent.dataset.venueId = venue.venue_id;\n' +
+      "  intent.textContent = 'I’ll be here';\n" +
+--
+  ...
+# Subtest: Watch Party treatment and adapters remain attached to the shared Profile element
 not ok 402 - Watch Party treatment and adapters remain attached to the shared Profile element
+  ---
+  duration_ms: 1.15339
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-information-clarity.test.mjs:210:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /if \(detail\) link\.append\(createIcon\('external'\), document\.createTextNode\('External event details'\)\)/. Input:
+    
+    "import { formatGameDate, gameTitle } from './core.mjs';\n" +
+      "import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';\n" +
+      'import {\n' +
+      '  buildWatchPartyIssueUrl,\n' +
+      '  resolveWatchPartyIssueContext\n' +
+      "} from './watch-party-issue-core.mjs';\n" +
+      '\n' +
+      'function issueConfig() {\n' +
+      '  const meta = (name) => document.querySelector(`meta[name="${name}"]`)?.content?.trim() || \'\';\n' +
+      '  return {\n' +
+--
+  ...
+# Subtest: Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
 not ok 439 - Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
+  ---
+  duration_ms: 5.77837
+  type: 'test'
+  location: '/home/runner/work/cal-bars/cal-bars/tests/venue-photo-feature.test.mjs:43:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\] \.back-link/. Input:
+    
+    'body[data-view="detail"] #map-view {\n' +
+      '  display: none !important;\n' +
+      '}\n' +
+      '\n' +
+      'body[data-view="detail"] #detail-view[hidden] {\n' +
+      '  display: block !important;\n' +
+      '}\n' +
+      '\n' +
+      'body[data-view="detail"][data-detail-state="pending"] #detail-view {\n' +
+      '  opacity: 0 !important;\n' +
 --- unit summary ---
 1..553
 # tests 553
@@ -18,7 +185,7 @@ not ok 439 - Detail finishing treatment uses the approved contribution grid and 
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2137.949972
+# duration_ms 2504.185941
 --- browser failure summaries ---
 Milestone 4B browser harness failed.
 Production TBD direct-route refresh harness failed.
@@ -26,6 +193,7 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile Share should remain text-only without a later icon upgrade
 - Base short_description should immediately follow the address action area
 - Local-map fallback should expose the contextual Add a photo action
+- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Timed out waiting for restored Fan Intent selection
 - Refresh should restore Fan Intent state
 - Timed out waiting for contextual Invite more action
@@ -55,8 +223,6 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Timed out waiting for Profile game restore
 - Timed out waiting for mobile Profile List navigation
 Short-landscape plain fan-added Detail harness failed.
-CGB_PRODUCTION_DIRECT_ROUTE_FAIL
-- TypeError: parameter 1 is not of type 'Element'.
 Desktop production runtime regression harness failed.
 CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_FAIL
 - Desktop should not expose a standalone Near me map action
