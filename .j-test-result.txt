@@ -1,42 +1,41 @@
 unit_exit=1
 browser_exit=1
 --- unit failing subtests ---
-not ok 21 - tests/external-venue-core.test.mjs
-not ok 123 - successful external attendance settles through the shared contextual invite lifecycle
-not ok 183 - confirmed attendance reuses the existing share action instead of rendering a second invitation control
-not ok 190 - refresh, game switching, direct URLs, and cross-tab state use canonical game selection
-not ok 228 - bottom navigation uses a pale navy treatment
-not ok 245 - selected profile uses a restrained identity band and compact contribution action
-not ok 246 - attendance rendering is delegated while secondary actions remain readable
-not ok 260 - Search Add and List retain parallel destination header markup
-not ok 261 - mobile styling removes the permanent map search and presents full command surfaces
-not ok 264 - desktop reuses the shared command owner as Locations and Selected only
-not ok 268 - mobile Detail uses the compact header and a flush white page surface without a navy under-page flash
-not ok 269 - Search Add and List use the same destination-header component with a dedicated optional List action
-not ok 297 - mobile location range is owned by the List header while polish only positions map actions
-not ok 299 - secondary destination headers retain space for their optional action
-not ok 304 - Search Add and List presentation is owned by static first-paint CSS
-not ok 330 - mobile selected-profile upward handle swipe opens Venue Detail
-not ok 355 - support entry points use the CGB Ko-fi panel without loading it at first paint
-not ok 358 - desktop footer About uses the consolidated anchored popover treatment
-not ok 373 - no-photo local map stays hidden and busy until its MapLibre load event
-not ok 374 - readiness belongs to one local-map instance and photo-present Detail creates none
-not ok 375 - unchanged snapshot rerenders retain the settled map container and instance
-not ok 376 - direct Detail routes reveal the complete settled view in one paint
-not ok 377 - selected mini and full profiles share the compact useful-address formatter
-not ok 383 - desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
-not ok 394 - Watch Party treatment and adapters remain attached to the shared Profile element
-not ok 431 - Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
+not ok 131 - successful external attendance settles through the shared contextual invite lifecycle
+not ok 191 - confirmed attendance reuses the existing share action instead of rendering a second invitation control
+not ok 198 - refresh, game switching, direct URLs, and cross-tab state use canonical game selection
+not ok 236 - bottom navigation uses a pale navy treatment
+not ok 253 - selected profile uses a restrained identity band and compact contribution action
+not ok 254 - attendance rendering is delegated while secondary actions remain readable
+not ok 268 - Search Add and List retain parallel destination header markup
+not ok 269 - mobile styling removes the permanent map search and presents full command surfaces
+not ok 272 - desktop reuses the shared command owner as Locations and Selected only
+not ok 276 - mobile Detail uses the compact header and a flush white page surface without a navy under-page flash
+not ok 277 - Search Add and List use the same destination-header component with a dedicated optional List action
+not ok 305 - mobile location range is owned by the List header while polish only positions map actions
+not ok 307 - secondary destination headers retain space for their optional action
+not ok 312 - Search Add and List presentation is owned by static first-paint CSS
+not ok 338 - mobile selected-profile upward handle swipe opens Venue Detail
+not ok 363 - support entry points use the CGB Ko-fi panel without loading it at first paint
+not ok 366 - desktop footer About uses the consolidated anchored popover treatment
+not ok 381 - no-photo local map stays hidden and busy until its MapLibre load event
+not ok 382 - readiness belongs to one local-map instance and photo-present Detail creates none
+not ok 383 - unchanged snapshot rerenders retain the settled map container and instance
+not ok 384 - direct Detail routes reveal the complete settled view in one paint
+not ok 385 - selected mini and full profiles share the compact useful-address formatter
+not ok 391 - desktop full Profile has no Details/View venue transition while mobile compact preview keeps its explicit transition
+not ok 402 - Watch Party treatment and adapters remain attached to the shared Profile element
+not ok 439 - Detail finishing treatment uses the approved contribution grid and folds selected presence into activity
 --- unit summary ---
-1..545
-# tests 545
+1..553
+# tests 553
 # suites 0
-# pass 519
-# fail 26
+# pass 528
+# fail 25
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 2445.685421
+# duration_ms 2526.728278
 --- browser failure summaries ---
 Milestone 4B browser harness failed.
 Production TBD direct-route refresh harness failed.
@@ -44,6 +43,7 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Profile Share should remain text-only without a later icon upgrade
 - Base short_description should immediately follow the address action area
 - Local-map fallback should expose the contextual Add a photo action
+- Settled Venue Profile should not leave eligible editorial description inside the identity hero
 - Timed out waiting for restored Fan Intent selection
 - Refresh should restore Fan Intent state
 - Timed out waiting for contextual Invite more action
@@ -73,6 +73,8 @@ CGB_PRODUCTION_DIRECT_ROUTE_FAIL
 - Timed out waiting for Profile game restore
 - Timed out waiting for mobile Profile List navigation
 Short-landscape plain fan-added Detail harness failed.
+CGB_PRODUCTION_DIRECT_ROUTE_FAIL
+- TypeError: parameter 1 is not of type 'Element'.
 Desktop production runtime regression harness failed.
 CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_FAIL
 - Desktop should not expose a standalone Near me map action
