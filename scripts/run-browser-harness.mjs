@@ -36,13 +36,35 @@ function sendProductionHarness(response, requestUrl = '/') {
   const harnessMode = new URL(requestUrl, 'http://127.0.0.1').searchParams.get('__cgb_harness') || 'main';
   const detailHarness = harnessMode === 'direct' || harnessMode === 'desktop-direct';
   const prelude = `<script>
+    const cgbPrejoinedRequested = new URLSearchParams(location.search).get('__cgb_prejoined') === '1';
+    const cgbHarnessSnapshot = ${runtimeSnapshotJson};
+    if (cgbPrejoinedRequested) {
+      const slugify = (value) => String(value || '')
+        .normalize('NFKD')
+        .replace(/[\\u0300-\\u036f]/g, '')
+        .replace(/[’']/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      const params = new URLSearchParams(location.search);
+      const requestedGame = slugify(params.get('game'));
+      const requestedVenue = params.get('venue') || '';
+      const game = cgbHarnessSnapshot.games.find((item) => slugify(item.opponent_name) === requestedGame)
+        || cgbHarnessSnapshot.games[0];
+      const venue = cgbHarnessSnapshot.venues.find((item) => item.slug === requestedVenue);
+      if (game && venue) {
+        localStorage.setItem('cgb_v2_browser_id', 'browser_1234567890abcdef');
+        localStorage.setItem('cgb_v2_fan_intent_selections', JSON.stringify({ [game.game_id]: venue.venue_id }));
+        sessionStorage.setItem('cgb_prejoined_reload', 'ready');
+      }
+    }
     const cgbPrejoinedReload = sessionStorage.getItem('cgb_prejoined_reload') === 'ready';
     if (!cgbPrejoinedReload) {
       for (const key of ['cgb_v2_last_good_snapshot', 'cgb_v2_browser_id', 'cgb_v2_fan_intent_selections']) localStorage.removeItem(key);
     }
     localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
     (() => {
-      const snapshot = ${runtimeSnapshotJson};
+      const snapshot = cgbHarnessSnapshot;
       const selections = new Map();
       let mapTilerSearchCalls = 0;
       if (cgbPrejoinedReload) {
@@ -326,21 +348,21 @@ try {
     }) && passed;
   } else if (focusedHarness === 'profile') {
     passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_2026_02&__cgb_harness=direct&__cgb_focus=contribution-photo',
+      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=syracuse&__cgb_harness=direct&__cgb_focus=contribution-photo',
       marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
       label: 'Focused mobile no-photo Venue Profile harness',
       virtualTimeBudget: 30000
     }) && passed;
 
     passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_2026_01&__cgb_harness=direct&__cgb_focus=contribution-photo',
+      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=ucla&__cgb_harness=direct&__cgb_focus=contribution-photo',
       marker: 'CGB_PRODUCTION_DIRECT_ROUTE_PASS',
       label: 'Focused mobile photo-present Venue Profile harness',
       virtualTimeBudget: 30000
     }) && passed;
 
     passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=game_2026_02&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
+      path: '/__cgb_production_runtime__?venue=oski-test-taproom-oakland&game=syracuse&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
       marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
       label: 'Focused desktop no-photo Venue Profile harness',
       virtualTimeBudget: 30000,
@@ -348,7 +370,7 @@ try {
     }) && passed;
 
     passed = await runHarness({
-      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=game_2026_01&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
+      path: '/__cgb_production_runtime__?venue=golden-bear-test-pub-berkeley&game=ucla&__cgb_harness=desktop-direct&__cgb_focus=contribution-photo',
       marker: 'CGB_DESKTOP_PRODUCTION_DIRECT_ROUTE_PASS',
       label: 'Focused desktop photo-present Venue Profile harness',
       virtualTimeBudget: 30000,
@@ -377,14 +399,14 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?game=game_2026_01&__cgb_harness=main',
+    path: '/__cgb_production_runtime__?game=ucla&__cgb_harness=main',
     marker: 'CGB_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Production runtime regression harness',
     virtualTimeBudget: 60000
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?game=game_2026_01&__cgb_harness=landscape',
+    path: '/__cgb_production_runtime__?game=ucla&__cgb_harness=landscape',
     marker: 'CGB_SHORT_LANDSCAPE_RUNTIME_HARNESS_PASS',
     label: 'Short landscape production runtime regression harness',
     virtualTimeBudget: 30000,
@@ -415,7 +437,7 @@ try {
   }) && passed;
 
   passed = await runHarness({
-    path: '/__cgb_production_runtime__?game=game_2026_01&__cgb_harness=desktop',
+    path: '/__cgb_production_runtime__?game=ucla&__cgb_harness=desktop',
     marker: 'CGB_DESKTOP_PRODUCTION_RUNTIME_HARNESS_PASS',
     label: 'Desktop production runtime regression harness',
     virtualTimeBudget: 60000,
