@@ -4,7 +4,8 @@ const PUBLIC_SNAPSHOT_KEYS = [
   'watchParties',
   'fanCounts',
   'venueHistoryCounts',
-  'venueSeasonCounts'
+  'venueSeasonCounts',
+  'fanExperiences'
 ];
 
 export const appState = {
@@ -54,7 +55,8 @@ function presentationSnapshot(snapshot) {
     venues: (snapshot.venues || []).map((venue) => {
       const { verification_status: _verificationStatus, ...presentationVenue } = venue || {};
       return presentationVenue;
-    })
+    }),
+    fanExperiences: Array.isArray(snapshot.fanExperiences) ? snapshot.fanExperiences : []
   };
 }
 
