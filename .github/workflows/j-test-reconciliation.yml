@@ -57,6 +57,12 @@ jobs:
 
           replace('tests/support-dialog.test.mjs', "/data-support-open>Buy me a beer<\\/button>/", "/data-support-open><span>Enjoying Cal Golden Bars\\?<\\/span> <span>Buy me a beer\\.<\\/span><\\/button>/")
           replace('tests/support-dialog.test.mjs', "/Cal Golden Bars is powered by <strong>CrowdMap<\\/strong>/", "/Cal Golden Bars is powered by CrowdMapped/")
+
+          replace('tests/venue-information-clarity.test.mjs', "/\\[context, type, compactVenueLocation\\(venue\\), formatDistance\\(distance\\)\\]/", "/\\[type, compactVenueLocation\\(venue\\), formatDistance\\(distance\\)\\]/")
+          replace('tests/venue-information-clarity.test.mjs', "detail\\.textContent = 'View details'", "detail\\.textContent = 'More About This Location'")
+          replace('tests/venue-information-clarity.test.mjs', "/if \\(detail\\) link\\.append\\(createIcon\\('external'\\), document\\.createTextNode\\('External event details'\\)\\)/", "/link\\.textContent = detail \\? 'External event details' : 'Open event information'/")
+
+          replace('tests/venue-photo-feature.test.mjs', "const label = isSelected \\? 'Invite more' : 'Share'", "const label = isSelected \\? 'Invite Others' : 'Share'")
           PY
 
           if ! git diff --quiet; then
