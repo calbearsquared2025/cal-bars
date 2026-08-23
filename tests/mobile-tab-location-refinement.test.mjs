@@ -35,7 +35,8 @@ test('Add does not duplicate selected-game context and makes Cal Bar contributio
   assert.match(source, /function syncCalBarNominationAction/);
   assert.match(source, /\['community_location', 'cal_bar'\]\.includes\(venue\.venue_type\)/);
   assert.match(source, /button\.hidden = !supportedVenue/);
-  assert.match(source, /What makes this Cal Bar special/);
+  assert.match(source, /What makes this a Cal Bar\?/);
+  assert.match(source, /Share what makes this place stand out\./);
   assert.match(source, /Is this your local Cal Bar\?/);
   assert.match(source, /Do Cal fans gather here regularly\? Share what makes it a Cal Bar\./);
   assert.match(source, /regular Cal gathering place/);
