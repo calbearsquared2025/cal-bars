@@ -60,7 +60,7 @@ function createWatchPartySection(documentObject, { existingParty, href, onActiva
   prompt.className = 'detail-watch-party-cta__prompt';
   prompt.textContent = existingParty
     ? 'Hosting another gathering here? Add another Watch Party for this game.'
-    : 'No Watch Party planned yet. Be the first to plan one for this game.';
+    : 'No Watch Party listed yet. Add one?';
 
   const link = documentObject.createElement('a');
   link.className = 'detail-watch-party-cta__action';
@@ -165,8 +165,8 @@ function initializeWatchPartyFormEntryPoint() {
   app.subscribe('ready', render);
   render();
   initializeCalBarNominationEntry({ app, documentObject: document });
-  initializeListingUpdateEntry({ app, documentObject: document });
   initializePhotoFormEntry({ app, documentObject: document });
+  initializeListingUpdateEntry({ app, documentObject: document });
 }
 
 initializeWatchPartyFormEntryPoint();

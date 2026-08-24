@@ -312,6 +312,15 @@ function cleanFanExperienceSnapshotText_(value) {
     .trim();
 }
 
+function cleanFanExperienceSnapshotDisplayName_(value) {
+  return String(value === null || value === undefined ? '' : value)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 60)
+    .trim();
+}
+
 function fanExperienceSubmissionYear_(timestamp, parsedTimestamp) {
   const match = String(timestamp || '').match(/\b(20\d{2})\b/);
   if (match) return Number(match[1]);
@@ -332,6 +341,7 @@ function buildPublishedFanExperiences_(rows, publishedVenueIds) {
     return {
       venue_id: venueId,
       text: text,
+      display_name: cleanFanExperienceSnapshotDisplayName_(row && row.public_display_name),
       year: fanExperienceSubmissionYear_(timestamp, parsedTimestamp),
       moderation_status: String((row && row.moderation_status) || '').trim(),
       timestamp_sort: Number.isFinite(parsedTimestamp) ? parsedTimestamp : 0,
@@ -346,7 +356,7 @@ function buildPublishedFanExperiences_(rows, publishedVenueIds) {
   }).sort(function(a, b) {
     return b.timestamp_sort - a.timestamp_sort || b.row_sort - a.row_sort;
   }).map(function(row) {
-    return { venue_id: row.venue_id, text: row.text, year: row.year };
+    return { venue_id: row.venue_id, text: row.text, display_name: row.display_name, year: row.year };
   });
 }
 

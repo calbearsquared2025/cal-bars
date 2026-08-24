@@ -217,8 +217,12 @@ test('rendered Watch Party details stay ahead of the promoted profile CTA', () =
   assert.match(watchPartyDisplay, /:scope > \.detail-watch-party-cta, :scope > \.detail-contribution/);
 });
 
-test('promoted Watch Party action uses event treatment and left-aligned profile copy', () => {
-  assert.match(watchPartyCss, /\.detail-watch-party-cta \{[\s\S]*border-left: 4px solid var\(--cgb-gold-400\);[\s\S]*text-align: left;/);
+test('empty Watch Party action uses neutral section framing and a gold CTA', () => {
+  const contributionRules = watchPartyCss.match(/\.detail-watch-party-cta\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+  assert.match(contributionRules, /background:\s*var\(--cgb-white\)/);
+  assert.match(contributionRules, /border-top:\s*1px solid var\(--cgb-neutral-200\)/);
+  assert.doesNotMatch(contributionRules, /border-left:/);
+  assert.match(contributionRules, /text-align:\s*left/);
   assert.match(watchPartyCss, /\.detail-watch-party-cta__action \{[\s\S]*background: var\(--cgb-gold-400\);/);
   assert.match(watchPartyCss, /#tray-selected > #venue-detail \.detail-watch-party-cta \{[\s\S]*border-radius: 0;/);
 });

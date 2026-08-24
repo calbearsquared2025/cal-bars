@@ -18,7 +18,7 @@ let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
-const DETAIL_MAP_ZOOM = 16.0;
+const DETAIL_MAP_ZOOM = 15;
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
@@ -32,7 +32,7 @@ function prependIcon(element, iconName) {
 
 function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
-  if (label === 'directions') return 'directions';
+  if (label === 'directions') return 'location';
   if (label === 'view details' || label === 'details') return 'details';
   return null;
 }
@@ -139,11 +139,13 @@ function syncDetailLocalMap(hero, venue, state) {
     return;
   }
   const style = `https://api.maptiler.com/maps/${DETAIL_MAP_STYLE_ID}/style.json?key=${encodeURIComponent(key)}`;
+  const configuredZoom = Number(container.dataset.zoom);
+  const zoom = Number.isFinite(configuredZoom) ? configuredZoom : DETAIL_MAP_ZOOM;
   const map = new window.maplibregl.Map({
     container,
     style,
     center: [longitude, latitude],
-    zoom: DETAIL_MAP_ZOOM,
+    zoom,
     interactive: false,
     attributionControl: false,
     fadeDuration: 0

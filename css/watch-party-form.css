@@ -26,13 +26,13 @@
 .detail-watch-party-cta {
   display: grid;
   gap: 7px;
-  margin: 14px 16px 0;
-  padding: 13px 14px 14px;
+  margin: 0;
+  padding: 16px;
   color: var(--cgb-navy-950);
-  background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 84%);
-  border: 1px solid var(--cgb-gold-200);
-  border-left: 4px solid var(--cgb-gold-400);
-  border-radius: 14px;
+  background: var(--cgb-white);
+  border: 0;
+  border-top: 1px solid var(--cgb-neutral-200);
+  border-radius: 0;
   text-align: left;
 }
 
@@ -180,8 +180,7 @@
     margin: 0;
     padding: 14px 18px;
     border: 0;
-    border-top: 1px solid var(--cgb-gold-200);
-    border-left: 4px solid var(--cgb-gold-400);
+    border-top: 1px solid var(--cgb-neutral-200);
     border-radius: 0;
   }
 

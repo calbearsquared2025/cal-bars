@@ -40,6 +40,17 @@ test('existing no-photo local map and compact description behavior remain in app
   assert.match(app, /venue\.short_description && !legacyActivitySeason\(venue\)/);
 });
 
+test('mobile and desktop no-photo Profile maps use the same wider zoom', async () => {
+  const [app, icons] = await Promise.all([
+    source('js/app.js'),
+    source('js/icon-upgrade.mjs')
+  ]);
+  assert.match(app, /map\.dataset\.zoom = '15'/);
+  assert.match(icons, /const configuredZoom = Number\(container\.dataset\.zoom\)/);
+  assert.match(icons, /const zoom = Number\.isFinite\(configuredZoom\) \? configuredZoom : DETAIL_MAP_ZOOM/);
+  assert.match(icons, /center: \[longitude, latitude\],[\s\S]*zoom,/);
+});
+
 test('Detail finishing treatment uses the approved contribution grid and folds selected presence into activity', async () => {
   const [detailCss, fanIntent, fanIntentCore] = await Promise.all([
     source('css/venue-detail.css'),
@@ -54,19 +65,20 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.match(fanIntent, /const label = isSelected \? 'Invite Others' : 'Share'/);
   assert.match(fanIntent, /share\.replaceChildren/);
   assert.doesNotMatch(fanIntent, /syncDetailShareAction/);
-  assert.match(fanIntent, /presence\.textContent = detailPresenceCopy\(count\)/);
+  assert.match(fanIntent, /presence\.textContent = isSelected[\s\S]*\? detailPresenceCopy\(count\)/);
+  assert.ok(fanIntent.includes("Click \"I\\'ll be here\" below to join them."));
   assert.match(fanIntentCore, /You’re the first Bear here\./);
   assert.match(fanIntentCore, /You’re one of them\./);
   assert.doesNotMatch(fanIntent, /renderPostJoinInvitation|post-join-invitation|post-join-share/);
 });
 
-test('Submit a Photo is contextual, prefilled, and omitted when configuration is absent', async () => {
+test('Add a Photo is contextual, prefilled, and omitted when configuration is absent', async () => {
   const [adapter, config, bootstrap] = await Promise.all([
     source('js/photo-form.js'),
     source('js/photo-form-config.mjs'),
     source('js/watch-party-form.js')
   ]);
-  assert.match(adapter, /Submit a Photo/);
+  assert.match(adapter, /Add a Photo/);
   assert.match(adapter, /Add a Photo!/);
   assert.match(adapter, /state\?\.detailMode/);
   assert.match(adapter, /buildPhotoFormPrefillUrl/);

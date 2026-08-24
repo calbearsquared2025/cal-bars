@@ -600,7 +600,7 @@ function createDetailLocalMap(venue) {
   map.dataset.venueId = venue.venue_id;
   map.dataset.latitude = String(latitude);
   map.dataset.longitude = String(longitude);
-  map.dataset.zoom = '16';
+  map.dataset.zoom = '15';
   map.dataset.markerKind = markerKind(state.snapshot, state.gameId, venue);
   map.setAttribute('role', 'group');
   map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
@@ -751,7 +751,7 @@ function createDetailActionRow(venue) {
   const share = document.createElement('button');
   share.type = 'button';
   share.className = 'secondary-button detail-share';
-  share.append(createIcon('share'), document.createTextNode('Share'));
+  share.textContent = 'Share';
   share.addEventListener('click', () => shareVenue(venue));
   row.append(intent, share);
   return row;

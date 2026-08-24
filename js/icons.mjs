@@ -16,8 +16,8 @@ const ICON_DEFINITIONS = Object.freeze({
   close: [['path', { d: 'M5 5l14 14M19 5 5 19' }]],
   'arrow-left': [['path', { d: 'm10 5-7 7 7 7M3 12h18' }]],
   directions: [
-    ['path', { d: 'm12 3 9 9-9 9-9-9 9-9Z' }],
-    ['path', { d: 'M9 15v-3h6m0 0-2.5-2.5M15 12l-2.5 2.5' }]
+    ['path', { d: 'M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z' }],
+    ['circle', { cx: '12', cy: '10', r: '2' }]
   ],
   share: [
     ['path', { d: 'M12 16V3' }],

@@ -13,6 +13,7 @@ const fanExperienceVenue = snapshot.venues.find((venue) => venue.slug === 'golde
 snapshot.fanExperiences = fanExperienceVenue ? [{
   venue_id: fanExperienceVenue.venue_id,
   text: 'Synthetic Bears Say experience for browser coverage.',
+  display_name: 'Synthetic Bear',
   year: 2026
 }] : [];
 const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');

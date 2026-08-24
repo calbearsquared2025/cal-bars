@@ -153,11 +153,14 @@ function createRetryPanel(button, venueId) {
 }
 
 function syncDetailPresence(venueId, isSelected) {
-  if (!appState.detailMode || appState.selectedVenueId !== venueId) return;
-  const card = document.querySelector('#venue-detail > .activity-card');
+  if (appState.selectedVenueId !== venueId) return;
+  const detail = document.querySelector('#venue-detail');
+  if (!detail || detail.dataset.venueId !== venueId) return;
+  const card = detail.querySelector(':scope > .activity-card');
   if (!card) return;
   let presence = card.querySelector(':scope > .activity-card__presence');
-  if (!isSelected) {
+  const count = getFanCount(appState.snapshot, appState.gameId, venueId);
+  if (!isSelected && count <= 0) {
     presence?.remove();
     return;
   }
@@ -168,8 +171,9 @@ function syncDetailPresence(venueId, isSelected) {
     if (current) current.insertAdjacentElement('afterend', presence);
     else card.prepend(presence);
   }
-  const count = getFanCount(appState.snapshot, appState.gameId, venueId);
-  presence.textContent = detailPresenceCopy(count);
+  presence.textContent = isSelected
+    ? detailPresenceCopy(count)
+    : 'Click "I\'ll be here" below to join them.';
 }
 
 function renderIntentButton(button) {
