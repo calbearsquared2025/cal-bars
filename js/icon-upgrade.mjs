@@ -210,6 +210,7 @@ function scheduleUpgrade() {
 }
 
 function connectApp() {
+  if (appConnected) return;
   const app = window.CGBApp;
   if (!app?.subscribe) {
     appConnectAttempts += 1;
