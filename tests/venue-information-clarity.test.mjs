@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const [
   app,
+  iconUpgrade,
   core,
   detailCss,
   shellControls,
@@ -15,6 +16,7 @@ const [
   fixtureText
 ] = await Promise.all([
   read('../js/app.js'),
+  read('../js/icon-upgrade.mjs'),
   read('../js/core.mjs'),
   read('../css/venue-detail.css'),
   read('../js/shell-controls.mjs'),
@@ -78,6 +80,13 @@ test('persistent Profile actions are Fan Intent and text-only Share while Direct
   assert.match(detailActionSource, /share\.textContent = 'Share'/);
   assert.doesNotMatch(detailActionSource, /createIcon\('share'/);
   assert.doesNotMatch(detailActionSource, /directions/i);
+});
+
+test('full Venue Profile local maps use zoom 15 at every breakpoint', () => {
+  assert.match(app, /map\.dataset\.zoom = '15'/);
+  assert.doesNotMatch(app, /map\.dataset\.zoom = isMobileLayout/);
+  assert.match(iconUpgrade, /const DETAIL_MAP_ZOOM = 15/);
+  assert.match(iconUpgrade, /const configuredZoom = Number\(container\.dataset\.zoom\)/);
 });
 
 test('Profile maintenance contributions retain the existing adapters', () => {
