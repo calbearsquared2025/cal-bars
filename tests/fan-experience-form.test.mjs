@@ -30,14 +30,16 @@ test('Fan Experience Form prefills exactly Venue name and canonical Venue ID', (
   assert.equal([...url.searchParams.keys()].filter((key) => key.startsWith('entry.')).length, 2);
 });
 
-test('unconfigured production Fan Experience Form remains safely unavailable', () => {
+test('production Fan Experience Form uses the verified live prefill configuration', () => {
   assert.deepEqual(FAN_EXPERIENCE_FORM_CONFIG, {
-    formUrl: '',
-    venueIdEntry: '',
-    venueNameEntry: ''
+    formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLScVyKUUXqR8sqEPQLIMeVV1TtxI9EiVmMDd3ib-CvLuBKRajg/viewform',
+    venueIdEntry: 'entry.120767699',
+    venueNameEntry: 'entry.202050515'
   });
-  assert.equal(buildFanExperienceFormPrefillUrl(FAN_EXPERIENCE_FORM_CONFIG, {
+  const url = new URL(buildFanExperienceFormPrefillUrl(FAN_EXPERIENCE_FORM_CONFIG, {
     venueId,
     venueName: "Molly O's"
-  }), '');
+  }));
+  assert.equal(url.searchParams.get('entry.120767699'), venueId);
+  assert.equal(url.searchParams.get('entry.202050515'), "Molly O's");
 });
