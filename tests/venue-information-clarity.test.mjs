@@ -97,7 +97,7 @@ test('shared Profile polish applies to inline desktop and mobile Detail presenta
   assert.match(profileCss, /\.venue-detail \.detail-editorial\s*\{/);
   assert.match(profileCss, /\.venue-detail \.detail-editorial h2,\s*\.venue-detail \.detail-fan-experiences h2/);
   assert.match(profileCss, /\.venue-detail \.detail-editorial__copy\s*\{/);
-  assert.match(profileCss, /\.detail-fan-experiences__name\s*\{[\s\S]*font-weight: 650/);
+  assert.match(profileCss, /\.detail-fan-experiences__name\s*\{[\s\S]*font-weight: 500/);
   assert.match(profileCss, /\.activity-card:has\(\.bear-count__number\)[\s\S]*grid-template-columns: auto minmax\(0, 1fr\)/);
   assert.match(profileCss, /\.bear-count__number\s*\{[\s\S]*grid-row: 1 \/ span 2/);
   assert.match(watchPartyFormCss, /\.detail-watch-party-cta\s*\{[\s\S]*background: var\(--cgb-white\)[\s\S]*border-top: 1px solid var\(--cgb-neutral-200\)/);
