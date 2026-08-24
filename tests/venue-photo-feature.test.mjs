@@ -71,13 +71,13 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.doesNotMatch(fanIntent, /renderPostJoinInvitation|post-join-invitation|post-join-share/);
 });
 
-test('Submit a Photo is contextual, prefilled, and omitted when configuration is absent', async () => {
+test('Add a Photo is contextual, prefilled, and omitted when configuration is absent', async () => {
   const [adapter, config, bootstrap] = await Promise.all([
     source('js/photo-form.js'),
     source('js/photo-form-config.mjs'),
     source('js/watch-party-form.js')
   ]);
-  assert.match(adapter, /Submit a Photo/);
+  assert.match(adapter, /Add a Photo/);
   assert.match(adapter, /Add a Photo!/);
   assert.match(adapter, /state\?\.detailMode/);
   assert.match(adapter, /buildPhotoFormPrefillUrl/);
