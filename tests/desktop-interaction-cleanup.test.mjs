@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [html, shellControls, commandCss, locationRefinement, app, appState, externalSearch, designSystem, designBoard] = await Promise.all([
+const [html, shellControls, commandCss, mobilePolishCss, locationRefinement, app, appState, externalSearch, designSystem, designBoard] = await Promise.all([
   read('../index.html'),
   read('../js/shell-controls.mjs'),
   read('../css/mobile-command-navigation.css'),
+  read('../css/mobile-polish.css'),
   read('../js/mobile-tab-location-refinement.mjs'),
   read('../js/app.js'),
   read('../js/app-state.mjs'),
@@ -15,14 +16,16 @@ const [html, shellControls, commandCss, locationRefinement, app, appState, exter
   read('../css/design-board-1.css')
 ]);
 
-test('desktop map toolbar contains Search without a standalone Nearby or Add shelf', () => {
+test('desktop map toolbar contains Search while the legacy map action shelf remains globally hidden', () => {
   assert.match(html, /class="map-toolbar"[\s\S]*id="location-search"/);
-  assert.doesNotMatch(html, /class="map-actions"|id="near-me-button"|id="desktop-add-location-button"|id="desktop-add-location-hint"/);
+  assert.match(html, /class="map-actions"[\s\S]*id="near-me-button"/);
+  assert.match(mobilePolishCss, /\.map-actions\s*\{\s*display:\s*none;\s*\}/);
+  assert.doesNotMatch(html, /id="desktop-add-location-button"|id="desktop-add-location-hint"/);
   assert.doesNotMatch(commandCss, /desktop-add-location|data-desktop-search-mode|\.map-toolbar \.map-actions/);
 });
 
 test('Locations owns one canonical fixed-position range toggle on desktop and mobile', () => {
-  assert.match(html, /id="list-heading">Locations<\/h2>[\s\S]*id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*>Near me<\/button>[\s\S]*id="list-location-all"[\s\S]*>All locations<\/button>/);
+  assert.match(html, /id="tray-list"[\s\S]*id="list-heading">Find your Cal crowd<\/h2>[\s\S]*id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*>Near me<\/button>[\s\S]*id="list-location-all"[\s\S]*>All locations<\/button>/);
   assert.match(app, /function renderLocationControl\(\)[\s\S]*listLocationNearby\.setAttribute\('aria-pressed'[\s\S]*listLocationAll\.setAttribute\('aria-pressed'/);
   assert.match(app, /dom\.listLocationAll\.addEventListener\('click'[\s\S]*showAllLocations\(\)[\s\S]*dom\.listLocationNearby\.addEventListener\('click'[\s\S]*showNearbyLocations\(\)[\s\S]*navigator\.geolocation\.getCurrentPosition/);
   assert.doesNotMatch(app, /listLocationNearby\.textContent|listLocationAll\.textContent/);

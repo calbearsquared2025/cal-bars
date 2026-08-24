@@ -2,13 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  buildMapTilerPostalSearchUrl,
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
-  mappedLocationFieldMatches,
   normalizeMapTilerFeature,
-  normalizeMapTilerPostalOrigin,
   normalizeMapTilerResults,
   upsertCanonicalVenue,
   validateJoinExternalVenueResponse
@@ -163,7 +160,7 @@ test('normalization requires a concrete POI or address with canonical address co
   assert.deepEqual(normalizeMapTilerResults({ features: [feature, feature] }).map((item) => item.placeId), ['poi.98765']);
 });
 
-test('MapTiler request uses the explicit public key, concrete result types, autocomplete, US scope, and bounded results', () => {
+test('MapTiler external-place request uses concrete result types, autocomplete, US scope, and bounded results', () => {
   const url = new URL(buildMapTilerSearchUrl('McNally Oakland', 'existing-public-key', { limit: 99 }));
   assert.equal(url.hostname, 'api.maptiler.com');
   assert.equal(url.pathname, '/geocoding/McNally%20Oakland.json');
@@ -172,48 +169,6 @@ test('MapTiler request uses the explicit public key, concrete result types, auto
   assert.equal(url.searchParams.get('autocomplete'), 'true');
   assert.equal(url.searchParams.get('country'), 'us');
   assert.equal(url.searchParams.get('limit'), '10');
-});
-
-test('submitted US ZIP geocoding is restricted to an exact US postal-code result', () => {
-  const url = new URL(buildMapTilerPostalSearchUrl('94612', 'existing-public-key'));
-  assert.equal(url.searchParams.get('country'), 'us');
-  assert.equal(url.searchParams.get('types'), 'postal_code');
-  assert.equal(url.searchParams.get('autocomplete'), 'false');
-
-  const origin = normalizeMapTilerPostalOrigin({
-    features: [
-      {
-        id: 'postal_code.94612',
-        place_type: ['postal_code'],
-        text: '94612',
-        place_name: '94612, Oakland, California, United States',
-        center: [-122.271, 37.805],
-        context: [{ id: 'country.us', text: 'United States', short_code: 'us' }]
-      }
-    ]
-  }, '94612');
-  assert.deepEqual(origin, { lat: 37.805, lon: -122.271, label: '94612, Oakland, California, United States' });
-  assert.equal(normalizeMapTilerPostalOrigin({ features: [{
-    id: 'postal_code.94613',
-    place_type: ['postal_code'],
-    text: '94613',
-    center: [-122.2, 37.8],
-    context: [{ id: 'country.us', text: 'United States', short_code: 'us' }]
-  }] }, '94612'), null);
-});
-
-test('exact mapped city and ZIP matches are resolved before area geocoding', () => {
-  const snapshot = {
-    venues: [
-      { venue_id: 'one', city: 'Oakland', region: 'CA', postal_code: '94612' },
-      { venue_id: 'two', city: 'Oakland', region: 'CA', postal_code: '94612' },
-      { venue_id: 'three', city: 'Berkeley', region: 'CA', postal_code: '94704' }
-    ]
-  };
-  assert.deepEqual(mappedLocationFieldMatches(snapshot, '94612').map((venue) => venue.venue_id), ['one', 'two']);
-  assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland').map((venue) => venue.venue_id), ['one', 'two']);
-  assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Oakland, CA').map((venue) => venue.venue_id), ['one', 'two']);
-  assert.deepEqual(mappedLocationFieldMatches(snapshot, 'Two Pitchers').map((venue) => venue.venue_id), []);
 });
 
 test('joinExternalVenue responses accept only the public Venue whitelist', () => {

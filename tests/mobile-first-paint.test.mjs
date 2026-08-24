@@ -60,7 +60,7 @@ test('portrait header makes game selection explicit without crowding the brand',
 });
 
 test('mobile Detail uses the compact header and a flush white page surface without a navy under-page flash', () => {
-  assert.match(html, /<meta name="theme-color" content="#ffffff">/);
+  assert.match(html, /<meta name="theme-color" media="\(max-width: 899px\)" content="#eef4fa">/);
   assert.match(css, /body\[data-view="detail"\][\s\S]*--header-height: calc\(94px/);
   assert.match(css, /body\[data-view="detail"\] \.site-header[\s\S]*height: var\(--header-height\) !important/);
   assert.match(css, /body\[data-view="detail"\] \.detail-view \{[\s\S]*padding: 0 !important[\s\S]*background: var\(--cgb-white, #fff\) !important/);
@@ -72,8 +72,8 @@ test('mobile Detail uses the compact header and a flush white page surface witho
 test('Search Add and List use the same destination-header component with a dedicated optional List action', () => {
   const sharedHeaders = html.match(/class="[^"]*mobile-destination-header[^"]*"/g) || [];
   const mobileTabStyles = styleBlock(mobileTab);
-  assert.equal(sharedHeaders.length, 3);
-  assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Locations<\/h2>/);
+  assert.equal(sharedHeaders.length, 4);
+  assert.match(html, /id="tray-list"[\s\S]*<span class="eyebrow">Browse<\/span>[\s\S]*<h2 id="list-heading">Find your Cal crowd<\/h2>/);
   assert.match(css, /\.mobile-destination-header \{[\s\S]*padding: 0 0 11px !important[\s\S]*border-bottom: 1px solid var\(--cgb-neutral-200\) !important/);
   assert.match(css, /\.mobile-destination-header \.eyebrow[\s\S]*font-size: var\(--text-2xs/);
   assert.match(css, /\.mobile-destination-header h2[\s\S]*font-size: clamp\(1\.45rem, 6\.4vw, 1\.9rem\) !important/);

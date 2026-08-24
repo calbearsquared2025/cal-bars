@@ -40,7 +40,6 @@ test('utility actions are text-only and presented as one segmented control', () 
 test('bottom navigation uses a pale navy treatment', () => {
   assert.match(source, /\.mobile-command-bar/);
   assert.match(source, /var\(--cgb-navy-50\)/);
-  assert.match(source, /#f4f7ff/);
 });
 
 test('aesthetic refinement is loaded after the functional mobile refinements', () => {

@@ -7,7 +7,7 @@ const script = readFileSync(new URL('../js/support-dialog.mjs', import.meta.url)
 const styles = readFileSync(new URL('../css/support-dialog.css', import.meta.url), 'utf8');
 
 test('support entry points use the CGB Ko-fi panel without loading it at first paint', () => {
-  assert.match(html, /data-support-open>Buy me a beer<\/button>/);
+  assert.match(html, /data-support-open><span>Enjoying Cal Golden Bars\?<\/span> <span>Buy me a beer\.<\/span><\/button>/);
   assert.match(html, /id="kofiframe"/);
   assert.match(html, /data-src="https:\/\/ko-fi\.com\/calgoldenbars\/\?hidefeed=true&amp;widget=true&amp;embed=true&amp;preview=true"/);
   assert.doesNotMatch(html, /id="kofiframe"[^>]*\ssrc=/s);
@@ -31,7 +31,7 @@ test('support dialog stays compact and viewport-bounded', () => {
 test('desktop footer About uses the consolidated anchored popover treatment', () => {
   assert.match(html, /class="game-button__eyebrow"[^>]*>SELECT GAME<\/span>/);
   assert.match(html, /id="about-button"[^>]*>About<\/button>\s*<\/footer>/);
-  assert.match(html, /Cal Golden Bars is powered by <strong>CrowdMap<\/strong>/);
+  assert.match(html, /Cal Golden Bars is powered by CrowdMapped/);
   assert.match(script, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
   assert.match(script, /footerAboutButton\?\.addEventListener\('click', openFooterAboutPopover, \{ capture: true \}\)/);
   assert.match(script, /aboutDialog\.classList\.add\('about-dialog--footer-popover'\)[\s\S]*aboutDialog\.show\(\)/);

@@ -56,7 +56,7 @@ test('visual tokens follow the supplied design-board palette, typography, and re
   assert.match(css, /:focus-visible[\s\S]*--cgb-gold-400/);
 });
 
-test('mobile shell uses Map, Search, Add, List with dedicated contribution surfaces', () => {
+test('mobile shell uses Map, Search, Add, List, and About with dedicated contribution surfaces', () => {
   const headerEnd = html.indexOf('</header>');
   const openingStat = html.indexOf('class="opening-stat"');
   const mainStart = html.indexOf('<main');
@@ -65,21 +65,23 @@ test('mobile shell uses Map, Search, Add, List with dedicated contribution surfa
   assert.match(html, /class="site-header__brand-row"/);
   assert.match(html, /game-button__chevron/);
   assert.match(html, /class="mobile-command-bar"/);
-  for (const id of ['mobile-map-button', 'mobile-search-button', 'mobile-add-button', 'mobile-list-button']) {
+  for (const id of ['mobile-map-button', 'mobile-search-button', 'mobile-add-button', 'mobile-list-button', 'mobile-about-button']) {
     assert.match(html, new RegExp(`id="${id}"`));
   }
   assert.doesNotMatch(html, /id="mobile-game-button"/);
   assert.match(html, /id="search-surface"/);
   assert.match(html, /id="add-surface"/);
+  assert.match(html, /id="about-surface"/);
 
   assert.match(css, /\.opening-stat\s*\{[\s\S]*position:\s*absolute[\s\S]*bottom:\s*-27px/);
-  assert.match(mobileCss, /grid-template-columns:\s*repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(mobileCss, /grid-template-columns:\s*repeat\(5, minmax\(0, 1fr\)\)/);
   assert.match(mobileCss, /\.map-toolbar \.location-search\s*\{\s*display:\s*none/);
   assert.match(mobileCss, /calc\(var\(--header-height\) \+ 27px\)/);
   assert.match(shellControls, /mobile-map-button/);
   assert.match(shellControls, /mobile-search-button/);
   assert.match(shellControls, /mobile-add-button/);
   assert.match(shellControls, /mobile-list-button/);
+  assert.match(shellControls, /mobile-about-button/);
   assert.match(shellControls, /buildWatchPartyPrefillUrl/);
   assert.match(shellControls, /buildCalBarNominationPrefillUrl/);
   assert.doesNotMatch(shellControls, /MutationObserver/);

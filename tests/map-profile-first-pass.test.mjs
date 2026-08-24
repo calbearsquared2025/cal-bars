@@ -29,7 +29,7 @@ test('profile pass does not override canonical Search-mode language', () => {
 
 test('selected profile uses a restrained identity band and compact contribution action', () => {
   assert.match(profile, /selected-card__header[\s\S]*background: linear-gradient/);
-  assert.match(profile, /border-left: 4px solid var\(--cgb-navy-900\)/);
+  assert.match(profile, /border-left: 0 !important/);
   assert.match(profile, /selected-card__plan-party/);
   assert.doesNotMatch(profile, /panel\.className = 'selected-card__party-empty'/);
 });
@@ -38,7 +38,7 @@ test('attendance rendering is delegated while secondary actions remain readable'
   assert.doesNotMatch(profile, /formatEmptyAttendance/);
   assert.doesNotMatch(profile, /bear-count--empty/);
   assert.match(profile, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(profile, /node\.textContent = 'Details'/);
+  assert.match(profile, /node\.textContent = 'More About This Location'/);
 });
 
 test('profile pass no longer owns an intermediate selected density', () => {

@@ -17,12 +17,12 @@ test('map preview targets remain available while List owns the full list', async
   assert.match(script, /dataset\.state === 'full' \? 'list' : 'map'/);
 });
 
-test('polish tracks the active view without owning command-button state', async () => {
+test('polish tracks every peer mobile view without owning command-button state', async () => {
   const [script, shell] = await Promise.all([
     source('js/mobile-polish.mjs'),
     source('js/shell-controls.mjs')
   ]);
-  assert.match(script, /const VALID_VIEWS = new Set\(\['map', 'search', 'add', 'list'\]\)/);
+  assert.match(script, /const VALID_VIEWS = new Set\(\['map', 'search', 'add', 'list', 'about'\]\)/);
   assert.match(script, /function setActiveView/);
   assert.match(script, /function inferActiveView/);
   assert.doesNotMatch(script, /commandButtons|mobile-command--active|aria-current/);
@@ -56,7 +56,6 @@ test('markers are compact teardrops and outer marker transforms never transition
   assert.match(css, /\.cgb-marker \.marker-star[\s\S]*width: 38px/);
 });
 
-
 test('selected Venue uses a viewport-anchored rounded bottom sheet', async () => {
   const css = await source('css/mobile-polish.css');
   assert.match(css, /#map-view > #venue-tray\.venue-tray\.tray--selected[\s\S]*position: fixed !important/);
@@ -66,7 +65,7 @@ test('selected Venue uses a viewport-anchored rounded bottom sheet', async () =>
   assert.match(css, /overflow: hidden/);
 });
 
-test('mobile location control is owned by the List header instead of a floating map action', async () => {
+test('mobile location range is owned by the List header while polish only positions map actions', async () => {
   const [html, script, css] = await Promise.all([
     source('index.html'),
     source('js/mobile-polish.mjs'),
@@ -74,8 +73,10 @@ test('mobile location control is owned by the List header instead of a floating 
   ]);
   assert.match(html, /id="list-location-toggle"[\s\S]*id="list-location-nearby"[\s\S]*id="list-location-all"/);
   assert.match(css, /body\[data-command-surface="list"\] \.list-location-toggle/);
-  assert.doesNotMatch(html, /class="map-actions"|id="near-me-button"/);
-  assert.doesNotMatch(script, /MAP_ACTION_GAP|updateMapActionPosition|--map-action-bottom/);
+  assert.match(html, /class="map-actions"[\s\S]*id="near-me-button"/);
+  assert.match(script, /const MAP_ACTION_GAP = 14/);
+  assert.match(script, /function updateMapActionPosition\(\)[\s\S]*querySelector\('\.map-actions'\)[\s\S]*#venue-tray/);
+  assert.doesNotMatch(script, /list-location-nearby|list-location-all|navigator\.geolocation/);
 });
 
 test('header corrections preserve game-title descenders and pin the menu to the viewport edge', async () => {
@@ -90,7 +91,7 @@ test('secondary destination headers retain space for their optional action', asy
     source('index.html'),
     source('js/mobile-tab-location-refinement.mjs')
   ]);
-  assert.equal((html.match(/mobile-destination-header/g) || []).length, 3);
+  assert.equal((html.match(/mobile-destination-header/g) || []).length, 4);
   assert.match(refinement, /\.mobile-destination-header \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto !important/);
 });
 

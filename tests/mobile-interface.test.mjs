@@ -135,12 +135,6 @@ test('sharing includes native, Clipboard, legacy-copy, and selectable manual sta
   assert.match(css, /\.manual-copy-panel/);
 });
 
-test('deferred external search and contribution features are not implemented', () => {
-  assert.match(app, /intent\.disabled = true/);
-  assert.doesNotMatch(html, /Add a Photo|photo upload/i);
-  assert.doesNotMatch(app, /joinExternalVenue|externalPlace|createCommunityLocation/);
-});
-
 test('preview copy does not expose internal milestone numbering to users', () => {
   assert.doesNotMatch(html, /read-only milestone|later milestones/i);
   assert.doesNotMatch(app, /Milestone 3|later milestones/i);

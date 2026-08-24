@@ -10,7 +10,7 @@ test('mobile selected-profile upward handle swipe opens Venue Detail', () => {
   assert.match(mobileRefinement, /const SELECTED_DETAIL_SWIPE_THRESHOLD = 48/);
   assert.match(mobileRefinement, /function trackSelectedHandleSwipe\(event\)[\s\S]*tray\?\.dataset\.state !== 'selected'[\s\S]*venueId: state\.selectedVenueId/);
   assert.match(mobileRefinement, /function handleSelectedHandleSwipe\(event\)[\s\S]*delta >= -SELECTED_DETAIL_SWIPE_THRESHOLD[\s\S]*tray\?\.dataset\.state !== 'selected'[\s\S]*openSelectedVenueDetail\(gesture\.venueId\)/);
-  assert.match(mobileRefinement, /window\.location\.assign\(buildVenueUrl\(venue\.slug, state\.gameId, window\.location\.href\)\)/);
+  assert.match(mobileRefinement, /window\.location\.assign\(buildVenueUrl\(venue\.slug, game, window\.location\.href\)\)/);
   assert.match(mobileRefinement, /document\.addEventListener\('pointerup', handleSelectedHandleSwipe, \{ capture: true \}\)/);
 });
 
