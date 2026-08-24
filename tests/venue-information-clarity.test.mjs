@@ -47,7 +47,7 @@ test('desktop Venue selection keeps the map active and opens the complete Profil
 });
 
 test('mobile Back returns to the focused map without manufacturing a desktop Detail transition', () => {
-  assert.match(app, /function returnToMapFromDetail\(event\)[\s\S]*if \(!isMobileLayout\(\)\) return false|function returnToMapFromDetail\(event\)[\s\S]*if \(!isMobileLayout\(\)\) return;/);
+  assert.match(app, /function returnToMapFromDetail\(event\)[\s\S]*if \(!isMobileLayout\(\)\) return;[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('selected'\)[\s\S]*renderAll\(\)[\s\S]*focusReturnedDetailVenue\(venue\)/);
   assert.match(shellControls, /function leaveDetailForCommand\(\)[\s\S]*if \(!isMobileLayout\(\) \|\| !state\?\.detailMode\) return false/);
 });
 
