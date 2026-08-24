@@ -253,3 +253,28 @@ body[data-view="detail"] .detail-contribution {
     left: 22px !important;
   }
 }
+
+/* BEARS SAY typography polish */
+body[data-view="detail"] .detail-fan-experiences h2 {
+  margin-bottom: 8px;
+}
+
+body[data-view="detail"] .detail-fan-experiences__quote {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+body[data-view="detail"] .detail-fan-experiences__quote[data-year]::before {
+  content: attr(data-year);
+  display: block;
+  margin-bottom: 5px;
+  color: var(--cgb-ink-500);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+body[data-view="detail"] .detail-fan-experiences__share {
+  font-size: 15px;
+}

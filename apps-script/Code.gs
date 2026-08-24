@@ -312,6 +312,14 @@ function cleanFanExperienceSnapshotText_(value) {
     .trim();
 }
 
+function fanExperienceSubmissionYear_(timestamp, parsedTimestamp) {
+  const match = String(timestamp || '').match(/\b(20\d{2})\b/);
+  if (match) return Number(match[1]);
+  if (!Number.isFinite(parsedTimestamp)) return null;
+  const year = new Date(parsedTimestamp).getUTCFullYear();
+  return year >= 2000 && year <= 2100 ? year : null;
+}
+
 function buildPublishedFanExperiences_(rows, publishedVenueIds) {
   const timestampAliases = ['Timestamp', 'timestamp', 'response_timestamp'];
   const venueIdAliases = ['Venue ID', 'Selected Venue ID', 'venue_id'];
@@ -324,6 +332,7 @@ function buildPublishedFanExperiences_(rows, publishedVenueIds) {
     return {
       venue_id: venueId,
       text: text,
+      year: fanExperienceSubmissionYear_(timestamp, parsedTimestamp),
       moderation_status: String((row && row.moderation_status) || '').trim(),
       timestamp_sort: Number.isFinite(parsedTimestamp) ? parsedTimestamp : 0,
       row_sort: index
@@ -332,11 +341,12 @@ function buildPublishedFanExperiences_(rows, publishedVenueIds) {
     return row.moderation_status === 'published' &&
       /^venue_[a-f0-9]{24}$/.test(row.venue_id) &&
       publishedVenueIds.has(row.venue_id) &&
+      Number.isInteger(row.year) && row.year >= 2000 && row.year <= 2100 &&
       row.text.length > 0 && row.text.length <= 500;
   }).sort(function(a, b) {
     return b.timestamp_sort - a.timestamp_sort || b.row_sort - a.row_sort;
   }).map(function(row) {
-    return { venue_id: row.venue_id, text: row.text };
+    return { venue_id: row.venue_id, text: row.text, year: row.year };
   });
 }
 

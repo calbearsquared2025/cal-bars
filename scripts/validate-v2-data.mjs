@@ -184,8 +184,8 @@ function validateFanExperience(experience, index, venueIds, errors) {
   const path = `fanExperiences[${index}]`;
   if (!isObject(experience)) return errors.push(`${path} must be an object`);
   const keys = Object.keys(experience).sort();
-  if (JSON.stringify(keys) !== JSON.stringify(['text', 'venue_id'])) {
-    errors.push(`${path} may contain only venue_id and text`);
+  if (JSON.stringify(keys) !== JSON.stringify(['text', 'venue_id', 'year'])) {
+    errors.push(`${path} may contain only venue_id, text, and year`);
   }
   requireString(experience, 'venue_id', path, errors);
   requireString(experience, 'text', path, errors);
@@ -193,6 +193,9 @@ function validateFanExperience(experience, index, venueIds, errors) {
     errors.push(`${path}.venue_id must match venue_<24 lowercase hex>`);
   }
   if (!venueIds.has(experience.venue_id)) errors.push(`${path}.venue_id does not reference a public venue`);
+  if (!Number.isInteger(experience.year) || experience.year < 2000 || experience.year > 2100) {
+    errors.push(`${path}.year must be a four-digit integer`);
+  }
   if (typeof experience.text === 'string') {
     if (experience.text.length > 500) errors.push(`${path}.text must be at most 500 characters`);
     if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(experience.text)) errors.push(`${path}.text contains control characters`);
