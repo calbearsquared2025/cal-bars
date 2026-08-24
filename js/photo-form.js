@@ -57,7 +57,7 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
   if (!actions) return '';
   actions.append(createPhotoFormLink(documentObject, {
     href,
-    label: 'Submit a Photo',
+    label: 'Add a Photo',
     entryPoint: 'contribution',
     className: 'detail-contribution__action'
   }));
