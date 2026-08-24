@@ -122,7 +122,7 @@ export function bearCountCopy(count) {
   const total = Number(count);
   if (total === 1) return '1 Bear watching here';
   if (total > 1) return `${total} Bears watching here`;
-  return 'No Bears are watching here yet. Be the first.';
+  return 'No Bears have committed to watch here yet.';
 }
 
 export function historyCountCopy(count) {
