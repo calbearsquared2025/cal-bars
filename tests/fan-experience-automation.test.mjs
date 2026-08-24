@@ -100,8 +100,8 @@ test('public Fan Experiences include only published rows for public canonical Ve
   context.__venueId = venueId;
   const output = json(call('buildPublishedFanExperiences_(__rows, new Set([__venueId]))'));
   assert.deepEqual(output, [
-    { venue_id: venueId, text: '<b>Newest</b> stays plain text' },
-    { venue_id: venueId, text: 'Older published experience' }
+    { venue_id: venueId, text: '<b>Newest</b> stays plain text', year: 2026 },
+    { venue_id: venueId, text: 'Older published experience', year: 2026 }
   ]);
   const serialized = JSON.stringify(output);
   for (const privateValue of ['RAW PRIVATE', 'private@example.com', 'moderation_status', 'moderation_reason', 'reviewer_note', 'Timestamp']) {
