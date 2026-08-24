@@ -10,6 +10,11 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
+function fanExperienceYear(value) {
+  const year = Number(value);
+  return Number.isInteger(year) && year >= 2000 && year <= 2100 ? year : null;
+}
+
 function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
@@ -29,7 +34,8 @@ export function fanExperiencesForVenue(snapshot, venueId) {
     .filter((item) => clean(item?.venue_id) === resolvedVenueId && clean(item?.text))
     .map((item) => Object.freeze({
       venue_id: resolvedVenueId,
-      text: clean(item.text)
+      text: clean(item.text),
+      year: fanExperienceYear(item.year)
     }));
 }
 
@@ -52,6 +58,7 @@ function createShareLink(documentObject, href) {
 function createQuote(documentObject, item) {
   const quote = documentObject.createElement('p');
   quote.className = 'detail-fan-experiences__quote';
+  if (item.year) quote.dataset.year = String(item.year);
   quote.textContent = item.text;
   return quote;
 }
