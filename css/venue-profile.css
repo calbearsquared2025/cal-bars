@@ -333,6 +333,10 @@ body[data-view="detail"] .detail-contribution {
   line-height: 1.35 !important;
 }
 
+.venue-detail .activity-card:has(.bear-count__number) > .activity-card__presence {
+  grid-row: 2;
+}
+
 body[data-view="detail"] #venue-detail .detail-contribution__actions,
 #tray-selected > #venue-detail.venue-detail .detail-contribution__actions {
   display: grid;
