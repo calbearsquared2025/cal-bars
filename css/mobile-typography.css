@@ -1,0 +1,74 @@
+/* Mobile typography hierarchy.
+   Keep athletic identity/display treatments strong while reserving heavier UI weights
+   for genuinely primary actions. This layer intentionally changes weight only; sizing,
+   spacing, font families, color, and component geometry remain owned by their existing
+   stylesheets. */
+@media (max-width: 899px) {
+  :root {
+    --cgb-mobile-weight-identity: 850;
+    --cgb-mobile-weight-primary: 750;
+    --cgb-mobile-weight-selected: 700;
+    --cgb-mobile-weight-interactive: 650;
+    --cgb-mobile-weight-body-emphasis: 500;
+    --cgb-mobile-weight-body: 400;
+  }
+
+  /* Primary actions keep the strongest non-brand weight. */
+  body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .intent-button,
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .action-row > .intent-button,
+  .detail-watch-party-cta__action {
+    font-weight: var(--cgb-mobile-weight-primary) !important;
+  }
+
+  /* Standard interactive labels use one shared secondary tier. */
+  body[data-view="detail"] .detail-directions-inline,
+  body[data-view="detail"] .detail-website-inline,
+  body[data-view="detail"] .detail-local-map__photo-action,
+  .venue-detail .detail-fan-experiences__prompt,
+  .venue-detail .detail-fan-experiences__share,
+  .venue-detail .detail-fan-experiences__toggle,
+  .venue-detail .activity-card:has(.bear-count__number) .bear-count__label,
+  body[data-view="detail"] #venue-detail .detail-contribution__action,
+  #tray-selected > #venue-detail.venue-detail .detail-contribution__action,
+  body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .detail-share,
+  .add-report-options button,
+  .add-missing-location,
+  body .mobile-command > span:last-child {
+    font-weight: var(--cgb-mobile-weight-interactive) !important;
+  }
+
+  /* Attendance is emphasized by the numeral; the supporting label no longer competes. */
+  .venue-detail .activity-card > strong {
+    font-weight: var(--cgb-mobile-weight-interactive) !important;
+  }
+
+  /* Current navigation state gets a small step up without returning to display weight. */
+  body .mobile-command[aria-current="page"] > span:last-child {
+    font-weight: var(--cgb-mobile-weight-selected) !important;
+  }
+
+  /* Compact map-profile actions follow the same primary/secondary hierarchy.
+     Specificity is intentionally above the runtime profile-refinement styles. */
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .selected-card__directions-inline,
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .action-row > .selected-card__share,
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .action-row > .selected-card__details {
+    font-weight: var(--cgb-mobile-weight-interactive) !important;
+  }
+
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .bear-count__label {
+    font-weight: var(--cgb-mobile-weight-interactive) !important;
+  }
+
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .bear-count__prompt {
+    font-weight: var(--cgb-mobile-weight-selected) !important;
+  }
+
+  /* The empty Watch Party card separates explanatory status from its action. */
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .selected-card__plan-party-status {
+    font-weight: var(--cgb-mobile-weight-body-emphasis) !important;
+  }
+
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .selected-card__plan-party-action {
+    font-weight: var(--cgb-mobile-weight-selected) !important;
+  }
+}
