@@ -62,10 +62,10 @@ test('obvious URL, contact information, threat, and junk cases are held', () => 
   }
 });
 
-test('public Fan Experiences include only published rows for public canonical Venues, newest first', () => {
+test('public Fan Experiences include only published rows for public canonical Venues, newest first, with submission year only', () => {
   context.__rows = [
     {
-      Timestamp: '2026-08-20T10:00:00Z',
+      Timestamp: '2025-11-20T10:00:00Z',
       'Venue ID': venueId,
       'What should other Bears know about watching a Cal game here?': 'RAW PRIVATE ONE',
       public_text: 'Older published experience',
@@ -100,8 +100,8 @@ test('public Fan Experiences include only published rows for public canonical Ve
   context.__venueId = venueId;
   const output = json(call('buildPublishedFanExperiences_(__rows, new Set([__venueId]))'));
   assert.deepEqual(output, [
-    { venue_id: venueId, text: '<b>Newest</b> stays plain text' },
-    { venue_id: venueId, text: 'Older published experience' }
+    { venue_id: venueId, text: '<b>Newest</b> stays plain text', year: 2026 },
+    { venue_id: venueId, text: 'Older published experience', year: 2025 }
   ]);
   const serialized = JSON.stringify(output);
   for (const privateValue of ['RAW PRIVATE', 'private@example.com', 'moderation_status', 'moderation_reason', 'reviewer_note', 'Timestamp']) {
