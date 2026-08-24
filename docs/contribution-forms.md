@@ -191,13 +191,13 @@ Free conversion options:
 
 This focused Form collects one anonymous, venue-centric Fan Experience for the **BEARS SAY** section. It is the deliberate exception to the default no-trigger rule above: install the repository's focused spreadsheet-bound `onFanExperienceFormSubmit` trigger after the response tab exists.
 
-Public Form configuration is intentionally blank in `js/fan-experience-form-config.mjs` until the reviewed Form exists. Configure only:
+Public Form configuration in `js/fan-experience-form-config.mjs`:
 
-- public Form `viewform` URL
-- Venue name entry ID
-- Venue ID entry ID
+- Form URL: `https://docs.google.com/forms/d/e/1FAIpQLScVyKUUXqR8sqEPQLIMeVV1TtxI9EiVmMDd3ib-CvLuBKRajg/viewform`
+- Venue ID: `entry.120767699`
+- Venue name: `entry.202050515`
 
-Do not commit a Form edit URL, response-sheet identifier, or placeholder live IDs. Equivalent `cgb-fan-experience-form-*` meta configuration is also supported. Until valid configuration exists, **Share your experience** is safely unavailable.
+Do not commit a Form edit URL, response-sheet identifier, responses, or private Form metadata. Equivalent `cgb-fan-experience-form-*` meta configuration remains supported.
 
 Form title:
 
