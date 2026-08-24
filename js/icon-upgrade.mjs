@@ -139,11 +139,13 @@ function syncDetailLocalMap(hero, venue, state) {
     return;
   }
   const style = `https://api.maptiler.com/maps/${DETAIL_MAP_STYLE_ID}/style.json?key=${encodeURIComponent(key)}`;
+  const configuredZoom = Number(container.dataset.zoom);
+  const zoom = Number.isFinite(configuredZoom) ? configuredZoom : DETAIL_MAP_ZOOM;
   const map = new window.maplibregl.Map({
     container,
     style,
     center: [longitude, latitude],
-    zoom: DETAIL_MAP_ZOOM,
+    zoom,
     interactive: false,
     attributionControl: false,
     fadeDuration: 0
