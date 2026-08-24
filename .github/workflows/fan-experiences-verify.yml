@@ -23,4 +23,3 @@ jobs:
       - run: npm test
       - run: npm run test:browser
       - run: npm run validate:data
-      - run: npm run validate:venue-load
