@@ -8,6 +8,7 @@ import './map-profile-final-pass.mjs';
 import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
 import { renderPhotoFormEntry } from './photo-form.js';
+import { renderFanExperiences } from './fan-experiences.mjs';
 import { enhanceVenueProfile } from './venue-profile-enhancement.mjs';
 
 let appConnected = false;
@@ -190,6 +191,7 @@ export function upgradeRenderedIcons(root = document) {
 function runRefinements() {
   const state = window.CGBApp?.getState?.();
   enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
+  renderFanExperiences({ app: window.CGBApp, documentObject: document });
   renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
   upgradeRenderedIcons();
   const venue = detailVenue(state);

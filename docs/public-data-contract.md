@@ -16,6 +16,7 @@ This contract defines the only data shape the public website may receive from th
   "fanCounts": [],
   "venueHistoryCounts": [],
   "venueSeasonCounts": [],
+  "fanExperiences": [],
   "generatedAt": "2026-08-03T20:04:00Z"
 }
 ```
@@ -23,6 +24,8 @@ This contract defines the only data shape the public website may receive from th
 Record fields use the canonical snake_case names from the private Data and Privacy Specification. Collection names use the camelCase names above.
 
 The live endpoint includes `venueSeasonCounts`. Older last-known-good or static fallback snapshots created before this field was introduced may omit it; the client treats an omitted collection as an empty array.
+
+Older snapshots may also omit `fanExperiences`; the client treats a missing collection as an empty array.
 
 ## ID rules
 
@@ -111,6 +114,18 @@ Do not expose or maintain `opponent_short_name`. When `kickoff_status = confirme
 
 Only rows with `publication_status = published` and `event_status = active` enter the public response. `source_submission_id`, `publication_status`, and `created_at` are private and omitted.
 
+## Public Fan Experience fields
+
+`fanExperiences` is an optional public collection of anonymous, venue-centric fan experiences. Each item contains exactly:
+
+- `venue_id`
+- `text`
+- `year`
+
+Only private `Fan_Experiences_Raw` rows with `moderation_status = published`, a published canonical Venue, non-empty valid `public_text`, and a valid Google Form submission timestamp may enter the collection. The backend orders experiences newest-first using the private timestamp and derives the four-digit public `year` from that submission date. The full timestamp is never returned publicly. The displayed text is substantively verbatim after technical cleanup and is rendered by the client as plain text.
+
+The public collection never includes raw `experience_text`, moderation fields, full timestamps, Form metadata, contact information, or spreadsheet identifiers.
+
 ## Aggregate fields
 
 `fanCounts` contains one record per active `game_id + venue_id` pair:
@@ -165,6 +180,9 @@ The public response must not include:
 - `publication_status`
 - `created_at`
 - `idAliases`
+- raw `experience_text` or `public_text`
+- Fan Experience `moderation_status` or `moderation_reason`
+- Fan Experience response timestamps or Google Form metadata
 
 `Venue_Photos` rows themselves are also forbidden. Only the four explicitly whitelisted photo values may be merged into a public Venue object.
 

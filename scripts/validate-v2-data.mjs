@@ -15,7 +15,9 @@ const FORBIDDEN_KEYS = new Set([
   'permission_confirmed', 'permission_record', 'file_reference', 'drive_file_id',
   'drive_file_reference', 'raw_submission_contents', 'caption', 'review_status', 'reviewed_at',
   'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
-  'opponent_short_name', 'idAliases'
+  'opponent_short_name', 'idAliases',
+  'experience_text', 'public_text', 'moderation_status', 'moderation_reason',
+  'response_timestamp', 'form_response_id', 'form_id'
 ]);
 
 const RELEASE_FIXTURE_MARKERS = Object.freeze([
@@ -178,6 +180,28 @@ function validateWatchParty(party, index, venueIds, gameIds, errors) {
   if (!isIsoDateTime(party.updated_at)) errors.push(`${path}.updated_at must be an ISO-8601 datetime`);
 }
 
+function validateFanExperience(experience, index, venueIds, errors) {
+  const path = `fanExperiences[${index}]`;
+  if (!isObject(experience)) return errors.push(`${path} must be an object`);
+  const keys = Object.keys(experience).sort();
+  if (JSON.stringify(keys) !== JSON.stringify(['text', 'venue_id', 'year'])) {
+    errors.push(`${path} may contain only venue_id, text, and year`);
+  }
+  requireString(experience, 'venue_id', path, errors);
+  requireString(experience, 'text', path, errors);
+  if (!CANONICAL_ID_PATTERNS.venue.test(experience.venue_id || '')) {
+    errors.push(`${path}.venue_id must match venue_<24 lowercase hex>`);
+  }
+  if (!venueIds.has(experience.venue_id)) errors.push(`${path}.venue_id does not reference a public venue`);
+  if (!Number.isInteger(experience.year) || experience.year < 2000 || experience.year > 2100) {
+    errors.push(`${path}.year must be a four-digit integer`);
+  }
+  if (typeof experience.text === 'string') {
+    if (experience.text.length > 500) errors.push(`${path}.text must be at most 500 characters`);
+    if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(experience.text)) errors.push(`${path}.text contains control characters`);
+  }
+}
+
 export function validateSnapshot(snapshot) {
   const errors = [];
   if (!isObject(snapshot)) return ['snapshot must be an object'];
@@ -191,6 +215,9 @@ export function validateSnapshot(snapshot) {
   }
   if (snapshot.venueSeasonCounts !== undefined && !Array.isArray(snapshot.venueSeasonCounts)) {
     errors.push('venueSeasonCounts must be an array');
+  }
+  if (snapshot.fanExperiences !== undefined && !Array.isArray(snapshot.fanExperiences)) {
+    errors.push('fanExperiences must be an array');
   }
   if (!isIsoDateTime(snapshot.generatedAt)) errors.push('generatedAt must be an ISO-8601 datetime');
 
@@ -242,6 +269,10 @@ export function validateSnapshot(snapshot) {
     const pair = `${row.season}::${row.venue_id}`;
     if (seasonPairs.has(pair)) errors.push(`${path} duplicates season/venue pair ${pair}`);
     seasonPairs.add(pair);
+  });
+
+  (snapshot.fanExperiences || []).forEach((experience, index) => {
+    validateFanExperience(experience, index, venueIds, errors);
   });
 
   return errors;
