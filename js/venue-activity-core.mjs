@@ -8,14 +8,6 @@ function normalizedSeason(value) {
   return season >= 2000 && season <= 2100 ? season : null;
 }
 
-function getVenueGameCount(snapshot, gameId, venueId) {
-  if (!gameId || !venueId) return 0;
-  const row = (snapshot?.fanCounts || []).find((item) =>
-    item?.game_id === gameId && item?.venue_id === venueId
-  );
-  return normalizedCount(row?.count);
-}
-
 export function getVenueSeasonCount(snapshot, season, venueId) {
   const normalized = normalizedSeason(season);
   if (!normalized || !venueId) return 0;
@@ -32,25 +24,16 @@ export function seasonActivityCopy(count) {
   return '';
 }
 
-export function lastSeasonActivityCopy() {
-  return 'Bears watched Cal games here last season.';
-}
-
 // Compatibility for existing renderers that used legacy description detection only to
 // suppress migrated source copy. Historical activity no longer depends on description text.
 export function legacyActivitySeason() {
   return null;
 }
 
-export function legacyActivityCopy() {
-  return lastSeasonActivityCopy();
-}
-
 export function venueActivityPresentation({ snapshot, game, venue, currentCopy = '' } = {}) {
   const season = normalizedSeason(game?.season);
   const seasonCount = getVenueSeasonCount(snapshot, season, venue?.venue_id);
   const seasonCopy = seasonActivityCopy(seasonCount);
-  const currentGameCount = getVenueGameCount(snapshot, game?.game_id, venue?.venue_id);
   const selectedGameCompleted = game?.game_status === 'completed';
 
   if (selectedGameCompleted) {
@@ -62,12 +45,5 @@ export function venueActivityPresentation({ snapshot, game, venue, currentCopy =
   }
 
   if (seasonCopy) return { primary: currentCopy, secondary: [seasonCopy] };
-  if (currentGameCount > 0) return { primary: currentCopy, secondary: [] };
-  if (season) {
-    return {
-      primary: currentCopy,
-      secondary: [lastSeasonActivityCopy()]
-    };
-  }
   return { primary: currentCopy, secondary: [] };
 }
