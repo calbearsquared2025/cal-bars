@@ -40,25 +40,29 @@ test('BEARS SAY source covers zero, one, and expandable multi-experience states'
   assert.match(sourceText, /See all experiences/);
   assert.match(sourceText, /Show fewer/);
   assert.match(sourceText, /visibleFanExperiences\(experiences, expanded\)/);
-  assert.match(sourceText, /quote\.dataset\.year = String\(item\.year\)/);
-  assert.match(sourceText, /quote\.textContent = item\.text/);
-  assert.doesNotMatch(sourceText, /innerHTML/);
+  assert.match(sourceText, /year\.className = 'detail-fan-experiences__year'/);
+  assert.match(sourceText, /year\.textContent = String\(item\.year\)/);
+  assert.match(sourceText, /quote\.append\(documentObject\.createTextNode\(item\.text\)\)/);
+  assert.doesNotMatch(sourceText, /dataset\.year|innerHTML/);
 });
 
 test('BEARS SAY remains adjacent to CGB SAYS with restrained year and typography polish', async () => {
-  const [fanSource, profileSource, css, bootstrap] = await Promise.all([
+  const [fanSource, profileSource, css, bootstrap, formCss] = await Promise.all([
     source('js/fan-experiences.mjs'),
     source('js/venue-profile-enhancement.mjs'),
     source('css/venue-profile.css'),
-    source('js/icon-upgrade.mjs')
+    source('js/icon-upgrade.mjs'),
+    source('css/watch-party-form.css')
   ]);
   assert.match(profileSource, /CGB SAYS/);
   assert.match(fanSource, /detail\.querySelector\(':scope > \.detail-editorial'\)/);
   assert.match(fanSource, /editorial\.after\(section\)/);
+  assert.match(formCss, /@import url\('\.\/venue-profile\.css'\)/);
   assert.match(css, /\.detail-fan-experiences\s*\{/);
   assert.match(css, /padding: 16px/);
   assert.match(css, /\.detail-fan-experiences__quote\s*\{[\s\S]*font-size: 18px;[\s\S]*font-weight: 400;[\s\S]*line-height: 1\.45;/);
-  assert.match(css, /\.detail-fan-experiences__quote\[data-year\]::before\s*\{[\s\S]*color: var\(--cgb-ink-500\);[\s\S]*font-size: var\(--text-xs\);/);
+  assert.match(css, /\.detail-fan-experiences__year\s*\{[\s\S]*color: var\(--cgb-ink-500\);[\s\S]*font-size: var\(--text-xs\);/);
+  assert.doesNotMatch(css, /detail-fan-experiences__quote\[data-year\]::before/);
   assert.match(css, /\.detail-fan-experiences__share\s*\{[\s\S]*font-size: 15px;/);
   assert.match(css, /@media \(max-width: 359px\)[\s\S]*\.detail-fan-experiences/);
   assert.doesNotMatch(css, /star-rating|avatar|review-card|quote-icon/);
