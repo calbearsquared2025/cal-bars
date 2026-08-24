@@ -679,11 +679,6 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
     border-top-color: var(--cgb-gold-200) !important;
   }
 
-  #tray-selected > #venue-detail .detail-editorial h2 {
-    margin: 0 0 5px !important;
-    font-size: .68rem !important;
-  }
-
   #tray-selected > #venue-detail .detail-editorial__copy {
     margin: 0 !important;
     color: var(--cgb-ink-700) !important;
