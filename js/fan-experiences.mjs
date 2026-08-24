@@ -58,8 +58,13 @@ function createShareLink(documentObject, href) {
 function createQuote(documentObject, item) {
   const quote = documentObject.createElement('p');
   quote.className = 'detail-fan-experiences__quote';
-  if (item.year) quote.dataset.year = String(item.year);
-  quote.textContent = item.text;
+  if (item.year) {
+    const year = documentObject.createElement('span');
+    year.className = 'detail-fan-experiences__year';
+    year.textContent = String(item.year);
+    quote.append(year);
+  }
+  quote.append(documentObject.createTextNode(item.text));
   return quote;
 }
 
