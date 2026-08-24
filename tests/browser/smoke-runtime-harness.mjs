@@ -106,6 +106,12 @@ async function runMobile() {
     const year = section?.querySelector('.detail-fan-experiences__year');
     check(visible(year), 'Mobile BEARS SAY should visibly render the submission year');
     check(year?.textContent?.trim() === '2026', 'Mobile BEARS SAY should render the expected submission year');
+    const invite = element('#venue-detail .detail-share');
+    check(visible(invite), 'Mobile full Venue Profile should visibly render Invite Others');
+    check(invite?.textContent?.trim() === 'Invite Others', 'Selected mobile full Profile should label the share action Invite Others');
+    check(!invite?.querySelector('.ui-icon'), 'Mobile full Profile Invite Others should remain text-only without a late icon');
+    const localMap = element('#venue-detail .detail-local-map');
+    if (localMap) check(localMap.dataset.zoom === '15.4', 'Mobile full Profile map preview should use the slightly wider zoom');
     finish('CGB_SMOKE_MOBILE');
     return;
   }
