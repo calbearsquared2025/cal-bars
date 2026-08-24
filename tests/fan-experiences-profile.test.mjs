@@ -43,6 +43,7 @@ test('BEARS SAY source covers zero, one, and expandable multi-experience states'
   assert.match(sourceText, /visibleFanExperiences\(experiences, expanded\)/);
   assert.match(sourceText, /mark\.className = 'detail-fan-experiences__mark'/);
   assert.match(sourceText, /name\.textContent = item\.display_name \|\| 'Anonymous'/);
+  assert.match(sourceText, /createTextNode\(' · '\)/);
   assert.match(sourceText, /year\.className = 'detail-fan-experiences__year'/);
   assert.match(sourceText, /year\.textContent = String\(item\.year\)/);
   assert.match(sourceText, /quote\.textContent = item\.text/);
