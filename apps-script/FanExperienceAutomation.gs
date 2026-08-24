@@ -23,6 +23,7 @@ const CGB_FAN_EXPERIENCE_FORM_ALIASES = Object.freeze({
     'experience_text'
   ]),
   display_name: Object.freeze([
+    'Name to Display (Optional!)',
     'Name to display (optional)',
     'Name to display',
     'display_name'
