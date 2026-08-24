@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   getVenueSeasonCount,
-  lastSeasonActivityCopy,
   seasonActivityCopy,
   venueActivityPresentation
 } from '../js/venue-activity-core.mjs';
@@ -37,10 +36,6 @@ test('season activity copy is cumulative Bear activity rather than distinct game
   assert.equal(seasonActivityCopy(0), '');
 });
 
-test('last-season baseline copy is evergreen', () => {
-  assert.equal(lastSeasonActivityCopy(), 'Bears watched Cal games here last season.');
-});
-
 test('upcoming games show current selection copy plus real current-season history', () => {
   assert.deepEqual(venueActivityPresentation({
     snapshot: snapshot({ seasonCount: 12, currentCount: 3 }),
@@ -53,7 +48,7 @@ test('upcoming games show current selection copy plus real current-season histor
   });
 });
 
-test('current-game Fan Intent suppresses the last-season baseline before archived season history exists', () => {
+test('current-game Fan Intent remains primary before archived current-season history exists', () => {
   assert.deepEqual(venueActivityPresentation({
     snapshot: snapshot({ currentCount: 3 }),
     game: upcomingGame,
@@ -65,7 +60,7 @@ test('current-game Fan Intent suppresses the last-season baseline before archive
   });
 });
 
-test('zero current and archived Fan Intent shows only the evergreen last-season baseline', () => {
+test('upcoming games do not synthesize a prior-season fallback when current-season history is empty', () => {
   assert.deepEqual(venueActivityPresentation({
     snapshot: snapshot(),
     game: upcomingGame,
@@ -73,11 +68,11 @@ test('zero current and archived Fan Intent shows only the evergreen last-season 
     currentCopy: 'No Bears are watching here yet. Be the first.'
   }), {
     primary: 'No Bears are watching here yet. Be the first.',
-    secondary: ['Bears watched Cal games here last season.']
+    secondary: []
   });
 });
 
-test('venue description text does not determine whether the baseline appears', () => {
+test('venue description text does not create historical activity without current-season aggregates', () => {
   const historicalDescription = {
     ...venue,
     short_description: 'Hosted Chicago’s 2025 Big Game watch party.'
@@ -88,7 +83,7 @@ test('venue description text does not determine whether the baseline appears', (
   };
   const expected = {
     primary: 'No Bears are watching here yet. Be the first.',
-    secondary: ['Bears watched Cal games here last season.']
+    secondary: []
   };
 
   assert.deepEqual(venueActivityPresentation({
@@ -105,7 +100,7 @@ test('venue description text does not determine whether the baseline appears', (
   }), expected);
 });
 
-test('completed-game views use season history instead of an incorrect live zero count', () => {
+test('completed-game views use current-season history instead of an incorrect live zero count', () => {
   assert.deepEqual(venueActivityPresentation({
     snapshot: snapshot({ seasonCount: 12 }),
     game: completedGame,

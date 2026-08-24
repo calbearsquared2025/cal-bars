@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
-const [source, css] = await Promise.all([
+const [source, css, mobileCss] = await Promise.all([
   readFile(new URL('../js/fan-intent.js', import.meta.url), 'utf8'),
-  readFile(new URL('../css/venue-profile.css', import.meta.url), 'utf8')
+  readFile(new URL('../css/venue-profile.css', import.meta.url), 'utf8'),
+  readFile(new URL('../css/mobile-first-paint.css', import.meta.url), 'utf8')
 ]);
 
 test('Fan Intent presence follows the canonical Venue Profile instead of detailMode', () => {
@@ -24,5 +25,12 @@ test('Venue Profile attendance stacks its supporting copy below the label', () =
   assert.match(
     css,
     /\.activity-card:has\(\.bear-count__number\) > \.activity-card__presence \{[\s\S]*grid-row: 2;/
+  );
+});
+
+test('mobile attendance copy does not inject a generic leading bullet into activity paragraphs', () => {
+  assert.doesNotMatch(
+    mobileCss,
+    /body\[data-view="detail"\] \.activity-card p::before\s*\{/
   );
 });
