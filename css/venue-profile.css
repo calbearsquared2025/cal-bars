@@ -130,7 +130,7 @@ body[data-view="detail"] .detail-editorial {
 }
 
 body[data-view="detail"] .detail-editorial h2,
-body[data-view="detail"] .detail-fan-experiences h2 {
+.venue-detail .detail-fan-experiences h2 {
   margin: 0 0 6px;
   color: var(--cgb-navy-950);
   font-family: var(--font-display);
@@ -140,7 +140,7 @@ body[data-view="detail"] .detail-fan-experiences h2 {
   line-height: 1.15;
 }
 
-body[data-view="detail"] .detail-fan-experiences h2 {
+.venue-detail .detail-fan-experiences h2 {
   margin-bottom: 10px;
 }
 
@@ -151,7 +151,7 @@ body[data-view="detail"] .detail-editorial__copy {
   line-height: 1.48;
 }
 
-body[data-view="detail"] .detail-fan-experiences {
+.venue-detail .detail-fan-experiences {
   margin: 0 !important;
   padding: 16px;
   background: #f1f6fb;
@@ -160,29 +160,29 @@ body[data-view="detail"] .detail-fan-experiences {
   border-radius: 0;
 }
 
-body[data-view="detail"] .detail-editorial + .detail-fan-experiences {
+.venue-detail .detail-editorial + .detail-fan-experiences {
   border-top: 0;
 }
 
-body[data-view="detail"] .detail-fan-experiences__quotes {
+.venue-detail .detail-fan-experiences__quotes {
   display: grid;
   gap: 10px;
 }
 
-body[data-view="detail"] .detail-fan-experiences__quote,
-body[data-view="detail"] .detail-fan-experiences__prompt,
-body[data-view="detail"] .detail-fan-experiences__guidance {
+.venue-detail .detail-fan-experiences__quote,
+.venue-detail .detail-fan-experiences__prompt,
+.venue-detail .detail-fan-experiences__guidance {
   margin: 0;
   color: var(--cgb-ink-700);
 }
 
-body[data-view="detail"] .detail-fan-experiences__quote {
+.venue-detail .detail-fan-experiences__quote {
   font-size: 18px;
   font-weight: 400;
   line-height: 1.45;
 }
 
-body[data-view="detail"] .detail-fan-experiences__year {
+.venue-detail .detail-fan-experiences__year {
   display: block;
   margin-bottom: 5px;
   color: var(--cgb-ink-500);
@@ -191,28 +191,28 @@ body[data-view="detail"] .detail-fan-experiences__year {
   line-height: 1.2;
 }
 
-body[data-view="detail"] .detail-fan-experiences__prompt,
-body[data-view="detail"] .detail-fan-experiences__guidance {
+.venue-detail .detail-fan-experiences__prompt,
+.venue-detail .detail-fan-experiences__guidance {
   font-size: var(--text-sm);
   line-height: 1.48;
 }
 
-body[data-view="detail"] .detail-fan-experiences__prompt {
+.venue-detail .detail-fan-experiences__prompt {
   color: var(--cgb-navy-950);
   font-weight: 750;
 }
 
-body[data-view="detail"] .detail-fan-experiences__guidance {
+.venue-detail .detail-fan-experiences__guidance {
   margin-top: 2px;
 }
 
-body[data-view="detail"] .detail-fan-experiences__quote + .detail-fan-experiences__quote {
+.venue-detail .detail-fan-experiences__quote + .detail-fan-experiences__quote {
   padding-top: 10px;
   border-top: 1px solid rgba(1, 1, 51, .09);
 }
 
-body[data-view="detail"] .detail-fan-experiences__toggle,
-body[data-view="detail"] .detail-fan-experiences__share {
+.venue-detail .detail-fan-experiences__toggle,
+.venue-detail .detail-fan-experiences__share {
   width: fit-content;
   margin-top: 10px;
   padding: 0;
@@ -229,7 +229,7 @@ body[data-view="detail"] .detail-fan-experiences__share {
   cursor: pointer;
 }
 
-body[data-view="detail"] .detail-fan-experiences__share {
+.venue-detail .detail-fan-experiences__share {
   display: inline-block;
   font-size: 15px;
 }
@@ -251,7 +251,7 @@ body[data-view="detail"] .detail-contribution {
     left: 20px !important;
   }
 
-  body[data-view="detail"] .detail-fan-experiences {
+  .venue-detail .detail-fan-experiences {
     padding: 14px 12px;
   }
 }
