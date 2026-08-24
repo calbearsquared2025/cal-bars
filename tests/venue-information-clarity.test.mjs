@@ -71,10 +71,12 @@ test('Watch Party display keeps compact game identity on the shared Profile', ()
   assert.match(watchPartyDisplay, /party-module__report/);
 });
 
-test('persistent Profile actions are Fan Intent and Share while Directions stays outside the action row', () => {
+test('persistent Profile actions are Fan Intent and text-only Share while Directions stays outside the action row', () => {
   const detailActionSource = app.match(/function createDetailActionRow\(venue\)[\s\S]*?function createDetailContribution/)?.[0] || '';
   assert.match(detailActionSource, /row\.append\(intent, share\)/);
   assert.match(detailActionSource, /detail-share/);
+  assert.match(detailActionSource, /share\.textContent = 'Share'/);
+  assert.doesNotMatch(detailActionSource, /createIcon\('share'/);
   assert.doesNotMatch(detailActionSource, /directions/i);
 });
 
