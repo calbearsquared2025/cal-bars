@@ -1,0 +1,31 @@
+name: Apply BEARS SAY attribution patch
+
+on:
+  push:
+    branches:
+      - fix/bears-say-profile-styles
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/bears-say-profile-styles
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/apply-bears-say-attribution.mjs
+      - name: Remove temporary patch tooling
+        run: git rm scripts/apply-bears-say-attribution.mjs .github/workflows/apply-bears-say-attribution.yml
+      - name: Commit attribution implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add BEARS SAY attribution treatment"
+          git push origin HEAD:fix/bears-say-profile-styles
