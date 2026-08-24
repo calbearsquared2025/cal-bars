@@ -41,6 +41,19 @@ test('Fan Experience cleanup removes control characters, normalizes whitespace, 
   assert.equal(cleaned, cleaned.trim());
 });
 
+test('optional display name is cleaned, allows short names, and holds unsafe attribution', () => {
+  context.__value = '  AJ  ';
+  assert.equal(call('cleanFanExperienceDisplayName_(__value)'), 'AJ');
+  assert.deepEqual(json(call('moderateFanExperienceDisplayName_(__value)')), {
+    status: 'published',
+    reason: ''
+  });
+  context.__value = '';
+  assert.equal(call('moderateFanExperienceDisplayName_(__value).status'), 'published');
+  context.__value = 'bear@example.com';
+  assert.equal(call('moderateFanExperienceDisplayName_(__value).reason'), 'display_name_personal_contact_information');
+});
+
 test('useful negative feedback publishes when it does not trigger a safety hold', () => {
   context.__value = 'Service was slow, but the Cal crowd was lively and the game-day atmosphere was worth it.';
   assert.deepEqual(json(call('moderateFanExperienceText_(__value)')), {
@@ -68,7 +81,9 @@ test('public Fan Experiences include only published rows for public canonical Ve
       Timestamp: '2026-08-20T10:00:00Z',
       'Venue ID': venueId,
       'What should other Bears know about watching a Cal game here?': 'RAW PRIVATE ONE',
+      'Name to display (optional)': 'RAW PRIVATE NAME',
       public_text: 'Older published experience',
+      public_display_name: '',
       moderation_status: 'published',
       moderation_reason: '',
       respondent_email: 'private@example.com'
@@ -78,6 +93,7 @@ test('public Fan Experiences include only published rows for public canonical Ve
       'Venue ID': venueId,
       experience_text: 'RAW PRIVATE TWO',
       public_text: '<b>Newest</b> stays plain text',
+      public_display_name: 'Matthew',
       moderation_status: 'published',
       moderation_reason: '',
       reviewer_note: 'private'
@@ -100,11 +116,11 @@ test('public Fan Experiences include only published rows for public canonical Ve
   context.__venueId = venueId;
   const output = json(call('buildPublishedFanExperiences_(__rows, new Set([__venueId]))'));
   assert.deepEqual(output, [
-    { venue_id: venueId, text: '<b>Newest</b> stays plain text', year: 2026 },
-    { venue_id: venueId, text: 'Older published experience', year: 2026 }
+    { venue_id: venueId, text: '<b>Newest</b> stays plain text', display_name: 'Matthew', year: 2026 },
+    { venue_id: venueId, text: 'Older published experience', display_name: '', year: 2026 }
   ]);
   const serialized = JSON.stringify(output);
-  for (const privateValue of ['RAW PRIVATE', 'private@example.com', 'moderation_status', 'moderation_reason', 'reviewer_note', 'Timestamp']) {
+  for (const privateValue of ['RAW PRIVATE', 'RAW PRIVATE NAME', 'private@example.com', 'public_display_name', 'moderation_status', 'moderation_reason', 'reviewer_note', 'Timestamp']) {
     assert.equal(serialized.includes(privateValue), false);
   }
 });

@@ -35,6 +35,7 @@ export function fanExperiencesForVenue(snapshot, venueId) {
     .map((item) => Object.freeze({
       venue_id: resolvedVenueId,
       text: clean(item.text),
+      display_name: clean(item.display_name),
       year: fanExperienceYear(item.year)
     }));
 }
@@ -56,16 +57,36 @@ function createShareLink(documentObject, href) {
 }
 
 function createQuote(documentObject, item) {
+  const experience = documentObject.createElement('article');
+  experience.className = 'detail-fan-experiences__item';
+
+  const quoteRow = documentObject.createElement('div');
+  quoteRow.className = 'detail-fan-experiences__quote-row';
+  const mark = documentObject.createElement('span');
+  mark.className = 'detail-fan-experiences__mark';
+  mark.setAttribute('aria-hidden', 'true');
+  mark.textContent = '“';
   const quote = documentObject.createElement('p');
   quote.className = 'detail-fan-experiences__quote';
+  quote.textContent = item.text;
+  quoteRow.append(mark, quote);
+
+  const attribution = documentObject.createElement('p');
+  attribution.className = 'detail-fan-experiences__attribution';
+  const name = documentObject.createElement('strong');
+  name.className = 'detail-fan-experiences__name';
+  name.textContent = item.display_name || 'Anonymous';
+  attribution.append(name);
   if (item.year) {
+    attribution.append(documentObject.createTextNode(' · '));
     const year = documentObject.createElement('span');
     year.className = 'detail-fan-experiences__year';
     year.textContent = String(item.year);
-    quote.append(year);
+    attribution.append(year);
   }
-  quote.append(documentObject.createTextNode(item.text));
-  return quote;
+
+  experience.append(quoteRow, attribution);
+  return experience;
 }
 
 function placeSection(detail, section) {

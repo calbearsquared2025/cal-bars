@@ -166,7 +166,27 @@ body[data-view="detail"] .detail-editorial__copy {
 
 .venue-detail .detail-fan-experiences__quotes {
   display: grid;
-  gap: 10px;
+  gap: 12px;
+}
+
+.venue-detail .detail-fan-experiences__item {
+  margin: 0;
+}
+
+.venue-detail .detail-fan-experiences__quote-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 7px;
+}
+
+.venue-detail .detail-fan-experiences__mark {
+  color: var(--cgb-gold-500);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 750;
+  line-height: .85;
+  transform: translateY(2px);
 }
 
 .venue-detail .detail-fan-experiences__quote,
@@ -177,18 +197,28 @@ body[data-view="detail"] .detail-editorial__copy {
 }
 
 .venue-detail .detail-fan-experiences__quote {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1.45;
 }
 
-.venue-detail .detail-fan-experiences__year {
-  display: block;
-  margin-bottom: 5px;
+.venue-detail .detail-fan-experiences__attribution {
+  margin: 7px 0 0 25px;
   color: var(--cgb-ink-500);
-  font-size: var(--text-xs);
+  font-size: 12px;
   font-weight: 400;
-  line-height: 1.2;
+  line-height: 1.25;
+}
+
+.venue-detail .detail-fan-experiences__name {
+  color: var(--cgb-navy-950);
+  font-weight: 750;
+}
+
+.venue-detail .detail-fan-experiences__year {
+  color: var(--cgb-ink-500);
+  font-size: inherit;
+  font-weight: 400;
 }
 
 .venue-detail .detail-fan-experiences__prompt,
@@ -206,8 +236,8 @@ body[data-view="detail"] .detail-editorial__copy {
   margin-top: 2px;
 }
 
-.venue-detail .detail-fan-experiences__quote + .detail-fan-experiences__quote {
-  padding-top: 10px;
+.venue-detail .detail-fan-experiences__item + .detail-fan-experiences__item {
+  padding-top: 12px;
   border-top: 1px solid rgba(1, 1, 51, .09);
 }
 
@@ -231,7 +261,8 @@ body[data-view="detail"] .detail-editorial__copy {
 
 .venue-detail .detail-fan-experiences__share {
   display: inline-block;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 body[data-view="detail"] .detail-contribution {

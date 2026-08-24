@@ -189,7 +189,7 @@ Free conversion options:
 
 ## Share your Cal Game Experience
 
-This focused Form collects one anonymous, venue-centric Fan Experience for the **BEARS SAY** section. It is the deliberate exception to the default no-trigger rule above: install the repository's focused spreadsheet-bound `onFanExperienceFormSubmit` trigger after the response tab exists.
+This focused Form collects one venue-centric Fan Experience for the **BEARS SAY** section. Fans may optionally provide a public display name; blank submissions render as **Anonymous**. It is the deliberate exception to the default no-trigger rule above: install the repository's focused spreadsheet-bound `onFanExperienceFormSubmit` trigger after the response tab exists.
 
 Public Form configuration in `js/fan-experience-form-config.mjs`:
 
@@ -207,21 +207,23 @@ Questions, in order:
 
 1. `Venue name` — required short answer; prefilled from the canonical Venue Profile.
 2. `What should other Bears know about watching a Cal game here?` — required paragraph, maximum 500 characters. Helper: `Tell us what makes watching Cal here special—the crowd, the watch party, the atmosphere, or anything another Bear should know.`
-3. `Venue ID` — required short answer; prefilled with the canonical Venue ID.
+3. `Name to display (optional)` — optional short answer. Treat 60 characters as the public maximum. Blank responses publish as **Anonymous**.
+4. `Venue ID` — required short answer; prefilled with the canonical Venue ID.
 
 Confirmation text:
 
 `Thanks for sharing your experience with other Bears.`
 
-Do not collect a name, email, Game, Watch Party, rating, structured survey answers, account, or response receipt. Keep the Form usable without Google sign-in.
+Do not collect an email, Game, Watch Party, rating, structured survey answers, account, or response receipt. `Name to display (optional)` is the only public attribution field and must not be treated as a verified identity or attendee name. Keep the Form usable without Google sign-in.
 
-Link responses to the existing private CGB workbook and rename/confirm the Form-owned response tab as `Fan_Experiences_Raw`. Google Forms owns the original timestamp, Venue name, experience answer, and Venue ID columns. The Apps Script trigger appends only:
+Link responses to the existing private CGB workbook and rename/confirm the Form-owned response tab as `Fan_Experiences_Raw`. Google Forms owns the original timestamp, Venue name, experience answer, optional display-name answer, and Venue ID columns. The Apps Script trigger appends only:
 
 - `public_text`
+- `public_display_name` — cleaned optional public attribution; blank remains blank in the private sheet and renders as **Anonymous** in the client
 - `moderation_status` — `published` or `held`
 - `moderation_reason`
 
-On submission, Apps Script validates the canonical Venue ID, performs only technical text cleanup, copies the cleaned value to `public_text`, and applies the small deterministic moderation rules in `apps-script/FanExperienceAutomation.gs`. Negative but useful feedback is not held merely for being negative. Held rows remain private until manually changed in the Sheet. CGB may edit `public_text` or change `moderation_status` directly; there is no separate moderation dashboard.
+On submission, Apps Script validates the canonical Venue ID, performs only technical cleanup, copies the cleaned experience to `public_text`, cleans the optional attribution into `public_display_name`, and applies the small deterministic moderation rules in `apps-script/FanExperienceAutomation.gs`. An unsafe display name holds the submission just as unsafe experience text does; a blank display name does not. Negative but useful feedback is not held merely for being negative. Held rows remain private until manually changed in the Sheet. CGB may edit `public_text`, `public_display_name`, or `moderation_status` directly; there is no separate moderation dashboard.
 
 A newly auto-published experience clears the public snapshot cache. After a manual edit or status change that should immediately affect public output, run `buildPublicSnapshotForReview()` to clear and rebuild the cache before verification.
 

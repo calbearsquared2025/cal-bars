@@ -116,15 +116,19 @@ Only rows with `publication_status = published` and `event_status = active` ente
 
 ## Public Fan Experience fields
 
-`fanExperiences` is an optional public collection of anonymous, venue-centric fan experiences. Each item contains exactly:
+`fanExperiences` is an optional public collection of venue-centric fan experiences with optional submitter-chosen attribution. Each item requires:
 
 - `venue_id`
 - `text`
 - `year`
 
-Only private `Fan_Experiences_Raw` rows with `moderation_status = published`, a published canonical Venue, non-empty valid `public_text`, and a valid Google Form submission timestamp may enter the collection. The backend orders experiences newest-first using the private timestamp and derives the four-digit public `year` from that submission date. The full timestamp is never returned publicly. The displayed text is substantively verbatim after technical cleanup and is rendered by the client as plain text.
+and may include:
 
-The public collection never includes raw `experience_text`, moderation fields, full timestamps, Form metadata, contact information, or spreadsheet identifiers.
+- `display_name` — cleaned optional public attribution, maximum 60 characters; blank or missing values render as **Anonymous**
+
+Only private `Fan_Experiences_Raw` rows with `moderation_status = published`, a published canonical Venue, non-empty valid `public_text`, and a valid Google Form submission timestamp may enter the collection. The backend orders experiences newest-first using the private timestamp and derives the four-digit public `year` from that submission date. The full timestamp is never returned publicly. The displayed text is substantively verbatim after technical cleanup and is rendered by the client as plain text. When the submitter supplies the optional Form field `Name to display (optional)`, the automation cleans and moderates it into private `public_display_name` before the public snapshot projects it as `display_name`. Existing or blank-name experiences remain valid and display as **Anonymous**.
+
+The public collection never includes raw `experience_text`, the raw display-name response, private `public_text` or `public_display_name` staging fields, moderation fields, full timestamps, Form metadata, contact information, or spreadsheet identifiers.
 
 ## Aggregate fields
 
@@ -180,7 +184,8 @@ The public response must not include:
 - `publication_status`
 - `created_at`
 - `idAliases`
-- raw `experience_text` or `public_text`
+- raw `experience_text`, `public_text`, or `public_display_name`
+- raw Fan Experience display-name Form responses
 - Fan Experience `moderation_status` or `moderation_reason`
 - Fan Experience response timestamps or Google Form metadata
 

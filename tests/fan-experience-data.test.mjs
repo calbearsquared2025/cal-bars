@@ -43,10 +43,19 @@ test('older public snapshots may omit fanExperiences', () => {
   assert.deepEqual(validateSnapshot(baseSnapshot()), []);
 });
 
-test('public Fan Experience accepts only venue_id, text, and submission year for a public Venue', () => {
+test('older public Fan Experience items without display_name remain valid', () => {
   const snapshot = baseSnapshot();
   snapshot.fanExperiences = [{ venue_id: venueId, text: '<b>Literal text</b>', year: 2026 }];
   assert.deepEqual(validateSnapshot(snapshot), []);
+});
+
+test('public Fan Experience accepts an optional cleaned display name', () => {
+  const snapshot = baseSnapshot();
+  snapshot.fanExperiences = [{ venue_id: venueId, text: 'Public text', display_name: 'Matthew', year: 2026 }];
+  assert.deepEqual(validateSnapshot(snapshot), []);
+
+  snapshot.fanExperiences[0].display_name = 'x'.repeat(61);
+  assert.ok(validateSnapshot(snapshot).some((error) => error.includes('display_name must be at most 60 characters')));
 });
 
 test('unknown Venue IDs, malformed years, and private Fan Experience fields are rejected', () => {
@@ -67,12 +76,14 @@ test('unknown Venue IDs, malformed years, and private Fan Experience fields are 
     venue_id: venueId,
     text: 'Public text',
     year: 2026,
+    public_display_name: 'Private staging field',
     experience_text: 'Raw private text',
     moderation_status: 'published',
     moderation_reason: ''
   }];
   const errors = validateSnapshot(privateLeak);
   assert.ok(errors.some((error) => error.includes('experience_text is forbidden')));
+  assert.ok(errors.some((error) => error.includes('public_display_name is forbidden')));
   assert.ok(errors.some((error) => error.includes('moderation_status is forbidden')));
-  assert.ok(errors.some((error) => error.includes('may contain only venue_id, text, and year')));
+  assert.ok(errors.some((error) => error.includes('may contain only venue_id, text, optional display_name, and year')));
 });

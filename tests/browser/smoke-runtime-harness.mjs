@@ -98,6 +98,11 @@ async function runMobile() {
     const section = element('#venue-detail [data-fan-experiences]');
     check(section?.querySelector('h2')?.textContent?.trim() === 'BEARS SAY', 'Mobile full Venue Profile should show BEARS SAY');
     check(section?.textContent?.includes('Synthetic Bears Say experience for browser coverage.'), 'Mobile BEARS SAY should show the Fan Experience text');
+    const mark = section?.querySelector('.detail-fan-experiences__mark');
+    check(visible(mark), 'Mobile BEARS SAY should visibly render the decorative opening quote');
+    const attribution = section?.querySelector('.detail-fan-experiences__attribution');
+    check(visible(attribution), 'Mobile BEARS SAY should visibly render attribution');
+    check(attribution?.textContent?.trim() === 'Synthetic Bear · 2026', 'Mobile BEARS SAY should render display name and year together');
     const year = section?.querySelector('.detail-fan-experiences__year');
     check(visible(year), 'Mobile BEARS SAY should visibly render the submission year');
     check(year?.textContent?.trim() === '2026', 'Mobile BEARS SAY should render the expected submission year');

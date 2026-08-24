@@ -2,13 +2,15 @@
  * Fan Experience Form processing and public projection.
  *
  * The Google Form owns the original response columns in Fan_Experiences_Raw.
- * This script appends only publication fields and exposes only venue_id + text.
+ * This script appends only deliberate publication fields for the public Fan Experience projection.
  */
 
 const CGB_FAN_EXPERIENCE_RAW_TAB = 'Fan_Experiences_Raw';
 const CGB_FAN_EXPERIENCE_MAX_LENGTH = 500;
+const CGB_FAN_EXPERIENCE_DISPLAY_NAME_MAX_LENGTH = 60;
 const CGB_FAN_EXPERIENCE_ADMIN_HEADERS = Object.freeze([
   'public_text',
+  'public_display_name',
   'moderation_status',
   'moderation_reason'
 ]);
@@ -19,6 +21,11 @@ const CGB_FAN_EXPERIENCE_FORM_ALIASES = Object.freeze({
   experience_text: Object.freeze([
     'What should other Bears know about watching a Cal game here?',
     'experience_text'
+  ]),
+  display_name: Object.freeze([
+    'Name to display (optional)',
+    'Name to display',
+    'display_name'
   ]),
   venue_id: Object.freeze(['Venue ID', 'Selected Venue ID', 'venue_id'])
 });
@@ -66,6 +73,9 @@ function onFanExperienceFormSubmit(event) {
   const headers = ensureFanExperienceAdminHeaders_(context.sheet);
   const venueId = cleanFanExperienceIdentifier_(readFanExperienceFormField_(context.namedValues, 'venue_id'));
   const cleanedText = cleanFanExperienceText_(readFanExperienceFormField_(context.namedValues, 'experience_text'));
+  const cleanedDisplayName = cleanFanExperienceDisplayName_(
+    readFanExperienceFormField_(context.namedValues, 'display_name')
+  );
 
   let moderationStatus = 'held';
   let moderationReason = '';
@@ -74,13 +84,20 @@ function onFanExperienceFormSubmit(event) {
   } else if (!cleanedText) {
     moderationReason = 'empty_experience';
   } else {
-    const moderation = moderateFanExperienceText_(cleanedText);
-    moderationStatus = moderation.status;
-    moderationReason = moderation.reason;
+    const textModeration = moderateFanExperienceText_(cleanedText);
+    if (textModeration.status === 'held') {
+      moderationStatus = textModeration.status;
+      moderationReason = textModeration.reason;
+    } else {
+      const displayNameModeration = moderateFanExperienceDisplayName_(cleanedDisplayName);
+      moderationStatus = displayNameModeration.status;
+      moderationReason = displayNameModeration.reason;
+    }
   }
 
   updateFanExperienceRawFields_(context.sheet, context.rowNumber, headers, {
     public_text: cleanedText,
+    public_display_name: cleanedDisplayName,
     moderation_status: moderationStatus,
     moderation_reason: moderationReason
   });
@@ -157,6 +174,15 @@ function cleanFanExperienceText_(value) {
     .trim();
 }
 
+function cleanFanExperienceDisplayName_(value) {
+  return String(value === null || value === undefined ? '' : value)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, CGB_FAN_EXPERIENCE_DISPLAY_NAME_MAX_LENGTH)
+    .trim();
+}
+
 function moderateFanExperienceText_(value) {
   const text = cleanFanExperienceText_(value);
   if (!text) return { status: 'held', reason: 'empty_experience' };
@@ -171,6 +197,22 @@ function moderateFanExperienceText_(value) {
   }
   const letters = text.match(/[a-z]/gi) || [];
   if (letters.length < 3) return { status: 'held', reason: 'junk_or_repetition' };
+  return { status: 'published', reason: '' };
+}
+
+function moderateFanExperienceDisplayName_(value) {
+  const displayName = cleanFanExperienceDisplayName_(value);
+  if (!displayName) return { status: 'published', reason: '' };
+
+  for (let index = 0; index < CGB_FAN_EXPERIENCE_MODERATION_RULES.length; index += 1) {
+    const rule = CGB_FAN_EXPERIENCE_MODERATION_RULES[index];
+    if (rule.pattern.test(displayName)) {
+      return { status: 'held', reason: 'display_name_' + rule.reason };
+    }
+  }
+  if (/(.)\1{7,}/i.test(displayName) || /\b([a-z0-9]+)(?:\s+\1){4,}\b/i.test(displayName)) {
+    return { status: 'held', reason: 'display_name_junk_or_repetition' };
+  }
   return { status: 'published', reason: '' };
 }
 

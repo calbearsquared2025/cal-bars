@@ -16,7 +16,7 @@ const FORBIDDEN_KEYS = new Set([
   'drive_file_reference', 'raw_submission_contents', 'caption', 'review_status', 'reviewed_at',
   'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
   'opponent_short_name', 'idAliases',
-  'experience_text', 'public_text', 'moderation_status', 'moderation_reason',
+  'experience_text', 'public_text', 'public_display_name', 'moderation_status', 'moderation_reason',
   'response_timestamp', 'form_response_id', 'form_id'
 ]);
 
@@ -183,12 +183,16 @@ function validateWatchParty(party, index, venueIds, gameIds, errors) {
 function validateFanExperience(experience, index, venueIds, errors) {
   const path = `fanExperiences[${index}]`;
   if (!isObject(experience)) return errors.push(`${path} must be an object`);
-  const keys = Object.keys(experience).sort();
-  if (JSON.stringify(keys) !== JSON.stringify(['text', 'venue_id', 'year'])) {
-    errors.push(`${path} may contain only venue_id, text, and year`);
+  const allowedKeys = new Set(['venue_id', 'text', 'display_name', 'year']);
+  const unexpectedKeys = Object.keys(experience).filter((key) => !allowedKeys.has(key));
+  if (unexpectedKeys.length) {
+    errors.push(`${path} may contain only venue_id, text, optional display_name, and year`);
   }
   requireString(experience, 'venue_id', path, errors);
   requireString(experience, 'text', path, errors);
+  if (Object.prototype.hasOwnProperty.call(experience, 'display_name')) {
+    requireString(experience, 'display_name', path, errors, { allowEmpty: true });
+  }
   if (!CANONICAL_ID_PATTERNS.venue.test(experience.venue_id || '')) {
     errors.push(`${path}.venue_id must match venue_<24 lowercase hex>`);
   }
@@ -199,6 +203,10 @@ function validateFanExperience(experience, index, venueIds, errors) {
   if (typeof experience.text === 'string') {
     if (experience.text.length > 500) errors.push(`${path}.text must be at most 500 characters`);
     if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(experience.text)) errors.push(`${path}.text contains control characters`);
+  }
+  if (typeof experience.display_name === 'string') {
+    if (experience.display_name.length > 60) errors.push(`${path}.display_name must be at most 60 characters`);
+    if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(experience.display_name)) errors.push(`${path}.display_name contains control characters`);
   }
 }
 
