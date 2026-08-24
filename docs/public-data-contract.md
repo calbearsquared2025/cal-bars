@@ -120,10 +120,11 @@ Only rows with `publication_status = published` and `event_status = active` ente
 
 - `venue_id`
 - `text`
+- `year`
 
-Only private `Fan_Experiences_Raw` rows with `moderation_status = published`, a published canonical Venue, and non-empty valid `public_text` may enter the collection. The backend orders experiences newest-first using the private Google Form timestamp, but the timestamp is never returned publicly. The displayed text is substantively verbatim after technical cleanup and is rendered by the client as plain text.
+Only private `Fan_Experiences_Raw` rows with `moderation_status = published`, a published canonical Venue, non-empty valid `public_text`, and a valid Google Form submission timestamp may enter the collection. The backend orders experiences newest-first using the private timestamp and derives the four-digit public `year` from that submission date. The full timestamp is never returned publicly. The displayed text is substantively verbatim after technical cleanup and is rendered by the client as plain text.
 
-The public collection never includes raw `experience_text`, moderation fields, timestamps, Form metadata, contact information, or spreadsheet identifiers.
+The public collection never includes raw `experience_text`, moderation fields, full timestamps, Form metadata, contact information, or spreadsheet identifiers.
 
 ## Aggregate fields
 
