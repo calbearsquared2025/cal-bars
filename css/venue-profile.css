@@ -119,7 +119,7 @@ body[data-view="detail"] .activity-card {
   border-radius: 0 !important;
 }
 
-body[data-view="detail"] .detail-editorial {
+.venue-detail .detail-editorial {
   margin: 0 !important;
   padding: 16px;
   background: var(--cgb-gold-50);
@@ -129,7 +129,7 @@ body[data-view="detail"] .detail-editorial {
   border-radius: 0;
 }
 
-body[data-view="detail"] .detail-editorial h2,
+.venue-detail .detail-editorial h2,
 .venue-detail .detail-fan-experiences h2 {
   margin: 0 0 6px;
   color: var(--cgb-navy-950);
@@ -144,7 +144,7 @@ body[data-view="detail"] .detail-editorial h2,
   margin-bottom: 10px;
 }
 
-body[data-view="detail"] .detail-editorial__copy {
+.venue-detail .detail-editorial__copy {
   margin: 0;
   color: var(--cgb-ink-700);
   font-size: var(--text-sm);
@@ -212,7 +212,7 @@ body[data-view="detail"] .detail-editorial__copy {
 
 .venue-detail .detail-fan-experiences__name {
   color: var(--cgb-navy-950);
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .venue-detail .detail-fan-experiences__year {
@@ -300,19 +300,35 @@ body[data-view="detail"] .detail-contribution {
 
 /* Canonical Venue Profile utility polish. These selectors intentionally outrank
    older layout-only rules in venue-detail.css without changing their structure. */
-body[data-view="detail"] #venue-detail .activity-card .bear-count__number,
-#tray-selected > #venue-detail.venue-detail .activity-card .bear-count__number {
-  font-size: 1.95rem !important;
+.venue-detail .activity-card:has(.bear-count__number) {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: center;
 }
 
-body[data-view="detail"] #venue-detail .activity-card .bear-count__label,
-#tray-selected > #venue-detail.venue-detail .activity-card .bear-count__label {
+.venue-detail .activity-card:has(.bear-count__number) > strong {
+  display: contents !important;
+}
+
+.venue-detail .activity-card:has(.bear-count__number) .bear-count__number {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-size: 1.8rem !important;
+}
+
+.venue-detail .activity-card:has(.bear-count__number) .bear-count__label {
+  grid-column: 2;
+  grid-row: 1;
   font-size: .84rem !important;
   font-weight: 800 !important;
 }
 
-body[data-view="detail"] #venue-detail .activity-card p,
-#tray-selected > #venue-detail.venue-detail .activity-card p {
+.venue-detail .activity-card:has(.bear-count__number) > p {
+  grid-column: 2;
+  margin: 0 !important;
   font-size: .75rem !important;
   line-height: 1.35 !important;
 }
