@@ -154,10 +154,14 @@ async function runRestoredFanIntent() {
   const venue = venueBySlug('golden-bear-test-pub-berkeley');
   const game = gameByOpponent('UCLA');
   check(Boolean(venue && game), 'Restored Fan Intent fixture should exist');
-  await waitFor(() => isVisible('#tray-selected') && element('#tray-selected')?.textContent?.includes(venue?.name || ''),
-    'restored selected venue');
-  check(isVisible('#tray-selected'), 'Stored Fan Intent should visibly restore the selected Venue');
-  check(element('#tray-selected')?.textContent?.includes(venue?.name || ''), 'Restored selection should show the stored Venue name');
+  await waitFor(() =>
+    isVisible('#tray-peek') &&
+    element('#browse-locations-button')?.dataset.previewMode === 'selected' &&
+    element('#tray-summary-title')?.textContent?.includes(venue?.name || ''),
+  'restored selected venue in micro tray');
+  check(isVisible('#tray-peek'), 'Stored Fan Intent should restore the Venue in the visible micro tray');
+  check(element('#browse-locations-button')?.dataset.previewMode === 'selected', 'Restored micro tray should be in selected Venue mode');
+  check(element('#tray-summary-title')?.textContent?.includes(venue?.name || ''), 'Restored micro tray should show the stored Venue name');
   check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), 'Restored selection should preserve the stored game');
 }
 
