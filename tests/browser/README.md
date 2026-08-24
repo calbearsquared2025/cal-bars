@@ -9,12 +9,14 @@ The default `npm run test:browser` run covers:
 - mobile Map → Locations → selected Venue → full Profile;
 - mobile Profile → Locations navigation;
 - direct mobile Profile routes;
-- restoration of stored Fan Intent as visible attendance state;
+- restoration of stored Fan Intent to the correct visible selected Venue;
 - desktop Locations → full Venue Profile while the map remains visible;
 - no internal Watch Party scrollbar in the full desktop Venue Profile;
 - small-portrait and short-landscape Profile usability.
 
 The runtime acceptance pages use one synthetic snapshot from `tests/fixtures/public-snapshot.synthetic.json` from first load onward. Fixture records are selected by semantic fields such as venue slug and opponent name rather than by hard-coded internal game IDs.
+
+Stored-selection semantics and Fan Intent aggregate-count copy are verified deterministically in the source test suite. The browser scenario verifies the user-visible restoration boundary without depending on the intent button's render timing or exact internal state.
 
 Use `CGB_BROWSER_HARNESS_ONLY=<scenario> npm run test:browser` to run a focused scenario. Supported scenario keys are `first-paint`, `external`, `mobile-flow`, `mobile-direct`, `restored-fan-intent`, `desktop-flow`, `small-profile`, and `landscape-profile`.
 
