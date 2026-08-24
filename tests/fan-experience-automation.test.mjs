@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
-const code = await readFile(new URL('../apps-script/FanExperienceAutomation.gs', import.meta.url), 'utf8');
+const publicSnapshotCode = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
+const fanExperienceAutomationCode = await readFile(new URL('../apps-script/FanExperienceAutomation.gs', import.meta.url), 'utf8');
 const context = vm.createContext({
   Date,
   String,
@@ -16,7 +17,8 @@ const context = vm.createContext({
   JSON,
   console: { log() {}, warn() {}, error() {} }
 });
-vm.runInContext(code, context);
+vm.runInContext(publicSnapshotCode, context);
+vm.runInContext(fanExperienceAutomationCode, context);
 
 const venueId = 'venue_5977e35a58d8b18f22a51f1e';
 const otherVenueId = 'venue_aaaaaaaaaaaaaaaaaaaaaaaa';
