@@ -65,7 +65,8 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.match(fanIntent, /const label = isSelected \? 'Invite Others' : 'Share'/);
   assert.match(fanIntent, /share\.replaceChildren/);
   assert.doesNotMatch(fanIntent, /syncDetailShareAction/);
-  assert.match(fanIntent, /presence\.textContent = detailPresenceCopy\(count\)/);
+  assert.match(fanIntent, /presence\.textContent = isSelected[\s\S]*\? detailPresenceCopy\(count\)/);
+  assert.ok(fanIntent.includes("Click \"I\\'ll be here\" below to join them."));
   assert.match(fanIntentCore, /You’re the first Bear here\./);
   assert.match(fanIntentCore, /You’re one of them\./);
   assert.doesNotMatch(fanIntent, /renderPostJoinInvitation|post-join-invitation|post-join-share/);
