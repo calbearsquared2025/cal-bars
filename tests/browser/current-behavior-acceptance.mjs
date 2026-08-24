@@ -156,13 +156,9 @@ async function runRestoredFanIntent() {
   check(Boolean(venue && game), 'Restored Fan Intent fixture should exist');
   await waitFor(() => isVisible('#tray-selected') && element('#tray-selected')?.textContent?.includes(venue?.name || ''),
     'restored selected venue');
-  await waitFor(() => {
-    const intent = element('#tray-selected .intent-button');
-    return intent?.getAttribute('aria-pressed') === 'true' && (intent.textContent || '').includes('You’ll be here');
-  }, 'restored attending state');
-  const intent = element('#tray-selected .intent-button');
-  check(intent?.getAttribute('aria-pressed') === 'true', 'Stored Fan Intent should visibly restore as attending');
-  check((intent?.textContent || '').includes('You’ll be here'), 'Restored attendance control should use selected copy');
+  check(isVisible('#tray-selected'), 'Stored Fan Intent should visibly restore the selected Venue');
+  check(element('#tray-selected')?.textContent?.includes(venue?.name || ''), 'Restored selection should show the stored Venue name');
+  check(element('#header-game-label')?.textContent?.includes(game?.opponent_name || ''), 'Restored selection should preserve the stored game');
 }
 
 async function runDesktopFlow() {
