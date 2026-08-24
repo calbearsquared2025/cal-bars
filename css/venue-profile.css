@@ -140,7 +140,6 @@ body[data-view="detail"] .detail-fan-experiences h2 {
   line-height: 1.15;
 }
 
-/* BEARS SAY typography polish */
 body[data-view="detail"] .detail-fan-experiences h2 {
   margin-bottom: 10px;
 }
@@ -183,8 +182,7 @@ body[data-view="detail"] .detail-fan-experiences__quote {
   line-height: 1.45;
 }
 
-body[data-view="detail"] .detail-fan-experiences__quote[data-year]::before {
-  content: attr(data-year);
+body[data-view="detail"] .detail-fan-experiences__year {
   display: block;
   margin-bottom: 5px;
   color: var(--cgb-ink-500);
