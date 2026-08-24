@@ -18,7 +18,7 @@ let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
-const DETAIL_MAP_ZOOM = 16.0;
+const DETAIL_MAP_ZOOM = 15;
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;

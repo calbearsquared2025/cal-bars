@@ -40,12 +40,12 @@ test('existing no-photo local map and compact description behavior remain in app
   assert.match(app, /venue\.short_description && !legacyActivitySeason\(venue\)/);
 });
 
-test('mobile no-photo Profile map is slightly wider while desktop framing stays unchanged', async () => {
+test('mobile and desktop no-photo Profile maps use the same wider zoom', async () => {
   const [app, icons] = await Promise.all([
     source('js/app.js'),
     source('js/icon-upgrade.mjs')
   ]);
-  assert.match(app, /map\.dataset\.zoom = isMobileLayout\(\) \? '15\.4' : '16'/);
+  assert.match(app, /map\.dataset\.zoom = '15'/);
   assert.match(icons, /const configuredZoom = Number\(container\.dataset\.zoom\)/);
   assert.match(icons, /const zoom = Number\.isFinite\(configuredZoom\) \? configuredZoom : DETAIL_MAP_ZOOM/);
   assert.match(icons, /center: \[longitude, latitude\],[\s\S]*zoom,/);

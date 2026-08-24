@@ -112,7 +112,7 @@ async function runMobile() {
     await sleep(500);
     check(!share?.querySelector('.ui-icon'), 'Mobile full Profile share action should remain text-only after deferred refinements settle');
     const localMap = element('#venue-detail .detail-local-map');
-    if (localMap) check(localMap.dataset.zoom === '15.4', 'Mobile full Profile map preview should use the slightly wider zoom');
+    if (localMap) check(localMap.dataset.zoom === '15', 'Mobile full Profile map preview should use zoom 15');
     finish('CGB_SMOKE_MOBILE');
     return;
   }

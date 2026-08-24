@@ -600,7 +600,7 @@ function createDetailLocalMap(venue) {
   map.dataset.venueId = venue.venue_id;
   map.dataset.latitude = String(latitude);
   map.dataset.longitude = String(longitude);
-  map.dataset.zoom = isMobileLayout() ? '15.4' : '16';
+  map.dataset.zoom = '15';
   map.dataset.markerKind = markerKind(state.snapshot, state.gameId, venue);
   map.setAttribute('role', 'group');
   map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
