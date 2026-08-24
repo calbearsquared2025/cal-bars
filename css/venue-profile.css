@@ -140,6 +140,10 @@ body[data-view="detail"] .detail-fan-experiences h2 {
   line-height: 1.15;
 }
 
+body[data-view="detail"] .detail-fan-experiences h2 {
+  margin-bottom: 10px;
+}
+
 body[data-view="detail"] .detail-editorial__copy {
   margin: 0;
   color: var(--cgb-ink-700);
@@ -172,6 +176,12 @@ body[data-view="detail"] .detail-fan-experiences__guidance {
   color: var(--cgb-ink-700);
   font-size: var(--text-sm);
   line-height: 1.48;
+}
+
+body[data-view="detail"] .detail-fan-experiences__quote {
+  font-size: var(--text-lg);
+  font-weight: 400;
+  line-height: 1.45;
 }
 
 body[data-view="detail"] .detail-fan-experiences__prompt {
@@ -208,6 +218,7 @@ body[data-view="detail"] .detail-fan-experiences__share {
 
 body[data-view="detail"] .detail-fan-experiences__share {
   display: inline-block;
+  font-size: .9375rem;
 }
 
 body[data-view="detail"] .detail-contribution {
