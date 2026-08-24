@@ -212,7 +212,7 @@ body[data-view="detail"] .activity-card {
 
 .venue-detail .detail-fan-experiences__name {
   color: var(--cgb-navy-950);
-  font-weight: 650;
+  font-weight: 500;
 }
 
 .venue-detail .detail-fan-experiences__year {
