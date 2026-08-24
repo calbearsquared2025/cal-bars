@@ -9,6 +9,12 @@ import { findBrowser } from './browser-discovery.mjs';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const snapshot = JSON.parse(readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8'));
 snapshot.fanCounts = [];
+const fanExperienceVenue = snapshot.venues.find((venue) => venue.slug === 'golden-bear-test-pub-berkeley');
+snapshot.fanExperiences = fanExperienceVenue ? [{
+  venue_id: fanExperienceVenue.venue_id,
+  text: 'Synthetic Bears Say experience for browser coverage.',
+  year: 2026
+}] : [];
 const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');
 const productionIndex = readFileSync(join(root, 'index.html'), 'utf8');
 const mimeTypes = new Map([
