@@ -86,12 +86,30 @@ async function selectVenue(venue) {
 
 async function runMobile() {
   await ready(false);
+  const phase = sessionStorage.getItem('cgb_smoke_phase') || 'initial';
+
+  if (phase === 'profile') {
+    await waitFor(() =>
+      state()?.detailMode === true &&
+      visible('#venue-detail') &&
+      visible('#venue-detail [data-fan-experiences]'),
+    'mobile full Venue Profile with BEARS SAY');
+    check(document.body.dataset.view === 'detail', 'Mobile full Venue Profile should use Detail view');
+    const section = element('#venue-detail [data-fan-experiences]');
+    check(section?.querySelector('h2')?.textContent?.trim() === 'BEARS SAY', 'Mobile full Venue Profile should show BEARS SAY');
+    check(section?.textContent?.includes('Synthetic Bears Say experience for browser coverage.'), 'Mobile BEARS SAY should show the Fan Experience text');
+    const year = section?.querySelector('.detail-fan-experiences__year');
+    check(visible(year), 'Mobile BEARS SAY should visibly render the submission year');
+    check(year?.textContent?.trim() === '2026', 'Mobile BEARS SAY should render the expected submission year');
+    finish('CGB_SMOKE_MOBILE');
+    return;
+  }
+
   check(document.body.dataset.commandSurface === 'map', 'Mobile should open on Map');
   check(Boolean(state()?.gameId), 'A default game should be selected');
   check((state()?.snapshot?.venues?.length || 0) > 0, 'Locations should load');
   check(visible('#map-view'), 'Map should be visible');
 
-  const phase = sessionStorage.getItem('cgb_smoke_phase') || 'initial';
   if (phase === 'joined') {
     const selectedVenueId = Object.values(JSON.parse(localStorage.getItem('cgb_v2_fan_intent_selections') || '{}'))[0];
     check(Boolean(selectedVenueId), 'Fan Intent selection should persist through reload');
@@ -109,7 +127,15 @@ async function runMobile() {
     click('#search-surface [data-command-close]');
     await waitFor(() => document.body.dataset.commandSurface === 'map', 'Search close to Map');
 
-    finish('CGB_SMOKE_MOBILE');
+    await waitFor(() => visible('#tray-selected .selected-card__details'), 'mobile full Profile action');
+    const details = element('#tray-selected .selected-card__details');
+    check(Boolean(details?.href), 'Selected mobile Venue should expose a full Profile URL');
+    if (failures.length || !details?.href) {
+      finish('CGB_SMOKE_MOBILE');
+      return;
+    }
+    sessionStorage.setItem('cgb_smoke_phase', 'profile');
+    location.assign(details.href);
     return;
   }
 
