@@ -1,0 +1,50 @@
+name: Apply mobile profile polish
+
+on:
+  push:
+    branches:
+      - fix/bears-say-profile-styles
+    paths:
+      - .github/workflows/apply-mobile-profile-polish.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/bears-say-profile-styles
+      - name: Apply focused source fixes
+        shell: python
+        run: |
+          from pathlib import Path
+
+          app = Path('js/app.js')
+          text = app.read_text()
+          replacements = {
+              "  map.dataset.zoom = '16';": "  map.dataset.zoom = isMobileLayout() ? '15.4' : '16';",
+              "  share.append(createIcon('share'), document.createTextNode('Share'));": "  share.textContent = 'Share';",
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'missing expected app source: {old}')
+              text = text.replace(old, new, 1)
+          app.write_text(text)
+
+          automation = Path('apps-script/FanExperienceAutomation.gs')
+          text = automation.read_text()
+          old = "  display_name: Object.freeze([\n    'Name to display (optional)',"
+          new = "  display_name: Object.freeze([\n    'Name to Display (Optional!)',\n    'Name to display (optional)',"
+          if old not in text:
+              raise SystemExit('missing expected Fan Experience display-name alias block')
+          automation.write_text(text.replace(old, new, 1))
+      - name: Commit focused source fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/app.js apps-script/FanExperienceAutomation.gs
+          git commit -m "Polish mobile full profile actions and map"
+          git push origin HEAD:fix/bears-say-profile-styles
