@@ -165,8 +165,8 @@ function initializeWatchPartyFormEntryPoint() {
   app.subscribe('ready', render);
   render();
   initializeCalBarNominationEntry({ app, documentObject: document });
-  initializeListingUpdateEntry({ app, documentObject: document });
   initializePhotoFormEntry({ app, documentObject: document });
+  initializeListingUpdateEntry({ app, documentObject: document });
 }
 
 initializeWatchPartyFormEntryPoint();
