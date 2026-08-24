@@ -99,7 +99,7 @@ test('public aggregate counts are resolved by game and venue', () => {
 });
 
 test('Bear count copy is explicit for zero, singular, and plural counts', () => {
-  assert.equal(bearCountCopy(0), 'No Bears are watching here yet. Be the first.');
+  assert.equal(bearCountCopy(0), 'No Bears have committed to watch here yet.');
   assert.equal(bearCountCopy(1), '1 Bear watching here');
   assert.equal(bearCountCopy(3), '3 Bears watching here');
 });
@@ -150,7 +150,7 @@ test('nearby results use the approved 25-mile boundary', () => {
       ? { ...venue, latitude: 37.8717, longitude: -122.2728 }
       : { ...venue, latitude: 34.0522 + index / 100, longitude: -118.2437 })
   };
-  const nearby = rankNearbyVenues(radiusSnapshot, UCLA_GAME_ID, { lat: 37.8717, lon: -122.2728 });
+  const nearby = rankNearbyVenues(snapshot, UCLA_GAME_ID, { lat: 37.8717, lon: -122.2728 });
   assert.deepEqual(nearby.map(({ venue }) => venue.venue_id), ['ven_000001']);
   assert.ok(nearby.every(({ distance }) => distance <= NEARBY_RADIUS_MILES));
   assert.equal(rankNearbyVenues(radiusSnapshot, UCLA_GAME_ID, { lat: 40.7128, lon: -74.0060 }).length, 0);
