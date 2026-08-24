@@ -297,3 +297,77 @@ body[data-view="detail"] .detail-contribution {
     left: 22px !important;
   }
 }
+
+/* Canonical Venue Profile utility polish. These selectors intentionally outrank
+   older layout-only rules in venue-detail.css without changing their structure. */
+body[data-view="detail"] #venue-detail .activity-card .bear-count__number,
+#tray-selected > #venue-detail.venue-detail .activity-card .bear-count__number {
+  font-size: 1.95rem !important;
+}
+
+body[data-view="detail"] #venue-detail .activity-card .bear-count__label,
+#tray-selected > #venue-detail.venue-detail .activity-card .bear-count__label {
+  font-size: .84rem !important;
+  font-weight: 800 !important;
+}
+
+body[data-view="detail"] #venue-detail .activity-card p,
+#tray-selected > #venue-detail.venue-detail .activity-card p {
+  font-size: .75rem !important;
+  line-height: 1.35 !important;
+}
+
+body[data-view="detail"] #venue-detail .detail-contribution__actions,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  overflow: hidden;
+  background: var(--cgb-white);
+  border: 1px solid var(--cgb-neutral-200);
+  border-radius: 10px;
+}
+
+body[data-view="detail"] #venue-detail .detail-contribution__action,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action {
+  position: relative;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 34px 8px 12px;
+  color: var(--cgb-navy-900);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--cgb-neutral-200);
+  border-radius: 0;
+  font-size: var(--text-xs);
+  font-weight: 750;
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+body[data-view="detail"] #venue-detail .detail-contribution__action::after,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action::after {
+  content: '›';
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  color: var(--cgb-ink-500);
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+body[data-view="detail"] #venue-detail .detail-contribution__action:last-child,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action:last-child {
+  border-bottom: 0;
+}
+
+body[data-view="detail"] #venue-detail .detail-contribution__action:hover,
+body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visible,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action:hover,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action:focus-visible {
+  background: var(--cgb-neutral-50);
+}
