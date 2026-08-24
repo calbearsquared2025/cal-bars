@@ -58,7 +58,8 @@ test('BEARS SAY remains adjacent to CGB SAYS with restrained year and typography
   assert.match(fanSource, /detail\.querySelector\(':scope > \.detail-editorial'\)/);
   assert.match(fanSource, /editorial\.after\(section\)/);
   assert.match(formCss, /@import url\('\.\/venue-profile\.css'\)/);
-  assert.match(css, /\.detail-fan-experiences\s*\{/);
+  assert.match(css, /\.venue-detail \.detail-fan-experiences\s*\{/);
+  assert.doesNotMatch(css, /body\[data-view="detail"\] \.detail-fan-experiences/);
   assert.match(css, /padding: 16px/);
   assert.match(css, /\.detail-fan-experiences__quote\s*\{[\s\S]*font-size: 18px;[\s\S]*font-weight: 400;[\s\S]*line-height: 1\.45;/);
   assert.match(css, /\.detail-fan-experiences__year\s*\{[\s\S]*color: var\(--cgb-ink-500\);[\s\S]*font-size: var\(--text-xs\);/);
