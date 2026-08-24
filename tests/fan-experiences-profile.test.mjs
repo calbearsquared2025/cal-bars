@@ -65,8 +65,10 @@ test('BEARS SAY remains adjacent to CGB SAYS with restrained year and typography
   assert.match(css, /\.venue-detail \.detail-fan-experiences\s*\{/);
   assert.doesNotMatch(css, /body\[data-view="detail"\] \.detail-fan-experiences/);
   assert.match(css, /padding: 16px/);
+  assert.match(css, /body\[data-view="detail"\] \.detail-editorial h2,[\s\S]*\.venue-detail \.detail-fan-experiences h2\s*\{[\s\S]*font-weight: 850;/);
+  assert.match(css, /body\[data-view="detail"\] \.detail-editorial__copy\s*\{[\s\S]*font-size: var\(--text-sm\);/);
   assert.match(css, /\.detail-fan-experiences__mark\s*\{[\s\S]*font-size: 24px;/);
-  assert.match(css, /\.detail-fan-experiences__quote\s*\{[\s\S]*font-size: 16px;[\s\S]*font-weight: 400;[\s\S]*line-height: 1\.45;/);
+  assert.match(css, /\.detail-fan-experiences__quote\s*\{[\s\S]*font-size: 13px;[\s\S]*font-weight: 400;[\s\S]*line-height: 1\.45;/);
   assert.match(css, /\.detail-fan-experiences__attribution\s*\{[\s\S]*font-size: 12px;/);
   assert.match(css, /\.detail-fan-experiences__year\s*\{[\s\S]*color: var\(--cgb-ink-500\);[\s\S]*font-size: inherit;/);
   assert.doesNotMatch(css, /detail-fan-experiences__quote\[data-year\]::before/);
