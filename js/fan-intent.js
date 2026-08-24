@@ -160,7 +160,7 @@ function syncDetailPresence(venueId, isSelected) {
   if (!card) return;
   let presence = card.querySelector(':scope > .activity-card__presence');
   const count = getFanCount(appState.snapshot, appState.gameId, venueId);
-  if (!isSelected && count <= 0) {
+  if (!isSelected && count <= 0 && !gameAllowsIntent()) {
     presence?.remove();
     return;
   }
@@ -173,7 +173,9 @@ function syncDetailPresence(venueId, isSelected) {
   }
   presence.textContent = isSelected
     ? detailPresenceCopy(count)
-    : 'Click "I\'ll be here" below to join them.';
+    : count <= 0
+      ? 'Tap “I’ll be here” to let other Bears know you’re coming.'
+      : 'Click "I\'ll be here" below to join them.';
 }
 
 function renderIntentButton(button) {

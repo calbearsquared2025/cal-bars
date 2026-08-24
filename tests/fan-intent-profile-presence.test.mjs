@@ -16,8 +16,9 @@ test('Fan Intent presence follows the canonical Venue Profile instead of detailM
   assert.match(syncPresence, /document\.querySelector\('#venue-detail'\)/);
   assert.match(syncPresence, /detail\.dataset\.venueId !== venueId/);
   assert.match(syncPresence, /detail\.querySelector\(':scope > \.activity-card'\)/);
-  assert.match(syncPresence, /!isSelected && count <= 0/);
+  assert.match(syncPresence, /!isSelected && count <= 0 && !gameAllowsIntent\(\)/);
   assert.match(syncPresence, /detailPresenceCopy\(count\)/);
+  assert.ok(source.includes('Tap “I’ll be here” to let other Bears know you’re coming.'));
   assert.ok(source.includes("Click \"I\\'ll be here\" below to join them."));
 });
 

@@ -99,7 +99,7 @@ test('public aggregate counts are resolved by game and venue', () => {
 });
 
 test('Bear count copy is explicit for zero, singular, and plural counts', () => {
-  assert.equal(bearCountCopy(0), 'No Bears are watching here yet. Be the first.');
+  assert.equal(bearCountCopy(0), 'No Bears have committed to watch here yet.');
   assert.equal(bearCountCopy(1), '1 Bear watching here');
   assert.equal(bearCountCopy(3), '3 Bears watching here');
 });
