@@ -32,7 +32,7 @@ function prependIcon(element, iconName) {
 
 function actionIconName(element) {
   const label = element.textContent.trim().toLowerCase();
-  if (label === 'directions') return 'directions';
+  if (label === 'directions') return 'location';
   if (label === 'view details' || label === 'details') return 'details';
   return null;
 }
@@ -210,7 +210,6 @@ function scheduleUpgrade() {
 }
 
 function connectApp() {
-  if (appConnected) return;
   const app = window.CGBApp;
   if (!app?.subscribe) {
     appConnectAttempts += 1;
