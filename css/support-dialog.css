@@ -62,10 +62,17 @@
   font-weight: 750;
 }
 
+.about-subsection,
 .about-support {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--cgb-neutral-200, var(--line));
+}
+
+.about-subsection > .eyebrow,
+.about-support > .eyebrow {
+  display: block;
+  margin-bottom: 6px;
 }
 
 .about-support .secondary-button {
@@ -117,10 +124,16 @@
     text-underline-offset: 2px;
   }
 
+  .about-surface__content .about-subsection,
   .about-surface__content .about-support {
-    margin-top: 12px;
+    margin-top: 14px;
     padding-top: 0;
     border-top: 0;
+  }
+
+  .about-surface__content .about-subsection > .eyebrow,
+  .about-surface__content .about-support > .eyebrow {
+    margin-bottom: 5px;
   }
 
   .about-surface__content .about-support .secondary-button {
@@ -162,17 +175,17 @@
   }
 
   .about-dialog.about-dialog--footer-popover .dialog-shell {
-    padding: 14px 16px;
+    padding: 16px 18px;
   }
 
   .about-dialog.about-dialog--footer-popover .dialog-header h2 {
-    margin: 0 0 8px;
+    margin: 0 0 10px;
   }
 
   .about-dialog.about-dialog--footer-popover p {
-    margin: 0 0 8px;
-    font-size: .94rem;
-    line-height: 1.36;
+    margin: 0 0 10px;
+    font-size: .92rem;
+    line-height: 1.42;
   }
 
   .about-dialog.about-dialog--footer-popover p:first-of-type > strong {
@@ -181,9 +194,22 @@
     font-size: .88rem;
   }
 
+  .about-dialog.about-dialog--footer-popover .about-subsection,
   .about-dialog.about-dialog--footer-popover .about-support {
-    margin-top: 2px;
-    padding-top: 10px;
+    margin-top: 12px;
+    padding-top: 11px;
+  }
+
+  .about-dialog.about-dialog--footer-popover .about-subsection > .eyebrow,
+  .about-dialog.about-dialog--footer-popover .about-support > .eyebrow {
+    margin-bottom: 5px;
+    font-size: .66rem;
+    letter-spacing: .11em;
+  }
+
+  .about-dialog.about-dialog--footer-popover .about-subsection p,
+  .about-dialog.about-dialog--footer-popover .about-support p {
+    margin-bottom: 0;
   }
 
   .about-dialog.about-dialog--footer-popover .about-privacy {
