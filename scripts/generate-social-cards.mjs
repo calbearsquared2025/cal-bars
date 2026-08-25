@@ -223,7 +223,7 @@ export function buildSharePage(model) {
   ${GENERATED_MARKER}
   <title>${title}</title>
   <meta name="description" content="${description}">
-  <link rel="canonical" href="${shareUrl}">
+  <meta name="robots" content="noindex,follow">
   <meta property="og:type" content="website">
   <meta property="og:title" content="${title}">
   <meta property="og:description" content="${description}">

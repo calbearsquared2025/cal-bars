@@ -45,7 +45,7 @@ test('card HTML is fixed-size, uses design-system colors, and references the paw
   assert.doesNotMatch(html, /<text/);
 });
 
-test('share page has static Open Graph and Twitter metadata and routes to the selected game', () => {
+test('share page has static social metadata, stays out of search, and routes to the selected game', () => {
   const html = buildSharePage(socialCardModel(snapshot, game));
   for (const attribute of [
     'property="og:title"',
@@ -57,6 +57,8 @@ test('share page has static Open Graph and Twitter metadata and routes to the se
     'name="twitter:description"',
     'name="twitter:image"'
   ]) assert.match(html, new RegExp(attribute));
+  assert.match(html, /name="robots" content="noindex,follow"/);
+  assert.doesNotMatch(html, /rel="canonical"/);
   assert.match(html, /Cal vs\. UCLA · \d+ locations mapped · \d+ Watch Parties/);
   assert.match(html, /window\.location\.replace\("\.\.\/\.\.\/\?game=ucla"\)/);
 });
