@@ -17,9 +17,11 @@ For every Form in this document:
 
 All non-photo Forms should remain usable without Google sign-in. **Submit a Photo is the deliberate exception:** Google Forms file upload requires sign-in. The uploaded original remains private in Google Drive and is never served directly by the public site.
 
-After any Form question is recreated, reordered, or replaced, generate a new prefilled link and verify that the public entry IDs configured by the application are still correct.
+After any Form question is recreated, reordered, or replaced, generate a new prefilled link and verify that the public entry IDs configured by the application are still correct. Prefer editing existing prefilled Venue name/ID questions in place so their entry IDs remain stable.
 
-## Nominate a Cal Bar
+## Tell us about this location
+
+This is the existing manually reviewed venue-information Form previously presented to users as **Nominate a Cal Bar**. The application reuses the same Form and existing prefill IDs, but the public action is now **Tell us about this location** for both Community Locations and Cal Bars. Fans provide useful venue context; Cal Bar classification remains an editorial/manual decision and is never changed automatically by this Form.
 
 Public Form URL:
 
@@ -33,7 +35,7 @@ Configured application fields:
 Questions, in order:
 
 1. `Venue name` — required short answer; prefilled.
-2. `What makes this a Cal Bar?` — required paragraph.
+2. `What should other Bears know about watching Cal games here?` — required paragraph.
 3. `How often do Cal fans gather here?` — required multiple choice:
    - `Most Cal football games`
    - `Several times per season`
@@ -43,7 +45,7 @@ Questions, in order:
 4. `Is an alumni association or Cal group affiliated with this venue?` — required: `Yes`, `No`, or `Not sure`.
 5. `Is the venue Cal alumni-owned or operated?` — required: `Yes`, `No`, or `Not sure`.
 6. `Does the venue display Cal memorabilia or other visible Cal identity?` — required: `Yes`, `No`, or `Not sure`.
-7. `Other Cal connection or supporting context` — optional paragraph.
+7. `Anything else we should know?` — optional paragraph.
 8. `Your relationship to this venue` — required multiple choice:
    - `Venue owner or staff`
    - `Alumni group organizer`
@@ -56,9 +58,13 @@ Questions, in order:
 
 Confirmation text:
 
-`Your nomination was received for private review. The public listing will not change automatically.`
+`Thanks. Your information was received and will help us improve this listing.`
 
-Manual review may result in a deliberate canonical Venue update. Multiple nominations for the same Venue are permitted and may provide corroborating evidence.
+Manual review may result in a deliberate canonical Venue update or later Cal Bar classification. Multiple submissions for the same Venue are permitted and may provide corroborating evidence.
+
+When a user creates a genuinely new Community Location through the MapTiler flow, location creation and any chosen Fan Intent remain immediate. After the successful canonical write, the application may show an optional **Tell us about this location** follow-up that opens this same prefilled Form. Dismissing the prompt never affects the newly created Venue. If the MapTiler result resolves to an already-existing canonical Venue, the new-location follow-up is not shown.
+
+This venue-information workflow remains distinct from **Share your Cal Game Experience** below. Venue-information responses are private/manual-review source material; Fan Experiences are short public **BEARS SAY** contributions with their own moderation/publication path.
 
 ## Report a problem with a listing
 
@@ -247,7 +253,7 @@ Confirmation text:
 
 `Thank you. Your suggestion was received for private review. No location will be created or published automatically.`
 
-The selected Game is not submitted because this Form has no Game field. A suggestion must not be treated as a Cal Bar nomination or used to publish a Venue automatically.
+The selected Game is not submitted because this Form has no Game field. A suggestion must not be treated as a location-information submission or used to publish a Venue automatically.
 
 ## Verification checklist
 
