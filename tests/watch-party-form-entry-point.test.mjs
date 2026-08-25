@@ -196,14 +196,16 @@ test('index uses the verified reviewed Form routing configuration', () => {
   assert.match(indexHtml, /css\/watch-party-form\.css/);
 });
 
-test('browser adapter promotes Watch Party planning ahead of listing-maintenance actions', () => {
+test('browser adapter promotes Watch Party creation ahead of listing-maintenance actions', () => {
   assert.match(browserAdapter, /link\.target = '_blank'/);
   assert.match(browserAdapter, /link\.rel = 'noopener noreferrer'/);
   assert.match(browserAdapter, /detail\.querySelector\('\.preview-note'\)\?\.remove\(\)/);
   assert.match(browserAdapter, /section\.className = 'detail-watch-party-cta'/);
   assert.match(browserAdapter, /section\.dataset\.watchPartyFormSection = 'true'/);
   assert.match(browserAdapter, /maintenance\.before\(section\)/);
-  assert.match(browserAdapter, /Plan a Watch Party/);
+  assert.match(browserAdapter, /No Watch Party listed for this game\. Organizing one or know of one\? Add it so other Bears can find it\./);
+  assert.match(browserAdapter, /Add a Watch Party/);
+  assert.doesNotMatch(browserAdapter, /Plan a Watch Party/);
   assert.doesNotMatch(browserAdapter, /link\.className = 'detail-contribution__action'/);
 });
 
