@@ -271,6 +271,11 @@
   font-weight: 400 !important;
 }
 
+.text-button {
+  color: inherit;
+  font-weight: inherit;
+}
+
 @media (min-width: 900px) {
   .map-toolbar .search-field {
     border-width: 1px !important;
