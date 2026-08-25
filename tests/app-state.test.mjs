@@ -54,21 +54,30 @@ test('one canonical snapshot object is retained while public arrays are refreshe
   assert.equal(appState.snapshot.generatedAt, 'two');
 });
 
-test('restoring persisted Fan Intent keeps the current tray surface', () => {
+test('persisted Fan Intent never replaces the current map selection', () => {
   resetAppStateForTests();
   setCanonicalSnapshot(snapshot());
   appState.fanIntent.selections = { game_1: 'ven_1', game_2: 'ven_2' };
 
   appState.gameId = 'game_1';
-  restoreSelectedVenueFromFanIntent();
-  assert.equal(appState.selectedVenueId, 'ven_1');
-  assert.equal(appState.trayState, 'peek');
-
   appState.trayState = 'full';
-  appState.gameId = 'game_2';
   restoreSelectedVenueFromFanIntent();
-  assert.equal(appState.selectedVenueId, 'ven_2');
+  assert.equal(appState.selectedVenueId, null);
   assert.equal(appState.trayState, 'full');
+
+  appState.selectedVenueId = 'ven_1';
+  appState.trayState = 'selected';
+  appState.gameId = 'game_2';
+  restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty: true });
+  assert.equal(appState.selectedVenueId, 'ven_1');
+  assert.equal(appState.trayState, 'selected');
+
+  appState.selectedVenueId = 'ven_missing';
+  appState.locationFocusVenueId = 'ven_missing';
+  restoreSelectedVenueFromFanIntent();
+  assert.equal(appState.selectedVenueId, null);
+  assert.equal(appState.trayState, 'peek');
+  assert.equal(appState.locationFocusVenueId, null);
 });
 
 test('clearing the map selection preserves game location and Fan Intent', () => {

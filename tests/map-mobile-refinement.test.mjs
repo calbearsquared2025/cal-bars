@@ -14,6 +14,39 @@ test('selected venues focus the map at city scale with tray-aware offset', () =>
   assert.match(source, /locationFocusVenueId === state\.selectedVenueId/);
 });
 
+test('mobile map camera is preserved in same-tab session state', () => {
+  assert.match(source, /const MAP_CAMERA_STORAGE_KEY = 'cgb_v2_map_camera'/);
+  assert.match(source, /window\.sessionStorage\.getItem/);
+  assert.match(source, /window\.sessionStorage\.setItem/);
+  assert.match(source, /map\.getCenter\?\.\(\)/);
+  assert.match(source, /map\.getZoom\?\.\(\)/);
+  assert.match(source, /map\.getBearing\?\.\(\)/);
+  assert.match(source, /map\.getPitch\?\.\(\)/);
+  assert.match(source, /map\.jumpTo\(\{[\s\S]*center: \[camera\.lng, camera\.lat\][\s\S]*zoom: camera\.zoom/);
+  assert.match(source, /map\.on\?\.\('moveend', trackedMapMoveEnd\)/);
+});
+
+test('profile navigation captures the current camera and restores it before venue auto-focus', () => {
+  assert.match(source, /function captureCameraBeforeVenueNavigation/);
+  assert.match(source, /url\.searchParams\.get\('venue'\)/);
+  assert.match(source, /captureMapCamera\(\)/);
+  assert.match(source, /function markDetailReturnForCamera/);
+  assert.match(source, /#detail-back/);
+  assert.match(source, /returnCameraPending = true/);
+  assert.match(source, /function restorePendingReturnCamera/);
+  assert.match(source, /suppressVenueRecentering\(state\.map, state\.selectedVenueId\)/);
+  assert.match(source, /restoreStoredMapCamera\(state\.map\)/);
+  assert.match(source, /if \(returnCameraPending\)[\s\S]*restorePendingReturnCamera\(\)[\s\S]*return;/);
+});
+
+test('temporary return protection blocks only selected-venue recentering at focus zoom', () => {
+  assert.match(source, /function suppressVenueRecentering/);
+  assert.match(source, /targetsSelectedVenue/);
+  assert.match(source, /requestedZoom >= FOCUS_ZOOM/);
+  assert.match(source, /return originalEaseTo\.call\(this, options, \.\.\.args\)/);
+  assert.match(source, /VENUE_FOCUS_SUPPRESSION_MS = 900/);
+});
+
 test('zoom controls are removed and hidden', () => {
   assert.match(firstPaintCss, /maplibregl-ctrl-top-right[\s\S]*display: none !important/);
   assert.match(source, /maplibregl-ctrl-zoom-in/);
