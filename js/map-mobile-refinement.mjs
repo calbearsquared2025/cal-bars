@@ -13,11 +13,17 @@ const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
 const SELECTED_DETAIL_SWIPE_THRESHOLD = 48;
 const STYLE_ID = 'cgb-map-mobile-refinement';
+const MAP_CAMERA_STORAGE_KEY = 'cgb_v2_map_camera';
+const VENUE_FOCUS_SUPPRESSION_MS = 900;
 
 let lastAutoFocusedVenueId = '';
 let selectedHandlePointer = null;
 let suppressSelectedHandleClick = false;
 let trayObserver = null;
+let trackedMap = null;
+let trackedMapMoveEnd = null;
+let returnCameraPending = false;
+let returnCameraFrame = 0;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -29,6 +35,148 @@ function appState() {
 
 function reducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function sessionGet(key) {
+  try { return window.sessionStorage.getItem(key); } catch (_) { return null; }
+}
+
+function sessionSet(key, value) {
+  try { window.sessionStorage.setItem(key, value); } catch (_) {}
+}
+
+function normalizeMapCamera(camera) {
+  const lng = Number(camera?.lng);
+  const lat = Number(camera?.lat);
+  const zoom = Number(camera?.zoom);
+  const bearing = Number(camera?.bearing ?? 0);
+  const pitch = Number(camera?.pitch ?? 0);
+  if (!Number.isFinite(lng) || lng < -180 || lng > 180 ||
+      !Number.isFinite(lat) || lat < -90 || lat > 90 ||
+      !Number.isFinite(zoom) || zoom < 0 || zoom > 24 ||
+      !Number.isFinite(bearing) || !Number.isFinite(pitch)) return null;
+  return { lng, lat, zoom, bearing, pitch };
+}
+
+function storedMapCamera() {
+  const stored = sessionGet(MAP_CAMERA_STORAGE_KEY);
+  if (!stored) return null;
+  try { return normalizeMapCamera(JSON.parse(stored)); } catch (_) { return null; }
+}
+
+function currentMapCamera(map = appState()?.map) {
+  if (!map) return null;
+  const center = map.getCenter?.();
+  return normalizeMapCamera({
+    lng: center?.lng,
+    lat: center?.lat,
+    zoom: map.getZoom?.(),
+    bearing: map.getBearing?.(),
+    pitch: map.getPitch?.()
+  });
+}
+
+function captureMapCamera(map = appState()?.map) {
+  if (!isMobile()) return null;
+  const camera = currentMapCamera(map);
+  if (camera) sessionSet(MAP_CAMERA_STORAGE_KEY, JSON.stringify(camera));
+  return camera;
+}
+
+function restoreStoredMapCamera(map = appState()?.map) {
+  const camera = storedMapCamera();
+  if (!map || !camera || typeof map.jumpTo !== 'function') return false;
+  map.jumpTo({
+    center: [camera.lng, camera.lat],
+    zoom: camera.zoom,
+    bearing: camera.bearing,
+    pitch: camera.pitch
+  });
+  return true;
+}
+
+function attachMapCameraTracking() {
+  const map = appState()?.map;
+  if (!isMobile() || !map || map === trackedMap) return false;
+  try { trackedMap?.off?.('moveend', trackedMapMoveEnd); } catch (_) {}
+  trackedMap = map;
+  trackedMapMoveEnd = () => captureMapCamera(map);
+  map.on?.('moveend', trackedMapMoveEnd);
+  return restoreStoredMapCamera(map);
+}
+
+function centerCoordinates(center) {
+  if (Array.isArray(center)) return [Number(center[0]), Number(center[1])];
+  return [Number(center?.lng), Number(center?.lat)];
+}
+
+function suppressVenueRecentering(map, venueId) {
+  const venue = selectedVenue(venueId);
+  const longitude = Number(venue?.longitude);
+  const latitude = Number(venue?.latitude);
+  const originalEaseTo = map?.easeTo;
+  if (!venue || ![longitude, latitude].every(Number.isFinite) || typeof originalEaseTo !== 'function') return false;
+
+  const expiresAt = Date.now() + VENUE_FOCUS_SUPPRESSION_MS;
+  const patchedEaseTo = function patchedEaseTo(options = {}, ...args) {
+    const [lng, lat] = centerCoordinates(options?.center);
+    const targetsSelectedVenue = Number.isFinite(lng) && Number.isFinite(lat) &&
+      Math.abs(lng - longitude) < 1e-7 && Math.abs(lat - latitude) < 1e-7;
+    const requestedZoom = Number(options?.zoom);
+    if (Date.now() <= expiresAt && targetsSelectedVenue &&
+        (!Number.isFinite(requestedZoom) || requestedZoom >= FOCUS_ZOOM)) return this;
+    return originalEaseTo.call(this, options, ...args);
+  };
+
+  map.easeTo = patchedEaseTo;
+  window.setTimeout(() => {
+    if (map.easeTo === patchedEaseTo) map.easeTo = originalEaseTo;
+  }, VENUE_FOCUS_SUPPRESSION_MS + 50);
+  return true;
+}
+
+function restorePendingReturnCamera(attempt = 0) {
+  if (!returnCameraPending) return false;
+  const state = appState();
+  if (state?.map && storedMapCamera()) {
+    attachMapCameraTracking();
+    suppressVenueRecentering(state.map, state.selectedVenueId);
+    restoreStoredMapCamera(state.map);
+    lastAutoFocusedVenueId = state.selectedVenueId || '';
+    state.locationFocusVenueId = null;
+    returnCameraPending = false;
+    returnCameraFrame = 0;
+    return true;
+  }
+  if (attempt >= 10) {
+    returnCameraPending = false;
+    returnCameraFrame = 0;
+    return false;
+  }
+  returnCameraFrame = requestAnimationFrame(() => restorePendingReturnCamera(attempt + 1));
+  return false;
+}
+
+function markDetailReturnForCamera(event) {
+  const back = event.target.closest?.('#detail-back');
+  const state = appState();
+  if (!back || !isMobile() || !state?.detailMode || !state.selectedVenueId || !storedMapCamera()) return;
+  returnCameraPending = true;
+  if (returnCameraFrame) cancelAnimationFrame(returnCameraFrame);
+  returnCameraFrame = requestAnimationFrame(() => restorePendingReturnCamera());
+}
+
+function captureCameraBeforeVenueNavigation(event) {
+  if (!isMobile() || !appState()?.map) return;
+  const link = event.target.closest?.('a[href]');
+  if (!link) return;
+  try {
+    const url = new URL(link.href, window.location.href);
+    if (!url.searchParams.get('venue')) return;
+  } catch (_) {
+    return;
+  }
+  captureMapCamera();
 }
 
 function installStyles() {
@@ -176,6 +324,7 @@ function openSelectedVenueDetail(venueId) {
   const venue = selectedVenue(venueId, state);
   const game = state?.snapshot?.games?.find((item) => item.game_id === state?.gameId) || null;
   if (!venue || !game) return false;
+  captureMapCamera(state.map);
   window.location.assign(buildVenueUrl(venue.slug, game, window.location.href));
   return true;
 }
@@ -189,6 +338,7 @@ function trackSelectedHandleSwipe(event) {
     selectedHandlePointer = null;
     return;
   }
+  captureMapCamera(state.map);
   selectedHandlePointer = {
     pointerId: event.pointerId,
     startY: event.clientY,
@@ -294,6 +444,7 @@ function observeTray() {
 function sync() {
   installStyles();
   removeZoomControls();
+  const restoredCamera = attachMapCameraTracking();
   updatePreviewIntent();
   requestAnimationFrame(updatePreviewIntent);
   positionAttribution();
@@ -306,6 +457,15 @@ function sync() {
     handle?.setAttribute('aria-label', 'Collapse selected location');
   }
 
+  if (returnCameraPending) {
+    restorePendingReturnCamera();
+    return;
+  }
+  if (restoredCamera && state?.selectedVenueId && tray?.dataset.state === 'selected') {
+    lastAutoFocusedVenueId = state.selectedVenueId;
+    state.locationFocusVenueId = null;
+    return;
+  }
   if (state?.locationFocusVenueId === state.selectedVenueId) {
     state.locationFocusVenueId = null;
     return;
@@ -319,6 +479,8 @@ function initialize() {
   installStyles();
   observeTray();
 
+  document.addEventListener('click', markDetailReturnForCamera, { capture: true });
+  document.addEventListener('click', captureCameraBeforeVenueNavigation, { capture: true });
   document.addEventListener('click', openPreviewVenue, { capture: true });
   document.addEventListener('pointerdown', trackSelectedHandleSwipe, { capture: true });
   document.addEventListener('pointerup', handleSelectedHandleSwipe, { capture: true });
@@ -333,6 +495,7 @@ function initialize() {
     requestAnimationFrame(() => focusVenue(marker.dataset.venueId, { force: true }));
   });
 
+  window.addEventListener('pagehide', () => captureMapCamera());
   window.addEventListener('resize', () => requestAnimationFrame(positionAttribution));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
