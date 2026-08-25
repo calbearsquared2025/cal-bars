@@ -50,11 +50,16 @@ test('successful non-exact searches clear stale venue framing only after the res
   assert.doesNotMatch(app, /showStatus\('Finding that area…'[\s\S]*state\.selectedVenueId = null;[\s\S]*const origin = await geocode/);
 });
 
-test('desktop Add Location stays in the existing search form without a second action owner', () => {
+test('desktop location handoff appears only while search is engaged and uses search-first copy', () => {
   assert.match(source, /if \(button\.parentElement !== form\) form\.append\(button\)/);
   assert.match(source, /if \(button\.parentElement !== dropdown\) dropdown\.append\(button\)/);
-  assert.match(source, /Don’t see it\? Add a location\./);
-  assert.match(source, /No matching locations found\. Add a location\./);
+  assert.match(source, /let desktopSearchEngaged = false/);
+  assert.match(source, /button\.hidden = !existingMode \|\| !desktopSearchEngaged/);
+  assert.match(source, /Watching somewhere else\? Search for another location\./);
+  assert.match(source, /Don’t see it\? Search for another location\./);
+  assert.match(source, /No matching locations found\. Search for another location\./);
+  assert.match(source, /form\?\.addEventListener\('focusout'/);
+  assert.match(source, /form\.contains\(document\.activeElement\)/);
   assert.match(source, /rankVenues\(state\.snapshot, state\.gameId, state\.origin, query\)/);
   assert.doesNotMatch(source, /MutationObserver|stopImmediatePropagation/);
 });
@@ -75,7 +80,7 @@ test('canonical range toggle replaces the legacy clear-search control and repres
   assert.doesNotMatch(app, /clearSearch|clearSearchResults/);
 });
 
-test('desktop search results and Add Location action form one connected stack', () => {
+test('desktop search results and engaged location handoff form one connected stack', () => {
   assert.match(supportCss, /\.map-toolbar \.search-suggestions[\s\S]*position: static !important;[\s\S]*overflow-y: auto !important;/);
   assert.match(supportCss, /\.map-toolbar \.search-add-location-action:not\(\[hidden\]\)[\s\S]*width: 100%;[\s\S]*border-top: 0;/);
   assert.match(supportCss, /location-search:has\(\.search-add-location-action:not\(\[hidden\]\)\) \.search-field[\s\S]*clip-path: none !important/);
