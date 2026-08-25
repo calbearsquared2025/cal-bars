@@ -401,30 +401,34 @@ function refineActions(root = document) {
   const location = card?.querySelector('.venue-location');
   if (!card || !row || !location) return;
 
+  const mobile = isMobile();
   const state = window.CGBApp?.getState?.();
   const venueId = card.dataset.venueId || state?.selectedVenueId || '';
   const venue = state?.snapshot?.venues?.find((item) => item.venue_id === venueId) || null;
-  const distanceCopy = formatSelectedDistance(state, venue);
-  if (venue) location.textContent = compactVenueLocation(venue);
+  const distanceCopy = mobile ? formatSelectedDistance(state, venue) : '';
+  let proximity = null;
 
-  let proximity = card.querySelector('.selected-card__proximity-row');
-  if (!proximity) {
-    proximity = document.createElement('div');
-    proximity.className = 'selected-card__proximity-row';
-    location.after(proximity);
-  }
-  proximity.dataset.hasDistance = String(Boolean(distanceCopy));
-
-  let distance = proximity.querySelector('.selected-card__distance');
-  if (distanceCopy) {
-    if (!distance) {
-      distance = document.createElement('span');
-      distance.className = 'selected-card__distance';
-      proximity.prepend(distance);
+  if (mobile) {
+    if (venue) location.textContent = compactVenueLocation(venue);
+    proximity = card.querySelector('.selected-card__proximity-row');
+    if (!proximity) {
+      proximity = document.createElement('div');
+      proximity.className = 'selected-card__proximity-row';
+      location.after(proximity);
     }
-    distance.textContent = distanceCopy;
-  } else {
-    distance?.remove();
+    proximity.dataset.hasDistance = String(Boolean(distanceCopy));
+
+    let distance = proximity.querySelector('.selected-card__distance');
+    if (distanceCopy) {
+      if (!distance) {
+        distance = document.createElement('span');
+        distance.className = 'selected-card__distance';
+        proximity.prepend(distance);
+      }
+      distance.textContent = distanceCopy;
+    } else {
+      distance?.remove();
+    }
   }
 
   const actions = Array.from(row.querySelectorAll(':scope > a, :scope > button'));
@@ -438,10 +442,11 @@ function refineActions(root = document) {
     directions.className = 'selected-card__directions-inline';
     directions.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
     directions.textContent = 'Directions';
-    proximity.append(directions);
+    if (mobile) proximity.append(directions);
+    else location.append(directions);
   }
 
-  if (!distanceCopy && !directions) proximity.remove();
+  if (mobile && !distanceCopy && !directions) proximity?.remove();
 
   if (details) {
     details.classList.add('selected-card__details');
