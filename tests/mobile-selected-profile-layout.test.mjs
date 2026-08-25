@@ -18,5 +18,5 @@ test('selected venue location separates proximity from the address line on mobil
 test('Directions shares the mobile proximity row while desktop keeps its existing placement', () => {
   assert.match(source, /proximity\.dataset\.hasDistance = String\(Boolean\(distanceCopy\)\)/);
   assert.match(source, /if \(mobile\) proximity\.append\(directions\);\s*else location\.append\(directions\);/);
-  assert.match(source, /data-has-distance=\\"true\\"[\s\S]*selected-card__directions-inline::before/);
+  assert.match(source, /selected-card__proximity-row\[data-has-distance="true"\][\s\S]*selected-card__directions-inline::before/);
 });
