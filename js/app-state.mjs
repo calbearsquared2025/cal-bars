@@ -116,15 +116,16 @@ export function clearSelectedMapVenue() {
   return true;
 }
 
-export function restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty = false } = {}) {
+// Compatibility hook for existing refresh callers. Fan Intent is attendance state,
+// not map-navigation state, so refreshes must never replace the user's map selection.
+export function restoreSelectedVenueFromFanIntent(_options = {}) {
   if (appState.detailMode || !appState.snapshot) return appState.selectedVenueId;
-  const venueId = activeFanIntentVenueId();
+  const venueId = appState.selectedVenueId;
   const exists = venueId && appState.snapshot.venues.some((venue) => venue.venue_id === venueId);
-  if (exists) {
-    appState.selectedVenueId = venueId;
-  } else if (!preserveCurrentWhenEmpty) {
+  if (venueId && !exists) {
     appState.selectedVenueId = null;
     appState.trayState = 'peek';
+    appState.locationFocusVenueId = null;
   }
   return appState.selectedVenueId;
 }
