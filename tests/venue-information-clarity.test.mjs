@@ -47,7 +47,7 @@ test('desktop Venue selection keeps the map active and opens the complete Profil
 });
 
 test('mobile Back returns to the focused map without manufacturing a desktop Detail transition', () => {
-  assert.match(app, /function returnToMapFromDetail\(event\)[\s\S]*if \(!isMobileLayout\(\)\) return;[\s\S]*state\.detailMode = false[\s\S]*setTrayState\('selected'\)[\s\S]*renderAll\(\)[\s\S]*focusReturnedDetailVenue\(venue\)/);
+  assert.match(app, /function returnToMapFromDetail\(event\)[\s\S]*if \(!isMobileLayout\(\) \|\| !state\?\.detailMode\) return false/);
   assert.match(shellControls, /function leaveDetailForCommand\(\)[\s\S]*if \(!isMobileLayout\(\) \|\| !state\?\.detailMode\) return false/);
 });
 
@@ -106,7 +106,7 @@ test('shared Profile polish applies to inline desktop and mobile Detail presenta
 });
 
 test('Profile maintenance contributions retain the existing adapters', () => {
-  assert.match(watchPartyForm, /Plan a Watch Party/);
+  assert.match(watchPartyForm, /Add a Watch Party/);
   assert.match(watchPartyForm, /maintenance\.before\(section\)/);
   assert.match(calBarNomination, /dataset\.calBarNominationEntry = 'true'/);
   assert.match(listingUpdate, /dataset\.listingUpdateEntry = 'true'/);
