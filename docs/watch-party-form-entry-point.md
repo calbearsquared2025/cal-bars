@@ -2,15 +2,21 @@
 
 ## Scope
 
-When the selected venue has no active Watch Party for the selected upcoming game, the venue detail page shows:
+When the selected venue has no active Watch Party for the selected upcoming game, the venue profile shows a distinct game-specific contribution action:
 
-> Is there a watch party going on?
+> **Watch Party**
 >
-> **Submit a Watch Party**
+> No Watch Party listed for this game. Organizing one or know of one? Add it so other Bears can find it.
+>
+> **Add a Watch Party**
+
+This language deliberately distinguishes an organized/public gathering from **I’ll be here**, which records only the current fan's attendance intent at the selected location.
 
 When an active Watch Party already exists for that venue and game, it shows:
 
-> Is there another watch party going on?
+> **Another Watch Party?**
+>
+> Hosting another gathering here? Add another Watch Party for this game.
 >
 > **Add Another Watch Party**
 
