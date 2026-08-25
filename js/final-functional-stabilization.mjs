@@ -1,3 +1,5 @@
+import './map-zoom-coordination.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-final-functional-stabilization';
 const CONTEXTUAL_ADD_SELECTOR = [
