@@ -11,7 +11,7 @@ test('mobile selected venue title removes the inherited clipping clamp', () => {
 test('selected venue location separates proximity from the address line on mobile', () => {
   assert.match(source, /const distanceCopy = mobile \? formatSelectedDistance\(state, venue\) : ''/);
   assert.match(source, /if \(mobile\) \{[\s\S]*location\.textContent = compactVenueLocation\(venue\)[\s\S]*selected-card__proximity-row/);
-  assert.match(source, /function formatSelectedDistance\(state, venue\)[\s\S]*haversineMiles\(/[\s\S]*mi away/);
+  assert.match(source, /function formatSelectedDistance\(state, venue\)[\s\S]*haversineMiles\([\s\S]*mi away/);
   assert.match(source, /selected-card__distance[\s\S]*white-space: nowrap !important/);
 });
 
