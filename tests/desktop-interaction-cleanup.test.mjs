@@ -39,15 +39,15 @@ test('Show all preserves remembered coordinates and Locations browse ownership',
   assert.match(app, /!mobile && state\.selectedVenueId && !state\.detailMode && state\.trayState !== 'full'/);
 });
 
-test('Search exposes the exact persistent add-location footer and canonical mode copy', () => {
-  assert.match(html, /id="search-add-location-button"[^>]*>Not yet listed\? <strong>Add a location\.<\/strong>/);
+test('Search exposes contextual another-location copy and canonical mode behavior', () => {
+  assert.match(html, /id="search-add-location-button"[^>]*>Watching somewhere else\? <strong>Search for another location\.<\/strong>/);
   assert.match(shellControls, /function setSearchMode\(mode = 'existing',[\s\S]*state\.searchMode = mode/);
-  assert.match(shellControls, /'Add a location'[\s\S]*'Search for the place you want to add\.'[\s\S]*'Search for the location to add'/);
+  assert.match(shellControls, /'Search for another location'[\s\S]*'Find a place that isn’t listed in Cal Golden Bars yet\.'[\s\S]*'Venue or address'/);
   assert.match(shellControls, /function showAddLocationSearch\(\)[\s\S]*setSearchMode\('add-location'\)[\s\S]*setSurface\('search'/);
   assert.doesNotMatch(shellControls, /showDesktopAddLocation|setDesktopAddLocationMode/);
 });
 
-test('desktop Search keeps results compact and the add-location action in a footer row', () => {
+test('desktop Search keeps results compact and the another-location action in a footer row when shown', () => {
   const desktopRules = commandCss.match(/@media \(min-width: 900px\) \{[\s\S]*$/)?.[0] ?? '';
 
   assert.match(desktopRules, /\.map-toolbar \.search-field\s*\{[^}]*grid-template-columns: 16px minmax\(0, 1fr\) auto;[^}]*background: var\(--cgb-navy-50, #eef3f8\);[^}]*border: 2px solid var\(--cgb-navy-800, #0b2856\);[^}]*box-shadow: 0 8px 20px rgba\(1, 1, 51, \.2\);[^}]*clip-path: none;/);
