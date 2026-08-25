@@ -4,6 +4,10 @@ import {
   upsertCanonicalVenue
 } from './external-venue-core.mjs';
 import { validateAddExternalVenueResponse } from './external-venue-contribution-core.mjs';
+import {
+  canonicalVenueWasKnown,
+  showNewLocationContributionPrompt
+} from './new-location-contribution-prompt.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const WRITE_TIMEOUT_MS = 12000;
@@ -96,6 +100,7 @@ export async function createExternalVenueWithoutAttendance({
 
   try {
     const response = await postAddExternalVenue(selected, documentObject, windowObject);
+    const venueAlreadyKnown = canonicalVenueWasKnown(appState.snapshot, response.venue?.venue_id);
     const venue = upsertCanonicalVenue(appState.snapshot, response.venue);
 
     appState.selectedVenueId = venue.venue_id;
@@ -121,6 +126,7 @@ export async function createExternalVenueWithoutAttendance({
       venueId: venue.venue_id
     });
     renderApplication(windowObject);
+    if (!venueAlreadyKnown) showNewLocationContributionPrompt(venue, { documentObject });
     return venue;
   } catch (error) {
     external.error = externalCreationFailureCopy(error);
