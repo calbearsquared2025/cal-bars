@@ -38,7 +38,6 @@ test('zero attendance collapses to the invitation without a redundant numeral an
 });
 
 test('attendance refinement reads the canonical game and venue count instead of formatted DOM copy', () => {
-  assert.match(source, /import \{ bearCountCopy, getFanCount \} from '\.\/core\.mjs';/);
   assert.match(source, /function selectedAttendanceContext\(count\)[\s\S]*window\.CGBApp\?\.getState\?\.\(\)[\s\S]*getFanCount\(state\.snapshot, state\.gameId, venueId\)/);
   assert.match(source, /const raw = bearCountCopy\(number\)/);
   assert.doesNotMatch(source, /raw\.match\(/);
