@@ -1,6 +1,7 @@
 import { rankVenues } from './core.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
+let desktopSearchEngaged = false;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -12,9 +13,9 @@ function appState() {
 
 function restoreMobileAddLocationCopy(button) {
   if (!button) return;
-  button.replaceChildren(document.createTextNode('Not yet listed? '));
+  button.replaceChildren(document.createTextNode('Watching somewhere else? '));
   const strong = document.createElement('strong');
-  strong.textContent = 'Add a location.';
+  strong.textContent = 'Search for another location.';
   button.append(strong);
 }
 
@@ -54,13 +55,13 @@ function syncDesktopSearchUi() {
   const matchCount = desktopMatchCount(query, state);
   const listQuery = String(state?.listQuery || '').trim();
 
-  button.hidden = !existingMode;
-  if (existingMode) {
+  button.hidden = !existingMode || !desktopSearchEngaged;
+  if (existingMode && desktopSearchEngaged) {
     button.textContent = !query
-      ? 'Add a location.'
+      ? 'Watching somewhere else? Search for another location.'
       : matchCount > 0
-        ? 'Don’t see it? Add a location.'
-        : 'No matching locations found. Add a location.';
+        ? 'Don’t see it? Search for another location.'
+        : 'No matching locations found. Search for another location.';
   }
 
   /* The desktop CTA lives outside the dropdown, so an empty results shell is unnecessary. */
@@ -70,14 +71,32 @@ function syncDesktopSearchUi() {
 }
 
 function initialize() {
+  const form = document.querySelector('#location-search');
   const searchInput = document.querySelector('#location-query');
 
-  searchInput?.addEventListener('input', syncDesktopSearchUi);
-  searchInput?.addEventListener('focus', syncDesktopSearchUi);
+  searchInput?.addEventListener('input', () => {
+    if (!isMobile()) desktopSearchEngaged = true;
+    syncDesktopSearchUi();
+  });
+  searchInput?.addEventListener('focus', () => {
+    if (!isMobile()) desktopSearchEngaged = true;
+    syncDesktopSearchUi();
+  });
+  form?.addEventListener('focusout', () => {
+    if (isMobile()) return;
+    requestAnimationFrame(() => {
+      if (form.contains(document.activeElement)) return;
+      desktopSearchEngaged = false;
+      syncDesktopSearchUi();
+    });
+  });
   document.querySelector('#add-new-location-button')?.addEventListener('click', () => {
     document.querySelector('#search-add-location-button')?.click();
   });
-  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', syncDesktopSearchUi);
+  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
+    desktopSearchEngaged = false;
+    syncDesktopSearchUi();
+  });
   window.CGBApp?.subscribe?.('rendered', syncDesktopSearchUi);
   window.CGBApp?.subscribe?.('ready', syncDesktopSearchUi);
   syncDesktopSearchUi();
