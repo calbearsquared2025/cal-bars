@@ -485,10 +485,14 @@ function refine() {
   refineActions();
 }
 
+let refinementQueued = false;
+
 function scheduleRefinement() {
-  requestAnimationFrame(() => {
+  if (refinementQueued) return;
+  refinementQueued = true;
+  queueMicrotask(() => {
+    refinementQueued = false;
     refine();
-    requestAnimationFrame(refine);
   });
 }
 
