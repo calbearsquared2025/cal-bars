@@ -256,11 +256,11 @@ function setSearchMode(mode = 'existing', { refresh = true } = {}) {
   if (state) state.searchMode = mode;
   const addingLocation = mode === 'add-location';
   document.body.dataset.searchMode = mode;
-  dom.searchTitle.textContent = addingLocation ? 'Add a location' : 'Search locations';
+  dom.searchTitle.textContent = addingLocation ? 'Search for another location' : 'Search locations';
   dom.searchIntro.textContent = addingLocation
-    ? 'Search for the place you want to add.'
+    ? 'Find a place that isn’t listed in Cal Golden Bars yet.'
     : 'Find a location already listed in Cal Golden Bars.';
-  dom.searchInput.placeholder = addingLocation ? 'Search for the location to add' : 'City, ZIP, or venue';
+  dom.searchInput.placeholder = addingLocation ? 'Venue or address' : 'City, ZIP, or venue';
   dom.addLocationSearch.hidden = mode !== 'existing';
   if (changed && refresh) dom.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
   if (addingLocation && refresh) window.CGBExternalVenueSearch?.searchCurrentQuery?.({ immediate: true });
@@ -296,8 +296,8 @@ function showList() {
 
 function updateSearchIntent() {
   const messages = {
-    [CONTRIBUTION_INTENTS.watchParty]: '<strong>Plan a Watch Party</strong><span>Search for the venue. Existing CGB locations open the prefilled form; external places offer “Plan a Watch Party” after selection.</span>',
-    [CONTRIBUTION_INTENTS.calBar]: '<strong>Nominate a Cal Bar</strong><span>Search for an existing Community Location. Unlisted places must first be added to Cal Golden Bars.</span>',
+    [CONTRIBUTION_INTENTS.watchParty]: '<strong>Add a Watch Party</strong><span>Search for the venue. Existing CGB locations open the prefilled form; external places offer “Add a Watch Party” after selection.</span>',
+    [CONTRIBUTION_INTENTS.calBar]: '<strong>Tell us about this location</strong><span>Search for an existing CGB location. Unlisted places must first be added to Cal Golden Bars.</span>',
     [CONTRIBUTION_INTENTS.report]: '<strong>Report a problem</strong><span>Search for the existing CGB listing you need to correct.</span>'
   };
   const message = messages[contributionIntent] || '';
@@ -377,7 +377,7 @@ function beginContribution(intent, {
   }
 
   if (intent === CONTRIBUTION_INTENTS.calBar && venue && !['community_location', 'cal_bar'].includes(venue.venue_type)) {
-    showStatus('The selected place cannot use the Cal Bar contribution form. Search for a Community Location to nominate.');
+    showStatus('The selected place cannot use the location information form. Search for a Community Location or Cal Bar.');
     showSearch(intent);
     return;
   }
@@ -451,9 +451,9 @@ function handleSearchResultClick(event) {
   }
 
   if (contributionIntent === CONTRIBUTION_INTENTS.watchParty) {
-    showStatus('In the place confirmation, choose “Plan a Watch Party.”', 4200);
+    showStatus('In the place confirmation, choose “Add a Watch Party.”', 4200);
   } else if (contributionIntent === CONTRIBUTION_INTENTS.calBar) {
-    showStatus('Add the external place to CGB first, then nominate it as a Cal Bar.', 4600);
+    showStatus('Add this place to CGB first, then tell us about it from the location profile.', 4600);
   } else if (contributionIntent === CONTRIBUTION_INTENTS.report) {
     showStatus('Only existing CGB listings can be reported.', 3600);
   }
