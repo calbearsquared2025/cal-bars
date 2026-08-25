@@ -1,4 +1,4 @@
-import { bearCountCopy, getFanCount } from './core.mjs';
+import { bearCountCopy, compactVenueLocation, getFanCount, haversineMiles } from './core.mjs';
 import { createIcon } from './icons.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
@@ -91,25 +91,43 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card h2 {
+        display: block !important;
         margin: 4px 0 3px !important;
+        overflow: visible !important;
         font-size: clamp(1.3rem, 6vw, 1.72rem) !important;
-        line-height: 1.01 !important;
+        line-height: 1.08 !important;
+        -webkit-box-orient: initial !important;
+        -webkit-line-clamp: unset !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-location {
+        display: block !important;
+        margin: 0 !important;
+        font-size: .78rem !important;
+        line-height: 1.25 !important;
+      }
+
+      .selected-card__proximity-row {
+        min-height: 32px !important;
         display: flex !important;
         flex-wrap: wrap !important;
         align-items: center !important;
-        gap: 0 !important;
+        margin-top: 0 !important;
+        color: var(--cgb-ink-500) !important;
         font-size: .78rem !important;
+        line-height: 1.2 !important;
+      }
+
+      .selected-card__distance {
+        white-space: nowrap !important;
       }
 
       .selected-card__directions-inline {
-        min-height: 36px !important;
+        min-height: 32px !important;
         display: inline-flex !important;
         align-items: center !important;
-        margin: -8px -8px -8px 2px !important;
-        padding: 8px !important;
+        margin: 0 0 0 -8px !important;
+        padding: 6px 8px !important;
         color: var(--cgb-navy-900) !important;
         font-weight: 800 !important;
         text-decoration: underline !important;
@@ -117,9 +135,13 @@ function installStyles() {
         text-underline-offset: 3px !important;
       }
 
-      .selected-card__directions-inline::before {
+      .selected-card__proximity-row[data-has-distance="true"] .selected-card__directions-inline {
+        margin-left: 2px !important;
+      }
+
+      .selected-card__proximity-row[data-has-distance="true"] .selected-card__directions-inline::before {
         content: '·' !important;
-        margin-right: 6px !important;
+        margin-right: 8px !important;
         color: var(--cgb-ink-500) !important;
         text-decoration: none !important;
       }
@@ -360,14 +382,59 @@ function refinePartyModules(root = document) {
   });
 }
 
+function formatSelectedDistance(state, venue) {
+  if (!state?.origin || !venue) return '';
+  const distance = haversineMiles(
+    state.origin.lat,
+    state.origin.lon,
+    venue.latitude,
+    venue.longitude
+  );
+  if (!Number.isFinite(distance)) return '';
+  if (distance < 0.1) return 'Nearby';
+  return `${distance.toFixed(distance < 10 ? 1 : 0)} mi away`;
+}
+
 function refineActions(root = document) {
-  const row = root.querySelector('#map-view .tray--selected .selected-card .action-row');
-  const location = root.querySelector('#map-view .tray--selected .selected-card .venue-location');
-  if (!row || !location) return;
+  const card = root.querySelector('#map-view .tray--selected .selected-card');
+  const row = card?.querySelector('.action-row');
+  const location = card?.querySelector('.venue-location');
+  if (!card || !row || !location) return;
+
+  const mobile = isMobile();
+  const state = window.CGBApp?.getState?.();
+  const venueId = card.dataset.venueId || state?.selectedVenueId || '';
+  const venue = state?.snapshot?.venues?.find((item) => item.venue_id === venueId) || null;
+  const distanceCopy = mobile ? formatSelectedDistance(state, venue) : '';
+  let proximity = null;
+
+  if (mobile) {
+    if (venue) location.textContent = compactVenueLocation(venue);
+    proximity = card.querySelector('.selected-card__proximity-row');
+    if (!proximity) {
+      proximity = document.createElement('div');
+      proximity.className = 'selected-card__proximity-row';
+      location.after(proximity);
+    }
+    proximity.dataset.hasDistance = String(Boolean(distanceCopy));
+
+    let distance = proximity.querySelector('.selected-card__distance');
+    if (distanceCopy) {
+      if (!distance) {
+        distance = document.createElement('span');
+        distance.className = 'selected-card__distance';
+        proximity.prepend(distance);
+      }
+      distance.textContent = distanceCopy;
+    } else {
+      distance?.remove();
+    }
+  }
 
   const actions = Array.from(row.querySelectorAll(':scope > a, :scope > button'));
   const intent = actions.find((action) => action.classList.contains('intent-button'));
-  const directions = actions.find((action) => /^Directions$/i.test(action.textContent.trim()));
+  const directions = actions.find((action) => /^Directions$/i.test(action.textContent.trim())) ||
+    card.querySelector('.selected-card__directions-inline');
   const details = actions.find((action) => /details|more about this location/i.test(action.textContent.trim()));
   const share = actions.find((action) => /^Share$/i.test(action.textContent.trim()));
 
@@ -375,8 +442,11 @@ function refineActions(root = document) {
     directions.className = 'selected-card__directions-inline';
     directions.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
     directions.textContent = 'Directions';
-    location.append(directions);
+    if (mobile) proximity.append(directions);
+    else location.append(directions);
   }
+
+  if (mobile && !distanceCopy && !directions) proximity?.remove();
 
   if (details) {
     details.classList.add('selected-card__details');
