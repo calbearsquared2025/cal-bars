@@ -106,7 +106,7 @@ test('shared Profile polish applies to inline desktop and mobile Detail presenta
 });
 
 test('Profile maintenance contributions retain the existing adapters', () => {
-  assert.match(watchPartyForm, /Plan a Watch Party/);
+  assert.match(watchPartyForm, /Add a Watch Party/);
   assert.match(watchPartyForm, /maintenance\.before\(section\)/);
   assert.match(calBarNomination, /dataset\.calBarNominationEntry = 'true'/);
   assert.match(listingUpdate, /dataset\.listingUpdateEntry = 'true'/);

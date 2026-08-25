@@ -16,6 +16,10 @@ import {
   buildMissingLocationFormUrl,
   shouldShowMissingLocationFallback
 } from './missing-location-core.mjs';
+import {
+  canonicalVenueWasKnown,
+  showNewLocationContributionPrompt
+} from './new-location-contribution-prompt.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const SEARCH_DEBOUNCE_MS = 300;
@@ -391,6 +395,7 @@ async function joinSelectedExternalVenue() {
     }
 
     try {
+      const venueAlreadyKnown = canonicalVenueWasKnown(appState.snapshot, response.venue?.venue_id);
       const venue = commitExternalVenue(response, selected);
       state.selected = null;
       state.retry = null;
@@ -404,6 +409,7 @@ async function joinSelectedExternalVenue() {
         venueId: venue.venue_id
       });
       renderApplicationSafely('post-success');
+      if (!venueAlreadyKnown) showNewLocationContributionPrompt(venue);
       return true;
     } catch (error) {
       console.error('External venue write succeeded but the local application commit failed.', error);

@@ -24,10 +24,11 @@ test('search and add are dedicated mobile surfaces', async () => {
   assert.match(html, /id="search-surface"/);
   assert.match(html, /id="search-surface-form-slot"/);
   assert.match(html, /Find a location already listed in Cal Golden Bars/);
-  assert.match(html, /Not yet listed\? <strong>Add a location\.<\/strong>/);
+  assert.match(html, /Watching somewhere else\? <strong>Search for another location\.<\/strong>/);
   assert.match(html, /id="add-surface"/);
-  assert.match(html, /Plan a Watch Party/);
-  assert.match(html, /Nominate a Cal Bar/);
+  assert.match(html, /Add a Watch Party/);
+  assert.match(html, /Tell us about this location/);
+  assert.match(html, /Search for another location/);
   assert.match(html, /Report a problem/);
 });
 

@@ -41,7 +41,7 @@ test('desktop footer About uses the consolidated anchored popover treatment', ()
 test('About popup stays left of Locations but anchored to the viewport bottom', () => {
   const aboutMarkup = html.match(/<dialog id="about-dialog"[\s\S]*?<\/dialog>/)?.[0] || '';
   assert.doesNotMatch(aboutMarkup, /<h2>About Cal Golden Bars<\/h2>\s*<button[^>]*aria-label="Close"/);
-  assert.match(aboutMarkup, /Going somewhere[^<]*Plan a Watch Party so others can find you\.<\/p>/);
+  assert.match(aboutMarkup, /Going somewhere[^<]*Add a Watch Party so others can find it\.<\/p>/);
   assert.doesNotMatch(aboutMarkup, /<strong>Plan a Watch Party<\/strong>/);
   assert.match(aboutMarkup, /<small class="about-privacy"><em>Cal Golden Bars does not collect names or attendee lists\.<\/em><\/small>/);
   assert.match(script, /venueTray\?\.getBoundingClientRect\(\)/);

@@ -18,10 +18,8 @@ function readConfig(documentObject = document) {
   };
 }
 
-function contributionCopy(venueType) {
-  return venueType === 'cal_bar'
-    ? 'Tell us about this Cal Bar'
-    : 'Nominate as a Cal Bar';
+function contributionCopy() {
+  return 'Tell us about this location';
 }
 
 export function renderCalBarNominationEntry({ app = window.CGBApp, documentObject = document } = {}) {
@@ -46,7 +44,7 @@ export function renderCalBarNominationEntry({ app = window.CGBApp, documentObjec
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = contributionCopy(venue.venueType);
+  link.textContent = contributionCopy();
 
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
   if (!actions) return '';

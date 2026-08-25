@@ -60,7 +60,7 @@ function createWatchPartySection(documentObject, { existingParty, href, onActiva
   prompt.className = 'detail-watch-party-cta__prompt';
   prompt.textContent = existingParty
     ? 'Hosting another gathering here? Add another Watch Party for this game.'
-    : 'No Watch Party listed yet. Add one?';
+    : 'No Watch Party listed for this game. Organizing one or know of one? Add it so other Bears can find it.';
 
   const link = documentObject.createElement('a');
   link.className = 'detail-watch-party-cta__action';
@@ -70,7 +70,7 @@ function createWatchPartySection(documentObject, { existingParty, href, onActiva
   link.rel = 'noopener noreferrer';
   link.textContent = existingParty
     ? 'Add Another Watch Party'
-    : 'Plan a Watch Party';
+    : 'Add a Watch Party';
   link.addEventListener('click', onActivate);
 
   section.append(title, prompt, link);
