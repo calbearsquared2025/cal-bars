@@ -75,6 +75,14 @@
   margin-bottom: 6px;
 }
 
+.about-contact-line {
+  display: block;
+}
+
+.about-contact-line a {
+  white-space: nowrap;
+}
+
 .about-support .secondary-button {
   width: 100%;
 }
@@ -175,35 +183,37 @@
   }
 
   .about-dialog.about-dialog--footer-popover .dialog-shell {
-    padding: 16px 18px;
+    padding: 14px 16px;
   }
 
   .about-dialog.about-dialog--footer-popover .dialog-header h2 {
-    margin: 0 0 10px;
+    margin: 0 0 8px;
+    font-size: 1.35rem;
+    line-height: 1.15;
   }
 
   .about-dialog.about-dialog--footer-popover p {
-    margin: 0 0 10px;
-    font-size: .92rem;
-    line-height: 1.42;
+    margin: 0 0 8px;
+    font-size: .84rem;
+    line-height: 1.4;
   }
 
   .about-dialog.about-dialog--footer-popover p:first-of-type > strong {
     display: block;
     white-space: nowrap;
-    font-size: .88rem;
+    font-size: .84rem;
   }
 
   .about-dialog.about-dialog--footer-popover .about-subsection,
   .about-dialog.about-dialog--footer-popover .about-support {
-    margin-top: 12px;
-    padding-top: 11px;
+    margin-top: 10px;
+    padding-top: 9px;
   }
 
   .about-dialog.about-dialog--footer-popover .about-subsection > .eyebrow,
   .about-dialog.about-dialog--footer-popover .about-support > .eyebrow {
-    margin-bottom: 5px;
-    font-size: .66rem;
+    margin-bottom: 4px;
+    font-size: .62rem;
     letter-spacing: .11em;
   }
 
@@ -272,8 +282,14 @@
 }
 
 .text-button {
+  min-height: 0;
+  display: inline;
+  padding: 0;
   color: inherit;
+  border-radius: 0;
   font-weight: inherit;
+  line-height: inherit;
+  vertical-align: baseline;
 }
 
 @media (min-width: 900px) {
