@@ -5,6 +5,7 @@ import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
+import { renderMobileSelectedProfileContinuation } from './mobile-selected-profile-continuation.mjs';
 import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
 import { renderPhotoFormEntry } from './photo-form.js';
@@ -188,6 +189,14 @@ function runRefinements() {
   if (!state?.detailMode || !venue || !hero) destroyDetailLocalMap();
   else syncDetailLocalMap(hero, venue, state);
   revealPendingDetailViewWhenSettled();
+
+  if (renderMobileSelectedProfileContinuation({
+    app: window.CGBApp,
+    documentObject: document,
+    windowObject: window
+  })) {
+    upgradeRenderedIcons();
+  }
 }
 
 function scheduleUpgrade() {
