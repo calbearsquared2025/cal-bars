@@ -81,7 +81,7 @@ function syncCalBarNominationAction() {
 
   if (!venue) {
     label.textContent = 'Nominate a Cal Bar';
-    copy.textContent = 'Find a Community Location that is a regular Cal gathering place.';
+    copy.textContent = 'Find a Fan-Added location that is a regular Cal gathering place.';
     return;
   }
 
