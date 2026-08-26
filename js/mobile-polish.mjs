@@ -8,6 +8,40 @@ function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
 }
 
+function ensureMapLegend() {
+  const stats = document.querySelector('.opening-stat');
+  if (!stats) return;
+
+  stats.style.height = '76px';
+  stats.style.gridTemplateRows = '54px 22px';
+  stats.style.bottom = isMobile() ? '-38px' : '';
+  if (stats.querySelector('.map-legend')) return;
+
+  const legend = document.createElement('div');
+  legend.className = 'map-legend';
+  legend.setAttribute('role', 'list');
+  legend.setAttribute('aria-label', 'Map key');
+  legend.style.cssText = 'grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;padding:3px 8px 4px;border-top:1px solid var(--cgb-neutral-200);color:var(--cgb-ink-700);font:800 .57rem/1 var(--font-condensed);white-space:nowrap';
+
+  [
+    ['★', 'Watch Party', 'var(--cgb-gold-500)'],
+    ['●', 'Cal Bar', 'var(--cgb-navy-950)'],
+    ['○', 'Fan-Added', 'var(--cgb-navy-950)']
+  ].forEach(([symbol, label, color]) => {
+    const item = document.createElement('span');
+    item.setAttribute('role', 'listitem');
+    item.style.cssText = 'display:inline-flex;align-items:center;gap:4px';
+    const marker = document.createElement('span');
+    marker.setAttribute('aria-hidden', 'true');
+    marker.style.cssText = `color:${color};font-size:.78rem;line-height:1`;
+    marker.textContent = symbol;
+    item.append(marker, document.createTextNode(label));
+    legend.append(item);
+  });
+
+  stats.append(legend);
+}
+
 function numericText(element) {
   const match = String(element?.textContent || '').match(/\d[\d,]*/);
   return match ? match[0] : '—';
@@ -33,6 +67,7 @@ function renderStat(element, label, detail) {
 function updateStatistics() {
   renderStat(document.querySelector('#watch-party-stat'), 'Watch parties', 'for this game');
   renderStat(document.querySelector('#location-stat'), 'Locations', 'on the map');
+  ensureMapLegend();
 }
 
 function updateListHeading() {
