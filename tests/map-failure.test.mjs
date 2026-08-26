@@ -22,6 +22,8 @@ class FakeElement {
     this.src = '';
     this.complete = false;
     this.naturalWidth = 0;
+    this.width = 0;
+    this.height = 0;
   }
 
   append(...children) {
@@ -88,7 +90,7 @@ function fixture() {
   };
 }
 
-test('map failure uses the selected game social card on a flush navy fallback', () => {
+test('map failure reserves social-card space before the image loads', () => {
   const { map, fallback, documentObject, browseClicks } = fixture();
   const activeMap = { removed: false, remove() { this.removed = true; } };
   const marker = { removed: false, remove() { this.removed = true; } };
@@ -119,11 +121,13 @@ test('map failure uses the selected game social card on a flush navy fallback', 
   const message = fallback.querySelector('.map-fallback__message');
   assert.ok(image);
   assert.match(image.src, /assets\/social-cards\/ucla\.png$/);
-  assert.equal(image.hidden, true);
+  assert.equal(image.width, 1200);
+  assert.equal(image.height, 630);
+  assert.equal(image.className, 'map-fallback__card');
   image.onload();
-  assert.equal(image.hidden, false);
+  assert.equal(image.className, 'map-fallback__card map-fallback__card--loaded');
   image.onerror();
-  assert.equal(image.hidden, true);
+  assert.equal(image.className, 'map-fallback__card');
 
   assert.equal(message.children[0].textContent, 'Map temporarily unavailable');
   assert.equal(message.children[1].textContent, 'Please use the location list while we work to get it back up and running.');
@@ -131,5 +135,8 @@ test('map failure uses the selected game social card on a flush navy fallback', 
   const style = documentObject.head.children.find((child) => child.id === 'cgb-map-fallback-style');
   assert.ok(style);
   assert.match(style.textContent, /#06152f/);
+  assert.match(style.textContent, /aspect-ratio:\s*1200\s*\/\s*630/);
+  assert.match(style.textContent, /opacity:\s*0/);
+  assert.match(style.textContent, /map-fallback__card--loaded/);
   assert.doesNotMatch(style.textContent, /gradient/i);
 });
