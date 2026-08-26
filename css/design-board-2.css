@@ -175,12 +175,12 @@
   background: var(--cgb-white);
 }
 
-.marker--community-location .marker-pin {
+.marker--fan-added .marker-pin {
   background: var(--cgb-white);
   border-color: var(--cgb-navy-950);
 }
 
-.marker--community-location .marker-pin::after {
+.marker--fan-added .marker-pin::after {
   background: var(--cgb-navy-950);
 }
 
@@ -474,12 +474,6 @@
   color: var(--cgb-white);
   background: var(--cgb-navy-900);
   border: 1px solid var(--cgb-navy-900);
-}
-
-.badge--community {
-  color: var(--cgb-navy-950);
-  background: var(--cgb-white);
-  border: 1px solid var(--cgb-navy-950);
 }
 
 .party-module {
