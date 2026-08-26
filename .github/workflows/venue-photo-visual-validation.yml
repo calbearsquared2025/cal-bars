@@ -24,17 +24,13 @@ jobs:
           done
           cat /tmp/cgb-preview.log
           exit 1
-      - name: Capture Venue Profile screenshots
+      - name: Capture and assert Venue Profile screenshots
         run: |
           set -euo pipefail
+          python3 -m pip install --disable-pip-version-check websocket-client
           CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser)"
-          mkdir -p docs/validation/venue-photo-visuals
-          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --window-size=390,844 --virtual-time-budget=12000 --screenshot=docs/validation/venue-photo-visuals/busbys-west-iphone-portrait.png 'http://127.0.0.1:8765/?venue=busby-s-west-santa-monica'
-          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --window-size=1440,1000 --virtual-time-budget=12000 --screenshot=docs/validation/venue-photo-visuals/busbys-west-desktop.png 'http://127.0.0.1:8765/?venue=busby-s-west-santa-monica'
-          "$CHROME" --headless=new --no-sandbox --disable-gpu --hide-scrollbars --window-size=390,844 --virtual-time-budget=12000 --screenshot=docs/validation/venue-photo-visuals/no-photo-fallback-iphone.png 'http://127.0.0.1:8765/?venue=george-and-walt-s-oakland'
-          test -s docs/validation/venue-photo-visuals/busbys-west-iphone-portrait.png
-          test -s docs/validation/venue-photo-visuals/busbys-west-desktop.png
-          test -s docs/validation/venue-photo-visuals/no-photo-fallback-iphone.png
+          "$CHROME" --headless=new --no-sandbox --disable-gpu --remote-debugging-port=9222 --remote-allow-origins='*' about:blank > /tmp/cgb-chrome.log 2>&1 &
+          python3 scripts/venue-photo-visual-capture.py
       - uses: actions/upload-artifact@v4
         with:
           name: venue-photo-visuals
