@@ -114,7 +114,7 @@ function seedTestData() {
       alumni_owned: 'unknown',
       external_source: '',
       external_place_id: '',
-      short_description: 'Synthetic Community Location used for testing.',
+      short_description: 'Synthetic Fan-Added location used for testing.',
       photo_url: '',
       photo_credit: '',
       publication_status: 'published',
