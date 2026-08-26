@@ -107,14 +107,6 @@ function createDirectionsLink(href, documentObject) {
   return directions;
 }
 
-function createLocationSeparator(documentObject) {
-  const separator = documentObject.createElement('span');
-  separator.className = 'selected-card__location-separator';
-  separator.setAttribute('aria-hidden', 'true');
-  separator.textContent = '·';
-  return separator;
-}
-
 function createPlanWatchPartyAction(documentObject) {
   const button = documentObject.createElement('button');
   button.type = 'button';
@@ -207,25 +199,31 @@ export function createSelectedVenueCard({
   const location = documentObject.createElement('p');
   location.className = 'venue-location';
   const distanceCopy = formatDistance(distance);
+  const compactLocation = compactVenueLocation(venue);
+  const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
+  const mobileLocation = locality
+    ? compactLocation.replace(locality, locality.replaceAll(' ', '\u00a0'))
+    : compactLocation;
   location.textContent = mobile
-    ? compactVenueLocation(venue)
-    : [compactVenueLocation(venue), distanceCopy].filter(Boolean).join(' · ');
+    ? mobileLocation
+    : [compactLocation, distanceCopy].filter(Boolean).join(' · ');
   heading.append(location);
 
   if (mobile) {
     const proximity = documentObject.createElement('div');
     proximity.className = 'selected-card__proximity-row';
-    proximity.dataset.hasDistance = String(Boolean(distanceCopy));
     if (distanceCopy) {
       const distanceElement = documentObject.createElement('span');
       distanceElement.className = 'selected-card__distance';
       distanceElement.textContent = distanceCopy;
-      proximity.append(distanceElement, createLocationSeparator(documentObject));
+      proximity.append(distanceElement);
     }
-    proximity.append(createDirectionsLink(directionsHref, documentObject));
+    const directions = createDirectionsLink(directionsHref, documentObject);
+    if (distanceCopy) directions.textContent = '\u00a0Directions';
+    proximity.append(directions);
     heading.append(proximity);
   } else {
-    location.append(createLocationSeparator(documentObject), createDirectionsLink(directionsHref, documentObject));
+    location.append(documentObject.createTextNode(' '), createDirectionsLink(directionsHref, documentObject));
   }
 
   header.append(heading);

@@ -127,17 +127,6 @@ function installStyles() {
         text-underline-offset: 3px !important;
       }
 
-      .selected-card__proximity-row[data-has-distance="true"] .selected-card__directions-inline {
-        margin-left: 2px !important;
-      }
-
-      .selected-card__proximity-row[data-has-distance="true"] .selected-card__directions-inline::before {
-        content: '·' !important;
-        margin-right: 8px !important;
-        color: var(--cgb-ink-500) !important;
-        text-decoration: none !important;
-      }
-
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .party-module,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {

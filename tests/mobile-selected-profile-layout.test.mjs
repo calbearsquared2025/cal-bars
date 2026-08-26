@@ -11,14 +11,16 @@ test('mobile selected venue title retains the accepted unclipped presentation', 
 });
 
 test('canonical renderer separates mobile location from proximity and Directions', () => {
-  assert.match(renderer, /location\.textContent = mobile[\s\S]*compactVenueLocation\(venue\)/);
+  assert.match(renderer, /const compactLocation = compactVenueLocation\(venue\)/);
+  assert.match(renderer, /locality\.replaceAll\(' ', '\\u00a0'\)/);
   assert.match(renderer, /selected-card__proximity-row/);
-  assert.match(renderer, /proximity\.dataset\.hasDistance/);
   assert.match(renderer, /selected-card__distance/);
   assert.match(renderer, /selected-card__directions-inline/);
+  assert.doesNotMatch(renderer, /selected-card__location-separator/);
+  assert.doesNotMatch(renderer, /proximity\.dataset\.hasDistance/);
   assert.match(styles, /selected-card__distance[\s\S]*white-space: nowrap !important/);
 });
 
-test('desktop retains inline Directions on the location line', () => {
-  assert.match(renderer, /else \{[\s\S]*location\.append\(createLocationSeparator\(documentObject\), createDirectionsLink\(directionsHref, documentObject\)\);[\s\S]*\}/);
+test('desktop retains inline Directions on the location line without a separator dot', () => {
+  assert.match(renderer, /else \{[\s\S]*location\.append\(documentObject\.createTextNode\(' '\), createDirectionsLink\(directionsHref, documentObject\)\);[\s\S]*\}/);
 });
