@@ -222,24 +222,6 @@ textarea {
   gap: 9px;
 }
 
-.opening-stat {
-  min-height: 34px;
-  padding: 7px 12px;
-  color: var(--cgb-ink-700);
-  background: rgba(255, 255, 255, .93);
-  border: 1px solid rgba(7, 30, 65, .12);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-sm);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  backdrop-filter: blur(14px) saturate(130%);
-}
-
-.opening-stat strong {
-  color: var(--cgb-navy-900);
-  font-weight: 850;
-}
-
 .location-search {
   width: min(100%, 590px);
 }
@@ -1071,9 +1053,6 @@ textarea {
     font-size: .8rem;
   }
 
-  .opening-stat {
-    font-size: .7rem;
-  }
 }
 
 /* Issue #10: preserve a useful map in short iPhone landscape without blocking use. */
@@ -1130,9 +1109,6 @@ textarea {
     gap: 7px;
   }
 
-  .opening-stat {
-    display: none;
-  }
 
   .location-search {
     grid-column: 1;

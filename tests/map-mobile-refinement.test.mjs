@@ -120,8 +120,9 @@ test('selected profile uses content-driven height rather than a medium fixed-hei
   assert.doesNotMatch(source, /max-height: 170px !important/);
 });
 
-test('attribution remains compact at the mobile map left edge', () => {
-  assert.match(firstPaintCss, /maplibregl-ctrl-bottom-right[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/);
-  assert.match(source, /attribution\.style\.left = '8px'/);
-  assert.match(source, /attribution\.style\.right = 'auto'/);
+test('static mobile CSS exclusively owns attribution geometry below the stats card', () => {
+  assert.match(firstPaintCss, /maplibregl-ctrl-bottom-right[\s\S]*top: 64px !important[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/);
+  assert.match(firstPaintCss, /body:not\(\[data-command-surface="map"\]\) \.maplibregl-ctrl-bottom-right[\s\S]*display: none !important/);
+  assert.doesNotMatch(source, /positionAttribution|trayObserver|ResizeObserver/);
+  assert.doesNotMatch(source, /attribution\.style\.(?:top|bottom|left|right|display)/);
 });

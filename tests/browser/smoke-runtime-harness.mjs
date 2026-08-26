@@ -58,13 +58,27 @@ function checkMapLegend() {
   check(Boolean(stats), 'Opening statistics should exist');
   if (!legend || !stats) return;
 
-  const labels = [...legend.querySelectorAll('.map-legend__item')].map((item) => item.textContent.trim());
+  const items = [...legend.querySelectorAll('.map-legend__item')];
+  const labels = items.map((item) => item.textContent.trim());
   const legendRect = legend.getBoundingClientRect();
   const statsRect = stats.getBoundingClientRect();
+  const statsStyle = getComputedStyle(stats);
   check(labels.join('|') === 'Watch Party|Cal Bar|Fan-Added', 'Map legend labels should match marker taxonomy');
   check(visible(legend), 'Map legend should be visibly rendered');
-  check(statsRect.height >= 74, 'Statistics card should reserve a full legend row');
+  check(statsRect.height >= 77 && statsRect.height <= 79, 'Statistics card should use the canonical 78px legend geometry');
+  check(statsStyle.paddingTop === '0px' && statsStyle.paddingBottom === '0px', 'Statistics card should not inherit legacy vertical padding');
+  check(statsStyle.rowGap === '0px', 'Statistics card should not inherit a legacy row gap');
   check(legendRect.top >= statsRect.top && legendRect.bottom <= statsRect.bottom + 1, 'Map legend should remain inside the statistics card');
+  items.forEach((item) => {
+    const rect = item.getBoundingClientRect();
+    check(rect.top >= statsRect.top && rect.bottom <= statsRect.bottom + 1, `Map legend item should not be clipped: ${item.textContent.trim()}`);
+  });
+
+  const attribution = element('.maplibregl-ctrl-bottom-right');
+  if (attribution && visible(attribution)) {
+    const attributionRect = attribution.getBoundingClientRect();
+    check(attributionRect.top >= statsRect.bottom + 4, 'Map attribution should clear the statistics card and legend');
+  }
 }
 
 async function ready(desktop = false) {

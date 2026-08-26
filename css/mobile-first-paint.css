@@ -55,11 +55,15 @@
   }
 
   .maplibregl-ctrl-bottom-right {
-    top: 38px !important;
+    top: 64px !important;
     right: auto !important;
     bottom: auto !important;
     left: max(8px, env(safe-area-inset-left, 0px)) !important;
     max-width: calc(100vw - 86px) !important;
+  }
+
+  body:not([data-command-surface="map"]) .maplibregl-ctrl-bottom-right {
+    display: none !important;
   }
 
   .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib {
