@@ -83,6 +83,12 @@ test('shared host keeps stable titles for configured contribution Forms', () => 
   assert.match(embedClient, /cgb-missing-location-form-url', 'Suggest a missing location'/);
 });
 
+test('all embedded Forms use one GA4 event with form title as the discriminator', () => {
+  assert.match(embedClient, /gtag\?\.\('event', 'google_form_opened'/);
+  assert.match(embedClient, /form_title: resolvedTitle/);
+  assert.doesNotMatch(embedClient, /missing_location_form_opened/);
+});
+
 test('Watch Party attendance handoff reaches the shared host without a new-window detour', () => {
   assert.match(watchPartyClient, /reserveWindow: false/);
   assert.match(watchPartyClient, /CGBGoogleFormHost\?\.open/);
