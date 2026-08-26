@@ -177,26 +177,11 @@ function restoreContextForAddAction(event) {
   if (state && venueById(addContextVenueId, state)) state.selectedVenueId = addContextVenueId;
 }
 
-function fixDirectionsSeparator() {
-  document.querySelectorAll('.selected-card__directions-inline').forEach((link) => {
-    link.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
-    link.textContent = 'Directions';
-    const previous = link.previousElementSibling;
-    if (previous?.classList.contains('selected-card__location-separator')) return;
-    const separator = document.createElement('span');
-    separator.className = 'selected-card__location-separator';
-    separator.setAttribute('aria-hidden', 'true');
-    separator.textContent = '·';
-    link.before(separator);
-  });
-}
-
 function schedulePostRender() {
   window.cancelAnimationFrame(postRenderFrame);
   postRenderFrame = window.requestAnimationFrame(() => {
     installStyles();
     ensureSafeAreaFills();
-    fixDirectionsSeparator();
 
     if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
     if (listSurfaceLocked) restoreListSurface();
@@ -241,7 +226,6 @@ function initialize() {
   queueMicrotask(() => {
     installStyles();
     ensureSafeAreaFills();
-    fixDirectionsSeparator();
   });
 
   document.addEventListener('pointerdown', setListLockFromEvent, { capture: true });

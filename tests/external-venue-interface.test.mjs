@@ -77,7 +77,7 @@ test('successful external attendance settles through the shared contextual invit
   assert.match(join, /appState\.fanIntent\.pending = null[\s\S]*renderApplicationSafely\('settled-state'\)/);
   assert.match(fanClient, /subscribeAppEvent\('rendered', renderIntentButtons\)/);
   assert.match(fanClient, /syncDetailPresence\(venueId, isSelected\)/);
-  assert.match(fanClient, /const label = isSelected \? 'Invite Others' : 'Share'/);
+  assert.doesNotMatch(fanClient, /Invite Others|querySelector\(':scope > button\.secondary-button'\)|share\.replaceChildren/);
   assert.doesNotMatch(fanClient, /renderPostJoinInvitation|post-join-invitation/);
   assert.doesNotMatch(client, /notifySuccessfulCommit|postJoinInvitation/);
 });
@@ -159,7 +159,8 @@ test('mobile confirmation is bottom-sheet first and desktop remains responsive',
 test('existing Fan Intent client remains the authority for join, move, Undo, retry, and delegates refresh', () => {
   assert.match(fanClient, /controller\?\.performIntent/);
   assert.match(fanClient, /controller\?\.retryIntent/);
-  assert.match(fanClient, /You’ll be here · Undo/);
+  assert.match(fanClient, /intent-button__main/);
+  assert.match(fanClient, /intent-button__undo/);
   assert.match(fanClient, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.doesNotMatch(client, /createFanIntentController|beginIntentTransaction/);
 });

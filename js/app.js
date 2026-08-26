@@ -35,6 +35,7 @@ import {
 } from './app-state.mjs';
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 import { createIcon } from './icons.mjs';
+import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 
 const MAPTILER_KEY = 'jNqIsIVa4dP9qv7vQ8fy';
 const MAPTILER_STYLE = new URL('../styles/dataviz-with-cgb-states.json', import.meta.url).href;
@@ -640,102 +641,6 @@ function renderDetailAttendanceCopy(element, copy) {
   element.replaceChildren(numeral, label);
 }
 
-function appendWatchParty(container, party) {
-  if (!party) return;
-  const module = document.createElement('section');
-  module.className = 'party-module';
-  const title = document.createElement('div');
-  title.className = 'party-module__title';
-  const star = document.createElement('span');
-  star.setAttribute('aria-hidden', 'true');
-  star.textContent = '★';
-  const titleText = document.createElement('strong');
-  titleText.textContent = 'Watch Party';
-  title.append(star, titleText);
-  module.append(title);
-
-  const hosted = document.createElement('p');
-  hosted.textContent = `Hosted by ${party.organizer_name}`;
-  module.append(hosted);
-
-  if (party.event_start_at) {
-    const start = new Date(party.event_start_at);
-    if (!Number.isNaN(start.getTime())) {
-      const line = document.createElement('p');
-      line.textContent = `Arrive ${new Intl.DateTimeFormat(undefined, {
-        hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
-      }).format(start)}`;
-      module.append(line);
-    }
-  }
-
-  const details = [];
-  if (party.age_policy === '21_plus') details.push('21+');
-  if (party.age_policy === 'all_ages') details.push('All ages');
-  if (party.sound_status === 'confirmed_on') details.push('Game audio on');
-  if (party.sound_status === 'confirmed_off') details.push('Game audio off');
-  if (details.length) {
-    const detailLine = document.createElement('p');
-    detailLine.className = 'party-meta';
-    detailLine.textContent = details.join(' · ');
-    module.append(detailLine);
-  }
-
-  [party.restrictions_note, party.game_day_note].filter(Boolean).forEach((text) => {
-    const note = document.createElement('p');
-    note.textContent = text;
-    module.append(note);
-  });
-
-  if (party.official_event_url) {
-    const link = document.createElement('a');
-    link.href = party.official_event_url;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = 'Open event information';
-    module.append(link);
-  }
-  container.append(module);
-}
-
-function createActionRow(venue, { details = true } = {}) {
-  const row = document.createElement('div');
-  row.className = 'action-row';
-  row.dataset.venueId = venue.venue_id;
-
-  const intent = document.createElement('button');
-  intent.type = 'button';
-  intent.className = 'primary-button intent-button';
-  intent.dataset.venueId = venue.venue_id;
-  intent.textContent = 'I’ll be here';
-  intent.disabled = true;
-  row.append(intent);
-
-  const directions = document.createElement('a');
-  directions.className = 'secondary-button';
-  directions.href = directionsUrl(venue);
-  directions.target = '_blank';
-  directions.rel = 'noopener';
-  directions.textContent = 'Directions';
-  row.append(directions);
-
-  if (details) {
-    const detail = document.createElement('a');
-    detail.className = 'secondary-button';
-    detail.href = buildVenueUrl(venue.slug, selectedGame(), location.href);
-    detail.textContent = 'More About This Location';
-    row.append(detail);
-  }
-
-  const share = document.createElement('button');
-  share.type = 'button';
-  share.className = 'secondary-button';
-  share.textContent = 'Share';
-  share.addEventListener('click', () => shareVenue(venue));
-  row.append(share);
-  return row;
-}
-
 function createDetailActionRow(venue) {
   const row = document.createElement('div');
   row.className = 'action-row detail-primary-actions';
@@ -866,48 +771,20 @@ function renderSelectedCard() {
     setTrayState(isMobileLayout() ? 'peek' : 'full');
     return;
   }
-  const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
-  const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
   const ranked = rankVenues(state.snapshot, state.gameId, state.origin);
   const distance = ranked.find((item) => item.venue.venue_id === venue.venue_id)?.distance;
-
-  const card = document.createElement('article');
-  card.className = 'selected-card';
-  card.dataset.venueId = venue.venue_id;
-  const header = document.createElement('div');
-  header.className = 'selected-card__header';
-  const heading = document.createElement('div');
-  heading.append(createBadges(venue, party));
-  const title = document.createElement('h2');
-  title.textContent = venue.name;
-  heading.append(title);
-  const locationLine = document.createElement('p');
-  locationLine.className = 'venue-location';
-  locationLine.textContent = [compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
-  heading.append(locationLine);
-  header.append(heading);
-  const collapse = document.createElement('button');
-  collapse.type = 'button';
-  collapse.className = 'icon-button';
-  collapse.textContent = '⌄';
-  collapse.setAttribute('aria-label', 'Collapse selected venue');
-  collapse.addEventListener('click', () => setTrayState('peek', { animate: true }));
-  header.append(collapse);
-  card.append(header);
-
-  if (venue.short_description) {
-    const description = document.createElement('p');
-    description.className = 'venue-description';
-    description.textContent = venue.short_description;
-    card.append(description);
-  }
-
-  const countLine = document.createElement('p');
-  countLine.className = 'bear-count';
-  countLine.textContent = bearCountCopy(count);
-  card.append(countLine);
-  appendWatchParty(card, party);
-  card.append(createActionRow(venue));
+  const card = createSelectedVenueCard({
+    state,
+    venue,
+    game: selectedGame(),
+    mobile: isMobileLayout(),
+    distance,
+    detailHref: buildVenueUrl(venue.slug, selectedGame(), location.href),
+    directionsHref: directionsUrl(venue),
+    onCollapse: () => setTrayState('peek', { animate: true }),
+    onShare: () => shareVenue(venue),
+    documentObject: document
+  });
   dom.traySelected.append(card);
 }
 

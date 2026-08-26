@@ -203,63 +203,9 @@ function openListSurface(event) {
   setCommandActive('list');
 }
 
-function addPlanWatchPartyAction(card) {
-  card.querySelector('.selected-card__party-empty')?.remove();
-  const existing = card.querySelector('.selected-card__plan-party');
-  if (card.querySelector('.party-module')) {
-    existing?.remove();
-    return;
-  }
-  if (existing) return;
-
-  const button = document.createElement('button');
-  button.type = 'button';
-  button.className = 'selected-card__plan-party';
-  button.textContent = 'Plan a Watch Party';
-
-  const attendance = card.querySelector('.bear-count');
-  if (attendance) attendance.after(button);
-  else card.append(button);
-}
-
-function normalizeActionLabels(card) {
-  const detail = Array.from(card.querySelectorAll('.action-row .secondary-button'))
-    .find((action) => /view details|details|more about this location/i.test(action.textContent));
-  if (!detail) return;
-
-  detail.querySelectorAll('.ui-icon').forEach((icon) => icon.remove());
-
-  Array.from(detail.childNodes).forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE && /view details|details|more about this location/i.test(node.textContent || '')) {
-      node.textContent = 'More About This Location';
-    }
-  });
-  detail.setAttribute('aria-label', 'More About This Location');
-}
-
-function enhanceSelectedCard() {
-  const card = document.querySelector('#map-view > #venue-tray.venue-tray.tray--selected .selected-card');
-  if (!card) return;
-  addPlanWatchPartyAction(card);
-  normalizeActionLabels(card);
-}
-
-function scheduleEnhancement() {
-  requestAnimationFrame(() => {
-    enhanceSelectedCard();
-    requestAnimationFrame(enhanceSelectedCard);
-  });
-}
-
 function initialize() {
   installStyles();
-
   document.querySelector('#mobile-list-button')?.addEventListener('click', openListSurface, { capture: true });
-
-  scheduleEnhancement();
-  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleEnhancement);
-  window.CGBApp?.subscribe?.('rendered', scheduleEnhancement);
-  window.CGBApp?.subscribe?.('ready', scheduleEnhancement);
 }
 
 if (document.readyState === 'loading') {

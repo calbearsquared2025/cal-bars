@@ -12,6 +12,7 @@ const [
   watchPartyFormCss,
   shellControls,
   watchPartyDisplay,
+  watchPartyRenderer,
   watchPartyForm,
   calBarNomination,
   listingUpdate,
@@ -25,6 +26,7 @@ const [
   read('../css/watch-party-form.css'),
   read('../js/shell-controls.mjs'),
   read('../js/watch-party-display.js'),
+  read('../js/watch-party-renderer.mjs'),
   read('../js/watch-party-form.js'),
   read('../js/cal-bar-nomination.js'),
   read('../js/listing-update.js'),
@@ -72,9 +74,11 @@ test('Watch Party fixture covers Cal Bar, fan-added, and no-party Venue states',
 });
 
 test('Watch Party display keeps compact game identity on the shared Profile', () => {
-  assert.match(watchPartyDisplay, /function watchPartyGameContext\(snapshot, party\)[\s\S]*gameTitle\(game\)[\s\S]*formatGameDate\(game\)/);
-  assert.match(watchPartyDisplay, /appendText\(module, watchPartyGameContext\(snapshot, party\), 'party-game-context'\)/);
-  assert.match(watchPartyDisplay, /party-module__report/);
+  assert.match(watchPartyRenderer, /const game = snapshot\?\.games\?\.find/);
+  assert.match(watchPartyRenderer, /gameTitle\(game\)[\s\S]*formatGameDate\(game\)/);
+  assert.match(watchPartyRenderer, /party-game-context/);
+  assert.match(watchPartyRenderer, /party-module__report/);
+  assert.doesNotMatch(watchPartyDisplay, /function watchPartyGameContext|function renderParty/);
 });
 
 test('persistent Profile actions are Fan Intent and text-only Share while Directions stays outside the action row', () => {

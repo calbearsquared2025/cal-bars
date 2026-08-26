@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
+const selectedProfile = await readFile(new URL('../js/selected-profile-renderer.mjs', import.meta.url), 'utf8');
 const css = await readFile(new URL('../css/styles.css', import.meta.url), 'utf8');
 const appState = await readFile(new URL('../js/app-state.mjs', import.meta.url), 'utf8');
 
@@ -98,8 +99,7 @@ test('marker counts and accessible labels retain the approved Bear-count copy', 
 });
 
 test('every rendered list and detail current-game count has explicit Bear meaning', () => {
-  assert.match(app, /countLine\.textContent = bearCountCopy\(count\)/);
-  assert.match(app, /count\.textContent = bearCountCopy\(fanCount\)/);
+  assert.match(selectedProfile, /const currentCopy = bearCountCopy\(number\)/);
   assert.match(app, /renderDetailAttendanceCopy\(current, activityPresentation\.primary\)/);
   assert.doesNotMatch(app, /count\.textContent = String\(fanCount\)/);
 });

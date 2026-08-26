@@ -5,6 +5,7 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const profile = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
+const selected = await readFile(new URL('js/selected-profile-renderer.mjs', root), 'utf8');
 
 test('profile pass no longer overrides shared branded header geometry', () => {
   assert.doesNotMatch(profile, /HEADER_OVERHANG/);
@@ -31,14 +32,16 @@ test('selected profile uses a restrained identity band and compact contribution 
   assert.match(profile, /selected-card__header[\s\S]*background: linear-gradient/);
   assert.match(profile, /border-left: 0 !important/);
   assert.match(profile, /selected-card__plan-party/);
-  assert.doesNotMatch(profile, /panel\.className = 'selected-card__party-empty'/);
+  assert.match(selected, /selected-card__plan-party/);
+  assert.doesNotMatch(profile, /addPlanWatchPartyAction|panel\.className = 'selected-card__party-empty'/);
 });
 
 test('attendance rendering is delegated while secondary actions remain readable', () => {
   assert.doesNotMatch(profile, /formatEmptyAttendance/);
   assert.doesNotMatch(profile, /bear-count--empty/);
   assert.match(profile, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
-  assert.match(profile, /node\.textContent = 'More About This Location'/);
+  assert.doesNotMatch(profile, /normalizeActionLabels|More About This Location/);
+  assert.match(selected, /More About This Location/);
 });
 
 test('profile pass no longer owns an intermediate selected density', () => {

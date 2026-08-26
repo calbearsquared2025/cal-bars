@@ -68,6 +68,26 @@ function partyVenue() {
   return current?.snapshot?.venues?.find((venue) => venue.venue_id === active?.venue_id) || null;
 }
 
+function nonPartyVenue() {
+  const current = state();
+  const partyVenueIds = new Set((current?.snapshot?.watchParties || [])
+    .filter((party) => party.game_id === current.gameId && party.event_status === 'active')
+    .map((party) => party.venue_id));
+  return current?.snapshot?.venues?.find((venue) => !partyVenueIds.has(venue.venue_id)) || null;
+}
+
+function checkCanonicalSelectedProfile({ expectParty = false } = {}) {
+  const card = element('#tray-selected .selected-card');
+  check(Boolean(card), 'Selected Venue Profile should use the canonical selected-card renderer');
+  check(Boolean(card?.querySelector('.selected-card__proximity-row')), 'Mobile selected profile should render the proximity row directly');
+  check(Boolean(card?.querySelector('.selected-card__directions-inline')), 'Directions should be inline outside the action row');
+  check(!card?.querySelector('.action-row .selected-card__directions-inline'), 'Directions must not remain in the generic action row');
+  check(Boolean(card?.querySelector('.selected-card__share')), 'Selected profile should render the semantic Share action directly');
+  check(Boolean(card?.querySelector('.selected-card__details')), 'Selected profile should render the semantic More About action directly');
+  check(Boolean(card?.querySelector('.intent-button__main')), 'Selected profile should render semantic RSVP content directly');
+  check(expectParty === Boolean(card?.querySelector('.party-module')), 'Selected profile Watch Party state should match the selected venue');
+}
+
 async function openList() {
   if (document.body.dataset.commandSurface !== 'list' || element('#venue-tray')?.dataset?.state !== 'full') {
     click('#mobile-list-button');
@@ -133,12 +153,29 @@ async function runMobile() {
     check(Boolean(party), 'Fixture should include an active Watch Party');
     await selectVenue(party);
     check(visible('#tray-selected .party-module'), 'Watch Party details should render on the selected Venue Profile');
+    checkCanonicalSelectedProfile({ expectParty: true });
+    const eventLink = element('#tray-selected .party-module__event');
+    if (eventLink) check(eventLink.textContent.trim() === 'Event information', 'Official Watch Party links should use Event information');
 
+    const searchVenue = nonPartyVenue();
+    check(Boolean(searchVenue), 'Fixture should include a non-Watch-Party venue');
     click('#mobile-search-button');
     await waitFor(() => document.body.dataset.commandSurface === 'search' && visible('#search-surface'), 'Search surface');
-    click('#search-surface [data-command-close]');
-    await waitFor(() => document.body.dataset.commandSurface === 'map', 'Search close to Map');
+    const searchInput = element('#location-query');
+    if (searchInput && searchVenue) {
+      searchInput.value = searchVenue.name;
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await waitFor(() => Boolean(element(`#search-suggestions button[data-venue-id="${searchVenue.venue_id}"]`)), 'Search result for mapped venue');
+      element(`#search-suggestions button[data-venue-id="${searchVenue.venue_id}"]`)?.click();
+      await waitFor(() => state()?.selectedVenueId === searchVenue.venue_id && visible('#tray-selected'), 'Search to selected Venue');
+      checkCanonicalSelectedProfile({ expectParty: false });
+      check(Boolean(element('#tray-selected .selected-card__plan-party')), 'Non-Watch-Party selected card should render the add-Watch-Party CTA');
+      searchInput.value = '';
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      await waitFor(() => !state()?.listQuery, 'Search filter reset');
+    }
 
+    await selectVenue(party);
     await waitFor(() => visible('#tray-selected .selected-card__details'), 'mobile full Profile action');
     const details = element('#tray-selected .selected-card__details');
     check(Boolean(details?.href), 'Selected mobile Venue should expose a full Profile URL');
@@ -157,6 +194,13 @@ async function runMobile() {
   const firstVenueId = firstCard?.dataset?.venueId;
   firstCard?.click();
   await waitFor(() => state()?.selectedVenueId === firstVenueId && visible('#tray-selected'), 'Venue Profile selection');
+  checkCanonicalSelectedProfile({ expectParty: Boolean(element('#tray-selected .party-module')) });
+
+  click('#tray-selected .selected-card__header > .icon-button');
+  await waitFor(() => element('#venue-tray')?.dataset?.state === 'peek', 'selected profile collapse to mini');
+  click('#tray-handle');
+  await waitFor(() => element('#venue-tray')?.dataset?.state === 'selected' && visible('#tray-selected'), 'mini profile return to selected');
+  checkCanonicalSelectedProfile({ expectParty: Boolean(element('#tray-selected .party-module')) });
 
   click('#mobile-list-button');
   await waitFor(() => document.body.dataset.commandSurface === 'list' && visible('#tray-list'), 'Profile to Locations');
@@ -170,6 +214,24 @@ async function runMobile() {
     element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true' &&
     !state()?.fanIntent?.pending,
   'Fan Intent join');
+  check(element('#tray-selected .bear-count__number')?.textContent?.trim() === '1', '0 → 1 Fan Intent should render one Bear');
+
+  state().snapshot.fanCounts = [];
+  window.CGBApp.render();
+  await waitFor(() => element('#tray-selected .bear-count__number')?.textContent?.trim() === '1', 'local selection floor over stale aggregate');
+
+  element('#tray-selected .intent-button')?.click();
+  await waitFor(() =>
+    element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'false' &&
+    !state()?.fanIntent?.pending,
+  'Fan Intent undo');
+  check(element('#tray-selected .bear-count__prompt')?.textContent?.trim() === 'Be the first.', '1 → 0 Fan Intent should restore the empty invitation');
+
+  element('#tray-selected .intent-button')?.click();
+  await waitFor(() =>
+    element('#tray-selected .intent-button')?.getAttribute('aria-pressed') === 'true' &&
+    !state()?.fanIntent?.pending,
+  'Fan Intent rejoin for persistence');
 
   if (failures.length) {
     finish('CGB_SMOKE_MOBILE');

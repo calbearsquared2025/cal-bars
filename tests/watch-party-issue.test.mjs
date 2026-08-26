@@ -102,13 +102,14 @@ test('configuration rejects unsafe URLs, missing IDs, and duplicate entry IDs', 
 
 test('direct-route refresh and renders use the canonical party cards without a second report control', async () => {
   const client = await readFile(new URL('../js/watch-party-display.js', import.meta.url), 'utf8');
+  const renderer = await readFile(new URL('../js/watch-party-renderer.mjs', import.meta.url), 'utf8');
   const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
-  assert.match(client, /module\.dataset\.watchPartyId = party\.watch_party_id/);
-  assert.match(client, /reportLink\.dataset\.watchPartyIssueEntry = party\.watch_party_id/);
+  assert.match(renderer, /module\.dataset\.watchPartyId = party\.watch_party_id/);
+  assert.match(renderer, /report\.dataset\.watchPartyIssueEntry = party\.watch_party_id/);
   assert.match(client, /app\.subscribe\('rendered', render\)/);
   assert.match(client, /app\.subscribe\('ready', render\)/);
-  assert.equal((client.match(/Report an Issue/g) || []).length, 1);
-  assert.doesNotMatch(client, /Report a problem with this Watch Party/);
+  assert.equal((renderer.match(/Report an Issue/g) || []).length, 1);
+  assert.doesNotMatch(renderer, /Report a problem with this Watch Party/);
   assert.doesNotMatch(html, /data-watch-party-issue-entry/);
 });
 

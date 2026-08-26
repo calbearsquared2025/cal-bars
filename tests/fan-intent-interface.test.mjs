@@ -10,6 +10,7 @@ const appState = await readFile(new URL('../js/app-state.mjs', import.meta.url),
 const controller = await readFile(new URL('../js/fan-intent-controller.mjs', import.meta.url), 'utf8');
 const core = await readFile(new URL('../js/fan-intent-core.mjs', import.meta.url), 'utf8');
 const activity = await readFile(new URL('../js/venue-activity-core.mjs', import.meta.url), 'utf8');
+const selectedProfile = await readFile(new URL('../js/selected-profile-renderer.mjs', import.meta.url), 'utf8');
 const css = await readFile(new URL('../css/fan-intent.css', import.meta.url), 'utf8');
 const script = await readFile(new URL('../apps-script/FanIntent.gs', import.meta.url), 'utf8');
 const readScript = await readFile(new URL('../apps-script/Code.gs', import.meta.url), 'utf8');
@@ -39,14 +40,12 @@ test('Fan Intent integration uses explicit application lifecycle and render func
   assert.match(app, /restoreSelection/);
 });
 
-test('confirmed attendance reuses the existing share action instead of rendering a second invitation control', () => {
-  assert.match(client, /const share = row\?\.querySelector\(':scope > button\.secondary-button'\)/);
-  assert.match(client, /const label = isSelected \? 'Invite Others' : 'Share'/);
-  assert.match(client, /share\.replaceChildren/);
-  assert.match(client, /share\.setAttribute\('aria-label', label\)/);
-  assert.doesNotMatch(client, /renderPostJoinInvitation|post-join-invitation|post-join-share|has-post-join-invitation/);
+test('selected-card share semantics are canonical and Fan Intent no longer relabels another feature action', () => {
+  assert.match(selectedProfile, /hasWatchParty \? 'Share Watch Party' : 'Share'/);
+  assert.match(selectedProfile, /selected-card__share/);
+  assert.doesNotMatch(client, /Invite Others|querySelector\(':scope > button\.secondary-button'\)/);
   assert.doesNotMatch(css, /post-join-invitation|post-join-share|has-post-join-invitation/);
-});
+})
 
 test('join, move, retry, and refresh share the same attendance-derived share state', () => {
   assert.match(client, /controller\?\.performIntent\(intentButton\.dataset\.venueId\)/);
@@ -67,9 +66,9 @@ test('the body-wide MutationObserver and DOM venue inference fallbacks are remov
 
 test('the renderer assigns stable venue IDs to markers, cards, actions, and detail content', () => {
   assert.match(app, /button\.dataset\.venueId = venue\.venue_id/);
-  assert.match(app, /card\.dataset\.venueId = venue\.venue_id/);
-  assert.match(app, /row\.dataset\.venueId = venue\.venue_id/);
-  assert.match(app, /intent\.dataset\.venueId = venue\.venue_id/);
+  assert.match(selectedProfile, /card\.dataset\.venueId = venue\.venue_id/);
+  assert.match(selectedProfile, /row\.dataset\.venueId = venue\.venue_id/);
+  assert.match(selectedProfile, /intent\.dataset\.venueId = venue\.venue_id/);
   assert.match(app, /dom\.venueDetail\.dataset\.venueId = venue\.venue_id/);
 });
 
@@ -79,7 +78,8 @@ test('join, move, withdraw, pending, rollback, and retry remain represented', ()
   assert.match(controller, /fanState\.pending = transaction\.operation/);
   assert.match(controller, /rollbackIntentTransaction/);
   assert.match(client, /className = 'text-button intent-retry'/);
-  assert.match(client, /You’ll be here · Undo/);
+  assert.match(client, /intent-button__main/);
+  assert.match(client, /intent-button__undo/);
 });
 
 test('write requests retain the public Apps Script API contract', () => {
@@ -124,17 +124,16 @@ test('completed activity publishes cumulative current-season counts without a pr
   assert.doesNotMatch(activity, /MIGRATED_ACTIVITY_SEASON|short_description|historicalEvidence/);
 });
 
-test('standardized activity presentation covers detail, selected-card, and list surfaces', () => {
-  assert.doesNotMatch(client, /function renderDetailActivity/);
+test('standardized activity presentation keeps selected-card structure canonical while Fan Intent updates List activity', () => {
+  assert.doesNotMatch(client, /function renderDetailActivity|function renderSelectedCardActivity/);
   assert.match(app, /venueActivityPresentation/);
-  assert.match(client, /function renderSelectedCardActivity/);
+  assert.match(selectedProfile, /venueActivityPresentation/);
   assert.match(client, /function renderLocationCardActivity/);
   assert.match(app, /className = 'detail-description'/);
-  assert.match(client, /\.venue-description/);
   assert.match(client, /\.location-card__description/);
-  assert.match(client, /venue-activity-history/);
+  assert.match(selectedProfile, /venue-activity-history/);
   assert.match(client, /location-card__history/);
-});
+})
 
 test('public responses and committed public files exclude private Fan Intent values', () => {
   assert.doesNotMatch(combinedPublicSource, /browser_[A-Za-z0-9_-]{16,}/);

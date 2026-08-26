@@ -5,7 +5,7 @@ import test from 'node:test';
 const root = new URL('../', import.meta.url);
 const bootstrapSource = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
 const stabilizationSource = await readFile(new URL('js/final-functional-stabilization.mjs', root), 'utf8');
-const profileSource = await readFile(new URL('js/map-profile-first-pass.mjs', root), 'utf8');
+const profileSource = await readFile(new URL('js/selected-profile-renderer.mjs', root), 'utf8');
 const shellSource = await readFile(new URL('js/shell-controls.mjs', root), 'utf8');
 const handoffSource = await readFile(new URL('js/watch-party-attendance-handoff.mjs', root), 'utf8');
 const fanIntentSource = await readFile(new URL('js/fan-intent.js', root), 'utf8');
@@ -20,11 +20,11 @@ function functionBody(source, name, nextName) {
 }
 
 test('selected venue Watch Party action has one navigation owner and uses the shared handoff', () => {
-  const presentation = functionBody(profileSource, 'addPlanWatchPartyAction', 'normalizeActionLabels');
+  const presentation = functionBody(profileSource, 'createPlanWatchPartyAction', 'createIntentButton');
   const contribution = functionBody(shellSource, 'beginContribution', 'handleSelectedVenueWatchParty');
   const selectedAction = functionBody(shellSource, 'handleSelectedVenueWatchParty', 'handleSearchResultClick');
 
-  assert.match(profileSource, /\.selected-card__plan-party/);
+  assert.match(profileSource, /className = 'selected-card__plan-party'/);
   assert.doesNotMatch(presentation, /addEventListener|#add-watch-party-button|\.click\(\)/);
   assert.doesNotMatch(stabilizationSource, /routeSelectedVenuePlanThroughAdd/);
   assert.doesNotMatch(stabilizationSource, /\.selected-card__plan-party/);
@@ -60,7 +60,7 @@ test('sharing a Watch Party has no attendance side effect in the handoff owner',
 });
 
 test('selected venue Watch Party ownership adds no polling or identity transport', () => {
-  const presentation = functionBody(profileSource, 'addPlanWatchPartyAction', 'normalizeActionLabels');
+  const presentation = functionBody(profileSource, 'createPlanWatchPartyAction', 'createIntentButton');
   const contribution = functionBody(shellSource, 'beginContribution', 'handleSelectedVenueWatchParty');
   const selectedAction = functionBody(shellSource, 'handleSelectedVenueWatchParty', 'handleSearchResultClick');
   const selectedPath = `${presentation}\n${contribution}\n${selectedAction}`;
