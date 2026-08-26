@@ -1,7 +1,119 @@
+import { gameRouteParam } from './core.mjs';
+
 const observedMaps = new WeakSet();
+const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
+const FALLBACK_HEADING = 'Map temporarily unavailable';
+const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
 
 function element(documentObject, selector) {
   return documentObject?.querySelector?.(selector) || null;
+}
+
+function ensureFallbackStyles(documentObject) {
+  if (!documentObject?.createElement || !documentObject?.head) return;
+  if (documentObject.getElementById?.(FALLBACK_STYLE_ID)) return;
+
+  const style = documentObject.createElement('style');
+  style.id = FALLBACK_STYLE_ID;
+  style.textContent = `
+    .map--fallback {
+      background: #06152f;
+    }
+
+    .map-fallback {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(18px, 3vh, 30px);
+      padding: clamp(18px, 4vw, 48px);
+      overflow: hidden;
+      background: #06152f;
+      color: #ffffff;
+      text-align: center;
+    }
+
+    .map-fallback__card {
+      display: block;
+      width: min(92%, 960px);
+      height: auto;
+      max-height: calc(100% - 128px);
+      object-fit: contain;
+    }
+
+    .map-fallback__message {
+      display: grid;
+      gap: 6px;
+      max-width: 640px;
+    }
+
+    .map-fallback__message strong {
+      color: var(--cal-gold, #fdb515);
+      font-size: clamp(1rem, 2vw, 1.35rem);
+    }
+
+    .map-fallback__message span {
+      color: #ffffff;
+      font-size: clamp(.85rem, 1.5vw, 1rem);
+      line-height: 1.4;
+    }
+  `;
+  documentObject.head.append(style);
+}
+
+function selectedGame(state) {
+  return state?.snapshot?.games?.find?.((game) => game.game_id === state.gameId) || null;
+}
+
+function ensureFallbackContent({ fallback, state, documentObject }) {
+  if (!fallback || !documentObject?.createElement) return;
+  ensureFallbackStyles(documentObject);
+
+  let image = fallback.querySelector?.('#map-fallback-card') || null;
+  let message = fallback.querySelector?.('.map-fallback__message') || null;
+
+  if (!image || !message) {
+    image = documentObject.createElement('img');
+    image.id = 'map-fallback-card';
+    image.className = 'map-fallback__card';
+    image.alt = '';
+    image.decoding = 'async';
+    image.hidden = true;
+
+    message = documentObject.createElement('div');
+    message.className = 'map-fallback__message';
+
+    const heading = documentObject.createElement('strong');
+    heading.textContent = FALLBACK_HEADING;
+
+    const copy = documentObject.createElement('span');
+    copy.textContent = FALLBACK_COPY;
+
+    message.append(heading, copy);
+    fallback.replaceChildren(image, message);
+  }
+
+  const game = selectedGame(state);
+  const slug = gameRouteParam(game);
+  if (!slug) {
+    image.hidden = true;
+    image.removeAttribute?.('src');
+    return;
+  }
+
+  const source = new URL(`../assets/social-cards/${slug}.png`, import.meta.url).href;
+  image.onload = () => { image.hidden = false; };
+  image.onerror = () => { image.hidden = true; };
+
+  if (image.src !== source) {
+    image.hidden = true;
+    image.src = source;
+  } else if (image.complete && image.naturalWidth > 0) {
+    image.hidden = false;
+  }
 }
 
 export function showMapUnavailable({
@@ -28,10 +140,9 @@ export function showMapUnavailable({
     state.userMarker = null;
   }
 
+  ensureFallbackContent({ fallback, state, documentObject });
   fallback.hidden = false;
   mapContainer.classList?.add?.('map--fallback');
-
-  if (!state?.selectedVenueId) element(documentObject, '#browse-locations-button')?.click?.();
   return true;
 }
 
