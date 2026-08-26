@@ -348,7 +348,7 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: clamp(9px, 2.4vw, 15px);
-  padding: 1px 8px 2px;
+  padding: 0 8px;
   color: var(--cgb-ink-700);
   background: var(--cgb-white);
   border-top: 1px solid var(--cgb-neutral-200);
@@ -402,9 +402,9 @@ textarea {
 }
 
 .map-legend__marker--watch-party {
-  width: 15px;
-  height: 15px;
-  flex-basis: 15px;
+  width: 14px;
+  height: 14px;
+  flex-basis: 14px;
   background: var(--cgb-gold-400);
   border-color: var(--cgb-gold-400);
 }
