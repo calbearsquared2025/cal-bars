@@ -1,7 +1,9 @@
-const TRIGGER_SELECTOR = '.missing-location-link, #add-missing-location-link';
+const TRIGGER_SELECTOR = 'a[href]';
 const GOOGLE_FORMS_HOST = 'docs.google.com';
 const GOOGLE_FORMS_PATH_PREFIX = '/forms/';
 const STYLESHEET_PATH = 'css/missing-location-embed.css';
+const DEFAULT_TITLE = 'Contribute to Cal Golden Bars';
+let hostState = null;
 
 export function buildEmbeddedGoogleFormUrl(href) {
   try {
@@ -19,6 +21,18 @@ export function buildEmbeddedGoogleFormUrl(href) {
   } catch (_) {
     return '';
   }
+}
+
+function formTitleForTrigger(trigger) {
+  const explicit = String(trigger?.dataset?.cgbFormTitle || '').trim();
+  if (explicit) return explicit;
+  if (trigger?.matches?.('.missing-location-link, #add-missing-location-link')) {
+    return 'Suggest a missing location';
+  }
+  if (trigger?.matches?.('[data-watch-party-form-entry-point], [data-external-watch-party-form-retry] a')) {
+    return 'Add a Watch Party';
+  }
+  return String(trigger?.textContent || '').trim().replace(/!$/, '') || DEFAULT_TITLE;
 }
 
 function ensureStylesheet(documentObject = document) {
@@ -39,13 +53,13 @@ function createDialog(documentObject = document) {
       <header class="missing-location-form-header">
         <div>
           <span class="eyebrow">Contribute</span>
-          <h2 id="missing-location-form-title">Suggest a missing location</h2>
+          <h2 id="missing-location-form-title">${DEFAULT_TITLE}</h2>
         </div>
-        <button class="missing-location-form-close" type="button" aria-label="Close missing location form">Close</button>
+        <button class="missing-location-form-close" type="button" aria-label="Close form">Close</button>
       </header>
       <iframe
         class="missing-location-form-frame"
-        title="Suggest a missing Cal Golden Bars location"
+        title="${DEFAULT_TITLE}"
         loading="eager"
         referrerpolicy="strict-origin-when-cross-origin"
       ></iframe>
@@ -61,58 +75,97 @@ function modifiedClick(event) {
     event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-export function initializeMissingLocationEmbed({
-  documentObject = document,
-  windowObject = window
-} = {}) {
-  if (!documentObject?.body || !windowObject?.HTMLDialogElement) return false;
-  if (documentObject.documentElement.dataset.missingLocationEmbedInitialized === 'true') return true;
-  documentObject.documentElement.dataset.missingLocationEmbedInitialized = 'true';
+function ensureHost({ documentObject = document, windowObject = window } = {}) {
+  if (!documentObject?.body || !windowObject?.HTMLDialogElement) return null;
+  if (hostState?.documentObject === documentObject) return hostState;
 
   ensureStylesheet(documentObject);
   const dialog = createDialog(documentObject);
-  const frame = dialog.querySelector('.missing-location-form-frame');
-  const fallback = dialog.querySelector('.missing-location-form-fallback a');
-  const closeButton = dialog.querySelector('.missing-location-form-close');
-  let activeTrigger = null;
+  const state = {
+    documentObject,
+    dialog,
+    frame: dialog.querySelector('.missing-location-form-frame'),
+    fallback: dialog.querySelector('.missing-location-form-fallback a'),
+    closeButton: dialog.querySelector('.missing-location-form-close'),
+    title: dialog.querySelector('#missing-location-form-title'),
+    activeTrigger: null
+  };
 
   const closeDialog = () => {
     if (dialog.open) dialog.close();
   };
 
-  closeButton.addEventListener('click', closeDialog);
+  state.closeButton.addEventListener('click', closeDialog);
   dialog.addEventListener('click', (event) => {
     if (event.target === dialog) closeDialog();
   });
   dialog.addEventListener('close', () => {
-    frame.removeAttribute('src');
-    activeTrigger?.focus?.({ preventScroll: true });
-    activeTrigger = null;
+    state.frame.removeAttribute('src');
+    state.activeTrigger?.focus?.({ preventScroll: true });
+    state.activeTrigger = null;
   });
+
+  hostState = state;
+  return state;
+}
+
+export function openGoogleForm(href, {
+  title = '',
+  trigger = null,
+  documentObject = document,
+  windowObject = window
+} = {}) {
+  const embeddedUrl = buildEmbeddedGoogleFormUrl(href);
+  if (!embeddedUrl) return false;
+  const state = ensureHost({ documentObject, windowObject });
+  if (!state) return false;
+
+  const resolvedTitle = String(title || '').trim() || formTitleForTrigger(trigger);
+  state.activeTrigger = trigger;
+  state.title.textContent = resolvedTitle;
+  state.frame.title = resolvedTitle;
+  state.frame.src = embeddedUrl;
+  state.fallback.href = href;
+  if (!state.dialog.open) state.dialog.showModal();
+  windowObject.gtag?.('event', 'google_form_opened', {
+    presentation: 'embedded',
+    form_title: resolvedTitle
+  });
+  return true;
+}
+
+export function initializeGoogleFormEmbed({
+  documentObject = document,
+  windowObject = window
+} = {}) {
+  const state = ensureHost({ documentObject, windowObject });
+  if (!state) return false;
+  if (documentObject.documentElement.dataset.googleFormEmbedInitialized === 'true') return true;
+  documentObject.documentElement.dataset.googleFormEmbedInitialized = 'true';
 
   documentObject.addEventListener('click', (event) => {
     const trigger = event.target.closest?.(TRIGGER_SELECTOR);
     if (!trigger || modifiedClick(event)) return;
-
     const href = trigger.href || trigger.getAttribute('href') || '';
-    const embeddedUrl = buildEmbeddedGoogleFormUrl(href);
-    if (!embeddedUrl) return;
-
+    if (!buildEmbeddedGoogleFormUrl(href)) return;
+    if (!openGoogleForm(href, { trigger, documentObject, windowObject })) return;
     event.preventDefault();
-    activeTrigger = trigger;
-    frame.src = embeddedUrl;
-    fallback.href = href;
-    if (!dialog.open) dialog.showModal();
-    windowObject.gtag?.('event', 'missing_location_form_opened', { presentation: 'embedded' });
   });
 
+  windowObject.CGBGoogleFormHost = Object.freeze({
+    open(href, options = {}) {
+      return openGoogleForm(href, { ...options, documentObject, windowObject });
+    }
+  });
   return true;
 }
 
+export const initializeMissingLocationEmbed = initializeGoogleFormEmbed;
+
 if (typeof document !== 'undefined' && typeof window !== 'undefined') {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initializeMissingLocationEmbed(), { once: true });
+    document.addEventListener('DOMContentLoaded', () => initializeGoogleFormEmbed(), { once: true });
   } else {
-    initializeMissingLocationEmbed();
+    initializeGoogleFormEmbed();
   }
 }
