@@ -415,7 +415,6 @@ body[data-view="detail"] #app {
     grid-row: 1;
     position: static;
     width: 100%;
-    height: 58px;
     box-shadow: none;
   }
 

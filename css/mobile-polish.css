@@ -199,11 +199,6 @@
   }
 
   /* Large numerals and small supporting labels match the board. */
-  .opening-stat {
-    bottom: -31px;
-    height: 62px;
-  }
-
   .opening-stat__item {
     padding: 6px 10px;
   }

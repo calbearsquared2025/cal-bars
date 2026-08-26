@@ -98,12 +98,6 @@
   transform: rotate(45deg);
 }
 
-@media (max-width: 899px) {
-  .opening-stat {
-    bottom: -38px;
-  }
-}
-
 @media (max-width: 390px) {
   .map-legend {
     gap: 7px;
