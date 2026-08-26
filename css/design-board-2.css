@@ -472,7 +472,7 @@
   isolation: isolate;
   color: var(--cgb-navy-950);
   background: var(--cgb-navy-950);
-  border: 1px solid transparent;
+  border: 0;
 }
 
 .badge--fan-added::before {
