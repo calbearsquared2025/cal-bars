@@ -51,6 +51,22 @@ function finish(marker) {
     : `${marker}_PASS`;
 }
 
+function checkMapLegend() {
+  const legend = element('.map-legend');
+  const stats = element('.opening-stat');
+  check(Boolean(legend), 'Map legend should exist in the statistics card');
+  check(Boolean(stats), 'Opening statistics should exist');
+  if (!legend || !stats) return;
+
+  const labels = [...legend.querySelectorAll('.map-legend__item')].map((item) => item.textContent.trim());
+  const legendRect = legend.getBoundingClientRect();
+  const statsRect = stats.getBoundingClientRect();
+  check(labels.join('|') === 'Watch Party|Cal Bar|Fan-Added', 'Map legend labels should match marker taxonomy');
+  check(visible(legend), 'Map legend should be visibly rendered');
+  check(statsRect.height >= 74, 'Statistics card should reserve a full legend row');
+  check(legendRect.top >= statsRect.top && legendRect.bottom <= statsRect.bottom + 1, 'Map legend should remain inside the statistics card');
+}
+
 async function ready(desktop = false) {
   await waitFor(() =>
     document.readyState === 'complete' &&
@@ -138,6 +154,7 @@ async function runMobile() {
   }
 
   check(document.body.dataset.commandSurface === 'map', 'Mobile should open on Map');
+  checkMapLegend();
   check(Boolean(state()?.gameId), 'A default game should be selected');
   check((state()?.snapshot?.venues?.length || 0) > 0, 'Locations should load');
   check(visible('#map-view'), 'Map should be visible');
@@ -245,6 +262,7 @@ async function runMobile() {
 async function runDesktop() {
   await ready(true);
   check(visible('#map-view'), 'Desktop map should be visible');
+  checkMapLegend();
   check(visible('#tray-list'), 'Desktop Locations should be visible');
   check(document.documentElement.scrollWidth <= document.documentElement.clientWidth, 'Desktop should not have horizontal page overflow');
 

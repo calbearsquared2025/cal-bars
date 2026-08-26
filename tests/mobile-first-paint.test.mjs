@@ -86,11 +86,12 @@ test('Search Add and List use the same destination-header component with a dedic
   assert.doesNotMatch(mobileTab, /event\.target\.closest\?\.\('#clear-search-button'\)/);
 });
 
-test('map statistics tighten without crowding the header brand', () => {
+test('map statistics position the expanded legend card without owning its height', () => {
   assert.match(
     css,
-    /data-command-surface="map"[\s\S]*\.opening-stat[\s\S]*height: 56px !important[\s\S]*bottom: -36px !important/
+    /data-command-surface="map"[\s\S]*\.opening-stat[\s\S]*bottom: -56px !important/
   );
+  assert.doesNotMatch(css, /opening-stat[\s\S]{0,120}height: 56px !important/);
   assert.match(css, /opening-stat__item[\s\S]*padding: 3px 8px !important/);
   assert.match(css, /data-command-surface="search"[\s\S]*opening-stat[\s\S]*display: none !important/);
 });
