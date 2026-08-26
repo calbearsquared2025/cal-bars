@@ -93,6 +93,7 @@ function buildHarness({ fanRows = [], completed = false } = {}) {
     new SheetMock('Fan_Intent', FAN_HEADERS, fanRows)
   ]);
   let uuid = 0;
+  let lockWaits = 0;
   const cache = new Map();
   const context = vm.createContext({
     console,
@@ -109,7 +110,7 @@ function buildHarness({ fanRows = [], completed = false } = {}) {
     Error,
     __workbook: workbook,
     Utilities: { getUuid: () => `00000000-0000-4000-8000-${String(++uuid).padStart(12, '0')}` },
-    LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
+    LockService: { getScriptLock: () => ({ waitLock() { lockWaits += 1; }, releaseLock() {} }) },
     CacheService: { getScriptCache: () => ({
       get: (key) => cache.get(key) || null,
       put: (key, value) => cache.set(key, value),
@@ -122,8 +123,8 @@ function buildHarness({ fanRows = [], completed = false } = {}) {
       createTextOutput: (text) => ({ text, setMimeType() { return this; } })
     }
   });
-  vm.runInContext(`${code}\n${canonicalIds}\n${fanIntent}\ngetWorkbook_ = function(){ return __workbook; };\nglobalThis.__api = { doPost, buildPublicSnapshot_, archiveCompletedFanIntentRowsUnlocked_ };`, context);
-  return { workbook, api: context.__api };
+  vm.runInContext(`${code}\n${canonicalIds}\n${fanIntent}\ngetWorkbook_ = function(){ return __workbook; };\nglobalThis.__api = { doPost, buildPublicSnapshot_, archiveCompletedFanIntentScheduled, archiveCompletedFanIntentRowsUnlocked_ };`, context);
+  return { workbook, api: context.__api, getLockWaits: () => lockWaits };
 }
 
 function post(api, payload) {
@@ -180,7 +181,7 @@ test('withdraw is idempotent and removes the current count', () => {
   assert.equal(fanObjects(workbook).filter((row) => row.status === 'attending').length, 0);
 });
 
-test('completed-game rows archive and season history counts Bears rather than distinct games', () => {
+test('public snapshot stays read-only while scheduled archival preserves completed-game history', () => {
   const existing = [
     {
       fan_intent_id: 'fi_existing_1', browser_id: browserId, game_id: 'game_1', venue_id: 'ven_1', status: 'attending',
@@ -191,7 +192,15 @@ test('completed-game rows archive and season history counts Bears rather than di
       created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z', archived_at: ''
     }
   ];
-  const { api, workbook } = buildHarness({ fanRows: existing, completed: true });
+  const { api, workbook, getLockWaits } = buildHarness({ fanRows: existing, completed: true });
+
+  api.buildPublicSnapshot_();
+  assert.equal(getLockWaits(), 0);
+  assert.ok(fanObjects(workbook).every((row) => row.status === 'attending' && !row.archived_at));
+
+  assert.equal(api.archiveCompletedFanIntentScheduled(), 2);
+  assert.equal(getLockWaits(), 1);
+
   const snapshot = api.buildPublicSnapshot_();
   const rows = fanObjects(workbook);
   assert.ok(rows.every((row) => row.status === 'archived' && row.archived_at));
