@@ -376,12 +376,6 @@ function beginContribution(intent, {
     return;
   }
 
-  if (intent === CONTRIBUTION_INTENTS.calBar && venue && !['community_location', 'cal_bar'].includes(venue.venue_type)) {
-    showStatus('The selected place cannot use the location information form. Search for a Community Location or Cal Bar.');
-    showSearch(intent);
-    return;
-  }
-
   if (href) {
     const opened = intent === CONTRIBUTION_INTENTS.watchParty
       ? openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame(state)?.game_id)
@@ -439,7 +433,7 @@ function handleSearchResultClick(event) {
           openExternalUrl(href);
         }
       } else if (intent === CONTRIBUTION_INTENTS.calBar) {
-        showStatus('Only Community Locations and existing Cal Bars can use this contribution form.');
+        showStatus('This contribution form is not available for the selected location.');
       } else {
         showStatus('That contribution is not available for the selected place or game.');
       }
