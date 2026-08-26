@@ -468,9 +468,21 @@
 }
 
 .badge--fan-added {
+  position: relative;
+  isolation: isolate;
   color: var(--cgb-navy-950);
+  background: var(--cgb-navy-950);
+  border: 1px solid transparent;
+}
+
+.badge--fan-added::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 1px;
   background: var(--cgb-white);
-  border: 1px solid var(--cgb-navy-950);
+  clip-path: polygon(0 0, calc(100% - .32rem) 0, 100% .32rem, 100% 100%, .32rem 100%, 0 calc(100% - .32rem));
+  pointer-events: none;
 }
 
 .party-module {
