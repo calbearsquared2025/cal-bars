@@ -5,7 +5,7 @@ const STYLESHEET_PATH = 'css/missing-location-embed.css';
 
 export function buildEmbeddedGoogleFormUrl(href) {
   try {
-    const url = new URL(String(href || '').trim(), window.location.href);
+    const url = new URL(String(href || '').trim());
     if (
       url.protocol !== 'https:' ||
       url.hostname.toLowerCase() !== GOOGLE_FORMS_HOST ||
@@ -57,7 +57,8 @@ function createDialog(documentObject = document) {
 }
 
 function modifiedClick(event) {
-  return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+  return (typeof event.button === 'number' && event.button !== 0) ||
+    event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
 export function initializeMissingLocationEmbed({
