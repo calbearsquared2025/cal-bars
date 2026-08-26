@@ -476,6 +476,12 @@
   border: 1px solid var(--cgb-navy-900);
 }
 
+.badge--fan-added {
+  color: var(--cgb-navy-950);
+  background: var(--cgb-white);
+  border: 1px solid var(--cgb-navy-950);
+}
+
 .party-module {
   display: grid;
   gap: 7px;
