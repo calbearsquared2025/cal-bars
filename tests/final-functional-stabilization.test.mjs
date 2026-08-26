@@ -3,11 +3,12 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const root = new URL('../', import.meta.url);
-const [stabilization, icons, iconUpgrade, sprite] = await Promise.all([
+const [stabilization, icons, iconUpgrade, sprite, selectedRenderer] = await Promise.all([
   readFile(new URL('js/final-functional-stabilization.mjs', root), 'utf8'),
   readFile(new URL('js/icons.mjs', root), 'utf8'),
   readFile(new URL('js/icon-upgrade.mjs', root), 'utf8'),
-  readFile(new URL('assets/icons.svg', root), 'utf8')
+  readFile(new URL('assets/icons.svg', root), 'utf8'),
+  readFile(new URL('js/selected-profile-renderer.mjs', root), 'utf8')
 ]);
 
 test('Nearby and All locations preserve the List surface after application rerenders', () => {
@@ -50,8 +51,9 @@ test('Share and all rendered interface icons use inline SVG geometry', () => {
 test('Directions separator is outside the link and iOS safe areas receive explicit surface colors', () => {
   assert.match(stabilization, /selected-card__directions-inline::before[\s\S]*content: none !important/);
   assert.match(stabilization, /selected-card__location-separator/);
-  assert.match(stabilization, /separator\.textContent = '·'/);
-  assert.match(stabilization, /link\.before\(separator\)/);
+  assert.match(selectedRenderer, /selected-card__location-separator/);
+  assert.match(selectedRenderer, /separator\.textContent = '·'/);
+  assert.doesNotMatch(stabilization, /fixDirectionsSeparator|link\.before\(separator\)/);
   assert.match(stabilization, /safe-area-inset-top/);
   assert.match(stabilization, /safe-area-inset-bottom/);
   assert.match(stabilization, /cgb-safe-area-fill--top/);

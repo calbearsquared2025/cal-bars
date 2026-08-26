@@ -6,6 +6,7 @@ const root = new URL('../', import.meta.url);
 const source = await readFile(new URL('js/map-profile-aesthetic-refinement.mjs', root), 'utf8');
 const watchPartyStyles = await readFile(new URL('css/watch-party-display.css', root), 'utf8');
 const icons = await readFile(new URL('js/icon-upgrade.mjs', root), 'utf8');
+const selected = await readFile(new URL('js/selected-profile-renderer.mjs', root), 'utf8');
 
 test('selected profile no longer owns an alternate attendance layout', () => {
   assert.doesNotMatch(source, /bear-count/);
@@ -24,10 +25,11 @@ test('Watch Party visual treatment is shared across mobile and desktop', () => {
 });
 
 test('empty Watch Party prompt includes the approved period and secondary action', () => {
-  assert.match(source, /No listed Watch Party for this game\./);
-  assert.match(source, /\+ Add a Watch Party/);
-  assert.match(source, /selected-card__plan-party-status/);
-  assert.match(source, /selected-card__plan-party-action/);
+  assert.doesNotMatch(source, /refinePlanWatchPartyAction|No listed Watch Party for this game\.|\+ Add a Watch Party/);
+  assert.match(selected, /No listed Watch Party for this game\./);
+  assert.match(selected, /\+ Add a Watch Party/);
+  assert.match(selected, /selected-card__plan-party-status/);
+  assert.match(selected, /selected-card__plan-party-action/);
 });
 
 test('utility actions are text-only and presented as one segmented control', () => {

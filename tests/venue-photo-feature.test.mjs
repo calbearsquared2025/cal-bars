@@ -61,9 +61,7 @@ test('Detail finishing treatment uses the approved contribution grid and folds s
   assert.match(detailCss, /body\[data-view="detail"\] \.mobile-command-bar\s*\{\s*display: grid !important;/);
   assert.doesNotMatch(detailCss, /body\[data-view="detail"\] \.back-link\s*\{\s*display: none !important;/);
   assert.doesNotMatch(detailCss, /@media \(min-width: 900px\)[\s\S]*body\[data-view="detail"\] \.back-link/);
-  assert.match(fanIntent, /const share = row\?\.querySelector\(':scope > button\.secondary-button'\)/);
-  assert.match(fanIntent, /const label = isSelected \? 'Invite Others' : 'Share'/);
-  assert.match(fanIntent, /share\.replaceChildren/);
+  assert.doesNotMatch(fanIntent, /Invite Others|querySelector\(':scope > button\.secondary-button'\)|share\.replaceChildren/);
   assert.doesNotMatch(fanIntent, /syncDetailShareAction/);
   assert.match(fanIntent, /presence\.textContent = isSelected[\s\S]*\? detailPresenceCopy\(count\)/);
   assert.ok(fanIntent.includes("Click \"I\\'ll be here\" below to join them."));

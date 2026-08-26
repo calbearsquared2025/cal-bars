@@ -11,6 +11,7 @@ import {
   validateFanIntentResponse
 } from './fan-intent-core.mjs';
 import { createFanIntentController } from './fan-intent-controller.mjs';
+import { createIcon } from './icons.mjs';
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
@@ -184,27 +185,25 @@ function renderIntentButton(button) {
   const isSelected = activeVenueId() === venueId;
   const pending = appState.fanIntent.pending;
   const isPendingTarget = pending?.gameId === appState.gameId && pending?.venueId === venueId;
+  const showSelectedContent = isSelected && !isPendingTarget;
 
   button.disabled = Boolean(pending) || !gameAllowsIntent();
   button.removeAttribute('title');
   button.setAttribute('aria-pressed', String(isSelected));
   button.dataset.intentState = isSelected ? 'selected' : 'available';
   button.classList.toggle('is-pending', Boolean(isPendingTarget));
-  button.textContent = isPendingTarget
-    ? 'Saving…'
-    : isSelected
-      ? 'You’ll be here · Undo'
-      : gameAllowsIntent()
-        ? 'I’ll be here'
-        : 'Selections closed';
+  button.setAttribute('aria-label', showSelectedContent ? 'You’ll be here. Undo selection' : 'I’ll be here');
 
-  const row = button.closest('.action-row');
-  const share = row?.querySelector(':scope > button.secondary-button');
-  if (share) {
-    const label = isSelected ? 'Invite Others' : 'Share';
-    const icon = share.querySelector('.ui-icon');
-    share.replaceChildren(...(icon ? [icon] : []), label);
-    share.setAttribute('aria-label', label);
+  const main = document.createElement('span');
+  main.className = 'intent-button__main';
+  if (showSelectedContent) main.append(createIcon('check'), document.createTextNode('You’ll be here'));
+  else main.textContent = 'I’ll be here';
+  button.replaceChildren(main);
+  if (showSelectedContent) {
+    const undo = document.createElement('span');
+    undo.className = 'intent-button__undo';
+    undo.textContent = 'Undo';
+    button.append(undo);
   }
 
   syncDetailPresence(venueId, isSelected);
@@ -246,32 +245,6 @@ function activityPresentation(game, venue, currentCopy) {
   });
 }
 
-function renderSelectedCardActivity(game) {
-  const card = document.querySelector('.selected-card[data-venue-id]');
-  const venue = venueById(card?.dataset.venueId);
-  const countLine = card?.querySelector('.bear-count');
-  if (!card || !venue || !countLine) return;
-
-  const migratedHistory = Boolean(legacyActivitySeason(venue));
-  const description = card.querySelector('.venue-description');
-  if (description && migratedHistory) description.hidden = true;
-
-  const presentation = activityPresentation(game, venue, countLine.textContent);
-  countLine.textContent = presentation.primary;
-
-  let history = card.querySelector('.venue-activity-history');
-  if (!presentation.secondary.length) {
-    history?.remove();
-    return;
-  }
-  if (!history) {
-    history = document.createElement('p');
-    history.className = 'venue-activity-history';
-    countLine.insertAdjacentElement('afterend', history);
-  }
-  replaceTextLines(history, presentation.secondary);
-}
-
 function renderLocationCardActivity(game) {
   document.querySelectorAll('.location-card[data-venue-id]').forEach((card) => {
     const venue = venueById(card.dataset.venueId);
@@ -310,7 +283,6 @@ function renderLocationCardActivity(game) {
 function renderVenueActivity() {
   const game = currentGame();
   if (!game || !appState.snapshot) return;
-  renderSelectedCardActivity(game);
   renderLocationCardActivity(game);
 }
 

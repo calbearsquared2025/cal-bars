@@ -103,43 +103,8 @@ function installStyles() {
   document.head.append(style);
 }
 
-function refinePlanWatchPartyAction(root = document) {
-  const button = root.querySelector(
-    '#map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party'
-  );
-  if (!button || button.dataset.aestheticRefined === 'true') return;
-
-  button.dataset.aestheticRefined = 'true';
-  button.setAttribute('aria-label', 'No listed Watch Party for this game. Add a Watch Party');
-
-  const status = document.createElement('span');
-  status.className = 'selected-card__plan-party-status';
-  status.textContent = 'No listed Watch Party for this game.';
-
-  const action = document.createElement('span');
-  action.className = 'selected-card__plan-party-action';
-  action.textContent = '+ Add a Watch Party';
-
-  button.replaceChildren(status, action);
-}
-
-function refine() {
-  refinePlanWatchPartyAction();
-}
-
-function scheduleRefinement() {
-  requestAnimationFrame(() => {
-    refine();
-    requestAnimationFrame(refine);
-  });
-}
-
 function initialize() {
   installStyles();
-  scheduleRefinement();
-  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleRefinement);
-  window.CGBApp?.subscribe?.('rendered', scheduleRefinement);
-  window.CGBApp?.subscribe?.('ready', scheduleRefinement);
 }
 
 if (document.readyState === 'loading') {
