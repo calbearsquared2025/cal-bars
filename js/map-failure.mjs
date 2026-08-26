@@ -41,7 +41,14 @@ function ensureFallbackStyles(documentObject) {
       width: min(92%, 960px);
       height: auto;
       max-height: calc(100% - 128px);
+      aspect-ratio: 1200 / 630;
       object-fit: contain;
+      opacity: 0;
+      transition: opacity 120ms ease;
+    }
+
+    .map-fallback__card--loaded {
+      opacity: 1;
     }
 
     .map-fallback__message {
@@ -68,6 +75,12 @@ function selectedGame(state) {
   return state?.snapshot?.games?.find?.((game) => game.game_id === state.gameId) || null;
 }
 
+function markCardLoaded(image, loaded) {
+  image.className = loaded
+    ? 'map-fallback__card map-fallback__card--loaded'
+    : 'map-fallback__card';
+}
+
 function ensureFallbackContent({ fallback, state, documentObject }) {
   if (!fallback || !documentObject?.createElement) return;
   ensureFallbackStyles(documentObject);
@@ -81,7 +94,8 @@ function ensureFallbackContent({ fallback, state, documentObject }) {
     image.className = 'map-fallback__card';
     image.alt = '';
     image.decoding = 'async';
-    image.hidden = true;
+    image.width = 1200;
+    image.height = 630;
 
     message = documentObject.createElement('div');
     message.className = 'map-fallback__message';
@@ -99,20 +113,20 @@ function ensureFallbackContent({ fallback, state, documentObject }) {
   const game = selectedGame(state);
   const slug = gameRouteParam(game);
   if (!slug) {
-    image.hidden = true;
+    markCardLoaded(image, false);
     image.removeAttribute?.('src');
     return;
   }
 
   const source = new URL(`../assets/social-cards/${slug}.png`, import.meta.url).href;
-  image.onload = () => { image.hidden = false; };
-  image.onerror = () => { image.hidden = true; };
+  image.onload = () => { markCardLoaded(image, true); };
+  image.onerror = () => { markCardLoaded(image, false); };
 
   if (image.src !== source) {
-    image.hidden = true;
+    markCardLoaded(image, false);
     image.src = source;
   } else if (image.complete && image.naturalWidth > 0) {
-    image.hidden = false;
+    markCardLoaded(image, true);
   }
 }
 
