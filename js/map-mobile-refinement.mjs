@@ -19,7 +19,6 @@ const VENUE_FOCUS_SUPPRESSION_MS = 900;
 let lastAutoFocusedVenueId = '';
 let selectedHandlePointer = null;
 let suppressSelectedHandleClick = false;
-let trayObserver = null;
 let trackedMap = null;
 let trackedMapMoveEnd = null;
 let returnCameraPending = false;
@@ -411,43 +410,12 @@ function focusVenue(venueId, { force = false } = {}) {
   });
 }
 
-function positionAttribution() {
-  if (!isMobile()) return;
-  const map = document.querySelector('#map');
-  const tray = document.querySelector('#venue-tray');
-  const attribution = document.querySelector('.maplibregl-ctrl-bottom-right');
-  if (!map || !tray || !attribution) return;
-
-  if (document.body.dataset.commandSurface !== 'map') {
-    attribution.style.display = 'none';
-    return;
-  }
-  attribution.style.display = '';
-
-  const mapRect = map.getBoundingClientRect();
-  const trayRect = tray.getBoundingClientRect();
-  const trayVisible = getComputedStyle(tray).display !== 'none' && trayRect.top < mapRect.bottom;
-  const overlap = trayVisible ? Math.max(0, mapRect.bottom - trayRect.top) : 0;
-  attribution.style.bottom = `${Math.round(overlap + 6)}px`;
-  attribution.style.left = '8px';
-  attribution.style.right = 'auto';
-}
-
-function observeTray() {
-  const tray = document.querySelector('#venue-tray');
-  if (!tray || typeof ResizeObserver !== 'function') return;
-  trayObserver?.disconnect();
-  trayObserver = new ResizeObserver(() => requestAnimationFrame(positionAttribution));
-  trayObserver.observe(tray);
-}
-
 function sync() {
   installStyles();
   removeZoomControls();
   const restoredCamera = attachMapCameraTracking();
   updatePreviewIntent();
   requestAnimationFrame(updatePreviewIntent);
-  positionAttribution();
 
   const state = appState();
   const tray = document.querySelector('#venue-tray');
@@ -477,8 +445,6 @@ function sync() {
 
 function initialize() {
   installStyles();
-  observeTray();
-
   document.addEventListener('click', markDetailReturnForCamera, { capture: true });
   document.addEventListener('click', captureCameraBeforeVenueNavigation, { capture: true });
   document.addEventListener('click', openPreviewVenue, { capture: true });
@@ -496,7 +462,6 @@ function initialize() {
   });
 
   window.addEventListener('pagehide', () => captureMapCamera());
-  window.addEventListener('resize', () => requestAnimationFrame(positionAttribution));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
   window.CGBApp?.subscribe?.('ready', sync);

@@ -39,8 +39,9 @@ test('settled portrait map geometry is available from static CSS before modules 
   assert.match(css, /maplibregl-ctrl-top-right[\s\S]*display: none !important/);
   assert.match(
     css,
-    /maplibregl-ctrl-bottom-right[\s\S]*top: 38px !important[\s\S]*bottom: auto !important[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/
+    /maplibregl-ctrl-bottom-right[\s\S]*top: 64px !important[\s\S]*bottom: auto !important[\s\S]*left: max\(8px, env\(safe-area-inset-left, 0px\)\) !important/
   );
+  assert.match(css, /body:not\(\[data-command-surface="map"\]\) \.maplibregl-ctrl-bottom-right[\s\S]*display: none !important/);
   assert.doesNotMatch(css, /:has\(#venue-tray\.tray--selected\)/);
 });
 
