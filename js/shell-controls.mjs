@@ -402,6 +402,15 @@ function handleSelectedVenueWatchParty(event) {
   beginContribution(CONTRIBUTION_INTENTS.watchParty, { venueId });
 }
 
+function handleMobileLocationListSelection(event) {
+  if (!isMobileLayout()) return;
+  if (!event.target.closest?.('#location-list .location-card[data-venue-id]')) return;
+  contributionIntent = '';
+  updateSearchIntent();
+  setSearchMode('existing');
+  setSurface('map');
+}
+
 function handleSearchResultClick(event) {
   const existing = event.target.closest('button[data-venue-id]');
   const external = event.target.closest('button[data-external-place-id]');
@@ -584,6 +593,7 @@ function initializeShellControls() {
   dom.addLocationSearch.addEventListener('click', showAddLocationSearch);
   document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
 
+  document.addEventListener('click', handleMobileLocationListSelection, { capture: true });
   document.addEventListener('click', handleSelectedVenueWatchParty);
   document.querySelector('#add-watch-party-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.watchParty));
   document.querySelector('#add-cal-bar-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.calBar));
