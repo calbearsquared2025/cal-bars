@@ -48,8 +48,9 @@ test('continuous profile requires a selected venue', () => {
   }), false);
 });
 
-test('mobile selected cards do not render the legacy detail gateway', async () => {
+test('selected cards do not render the superseded detail gateway', async () => {
   const source = await readFile(new URL('../js/selected-profile-renderer.mjs', import.meta.url), 'utf8');
-  assert.match(source, /if \(!mobile\) \{[\s\S]*selected-card__details/);
-  assert.match(source, /createSelectedActionRow\(\{[\s\S]*mobile,[\s\S]*detailHref/);
+  assert.doesNotMatch(source, /selected-card__details/);
+  assert.doesNotMatch(source, /More About This Location/);
+  assert.doesNotMatch(source, /detailHref/);
 });
