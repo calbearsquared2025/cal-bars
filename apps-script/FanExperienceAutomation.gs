@@ -70,6 +70,18 @@ function prepareFanExperienceAutomation() {
 
 /** Install as a spreadsheet-bound "On form submit" trigger. */
 function onFanExperienceFormSubmit(event) {
+  const eventSheet = event && event.range && typeof event.range.getSheet === 'function'
+    ? event.range.getSheet()
+    : null;
+  if (eventSheet && typeof eventSheet.getName === 'function' &&
+      eventSheet.getName() !== CGB_FAN_EXPERIENCE_RAW_TAB) {
+    return {
+      ok: true,
+      ignored: true,
+      reason: 'unrelated_sheet'
+    };
+  }
+
   const context = parseFanExperienceFormEvent_(event);
   const headers = ensureFanExperienceAdminHeaders_(context.sheet);
   const venueId = cleanFanExperienceIdentifier_(readFanExperienceFormField_(context.namedValues, 'venue_id'));
@@ -118,7 +130,8 @@ function parseFanExperienceFormEvent_(event) {
   }
   const sheet = event.range.getSheet();
   const rowNumber = Number(event.range.getRow());
-  if (!sheet || sheet.getName() !== CGB_FAN_EXPERIENCE_RAW_TAB ||
+  if (!sheet || typeof sheet.getName !== 'function' ||
+      sheet.getName() !== CGB_FAN_EXPERIENCE_RAW_TAB ||
       !Number.isFinite(rowNumber) || rowNumber < 2) {
     throw new Error('invalid_fan_experience_form_event');
   }
