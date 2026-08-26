@@ -89,7 +89,6 @@ def navigate(slug):
     wait_for("document.readyState === 'complete' && (window.CGBApp?.getState?.()?.snapshot?.venues?.length || 0) > 0")
     wait_for(f"window.CGBApp?.getState?.()?.snapshot?.venues?.some(v => v.slug === {json.dumps(slug)})")
     wait_for(f"window.CGBApp?.getState?.()?.selectedVenueId === window.CGBApp?.getState?.()?.snapshot?.venues?.find(v => v.slug === {json.dumps(slug)})?.venue_id")
-    wait_for("document.body.dataset.detailState !== 'pending'", 30)
     time.sleep(1)
 
 
