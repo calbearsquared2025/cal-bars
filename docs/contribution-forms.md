@@ -158,40 +158,64 @@ Settings and workflow:
 - Public credit identity/link fields are curated manually and do not publish directly from Form responses.
 - A later approved photo may replace the Venue’s current public primary photo; there is no public gallery or photo history.
 
-Approval/publication is fully human-controlled:
+The private Google Drive upload is the untouched source original. Do not edit it in place, serve it from the public site, or commit it to the repository. The ordinary public-derivative workflow uses the **CGB Venue Photo Upload Utility** to create the final intentional 4:3 WebP. The Venue Profile displays that prepared 4:3 composition and should not apply a different crop.
+
+`Venue_Photos` is the canonical publication-control mechanism. It relates the approved public photo to the canonical `venue_id` and publishes only curated `photo_url`, `photo_caption`, `photo_credit`, and `photo_credit_url` metadata. Never place a Drive file ID, Form upload URL, respondent email, permission record, reviewer note, raw response, or utility-processing metadata in the public publication record.
+
+Publication remains fully human-controlled.
+
+### First photo workflow
 
 ```text
-Form upload
-→ private Google Drive original
-→ manual review and approval
-→ create and visually inspect an optimized WebP outside the repository
-→ manually upload the approved file under assets/venues/<venue-slug>.webp in GitHub
-→ confirm the GitHub Pages image URL returns the approved image
-→ add or update the Venue_Photos publication row for the canonical venue_id
-→ publish through the normal site/data deployment
+Form submission
+→ private Drive review
+→ CGB Venue Photo Upload Utility
+→ paste the Form row
+→ load the approved image
+→ compose the final 4:3 image
+→ rotate/reposition/zoom if needed
+→ create the optimized WebP
+→ inspect the exact final composition
+→ feature branch / draft PR
+→ visual review
+→ merge
+→ verify the public image URL
+→ add/update Venue_Photos
+→ run buildPublicSnapshotForReview()
+→ production check
 ```
 
-Prefer WebP at about 1200–1600 px maximum width and generally about 200–500 KB. Preserve the source aspect ratio; Venue Detail owns the visible 3:2 presentation. `Venue_Photos` is the only publication source for `photo_url`, `photo_caption`, `photo_credit`, and `photo_credit_url`. Add only curated public metadata to that tab—never a Drive file ID, respondent email, permission record, reviewer note, or raw submission content.
+1. In the private `Photo_Submission` sheet, verify that the Venue name and canonical Venue ID agree, the image is appropriate for the Venue, and the permission checkbox was affirmatively selected. Treat context and credit answers as editorial source material, not automatically approved public copy.
+2. Review the untouched private Drive original at full size. Reject or follow up on images that are blurry, misleading, offensive, or visibly copyrighted by an unapproved third party.
+3. Open the **CGB Venue Photo Upload Utility**, paste the Form row, and load the approved image. Use the utility to compose the exact public 4:3 image. Rotate, reposition, and zoom only as needed to produce the intended final composition.
+4. Create the optimized public WebP with the utility. Inspect the generated WebP itself before publication; the composition you approve here is the composition the Venue Profile should show.
+5. Add only the optimized public WebP to `assets/venues/` on a feature branch and open a draft PR. Never add the private Drive original or other raw submission material.
+6. Review the Venue Profile visually on desktop and iPhone portrait. Confirm the 4:3 composition is intact, caption/credit are correct, there is no layout overflow, and the no-photo local-map fallback still works on a venue without a published photo.
+7. Merge the reviewed asset/code change. Confirm the final `https://calgoldenbars.com/assets/venues/<filename>.webp` URL returns the intended image before publishing its metadata.
+8. Add or update exactly one `Venue_Photos` row for the canonical Venue ID. Use `published` only after the public asset URL works. Curate the caption, display credit, optional safe credit URL, and `updated_at`. Never leave two `published` rows for one Venue.
+9. In Apps Script, run `buildPublicSnapshotForReview()`. Confirm the matching public Venue contains only the approved `photo_url`, `photo_caption`, `photo_credit`, and `photo_credit_url` photo metadata and no private Form/Drive fields.
+10. Check the production Venue Profile on desktop and a physical iPhone in portrait after the refreshed snapshot is available.
+
+### Replacement photo workflow
+
+Keep the existing published photo live while the replacement is being prepared and reviewed.
+
+```text
+private replacement Drive original
+→ CGB Venue Photo Upload Utility
+→ final reviewed 4:3 WebP
+→ feature branch / draft PR
+→ visual review
+→ merge
+→ verify the new public image URL
+→ update the existing Venue_Photos publication record to the new URL/metadata
+→ run buildPublicSnapshotForReview()
+→ production check
+```
+
+Do not publish a second `Venue_Photos` row for the same Venue. Do not unpublish the current photo before the replacement asset is ready. After the replacement WebP is merged and its public URL is verified, update the existing publication record to the replacement URL and curated metadata, then rebuild and review the public snapshot. Deleting the superseded static image is optional later cleanup and is not part of the replacement transaction.
 
 Do not hotlink the Drive upload or commit the raw Form original.
-
-### Photo publication runbook
-
-1. In the private `Photo_Submission` sheet, verify that the Venue name and canonical Venue ID agree, the uploaded image is appropriate for the Venue, and the permission checkbox was affirmatively selected. Treat the context and credit answers as editorial source material, not automatically approved public copy.
-2. Open the private Drive upload and inspect it at full size. Reject or follow up on images that are blurry, misleading, offensive, visibly copyrighted by an unapproved third party, or too tightly composed for the Venue Detail 3:2 crop.
-3. Download the approved original to a private working folder. Never add that raw original to the public repository.
-4. Auto-orient the image, preserve its aspect ratio, and resize only when its longest dimension exceeds 1600 px. Do not upscale smaller originals. Export an sRGB WebP at roughly quality 80–85 and strip EXIF/location metadata. Aim for 200–500 KB, but accept a smaller file when it remains visually clean.
-5. Name the output `assets/venues/<venue-slug>.webp`. Open the WebP itself and inspect faces, text, shadows, gradients, and the approximate center-cropped 3:2 composition before committing it.
-6. Add only the optimized WebP to the feature/release branch, run the photo tests and data validator, and merge it through the normal reviewed release process. Confirm the final `https://calgoldenbars.com/assets/venues/<venue-slug>.webp` URL loads the approved image before changing the workbook row to `published`.
-7. Add or update exactly one `Venue_Photos` row for the canonical Venue ID. Use `draft` while the asset or copy is still under review; use `published` only after the public asset URL works. Curate the caption, display credit, optional credit URL, and an ISO-8601 UTC `updated_at` value. Archive a superseded row or replace the existing row; never leave two `published` rows for one Venue.
-8. In Apps Script, run `buildPublicSnapshotForReview()`. It clears the endpoint cache, rebuilds the snapshot, and logs the review copy. Confirm the matching Venue contains only the approved `photo_url`, `photo_caption`, `photo_credit`, and `photo_credit_url`, with no Form upload link, Drive ID, account email, permission response, or reviewer data.
-9. Load the Venue Detail from the release candidate on desktop and a physical iPhone in portrait. Confirm the image crop, caption, credit link, map fallback behavior, and `Submit a Photo` action. After release, reload once after the endpoint refresh and repeat the production check.
-
-Free conversion options:
-
-- [Squoosh](https://squoosh.app/) works in a browser: enable **Resize**, set the longest dimension to at most `1600`, choose **WebP**, start near quality `82`, compare the preview, and download the result.
-- [GIMP](https://www.gimp.org/) is a free desktop editor: use **Image → Scale Image**, set width or height to at most `1600` with the chain linked, then **File → Export As**, choose `.webp`, and use quality `80–85`.
-- [ImageMagick](https://imagemagick.org/) is a free command-line option: `magick input.jpg -auto-orient -resize "1600x1600>" -strip -quality 82 output.webp`. The `>` prevents upscaling; quote the geometry in PowerShell so it is not interpreted as redirection.
 
 ## Share your Cal Game Experience
 

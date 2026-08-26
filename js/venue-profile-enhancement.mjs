@@ -77,7 +77,8 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const frame = documentObject.createElement('div');
   frame.className = 'detail-photo__frame';
   frame.style.width = '100%';
-  frame.style.aspectRatio = '1 / 1';
+  // The published asset is already composed at 4:3; older layout CSS must not recrop it.
+  frame.style.setProperty('aspect-ratio', '4 / 3', 'important');
   frame.style.overflow = 'hidden';
   const image = documentObject.createElement('img');
   image.className = 'detail-photo__image';
@@ -85,8 +86,8 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   image.style.width = '100%';
   image.style.height = '100%';
   image.style.display = 'block';
-  image.style.objectFit = 'cover';
-  image.style.objectPosition = 'center';
+  image.style.setProperty('object-fit', 'contain', 'important');
+  image.style.setProperty('object-position', 'center', 'important');
   image.decoding = 'async';
   image.loading = 'eager';
   image.addEventListener('error', () => {
