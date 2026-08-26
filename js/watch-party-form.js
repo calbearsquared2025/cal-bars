@@ -65,6 +65,7 @@ function createWatchPartySection(documentObject, { existingParty, href, onActiva
   const link = documentObject.createElement('a');
   link.className = 'detail-watch-party-cta__action';
   link.dataset.watchPartyFormEntryPoint = 'true';
+  link.dataset.cgbFormTitle = 'Add a Watch Party';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
@@ -84,7 +85,11 @@ async function launchWatchPartyForm({
   documentObject,
   windowObject
 }) {
-  const handoff = await requestWatchPartyAttendance({ documentObject, windowObject });
+  const handoff = await requestWatchPartyAttendance({
+    documentObject,
+    windowObject,
+    reserveWindow: false
+  });
   if (!handoff) return false;
 
   if (handoff.choice === WATCH_PARTY_ATTENDANCE_CHOICES.attend) {
@@ -103,7 +108,9 @@ async function launchWatchPartyForm({
     }
   }
 
-  const opened = navigateWaitingFormWindow(handoff.windowRef, href, windowObject);
+  const opened = windowObject.CGBGoogleFormHost?.open?.(href, {
+    title: 'Add a Watch Party'
+  }) || navigateWaitingFormWindow(handoff.windowRef, href, windowObject);
   if (!opened) app?.showStatus?.('Could not open the Watch Party form. Try again.', 5000);
   return opened;
 }
