@@ -154,10 +154,7 @@ export function openGoogleForm(href, {
   state.frame.src = embeddedUrl;
   state.fallback.href = href;
   if (!state.dialog.open) state.dialog.showModal();
-  const analyticsEvent = resolvedTitle === 'Suggest a missing location'
-    ? 'missing_location_form_opened'
-    : 'google_form_opened';
-  windowObject.gtag?.('event', analyticsEvent, {
+  windowObject.gtag?.('event', 'google_form_opened', {
     presentation: 'embedded',
     form_title: resolvedTitle
   });
