@@ -77,7 +77,7 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const frame = documentObject.createElement('div');
   frame.className = 'detail-photo__frame';
   frame.style.width = '100%';
-  frame.style.aspectRatio = '1 / 1';
+  frame.style.aspectRatio = '4 / 3';
   frame.style.overflow = 'hidden';
   const image = documentObject.createElement('img');
   image.className = 'detail-photo__image';
@@ -85,7 +85,7 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   image.style.width = '100%';
   image.style.height = '100%';
   image.style.display = 'block';
-  image.style.objectFit = 'cover';
+  image.style.objectFit = 'contain';
   image.style.objectPosition = 'center';
   image.decoding = 'async';
   image.loading = 'eager';
