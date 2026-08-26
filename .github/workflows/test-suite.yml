@@ -15,6 +15,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -23,5 +25,30 @@ jobs:
       - name: Browser smoke
         timeout-minutes: 3
         run: time npm run test:browser
+      - name: npm test
+        run: time npm test
       - name: Public data validation
         run: npm run validate:data
+      - name: Test-suite size
+        shell: bash
+        run: |
+          base_ref="origin/${{ github.event.pull_request.base.ref || 'main' }}"
+          sum_git_lines() {
+            local ref="$1"
+            shift
+            local total=0
+            while IFS= read -r file; do
+              [ -n "$file" ] || continue
+              lines=$(git show "$ref:$file" | wc -l)
+              total=$((total + lines))
+            done < <("$@")
+            echo "$total"
+          }
+          base_unit_files=$(git ls-tree -r --name-only "$base_ref" tests | grep -c '\.test\.mjs$' || true)
+          current_unit_files=$(find tests -maxdepth 1 -type f -name '*.test.mjs' | wc -l)
+          base_lines=$(sum_git_lines "$base_ref" bash -lc "{ git ls-tree -r --name-only '$base_ref' tests | grep -E '\\.(test\\.mjs|mjs|js)$'; echo scripts/run-browser-harness.mjs; } | sort -u")
+          current_lines=$( { find tests -type f \( -name '*.test.mjs' -o -path 'tests/browser/*.mjs' -o -path 'tests/browser/*.js' \); echo scripts/run-browser-harness.mjs; } | sort -u | xargs wc -l | tail -1 | awk '{print $1}' )
+          echo "unit_test_files_before=$base_unit_files"
+          echo "unit_test_files_after=$current_unit_files"
+          echo "test_harness_lines_before=$base_lines"
+          echo "test_harness_lines_after=$current_lines"

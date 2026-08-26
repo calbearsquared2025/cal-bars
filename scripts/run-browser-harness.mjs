@@ -8,14 +8,6 @@ import { findBrowser } from './browser-discovery.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const snapshot = JSON.parse(readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8'));
-snapshot.fanCounts = [];
-const fanExperienceVenue = snapshot.venues.find((venue) => venue.slug === 'golden-bear-test-pub-berkeley');
-snapshot.fanExperiences = fanExperienceVenue ? [{
-  venue_id: fanExperienceVenue.venue_id,
-  text: 'Synthetic Bears Say experience for browser coverage.',
-  display_name: 'Synthetic Bear',
-  year: 2026
-}] : [];
 const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');
 const productionIndex = readFileSync(join(root, 'index.html'), 'utf8');
 const mimeTypes = new Map([
@@ -31,52 +23,18 @@ function safePath(requestUrl) {
   return candidate.startsWith(root) ? candidate : null;
 }
 
-function smokePage(response, requestUrl) {
+function smokePage(response) {
   const prelude = `<script>
     (() => {
       const snapshot = ${snapshotJson};
-      if (!sessionStorage.getItem('cgb_smoke_session')) {
-        for (const key of ['cgb_v2_last_good_snapshot', 'cgb_v2_browser_id', 'cgb_v2_fan_intent_selections']) localStorage.removeItem(key);
-        sessionStorage.setItem('cgb_smoke_session', '1');
-      }
       localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
-      const selections = new Map();
-      const browserId = localStorage.getItem('cgb_v2_browser_id');
-      const stored = JSON.parse(localStorage.getItem('cgb_v2_fan_intent_selections') || '{}');
-      if (browserId) Object.entries(stored).forEach(([gameId, venueId]) => selections.set(browserId + '\\u0000' + gameId, { gameId, venueId }));
       const nativeFetch = window.fetch.bind(window);
-      const counts = () => {
-        const values = new Map();
-        selections.forEach(({ gameId, venueId }) => {
-          const key = gameId + '\\u0000' + venueId;
-          const current = values.get(key) || { game_id: gameId, venue_id: venueId, count: 0 };
-          current.count += 1;
-          values.set(key, current);
-        });
-        return [...values.values()];
-      };
-      const json = (payload, status = 200) => new Response(JSON.stringify(payload), { status, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
+      const json = (payload) => new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
       window.fetch = async (input, init = {}) => {
         const url = new URL(typeof input === 'string' ? input : input.url, location.href);
-        if (url.pathname.endsWith('/data/fallback-v2.json')) return json(snapshot);
+        if (url.pathname === '/__cgb_mock_api__' || url.pathname.endsWith('/data/fallback-v2.json')) return json(snapshot);
         if (url.hostname === 'api.maptiler.com') return json({ features: [] });
-        if (url.pathname !== '/__cgb_mock_api__') return nativeFetch(input, init);
-        const method = String(init.method || input?.method || 'GET').toUpperCase();
-        if (method !== 'POST') return json({ ...snapshot, fanCounts: counts() });
-        let operation;
-        try { operation = JSON.parse(String(init.body || '{}')); } catch (_) { return json({ ok: false, error: 'invalid_json' }, 400); }
-        const { action, browserId: requestBrowserId, gameId, venueId } = operation || {};
-        if (!['join', 'withdraw', 'move'].includes(action) || !requestBrowserId || !gameId || !venueId) return json({ ok: false, error: 'invalid_request' }, 400);
-        const key = requestBrowserId + '\\u0000' + gameId;
-        if (action === 'withdraw') selections.delete(key);
-        else selections.set(key, { gameId, venueId });
-        return json({
-          ok: true,
-          action,
-          selection: action === 'withdraw' ? null : { game_id: gameId, venue_id: venueId, status: 'attending' },
-          fanCounts: counts(),
-          venueHistoryCounts: Array.isArray(snapshot.venueHistoryCounts) ? snapshot.venueHistoryCounts : []
-        });
+        return nativeFetch(input, init);
       };
     })();
   </script>`;
@@ -91,7 +49,7 @@ function smokePage(response, requestUrl) {
 
 const server = createServer((request, response) => {
   const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
-  if (pathname === '/__cgb_smoke__') return smokePage(response, request.url || '/');
+  if (pathname === '/__cgb_smoke__') return smokePage(response);
   const filePath = safePath(request.url || '/');
   try {
     if (!filePath || !statSync(filePath).isFile()) throw new Error('not_found');
@@ -118,7 +76,7 @@ async function run({ mode, marker, windowSize }) {
     '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
     '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
     '--disable-sync', '--metrics-recording-only', '--no-first-run', `--user-data-dir=${profile}`,
-    `--window-size=${windowSize}`, '--virtual-time-budget=25000', '--dump-dom', url
+    `--window-size=${windowSize}`, '--virtual-time-budget=8000', '--dump-dom', url
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';
