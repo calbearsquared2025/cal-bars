@@ -36,6 +36,12 @@ export function navigateWaitingFormWindow(opened, href, windowObject = window) {
   } catch (_) {}
 
   try {
+    if (windowObject.CGBGoogleFormHost?.open?.(href, { title: 'Add a Watch Party' })) {
+      return true;
+    }
+  } catch (_) {}
+
+  try {
     windowObject.location.assign(href);
     return true;
   } catch (_) {
@@ -99,13 +105,14 @@ function buildDialog(documentObject) {
 export function requestWatchPartyAttendance({
   documentObject = document,
   windowObject = window,
-  reserveWindow = true
+  reserveWindow
 } = {}) {
   if (!documentObject?.body || typeof documentObject.createElement !== 'function') {
     return Promise.resolve(null);
   }
 
   const { dialog, close, attend, share } = buildDialog(documentObject);
+  const shouldReserveWindow = reserveWindow ?? !windowObject.CGBGoogleFormHost;
 
   return new Promise((resolve) => {
     let settled = false;
@@ -116,7 +123,7 @@ export function requestWatchPartyAttendance({
       dialog.remove();
       resolve(choice ? Object.freeze({ choice, windowRef: opened }) : null);
     };
-    const waitingWindow = () => reserveWindow ? openWaitingFormWindow(windowObject) : null;
+    const waitingWindow = () => shouldReserveWindow ? openWaitingFormWindow(windowObject) : null;
 
     close.addEventListener('click', () => finish());
     dialog.addEventListener('cancel', (event) => {
