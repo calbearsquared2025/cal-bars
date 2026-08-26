@@ -98,7 +98,8 @@ function buildDialog(documentObject) {
 
 export function requestWatchPartyAttendance({
   documentObject = document,
-  windowObject = window
+  windowObject = window,
+  reserveWindow = true
 } = {}) {
   if (!documentObject?.body || typeof documentObject.createElement !== 'function') {
     return Promise.resolve(null);
@@ -115,6 +116,7 @@ export function requestWatchPartyAttendance({
       dialog.remove();
       resolve(choice ? Object.freeze({ choice, windowRef: opened }) : null);
     };
+    const waitingWindow = () => reserveWindow ? openWaitingFormWindow(windowObject) : null;
 
     close.addEventListener('click', () => finish());
     dialog.addEventListener('cancel', (event) => {
@@ -123,10 +125,10 @@ export function requestWatchPartyAttendance({
     });
 
     attend.addEventListener('click', () => {
-      finish(WATCH_PARTY_ATTENDANCE_CHOICES.attend, openWaitingFormWindow(windowObject));
+      finish(WATCH_PARTY_ATTENDANCE_CHOICES.attend, waitingWindow());
     });
     share.addEventListener('click', () => {
-      finish(WATCH_PARTY_ATTENDANCE_CHOICES.share, openWaitingFormWindow(windowObject));
+      finish(WATCH_PARTY_ATTENDANCE_CHOICES.share, waitingWindow());
     });
 
     if (typeof dialog.showModal === 'function') dialog.showModal();
