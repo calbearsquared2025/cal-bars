@@ -118,7 +118,7 @@ export async function createExternalVenueWithoutAttendance({
     const dialog = documentObject.querySelector('#external-venue-dialog');
     try { if (dialog?.open) dialog.close(); } catch (_) {}
 
-    windowObject.CGBApp?.showStatus?.('Community Location added.', 3200);
+    windowObject.CGBApp?.showStatus?.('Fan-Added location added.', 3200);
     windowObject.gtag?.('event', 'community_location_created');
     windowObject.CGBApp?.focusLocation?.({
       lon: venue.longitude,
