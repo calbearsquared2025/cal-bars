@@ -1,3 +1,5 @@
+import './missing-location-embed.mjs';
+
 const DESKTOP_QUERY = '(min-width: 900px)';
 const ABOUT_POPOVER_WIDTH = 440;
 const ABOUT_POPOVER_GAP = 16;
