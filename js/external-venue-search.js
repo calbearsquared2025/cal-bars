@@ -198,6 +198,8 @@ function showExternalResults(results) {
       button.addEventListener('click', () => selectExternalPlace(place));
       group.append(button);
     });
+    const fallback = missingLocationLink();
+    if (fallback) group.append(fallback);
   });
 }
 
