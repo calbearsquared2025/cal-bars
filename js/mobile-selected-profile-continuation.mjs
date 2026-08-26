@@ -60,6 +60,7 @@ function installStyles(documentObject) {
 
       body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card + #venue-detail.venue-detail--selected-continuation {
         width: 100% !important;
+        min-height: 0 !important;
         margin: 0 !important;
         padding: 0 0 14px !important;
         color: var(--cgb-ink-900) !important;
