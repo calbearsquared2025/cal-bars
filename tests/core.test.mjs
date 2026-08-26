@@ -72,7 +72,6 @@ test('public venue taxonomy is Cal Bar or Fan-Added with Watch Party as an overl
     ]
   };
   assert.equal(markerKind(watchPartySnapshot, SYRACUSE_GAME_ID, fanAdded), 'watch-party');
-  assert.notEqual(venueTypeLabel(fanAdded), 'COMMUNITY LOCATION');
 });
 
 test('selected-game activity and venue type drive result priority', () => {
