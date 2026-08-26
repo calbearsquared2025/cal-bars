@@ -1,4 +1,3 @@
-import './mobile-selected-profile-continuation.mjs';
 import { observeExternalVenueCommit } from './external-watch-party-cta-core.mjs';
 import {
   INTENT_SELECTIONS_STORAGE_KEY,
