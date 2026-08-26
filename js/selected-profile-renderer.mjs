@@ -148,18 +148,20 @@ function createIntentButton(state, venue, documentObject) {
   return intent;
 }
 
-function createSelectedActionRow({ state, venue, detailHref, hasWatchParty, onShare, documentObject }) {
+function createSelectedActionRow({ state, venue, mobile, detailHref, hasWatchParty, onShare, documentObject }) {
   const row = documentObject.createElement('div');
   row.className = 'action-row';
   row.dataset.venueId = venue.venue_id;
   row.append(createIntentButton(state, venue, documentObject));
 
-  const detail = documentObject.createElement('a');
-  detail.className = 'secondary-button selected-card__details';
-  detail.href = detailHref;
-  detail.textContent = 'More About This Location';
-  detail.setAttribute('aria-label', 'More About This Location');
-  row.append(detail);
+  if (!mobile) {
+    const detail = documentObject.createElement('a');
+    detail.className = 'secondary-button selected-card__details';
+    detail.href = detailHref;
+    detail.textContent = 'More About This Location';
+    detail.setAttribute('aria-label', 'More About This Location');
+    row.append(detail);
+  }
 
   const share = documentObject.createElement('button');
   share.type = 'button';
@@ -263,6 +265,7 @@ export function createSelectedVenueCard({
   card.append(createSelectedActionRow({
     state,
     venue,
+    mobile,
     detailHref,
     hasWatchParty: parties.length > 0,
     onShare,
