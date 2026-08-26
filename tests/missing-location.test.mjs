@@ -13,6 +13,9 @@ const CONFIG = { formUrl: FORM_URL, placeNameEntry: 'entry.294173271' };
 const client = await readFile(new URL('../js/external-venue-search.js', import.meta.url), 'utf8');
 const embedClient = await readFile(new URL('../js/missing-location-embed.mjs', import.meta.url), 'utf8');
 const supportClient = await readFile(new URL('../js/support-dialog.mjs', import.meta.url), 'utf8');
+const watchPartyClient = await readFile(new URL('../js/watch-party-form.js', import.meta.url), 'utf8');
+const externalWatchPartyClient = await readFile(new URL('../js/external-watch-party-plan.js', import.meta.url), 'utf8');
+const attendanceHandoffClient = await readFile(new URL('../js/watch-party-attendance-handoff.mjs', import.meta.url), 'utf8');
 const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
 test('fallback is hidden before both normal search paths finish', () => {
@@ -61,13 +64,32 @@ test('embed accepts only HTTPS Google Forms viewform URLs', () => {
   assert.equal(buildEmbeddedGoogleFormUrl('https://docs.google.com/spreadsheets/d/example'), '');
 });
 
-test('missing-location embed is loaded without replacing progressive-enhancement links', () => {
+test('shared Form host is loaded once and preserves progressive-enhancement links', () => {
   assert.match(supportClient, /import '\.\/missing-location-embed\.mjs';/);
-  assert.match(embedClient, /\.missing-location-link, #add-missing-location-link/);
-  assert.match(embedClient, /event\.preventDefault\(\)/);
+  assert.match(embedClient, /const TRIGGER_SELECTOR = 'a\[href\]'/);
+  assert.match(embedClient, /event\.defaultPrevented/);
+  assert.match(embedClient, /CGBGoogleFormHost/);
+  assert.match(embedClient, /data-google-form-external="true"/);
   assert.match(embedClient, /Open it in Google Forms/);
   assert.match(client, /link\.target = '_blank'/);
   assert.match(html, /id="add-missing-location-link"[^>]+target="_blank"/);
+});
+
+test('shared host keeps stable titles for configured contribution Forms', () => {
+  assert.match(embedClient, /cgb-watch-party-form-url', 'Add a Watch Party'/);
+  assert.match(embedClient, /cgb-cal-bar-nomination-form-url', 'Tell us about this location'/);
+  assert.match(embedClient, /cgb-listing-update-form-url', 'Suggest an Update or Report an Issue'/);
+  assert.match(embedClient, /cgb-watch-party-issue-form-url', 'Report a problem with this Watch Party'/);
+  assert.match(embedClient, /cgb-missing-location-form-url', 'Suggest a missing location'/);
+});
+
+test('Watch Party attendance handoff reaches the shared host without a new-window detour', () => {
+  assert.match(watchPartyClient, /reserveWindow: false/);
+  assert.match(watchPartyClient, /CGBGoogleFormHost\?\.open/);
+  assert.match(externalWatchPartyClient, /reserveWindow: false/);
+  assert.match(externalWatchPartyClient, /CGBGoogleFormHost\?\.open/);
+  assert.match(attendanceHandoffClient, /reserveWindow \?\? !windowObject\.CGBGoogleFormHost/);
+  assert.match(attendanceHandoffClient, /CGBGoogleFormHost\?\.open/);
 });
 
 test('client uses existing external-search state and never creates or publishes a Venue from the Form', () => {
