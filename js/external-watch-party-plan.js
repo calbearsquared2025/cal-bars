@@ -62,6 +62,7 @@ function showFormRetry(href, attending, documentObject = document) {
 
   const link = documentObject.createElement('a');
   link.className = 'primary-button';
+  link.dataset.cgbFormTitle = 'Add a Watch Party';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
@@ -73,6 +74,13 @@ function showFormRetry(href, attending, documentObject = document) {
 
 function navigateToForm(href, attending, documentObject, windowObject) {
   if (!href) return false;
+  const embedded = windowObject.CGBGoogleFormHost?.open?.(href, {
+    title: 'Add a Watch Party'
+  });
+  if (embedded) {
+    closeWaitingWindow();
+    return true;
+  }
   const opened = navigateWaitingFormWindow(pendingWindow, href, windowObject);
   if (opened) {
     pendingWindow = null;
@@ -141,7 +149,11 @@ function ensurePlanButton({ app, documentObject = document, windowObject = windo
     const selected = external?.retry || external?.selected;
     if (!selected || external?.pending) return;
 
-    const handoff = await requestWatchPartyAttendance({ documentObject, windowObject });
+    const handoff = await requestWatchPartyAttendance({
+      documentObject,
+      windowObject,
+      reserveWindow: false
+    });
     if (!handoff) return;
 
     const attending = handoff.choice === WATCH_PARTY_ATTENDANCE_CHOICES.attend;
