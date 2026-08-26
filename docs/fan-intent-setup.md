@@ -30,9 +30,9 @@ Public responses contain only:
 
 3. Do not clear or reseed existing canonical rows. `setupWorkbook()` may create a missing tab, but it deliberately stops on a header mismatch.
 4. Confirm each selectable Venue is `published` with valid coordinates and each selectable Game is `upcoming`.
-5. Mark a completed game `completed` only when its current selections should become historical. The service archives its remaining `attending` rows on the next public read or write.
+5. Mark a completed game `completed` only when its current selections should become historical. The scheduled archival trigger archives remaining `attending` rows; Fan Intent writes also perform the same archival check before processing a write.
 
-No new workbook, public Sheet sharing, formula, trigger, or private-data export is required.
+No new workbook, public Sheet sharing, formula, or private-data export is required.
 
 ## Manual Apps Script actions
 
@@ -43,8 +43,9 @@ No new workbook, public Sheet sharing, formula, trigger, or private-data export 
 5. Run `buildPublicSnapshotForReview()` and confirm that the output contains `venues`, `games`, `watchParties`, `fanCounts`, and `venueHistoryCounts`, but no `browser_id`, `fan_intent_id`, raw row, contact field, workbook ID, or workbook URL.
 6. Deploy a new web-app version that executes as the owner and retains the approved public access setting for the site.
 7. After any Apps Script change, create another deployment version; editing source alone does not update an existing versioned deployment.
+8. In Apps Script **Triggers**, add a time-driven trigger for `archiveCompletedFanIntentScheduled` and run it hourly.
 
-No installable trigger is required for Fan Intent.
+The public snapshot path is intentionally read-only and does not acquire the Fan Intent write lock or archive rows. The time-driven trigger keeps completed-game archival independent of public GET traffic.
 
 ## Live-canary acceptance
 
@@ -83,7 +84,7 @@ The normal join, move, withdrawal, pending-state, rollback, and retry behaviors 
 
 ## Completed-game archival check
 
-When archival behavior itself changes or requires focused verification, mark a synthetic game `completed`, load the public snapshot, and confirm current selections are archived, current counts disappear, and the venue's distinct historical-game count increases. Never manipulate actual completed-game data solely for routine canary acceptance.
+When archival behavior itself changes or requires focused verification, mark a synthetic game `completed`, run `archiveCompletedFanIntentScheduled()`, then load the public snapshot and confirm current selections are archived, current counts disappear, and the venue's distinct historical-game count increases. Never manipulate actual completed-game data solely for routine canary acceptance.
 
 ## Intended limitations
 

@@ -127,6 +127,10 @@ function buildPublicSnapshotForReview() {
   return snapshot;
 }
 
+function archiveCompletedFanIntentScheduled() {
+  return archiveCompletedFanIntent_(getWorkbook_());
+}
+
 function getPublicSnapshot_() {
   const cache = CacheService.getScriptCache();
   const cached = cache.get(CGB_PUBLIC_CACHE_KEY);
@@ -142,7 +146,6 @@ function getPublicSnapshot_() {
 
 function buildPublicSnapshot_() {
   const workbook = getWorkbook_();
-  archiveCompletedFanIntent_(workbook);
   const venuesRaw = readSheetObjects_(workbook, 'Venues');
   const venuePhotosRaw = readSheetObjects_(workbook, 'Venue_Photos');
   const gamesRaw = readSheetObjects_(workbook, 'Games');
