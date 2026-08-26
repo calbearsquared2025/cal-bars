@@ -5,7 +5,8 @@ import {
   markerKind,
   NEARBY_RADIUS_MILES,
   rankVenues,
-  TRAY_GUIDANCE_COPY
+  TRAY_GUIDANCE_COPY,
+  venueTypeLabel
 } from './core.mjs';
 import { clearSelectedMapVenue } from './app-state.mjs';
 
@@ -272,7 +273,7 @@ function updatePreviewIntent() {
       ? `No mapped locations within ${NEARBY_RADIUS_MILES} miles.`
       : TRAY_GUIDANCE_COPY;
     count.textContent = '';
-    marker.dataset.kind = 'community-location';
+    marker.dataset.kind = 'fan-added';
     button.dataset.previewMode = usingLocation ? 'nearby-empty' : 'guidance';
     button.removeAttribute('data-direct-venue-id');
     button.setAttribute('aria-label', 'Open the location list');
@@ -280,14 +281,10 @@ function updatePreviewIntent() {
   }
 
   const { venue, party, fanCount, distance, mode } = candidate;
-  const type = party
-    ? 'Watch Party'
-    : venue.venue_type === 'cal_bar'
-      ? 'Cal Bar'
-      : 'Community Location';
+  const typeLabels = [party ? 'WATCH PARTY' : null, venueTypeLabel(venue)].filter(Boolean);
   eyebrow.textContent = mode === 'selected' ? 'Selected' : 'Near you';
   title.textContent = venue.name;
-  copy.textContent = [type, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
+  copy.textContent = [...typeLabels, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   count.textContent = Number(fanCount) > 0 ? bearCountCopy(fanCount) : '';
   marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
   button.dataset.previewMode = mode;

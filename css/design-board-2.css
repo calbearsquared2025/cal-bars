@@ -175,15 +175,6 @@
   background: var(--cgb-white);
 }
 
-.marker--community-location .marker-pin {
-  background: var(--cgb-white);
-  border-color: var(--cgb-navy-950);
-}
-
-.marker--community-location .marker-pin::after {
-  background: var(--cgb-navy-950);
-}
-
 .marker-star {
   position: absolute;
   left: 3px;
@@ -476,10 +467,22 @@
   border: 1px solid var(--cgb-navy-900);
 }
 
-.badge--community {
+.badge--fan-added {
+  position: relative;
+  isolation: isolate;
   color: var(--cgb-navy-950);
+  background: var(--cgb-navy-950);
+  border: 0;
+}
+
+.badge--fan-added::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 1px;
   background: var(--cgb-white);
-  border: 1px solid var(--cgb-navy-950);
+  clip-path: polygon(0 0, calc(100% - .32rem) 0, 100% .32rem, 100% 100%, .32rem 100%, 0 calc(100% - .32rem));
+  pointer-events: none;
 }
 
 .party-module {

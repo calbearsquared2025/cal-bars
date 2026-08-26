@@ -16,6 +16,10 @@
   transition: none !important;
 }
 
+.cgb-marker.marker--fan-added {
+  --cgb-navy-900: var(--cgb-navy-950);
+}
+
 .cgb-marker .marker-pin,
 .cgb-marker .marker-star {
   position: absolute;
@@ -29,8 +33,8 @@
   top: 6px;
   width: 32px;
   height: 32px;
-  background: var(--cgb-navy-900);
-  border: 3px solid var(--cgb-navy-900);
+  border-width: 3px;
+  border-style: solid;
   border-radius: 50% 50% 50% 0;
   box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
 }
@@ -42,7 +46,6 @@
   top: 8px;
   width: 10px;
   height: 10px;
-  background: var(--cgb-white);
   border-radius: 50%;
 }
 
@@ -53,15 +56,6 @@
 
 .cgb-marker.marker--cal-bar .marker-pin::after {
   background: var(--cgb-white);
-}
-
-.cgb-marker.marker--community-location .marker-pin {
-  background: var(--cgb-white);
-  border-color: var(--cgb-navy-950);
-}
-
-.cgb-marker.marker--community-location .marker-pin::after {
-  background: var(--cgb-navy-950);
 }
 
 .cgb-marker .marker-star {

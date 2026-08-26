@@ -12,7 +12,9 @@ import {
   NEARBY_RADIUS_MILES,
   rankNearbyVenues,
   rankVenues,
-  selectDefaultGame
+  selectDefaultGame,
+  venueBadgeDescriptors,
+  venueTypeLabel
 } from '../js/core.mjs';
 
 const snapshot = JSON.parse(
@@ -41,13 +43,38 @@ test('TBD kickoff is displayed without a timestamp', () => {
   assert.match(formatKickoff(game, 'en-US'), /Time TBD/);
 });
 
-test('selected-game activity and venue type drive marker and result priority', () => {
+test('public venue taxonomy is Cal Bar or Fan-Added with Watch Party as an overlay', () => {
   const calBar = snapshot.venues.find((item) => item.venue_id === 'ven_000001');
-  const communityLocation = snapshot.venues.find((item) => item.venue_id === 'ven_000004');
-  assert.equal(markerKind(snapshot, UCLA_GAME_ID, calBar), 'watch-party');
-  assert.equal(markerKind(snapshot, SYRACUSE_GAME_ID, calBar), 'cal-bar');
-  assert.equal(markerKind(snapshot, UCLA_GAME_ID, communityLocation), 'community-location');
+  const fanAdded = snapshot.venues.find((item) => item.venue_id === 'ven_000004');
+  const reviewedFanAdded = { ...fanAdded, verification_status: 'cgb_reviewed' };
+  const party = { watch_party_id: 'wp_taxonomy_test' };
 
+  assert.equal(venueTypeLabel(calBar), 'CAL BAR');
+  assert.equal(venueTypeLabel(reviewedFanAdded), 'FAN-ADDED');
+  assert.deepEqual(venueBadgeDescriptors(calBar, null).map(({ text }) => text), ['CAL BAR']);
+  assert.deepEqual(venueBadgeDescriptors(reviewedFanAdded, null).map(({ text }) => text), ['FAN-ADDED']);
+  assert.deepEqual(venueBadgeDescriptors(calBar, party).map(({ text }) => text), ['WATCH PARTY', 'CAL BAR']);
+  assert.deepEqual(venueBadgeDescriptors(reviewedFanAdded, party).map(({ text }) => text), ['WATCH PARTY', 'FAN-ADDED']);
+
+  assert.equal(markerKind(snapshot, SYRACUSE_GAME_ID, calBar), 'cal-bar');
+  assert.equal(markerKind(snapshot, UCLA_GAME_ID, fanAdded), 'fan-added');
+
+  const watchPartySnapshot = {
+    ...snapshot,
+    watchParties: [
+      ...snapshot.watchParties,
+      {
+        watch_party_id: 'wp_taxonomy_test',
+        venue_id: fanAdded.venue_id,
+        game_id: SYRACUSE_GAME_ID,
+        event_status: 'active'
+      }
+    ]
+  };
+  assert.equal(markerKind(watchPartySnapshot, SYRACUSE_GAME_ID, fanAdded), 'watch-party');
+});
+
+test('selected-game activity and venue type drive result priority', () => {
   const ranked = rankVenues(snapshot, UCLA_GAME_ID);
   assert.equal(ranked[0].category, 0);
   assert.ok(ranked.findIndex((item) => item.category === 1) < ranked.findIndex((item) => item.category === 2));

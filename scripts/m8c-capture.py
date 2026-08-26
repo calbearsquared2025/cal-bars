@@ -159,7 +159,7 @@ screenshot('watch-party')
 
 navigate()
 select_venue("venue.venue_type === 'community_location'")
-screenshot('community-location')
+screenshot('fan-added')
 
 navigate()
 click('#mobile-list-button')
