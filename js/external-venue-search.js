@@ -403,7 +403,7 @@ async function joinSelectedExternalVenue() {
       state.retry = null;
       state.error = null;
       if (dom.externalDialog.open) dom.externalDialog.close();
-      window.CGBApp?.showStatus('Community Location added. You’ll be here.', 3200);
+      window.CGBApp?.showStatus('Fan-Added location added. You’ll be here.', 3200);
       window.gtag?.('event', 'community_location_created');
       window.CGBApp?.focusLocation?.({
         lon: venue.longitude,
