@@ -3,6 +3,13 @@ const GOOGLE_FORMS_HOST = 'docs.google.com';
 const GOOGLE_FORMS_PATH_PREFIX = '/forms/';
 const STYLESHEET_PATH = 'css/missing-location-embed.css';
 const DEFAULT_TITLE = 'Contribute to Cal Golden Bars';
+const CONFIGURED_FORM_TITLES = Object.freeze([
+  ['cgb-watch-party-form-url', 'Add a Watch Party'],
+  ['cgb-cal-bar-nomination-form-url', 'Tell us about this location'],
+  ['cgb-listing-update-form-url', 'Suggest an Update or Report an Issue'],
+  ['cgb-watch-party-issue-form-url', 'Report a problem with this Watch Party'],
+  ['cgb-missing-location-form-url', 'Suggest a missing location']
+]);
 let hostState = null;
 
 export function buildEmbeddedGoogleFormUrl(href) {
@@ -23,7 +30,25 @@ export function buildEmbeddedGoogleFormUrl(href) {
   }
 }
 
-function formTitleForTrigger(trigger) {
+function sameForm(candidateHref, configuredHref) {
+  try {
+    const candidate = new URL(candidateHref);
+    const configured = new URL(configuredHref);
+    return candidate.origin === configured.origin && candidate.pathname === configured.pathname;
+  } catch (_) {
+    return false;
+  }
+}
+
+function configuredFormTitle(href, documentObject) {
+  for (const [metaName, title] of CONFIGURED_FORM_TITLES) {
+    const configured = documentObject?.querySelector?.(`meta[name="${metaName}"]`)?.content?.trim() || '';
+    if (configured && sameForm(href, configured)) return title;
+  }
+  return '';
+}
+
+function formTitleForTrigger(trigger, href, documentObject) {
   const explicit = String(trigger?.dataset?.cgbFormTitle || '').trim();
   if (explicit) return explicit;
   if (trigger?.matches?.('.missing-location-link, #add-missing-location-link')) {
@@ -32,7 +57,9 @@ function formTitleForTrigger(trigger) {
   if (trigger?.matches?.('[data-watch-party-form-entry-point], [data-external-watch-party-form-retry] a')) {
     return 'Add a Watch Party';
   }
-  return String(trigger?.textContent || '').trim().replace(/!$/, '') || DEFAULT_TITLE;
+  return configuredFormTitle(href, documentObject) ||
+    String(trigger?.textContent || '').trim().replace(/!$/, '') ||
+    DEFAULT_TITLE;
 }
 
 function ensureStylesheet(documentObject = document) {
@@ -63,7 +90,7 @@ function createDialog(documentObject = document) {
         loading="eager"
         referrerpolicy="strict-origin-when-cross-origin"
       ></iframe>
-      <p class="missing-location-form-fallback">Having trouble with the embedded form? <a target="_blank" rel="noopener noreferrer">Open it in Google Forms</a>.</p>
+      <p class="missing-location-form-fallback">Having trouble with the embedded form? <a data-google-form-external="true" target="_blank" rel="noopener noreferrer">Open it in Google Forms</a>.</p>
     </div>
   `;
   documentObject.body.append(dialog);
@@ -120,7 +147,7 @@ export function openGoogleForm(href, {
   const state = ensureHost({ documentObject, windowObject });
   if (!state) return false;
 
-  const resolvedTitle = String(title || '').trim() || formTitleForTrigger(trigger);
+  const resolvedTitle = String(title || '').trim() || formTitleForTrigger(trigger, href, documentObject);
   state.activeTrigger = trigger;
   state.title.textContent = resolvedTitle;
   state.frame.title = resolvedTitle;
@@ -146,7 +173,7 @@ export function initializeGoogleFormEmbed({
   documentObject.addEventListener('click', (event) => {
     if (event.defaultPrevented) return;
     const trigger = event.target.closest?.(TRIGGER_SELECTOR);
-    if (!trigger || modifiedClick(event)) return;
+    if (!trigger || trigger.dataset.googleFormExternal === 'true' || modifiedClick(event)) return;
     const href = trigger.href || trigger.getAttribute('href') || '';
     if (!buildEmbeddedGoogleFormUrl(href)) return;
     if (!openGoogleForm(href, { trigger, documentObject, windowObject })) return;
