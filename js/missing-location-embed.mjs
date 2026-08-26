@@ -144,6 +144,7 @@ export function initializeGoogleFormEmbed({
   documentObject.documentElement.dataset.googleFormEmbedInitialized = 'true';
 
   documentObject.addEventListener('click', (event) => {
+    if (event.defaultPrevented) return;
     const trigger = event.target.closest?.(TRIGGER_SELECTOR);
     if (!trigger || modifiedClick(event)) return;
     const href = trigger.href || trigger.getAttribute('href') || '';
