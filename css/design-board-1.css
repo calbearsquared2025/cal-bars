@@ -348,15 +348,15 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: clamp(9px, 2.4vw, 15px);
-  padding: 2px 8px 3px;
+  padding: 1px 8px 2px;
   color: var(--cgb-ink-700);
   background: var(--cgb-white);
   border-top: 1px solid var(--cgb-neutral-200);
   font-family: var(--font-condensed);
-  font-size: .58rem;
+  font-size: .72rem;
   font-weight: 800;
   letter-spacing: .02em;
-  line-height: 1;
+  line-height: 1.05;
   white-space: nowrap;
 }
 
@@ -369,9 +369,9 @@ textarea {
 
 .map-legend__marker {
   position: relative;
-  width: 13px;
-  height: 13px;
-  flex: 0 0 13px;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
   display: block;
   box-sizing: border-box;
   transform: rotate(-45deg);
@@ -402,9 +402,9 @@ textarea {
 }
 
 .map-legend__marker--watch-party {
-  width: 14px;
-  height: 14px;
-  flex-basis: 14px;
+  width: 15px;
+  height: 15px;
+  flex-basis: 15px;
   background: var(--cgb-gold-400);
   border-color: var(--cgb-gold-400);
 }
@@ -425,7 +425,7 @@ textarea {
   place-items: center;
   color: var(--cgb-white);
   font-family: Arial, sans-serif;
-  font-size: 6px;
+  font-size: 7px;
   line-height: 1;
   transform: rotate(45deg);
 }

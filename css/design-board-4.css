@@ -168,7 +168,6 @@ body[data-view="detail"] #app {
   .map-legend {
     gap: 7px;
     padding-inline: 6px;
-    font-size: .54rem;
   }
 
   .map-legend__item {
