@@ -76,7 +76,7 @@ async function run({ mode, marker, windowSize }) {
     '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
     '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
     '--disable-sync', '--metrics-recording-only', '--no-first-run', `--user-data-dir=${profile}`,
-    `--window-size=${windowSize}`, '--virtual-time-budget=8000', '--dump-dom', url
+    `--window-size=${windowSize}`, '--virtual-time-budget=3000', '--dump-dom', url
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';

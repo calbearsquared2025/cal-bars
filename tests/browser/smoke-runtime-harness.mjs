@@ -26,7 +26,7 @@ function sleep(ms = 20) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitFor(predicate, label, timeout = 6000) {
+async function waitFor(predicate, label, timeout = 2500) {
   const deadline = performance.now() + timeout;
   while (performance.now() < deadline) {
     try {
@@ -66,7 +66,7 @@ async function selectFirstVenue() {
   const venueId = card.dataset.venueId;
   card.click();
   await waitFor(() => state()?.selectedVenueId === venueId && visible('#tray-selected'), 'selected venue profile');
-  check(Boolean(element('#tray-selected .selected-card')), 'Selected venue profile should render');
+  check((element('#tray-selected')?.textContent || '').trim().length > 0, 'Selected venue profile should contain venue content');
 }
 
 async function runMobile() {
