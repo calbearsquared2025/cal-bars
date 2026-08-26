@@ -1,0 +1,25 @@
+name: Test suite
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Compact test suite
+        timeout-minutes: 5
+        run: time npm test
+      - name: Public data validation
+        run: npm run validate:data
