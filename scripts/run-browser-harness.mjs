@@ -80,7 +80,7 @@ function smokePage(response, requestUrl) {
       };
     })();
   </script>`;
-  const driver = `<output id="cgb-smoke-result">CGB_SMOKE_RUNNING</output><script type="module" src="/tests/browser/smoke-runtime-harness.mjs"></script>`;
+  const driver = `<output id="cgb-smoke-result">CGB_SMOKE_RUNNING</output><script type="module" src="/tests/browser/map-legend-smoke-guard.mjs"></script><script type="module" src="/tests/browser/smoke-runtime-harness.mjs"></script>`;
   const html = productionIndex
     .replace('<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
     .replace('</head>', `${prelude}\n</head>`)
