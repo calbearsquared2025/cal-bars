@@ -261,7 +261,7 @@ body[data-view="detail"] .activity-card {
 
 .venue-detail .detail-fan-experiences__share {
   display: inline-block;
-  font-size: 14px;
+  font-size: .68rem;
   font-weight: 700;
 }
 
