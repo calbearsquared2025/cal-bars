@@ -149,8 +149,6 @@ a { color: inherit; }
 .cgb-marker { position: absolute; width: 38px; height: 48px; padding: 0; border: 0; background: transparent; overflow: visible; }
 .marker-pin { position: absolute; left: 7px; top: 2px; width: 25px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--cal-blue); border: 3px solid white; box-shadow: 0 4px 10px rgba(0,25,79,.3); }
 .marker-pin::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--cal-gold); left: 6px; top: 6px; }
-.marker--fan-added .marker-pin { background: white; border-color: var(--cal-blue); }
-.marker--fan-added .marker-pin::after { background: var(--cal-blue); }
 .marker-star { display: grid; place-items: center; width: 38px; height: 38px; color: var(--cal-gold); -webkit-text-stroke: 2px var(--cal-blue); font-size: 33px; filter: drop-shadow(0 4px 5px rgba(0,25,79,.25)); }
 .marker-count { position: absolute; top: -6px; right: -16px; min-width: 42px; height: 21px; display: grid; place-items: center; padding: 0 6px; border-radius: 999px; background: white; border: 2px solid var(--cal-blue); color: var(--cal-blue); font-size: .62rem; font-weight: 850; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,25,79,.2); }
 .cgb-marker.is-selected { transform: scale(1.14); filter: drop-shadow(0 0 5px rgba(253,181,21,.75)); z-index: 2; }
