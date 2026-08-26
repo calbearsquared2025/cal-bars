@@ -31,8 +31,8 @@ test('canonical renderer directly owns attendance, proximity, and accepted actio
   assert.match(selected, /bear-count__number/);
   assert.match(selected, /selected-card__proximity-row/);
   assert.match(selected, /selected-card__distance/);
-  assert.match(selected, /selected-card__location-separator/);
   assert.match(selected, /selected-card__directions-inline/);
+  assert.doesNotMatch(selected, /selected-card__location-separator/);
   assert.match(selected, /selected-card__share/);
   assert.match(selected, /selected-card__details/);
   assert.match(selected, /More About This Location/);
@@ -49,7 +49,7 @@ test('Watch Party renderer emits accepted semantic content without a classificat
   assert.doesNotMatch(finalPass, /party-module__host|Event information|Report an Issue/);
 });
 
-test('no-Watch-Party CTA and Directions separator are canonical instead of late mutations', () => {
+test('no-Watch-Party CTA and Directions spacing are canonical instead of late mutations', () => {
   assert.match(selected, /No listed Watch Party for this game\./);
   assert.match(selected, /\+ Add a Watch Party/);
   assert.doesNotMatch(firstPass, /addPlanWatchPartyAction|normalizeActionLabels|enhanceSelectedCard|scheduleEnhancement/);
