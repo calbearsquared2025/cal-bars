@@ -32,15 +32,20 @@ function installStyles() {
       grid-row: 1 !important;
       align-self: center !important;
       justify-self: stretch !important;
-      min-height: 94px !important;
+      margin: 2px 0 0 !important;
+      color: var(--cgb-navy-950) !important;
+      background: transparent !important;
+      border: 0 !important;
+    }
+
+    .selected-card .bear-count--empty {
+      min-height: 64px !important;
       display: grid !important;
       grid-template-columns: 1fr !important;
       place-content: center !important;
       justify-items: center !important;
       gap: 1px !important;
-      margin: 2px 0 0 !important;
       padding: 8px 7px !important;
-      color: var(--cgb-navy-950) !important;
       background: transparent !important;
       border: 0 !important;
       border-radius: 0 !important;
@@ -48,68 +53,21 @@ function installStyles() {
       text-align: center !important;
     }
 
-    .selected-card .bear-count:not(.bear-count--empty) {
-      grid-template-columns: auto minmax(0, 48px) !important;
-      align-items: center !important;
-      justify-content: center !important;
-      justify-items: stretch !important;
-      column-gap: 5px !important;
-      padding-inline: 2px !important;
-      text-align: left !important;
-    }
-
-    .selected-card .bear-count--empty {
-      min-height: 64px !important;
-      padding: 8px 7px !important;
-      background: transparent !important;
-      border: 0 !important;
-    }
-
-    .selected-card .bear-count:not(.bear-count--empty) .bear-count__icon {
-      display: none !important;
-    }
-
-    .selected-card .bear-count__icon {
+    .selected-card .bear-count--empty .bear-count__icon {
       width: 21px !important;
       height: 21px !important;
       color: var(--cgb-gold-500) !important;
     }
 
-    .selected-card .bear-count__number {
-      justify-self: end !important;
-      color: var(--cgb-navy-950) !important;
-      font-family: var(--font-ui) !important;
-      font-size: 2.4rem !important;
-      font-weight: 850 !important;
-      letter-spacing: -.045em !important;
-      line-height: .9 !important;
-    }
-
-    .selected-card .bear-count__label,
     .selected-card .bear-count__prompt {
       display: block !important;
       max-width: 84px !important;
-      font-family: var(--font-ui) !important;
-      font-size: .7rem !important;
-      font-weight: 750 !important;
-      line-height: 1.14 !important;
-      text-transform: none !important;
-    }
-
-    .selected-card .bear-count:not(.bear-count--empty) .bear-count__label {
-      max-width: 48px !important;
-      justify-self: start !important;
-      font-size: .65rem !important;
-      font-weight: 800 !important;
-      line-height: 1.06 !important;
-      text-align: left !important;
-    }
-
-    .selected-card .bear-count__prompt {
       margin-top: 3px !important;
+      font-family: var(--font-ui) !important;
       font-size: .72rem !important;
       font-weight: 750 !important;
       line-height: 1.16 !important;
+      text-transform: none !important;
     }
 
     @media (max-width: 899px) {
@@ -373,27 +331,8 @@ function installStyles() {
           padding-inline: 10px !important;
         }
 
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count {
-          min-height: 82px !important;
-          padding-inline: 2px !important;
-        }
-
         body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
           min-height: 58px !important;
-        }
-
-        .selected-card .bear-count:not(.bear-count--empty) {
-          grid-template-columns: auto minmax(0, 40px) !important;
-          column-gap: 3px !important;
-        }
-
-        .bear-count__number {
-          font-size: 2.05rem !important;
-        }
-
-        .selected-card .bear-count:not(.bear-count--empty) .bear-count__label {
-          max-width: 40px !important;
-          font-size: .58rem !important;
         }
       }
     }
