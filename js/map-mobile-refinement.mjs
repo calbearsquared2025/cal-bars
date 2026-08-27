@@ -189,23 +189,11 @@ function installStyles() {
         display: none !important;
       }
 
-      .cgb-marker.is-nearby-preview .marker-pin,
-      .cgb-marker.is-nearby-preview .marker-star {
-        scale: 1.08;
-        filter: drop-shadow(0 0 5px rgba(253,181,21,.78));
-      }
     }
   `;
   document.head.append(style);
 }
 
-function removeZoomControls() {
-  document.querySelectorAll('.maplibregl-ctrl-zoom-in, .maplibregl-ctrl-zoom-out').forEach((button) => {
-    const group = button.closest('.maplibregl-ctrl-group');
-    button.remove();
-    if (group && !group.querySelector('button')) group.remove();
-  });
-}
 
 function selectedVenue(venueId, state = appState()) {
   return state?.snapshot?.venues?.find((venue) => venue.venue_id === venueId) || null;
@@ -409,7 +397,6 @@ function focusVenue(venueId, { force = false } = {}) {
 
 function sync() {
   installStyles();
-  removeZoomControls();
   const restoredCamera = attachMapCameraTracking();
   updatePreviewIntent();
   requestAnimationFrame(updatePreviewIntent);

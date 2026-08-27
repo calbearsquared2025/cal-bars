@@ -22,92 +22,167 @@
 
 .cgb-marker .marker-pin,
 .cgb-marker .marker-star {
+  /* Geometry adapted from Bootstrap Icons geo-alt-fill (MIT); see LICENSES/bootstrap-icons-MIT.txt. */
+  --marker-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 16'%3E%3Cpath fill='black' d='M6 16s6-5.686 6-10A6 6 0 0 0 0 6c0 4.314 6 10 6 10Z'/%3E%3C/svg%3E");
+  --marker-fill: var(--cgb-white);
+  --marker-stroke: var(--cgb-navy-950);
   position: absolute;
-  transform: rotate(-45deg);
-  transform-origin: center;
+  box-sizing: border-box;
+  isolation: isolate;
+  overflow: visible;
+  background: var(--marker-stroke);
+  -webkit-mask: var(--marker-shape) center / 100% 100% no-repeat;
+  mask: var(--marker-shape) center / 100% 100% no-repeat;
+  transform: none !important;
   transition: filter var(--motion-fast) ease, scale var(--motion-fast) ease !important;
+  filter: drop-shadow(0 2px 2px rgba(1,1,51,.16)) drop-shadow(0 6px 7px rgba(1,1,51,.18));
 }
 
-.cgb-marker .marker-pin {
+.cgb-marker .marker-pin,
+.cgb-marker .marker-star {
   left: 8px;
-  top: 6px;
+  top: 3px;
   width: 32px;
-  height: 32px;
-  border-width: 3px;
-  border-style: solid;
-  border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
+  height: 43px;
+}
+
+.cgb-marker .marker-star {
+  --marker-fill: var(--cgb-gold-400);
+  --marker-stroke: var(--cgb-gold-400);
+  display: block;
+  color: var(--cgb-white);
+  font-size: 0;
+}
+
+.cgb-marker .marker-pin::before,
+.cgb-marker .marker-star::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 2px;
+  background: var(--marker-fill);
+  -webkit-mask: var(--marker-shape) center / 100% 100% no-repeat;
+  mask: var(--marker-shape) center / 100% 100% no-repeat;
 }
 
 .cgb-marker .marker-pin::after {
   content: '';
   position: absolute;
-  left: 8px;
-  top: 8px;
+  z-index: 1;
+  left: 50%;
+  top: 11px;
   width: 10px;
   height: 10px;
+  background: var(--cgb-navy-950);
   border-radius: 50%;
+  transform: translateX(-50%);
 }
 
 .cgb-marker.marker--cal-bar .marker-pin {
-  background: var(--cgb-navy-900);
-  border-color: var(--cgb-navy-900);
+  --marker-fill: var(--cgb-navy-900);
+  --marker-stroke: var(--cgb-navy-900);
 }
 
 .cgb-marker.marker--cal-bar .marker-pin::after {
   background: var(--cgb-white);
 }
 
-.cgb-marker .marker-star {
-  left: 5px;
-  top: 2px;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  color: var(--cgb-white);
-  background: var(--cgb-gold-400);
-  border: 3px solid var(--cgb-gold-400);
-  border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 7px 16px rgba(1,1,51,.3);
-  font-size: 0;
-}
-
-.cgb-marker .marker-star::before {
+.cgb-marker .marker-star::after {
   content: '';
   position: absolute;
-  inset: 6px;
+  z-index: 1;
+  left: 50%;
+  top: 6.5px;
+  width: 19px;
+  height: 19px;
   background: var(--cgb-navy-950);
   border-radius: 50%;
+  transform: translateX(-50%);
 }
 
 .cgb-marker .marker-star__icon {
-  position: relative;
-  z-index: 1;
-  width: 17px;
-  height: 17px;
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 9px;
+  width: 14px;
+  height: 14px;
   color: var(--cgb-white);
   fill: currentColor;
   stroke: currentColor;
-  transform: rotate(45deg);
+  transform: translateX(-50%);
+}
+
+.cgb-marker.marker--watch-party {
+  z-index: 1;
 }
 
 .cgb-marker:hover .marker-pin,
-.cgb-marker:hover .marker-star,
-.cgb-marker.is-selected .marker-pin,
-.cgb-marker.is-selected .marker-star {
-  scale: 1.1;
+.cgb-marker:hover .marker-star {
+  scale: 1.04;
+}
+
+.cgb-marker.is-selected {
+  z-index: 3;
+  filter: none;
 }
 
 .cgb-marker.is-selected .marker-pin,
 .cgb-marker.is-selected .marker-star {
-  filter: drop-shadow(0 0 6px rgba(253,181,21,.9));
+  scale: 1.12;
+  filter:
+    drop-shadow(0 0 1px rgba(255,255,255,.98))
+    drop-shadow(0 0 4px rgba(253,181,21,.9))
+    drop-shadow(0 9px 8px rgba(1,1,51,.28));
+  box-shadow: none;
+}
+
+.cgb-marker:focus-visible {
+  outline: 0;
+  filter: none;
+}
+
+.cgb-marker:focus-visible .marker-pin,
+.cgb-marker:focus-visible .marker-star {
+  filter:
+    drop-shadow(0 0 1px rgba(255,255,255,.98))
+    drop-shadow(0 0 4px rgba(253,181,21,.9))
+    drop-shadow(0 7px 7px rgba(1,1,51,.26));
+  box-shadow: none;
 }
 
 .cgb-marker .marker-count {
-  top: -6px;
-  right: -27px;
-  z-index: 3;
+  top: 3px;
+  right: auto;
+  left: 31px;
+  z-index: 4;
+  min-width: max-content;
+  height: 22px;
+  padding: 0 7px;
+  display: grid;
+  place-items: center;
+  color: var(--cgb-navy-950);
+  background: rgba(255, 255, 255, .97);
+  border: 1px solid rgba(1, 1, 51, .18);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-xs);
+  font-size: .62rem;
+  font-weight: 850;
+  letter-spacing: .005em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+@media (max-width: 899px) {
+  .cgb-marker.is-nearby-preview:not(.is-selected) {
+    z-index: 2;
+  }
+
+  .cgb-marker.is-nearby-preview:not(.is-selected) .marker-pin,
+  .cgb-marker.is-nearby-preview:not(.is-selected) .marker-star {
+    scale: 1.06;
+    filter: drop-shadow(0 5px 7px rgba(1,1,51,.34));
+  }
 }
 
 @media (max-width: 899px) {
@@ -134,17 +209,18 @@
   }
 
   .map-actions #near-me-button {
-    width: 46px;
-    min-width: 46px;
-    height: 46px;
-    min-height: 46px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
     padding: 0;
     color: var(--cgb-navy-950);
-    background: rgba(255, 255, 255, .96);
-    border: 1px solid rgba(1, 1, 51, .16);
+    background: rgba(255, 255, 255, .97);
+    border: 1px solid rgba(1, 1, 51, .14);
     border-radius: 50%;
     clip-path: none;
-    box-shadow: 0 6px 16px rgba(1, 1, 51, .18);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(12px) saturate(120%);
     font-size: 0;
   }
 
@@ -154,11 +230,23 @@
     transform: translate(-1px, 1px);
   }
 
-  .map-actions #near-me-button:hover,
+  .map-actions #near-me-button:hover {
+    color: var(--cgb-navy-950);
+    background: var(--cgb-gold-50);
+    border-color: var(--cgb-gold-500);
+  }
+
+  .map-actions #near-me-button:active {
+    background: var(--cgb-neutral-100);
+  }
+
   .map-actions #near-me-button:focus-visible {
     color: var(--cgb-navy-950);
-    background: var(--cgb-gold-400);
+    background: var(--cgb-gold-50);
     border-color: var(--cgb-gold-500);
+    outline: 2px solid var(--cgb-gold-400);
+    outline-offset: 2px;
+    box-shadow: var(--shadow-sm), var(--focus-ring);
   }
 
   body:not([data-command-surface="map"]) .map-actions,
@@ -500,5 +588,67 @@
 
   #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
     height: 18px;
+  }
+}
+
+
+@media (min-width: 900px) {
+  body[data-view="map"][data-command-surface="map"] .map-actions {
+    position: absolute;
+    z-index: 25;
+    right: calc(min(390px, 34vw) + 36px);
+    bottom: 122px;
+    display: block;
+    pointer-events: auto;
+  }
+
+  .map-actions #near-me-button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    color: var(--cgb-navy-950);
+    background: rgba(255, 255, 255, .97);
+    border: 1px solid rgba(1, 1, 51, .14);
+    border-radius: var(--radius-sm);
+    clip-path: none;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(12px) saturate(120%);
+    font-size: 0;
+  }
+
+  .map-actions #near-me-button span {
+    display: none;
+  }
+
+  .map-actions #near-me-button .ui-icon {
+    width: 20px;
+    height: 20px;
+    transform: none;
+  }
+
+  .map-actions #near-me-button:hover {
+    background: var(--cgb-gold-50);
+    border-color: var(--cgb-gold-500);
+  }
+
+  .map-actions #near-me-button:active {
+    background: var(--cgb-neutral-100);
+  }
+}
+
+
+@media (max-width: 899px) {
+  .opening-stat {
+    bottom: -31px;
+    height: 82px;
+    grid-template-rows: 54px 26px;
+  }
+
+  .map-legend {
+    padding-bottom: 4px;
   }
 }

@@ -299,7 +299,8 @@ function markerElement(venue) {
   if (count > 0) {
     const badge = document.createElement('span');
     badge.className = 'marker-count';
-    badge.textContent = bearCountCopy(count);
+    badge.textContent = count === 1 ? '1 Bear' : `${count} Bears`;
+    badge.setAttribute('aria-hidden', 'true');
     button.append(badge);
   }
   button.addEventListener('click', () => selectVenue(venue.venue_id));
@@ -1091,8 +1092,8 @@ function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
 }
 
 function locateOnMap() {
-  if (!isMobileLayout()) return;
-  if (!normalizedUserLocation(state.origin) && showNearbyLocations({ trayState: 'peek', focus: true })) return;
+  const mobile = isMobileLayout();
+  if (!normalizedUserLocation(state.origin) && showNearbyLocations({ trayState: mobile ? 'peek' : 'full', focus: true })) return;
   if (!navigator.geolocation) return showStatus('Location is not available in this browser');
 
   dom.nearMe.disabled = true;
@@ -1104,7 +1105,7 @@ function locateOnMap() {
     state.detailMode = false;
     dom.searchInput.value = '';
     dom.searchDropdown.hidden = true;
-    setTrayState('peek');
+    setTrayState(mobile ? 'peek' : 'full');
     updateRouteForGame();
     const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
     renderAll();
