@@ -42,9 +42,9 @@ function installStyles() {
       margin: 2px 0 0 !important;
       padding: 8px 7px !important;
       color: var(--cgb-navy-950) !important;
-      background: linear-gradient(180deg, var(--cgb-gold-50), var(--cgb-white)) !important;
-      border: 1px solid var(--cgb-gold-300, #f2cc67) !important;
-      border-radius: 14px !important;
+      background: transparent !important;
+      border: 0 !important;
+      border-radius: 0 !important;
       line-height: 1.08 !important;
       text-align: center !important;
     }
@@ -52,8 +52,8 @@ function installStyles() {
     .selected-card .bear-count--empty {
       min-height: 64px !important;
       padding: 8px 7px !important;
-      background: var(--cgb-white) !important;
-      border-color: var(--cgb-gold-200) !important;
+      background: transparent !important;
+      border: 0 !important;
     }
 
     .selected-card .bear-count:not(.bear-count--empty) .bear-count__icon {
