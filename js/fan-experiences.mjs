@@ -22,8 +22,8 @@ function meta(name, documentObject = document) {
 export function readFanExperienceFormConfig(documentObject = document) {
   return {
     formUrl: meta('cgb-fan-experience-form-url', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.formUrl,
-    venueIdEntry: meta('cgb-fan-experience-venue-id-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueIdEntry,
-    venueNameEntry: meta('cgb-fan-experience-venue-name-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueNameEntry
+    venueIdEntry: meta('cgb-fan-experience-form-venue-id-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueIdEntry,
+    venueNameEntry: meta('cgb-fan-experience-form-venue-name-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueNameEntry
   };
 }
 
