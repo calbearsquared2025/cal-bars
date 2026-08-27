@@ -445,10 +445,6 @@
     bottom: -56px !important;
   }
 
-  body[data-view="map"][data-command-surface="map"] .opening-stat__item {
-    padding: 4px 9px !important;
-  }
-
   body[data-command-surface="search"] .opening-stat,
   body[data-command-surface="add"] .opening-stat,
   body[data-command-surface="list"] .opening-stat,
