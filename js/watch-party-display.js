@@ -8,8 +8,8 @@ function replaceRenderedParties(container, parties, snapshot, documentObject) {
 
   const detail = container.id === 'venue-detail';
   const anchor = detail
-    ? container.querySelector(':scope > .detail-watch-party-cta, :scope > .detail-contribution, :scope > .action-row')
-    : container.querySelector(':scope > .action-row, :scope > .venue-website, :scope > .watch-party-contribution, :scope > .preview-note');
+    ? container.querySelector(':scope > .activity-card, :scope > .detail-watch-party-cta, :scope > .detail-contribution, :scope > .action-row')
+    : container.querySelector(':scope > .bear-count, :scope > .action-row, :scope > .venue-website, :scope > .watch-party-contribution, :scope > .preview-note');
   const fragment = documentObject.createDocumentFragment();
   parties.forEach((party, index) => fragment.append(createWatchPartyModule({
     party,
