@@ -1,4 +1,5 @@
 import {
+  bearCountCopy,
   compactVenueLocation,
   getFanCount,
   venueBadgeDescriptors
@@ -12,13 +13,6 @@ function formatDistance(distance) {
   if (!Number.isFinite(distance)) return '';
   if (distance < 0.1) return 'Nearby';
   return `${distance.toFixed(distance < 10 ? 1 : 0)} mi away`;
-}
-
-function cgbAttendanceCopy(count) {
-  const total = Number(count);
-  if (total === 1) return '1 Bear attending on CGB';
-  if (total > 1) return `${total} Bears attending on CGB`;
-  return 'No Bears on CGB yet.';
 }
 
 function createBadges(venue, party, documentObject) {
@@ -37,7 +31,7 @@ export function selectedAttendanceViewModel({ state, game, venue } = {}) {
   const publicCount = getFanCount(state?.snapshot, state?.gameId, venue?.venue_id);
   const selectedByThisBrowser = state?.fanIntent?.selections?.[state?.gameId] === venue?.venue_id;
   const number = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
-  const currentCopy = cgbAttendanceCopy(number);
+  const currentCopy = bearCountCopy(number);
   const presentation = venueActivityPresentation({
     snapshot: state?.snapshot,
     game,
