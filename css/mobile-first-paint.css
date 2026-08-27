@@ -28,6 +28,10 @@
     display: grid !important;
   }
 
+  body[data-view="map"][data-command-surface="map"] .map-actions:has(~ #venue-tray.venue-tray.tray--selected) {
+    top: calc(var(--header-height) + 138px) !important;
+  }
+
   body[data-view="map"][data-command-surface="map"] .map-actions #near-me-button {
     border-radius: 50% !important;
     clip-path: none !important;

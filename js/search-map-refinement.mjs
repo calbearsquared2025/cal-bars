@@ -11,12 +11,16 @@ function appState() {
   return window.CGBApp?.getState?.() || null;
 }
 
-function restoreMobileAddLocationCopy(button) {
+function setAddLocationCopy(button, prefix) {
   if (!button) return;
-  button.replaceChildren(document.createTextNode('Watching somewhere else? '));
+  button.replaceChildren(document.createTextNode(prefix));
   const strong = document.createElement('strong');
   strong.textContent = 'Search for another location.';
   button.append(strong);
+}
+
+function restoreMobileAddLocationCopy(button) {
+  setAddLocationCopy(button, 'Watching somewhere else? ');
 }
 
 function placeAddLocationAction() {
@@ -54,14 +58,14 @@ function syncDesktopSearchUi() {
   const query = input.value.trim();
   const matchCount = desktopMatchCount(query, state);
   const listQuery = String(state?.listQuery || '').trim();
+  const showAddLocationAction = existingMode && desktopSearchEngaged && Boolean(query);
 
-  button.hidden = !existingMode || !desktopSearchEngaged;
-  if (existingMode && desktopSearchEngaged) {
-    button.textContent = !query
-      ? 'Watching somewhere else? Search for another location.'
-      : matchCount > 0
-        ? 'Don’t see it? Search for another location.'
-        : 'No matching locations found. Search for another location.';
+  button.hidden = !showAddLocationAction;
+  if (showAddLocationAction) {
+    setAddLocationCopy(
+      button,
+      matchCount > 0 ? 'Don’t see it? ' : 'No matching locations found. '
+    );
   }
 
   /* The desktop CTA lives outside the dropdown, so an empty results shell is unnecessary. */

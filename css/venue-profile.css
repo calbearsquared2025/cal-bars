@@ -135,12 +135,12 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 }
 
 .venue-detail .detail-editorial {
+  position: relative;
   margin: 0 !important;
-  padding: 16px 16px 16px 13px;
+  padding: 16px 16px 16px 38px;
   background: var(--cgb-white);
   border: 0;
   border-top: 1px solid var(--cgb-neutral-200);
-  border-left: 3px solid var(--cgb-gold-400);
   border-radius: 0;
   box-shadow: none;
 }
@@ -168,18 +168,39 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 }
 
 .venue-detail .detail-fan-experiences {
+  position: relative;
   margin: 0 !important;
-  padding: 16px 16px 16px 13px;
+  padding: 16px 16px 16px 38px;
   background: var(--cgb-white);
   border: 0;
   border-top: 1px solid var(--cgb-neutral-200);
-  border-left: 3px solid var(--cgb-navy-700);
   border-radius: 0;
   box-shadow: none;
 }
 
-.venue-detail .detail-editorial + .detail-fan-experiences {
-  border-top: 1px solid var(--cgb-neutral-200);
+.venue-detail .detail-editorial::before,
+.venue-detail .detail-fan-experiences::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 16px;
+  width: 3px;
+  border-radius: var(--radius-pill);
+}
+
+.venue-detail .detail-editorial::before {
+  background: var(--cgb-gold-400);
+}
+
+.venue-detail .detail-fan-experiences::before {
+  background: var(--cgb-navy-700);
+}
+
+.venue-detail .detail-editorial + .detail-fan-experiences,
+.venue-detail .detail-fan-experiences + .detail-editorial {
+  margin-top: 6px !important;
+  border-top: 0;
 }
 
 .venue-detail .detail-fan-experiences__quotes {
@@ -412,30 +433,9 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
    Extra selector specificity keeps the same continuous-surface treatment authoritative
    without changing the continuation rendering code. */
 @media (max-width: 899px) {
-  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-editorial {
-    margin: 0 !important;
-    padding: 16px 16px 16px 13px !important;
-    background: var(--cgb-white) !important;
-    border: 0 !important;
-    border-left: 3px solid var(--cgb-gold-400) !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
-
   html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero {
     border: 0 !important;
     border-top: 1px solid var(--cgb-neutral-200) !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-  }
-
-  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences {
-    margin: 0 !important;
-    padding: 16px 16px 16px 13px !important;
-    background: var(--cgb-white) !important;
-    border: 0 !important;
-    border-top: 1px solid var(--cgb-neutral-200) !important;
-    border-left: 3px solid var(--cgb-navy-700) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
@@ -498,14 +498,15 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     box-shadow: none !important;
   }
 
-  html #tray-selected > #venue-detail.venue-detail .detail-editorial {
-    padding-left: 15px !important;
-    border-left: 3px solid var(--cgb-gold-400) !important;
+  html #tray-selected > #venue-detail.venue-detail .detail-editorial,
+  html #tray-selected > #venue-detail.venue-detail .detail-fan-experiences {
+    padding-left: 40px !important;
   }
 
-  html #tray-selected > #venue-detail.venue-detail .detail-fan-experiences {
-    padding-left: 15px !important;
-    border-left: 3px solid var(--cgb-navy-700) !important;
+  html #tray-selected > #venue-detail.venue-detail .detail-editorial + .detail-fan-experiences,
+  html #tray-selected > #venue-detail.venue-detail .detail-fan-experiences + .detail-editorial {
+    margin-top: 6px !important;
+    border-top: 0 !important;
   }
 
   html #tray-selected > #venue-detail.venue-detail > .party-module {
@@ -528,8 +529,14 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     left: 20px !important;
   }
 
+  .venue-detail .detail-editorial,
   .venue-detail .detail-fan-experiences {
-    padding: 14px 12px 14px 9px;
+    padding: 14px 12px 14px 34px;
+  }
+
+  .venue-detail .detail-editorial::before,
+  .venue-detail .detail-fan-experiences::before {
+    left: 12px;
   }
 }
 

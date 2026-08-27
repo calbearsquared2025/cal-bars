@@ -109,7 +109,7 @@ export function createWatchPartyModule({
     report.href = issueUrl;
     report.target = '_blank';
     report.rel = 'noopener noreferrer';
-    report.textContent = 'Add/update details';
+    report.textContent = 'More to share about this watch party? Tell us →';
     module.append(report);
   }
   return module;

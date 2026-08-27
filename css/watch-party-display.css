@@ -53,13 +53,15 @@
 }
 
 #venue-tray .selected-card > .party-module .party-module__report {
-  margin-top: 3px;
-  padding-top: 6px;
-  color: var(--cgb-ink-500);
-  border-top: 1px solid var(--cgb-neutral-200);
-  font-size: .66rem;
-  font-weight: 700;
-  line-height: 1.2;
+  justify-self: start;
+  margin-top: 5px;
+  padding-top: 0;
+  color: var(--cgb-navy-900);
+  border: 0;
+  font-size: .67rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: left;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
@@ -81,16 +83,16 @@
 }
 
 .party-module__report {
-  justify-self: end;
+  justify-self: start;
   display: block;
-  margin: 0.65rem 0 0 auto;
-  color: var(--cgb-ink-500);
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.2;
-  text-align: right;
+  margin: .55rem 0 0;
+  color: var(--cgb-navy-900);
+  font-size: .75rem;
+  font-weight: 650;
+  line-height: 1.25;
+  text-align: left;
   text-decoration: underline;
-  text-underline-offset: 0.15em;
+  text-underline-offset: .15em;
 }
 
 @media (min-width: 900px) {
