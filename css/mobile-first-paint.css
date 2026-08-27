@@ -401,7 +401,6 @@
     gap: 0 4px !important;
     padding: 3px 18px 3px clamp(9px, 3vw, 12px) !important;
     text-align: right !important;
-    border-left: 1px solid rgba(255, 255, 255, .18) !important;
     border-bottom: 0 !important;
   }
 
