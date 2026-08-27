@@ -11,10 +11,6 @@
     background-color: var(--cgb-mobile-safe-surface) !important;
   }
 
-  .mobile-command-bar {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  }
-
   #mobile-about-button {
     display: grid !important;
   }
@@ -367,8 +363,23 @@
   .site-header__brand-row {
     min-height: 62px !important;
     display: flex !important;
+    align-items: center !important;
     width: 100% !important;
-    padding-right: min(42vw, 164px) !important;
+    padding-right: min(45vw, 176px) !important;
+  }
+
+  .brand {
+    gap: 7px !important;
+  }
+
+  .brand-mark {
+    width: clamp(29px, 8.2vw, 32px) !important;
+    height: clamp(29px, 8.2vw, 32px) !important;
+  }
+
+  .brand-name {
+    font-size: clamp(.8rem, 4vw, .96rem) !important;
+    letter-spacing: .035em !important;
   }
 
   .site-header > .site-header__brand-row > #header-about-button {
@@ -379,14 +390,15 @@
     position: absolute !important;
     top: calc(env(safe-area-inset-top, 0px) + 7px) !important;
     right: max(14px, env(safe-area-inset-right, 0px)) !important;
-    width: min(40vw, 160px) !important;
-    min-height: 62px !important;
+    width: min(43vw, 170px) !important;
+    min-height: 60px !important;
     grid-template-columns: minmax(0, 1fr) 16px !important;
     grid-template-rows: auto auto auto !important;
     align-content: center !important;
     gap: 0 4px !important;
-    padding: 4px 18px 4px 4px !important;
+    padding: 3px 18px 3px clamp(9px, 3vw, 12px) !important;
     text-align: right !important;
+    border-left: 1px solid rgba(255, 255, 255, .18) !important;
     border-bottom: 0 !important;
   }
 
@@ -404,7 +416,7 @@
     content: "SELECT GAME";
     color: var(--cgb-gold-400, #fdb515);
     font-family: var(--font-condensed, sans-serif);
-    font-size: .5rem;
+    font-size: .54rem;
     font-weight: 850;
     letter-spacing: .09em;
     line-height: 1;
@@ -412,15 +424,15 @@
 
   .site-header #header-game-label {
     grid-column: 1 !important;
-    font-size: .96rem !important;
-    line-height: 1.14 !important;
+    font-size: clamp(.9rem, 4.1vw, 1rem) !important;
+    line-height: 1.12 !important;
     padding-bottom: .08em !important;
   }
 
   .site-header #header-kickoff {
     grid-column: 1 !important;
-    font-size: .59rem !important;
-    line-height: 1.12 !important;
+    font-size: .62rem !important;
+    line-height: 1.15 !important;
   }
 
   .site-header .game-button__chevron {
@@ -434,7 +446,7 @@
   }
 
   body[data-view="map"][data-command-surface="map"] .opening-stat__item {
-    padding: 3px 8px !important;
+    padding: 4px 9px !important;
   }
 
   body[data-command-surface="search"] .opening-stat,
