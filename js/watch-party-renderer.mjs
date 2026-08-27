@@ -109,7 +109,7 @@ export function createWatchPartyModule({
     report.href = issueUrl;
     report.target = '_blank';
     report.rel = 'noopener noreferrer';
-    report.textContent = 'Add or update game-day details';
+    report.textContent = 'Add/update details';
     module.append(report);
   }
   return module;
