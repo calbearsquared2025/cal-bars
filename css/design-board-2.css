@@ -64,24 +64,7 @@
   background-size: 20px 20px;
 }
 
-.maplibregl-ctrl-attrib {
-  color: var(--cgb-ink-700);
-  background: rgba(255, 255, 255, .94) !important;
-  border: 1px solid rgba(1, 1, 51, .12);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  backdrop-filter: blur(10px) saturate(115%);
-}
-
-.maplibregl-ctrl-attrib a {
-  color: var(--cgb-navy-900);
-}
-
-.maplibregl-ctrl-attrib-button {
-  width: 30px !important;
-  height: 30px !important;
-}
-
+/* Keep MapLibre attribution presentation native so its compact licensing control remains reliable. */
 .map-toolbar .location-search {
   filter: none;
 }

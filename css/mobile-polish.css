@@ -59,7 +59,7 @@
   content: '';
   position: absolute;
   z-index: 0;
-  inset: 2px;
+  inset: 1.25px;
   background: var(--marker-fill);
   -webkit-mask: var(--marker-shape) center / 100% 100% no-repeat;
   mask: var(--marker-shape) center / 100% 100% no-repeat;
@@ -92,9 +92,9 @@
   position: absolute;
   z-index: 1;
   left: 50%;
-  top: 6.5px;
-  width: 19px;
-  height: 19px;
+  top: 7.5px;
+  width: 17px;
+  height: 17px;
   background: var(--cgb-navy-950);
   border-radius: 50%;
   transform: translateX(-50%);
@@ -104,9 +104,9 @@
   position: absolute;
   z-index: 2;
   left: 50%;
-  top: 9px;
-  width: 14px;
-  height: 14px;
+  top: 9.5px;
+  width: 13px;
+  height: 13px;
   color: var(--cgb-white);
   fill: currentColor;
   stroke: currentColor;
