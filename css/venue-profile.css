@@ -182,8 +182,8 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 .venue-detail .detail-fan-experiences::before {
   content: '';
   position: absolute;
-  top: 0;
-  bottom: 0;
+  top: 10px;
+  bottom: 10px;
   left: 16px;
   width: 3px;
   border-radius: var(--radius-pill);
@@ -199,7 +199,7 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 
 .venue-detail .detail-editorial + .detail-fan-experiences,
 .venue-detail .detail-fan-experiences + .detail-editorial {
-  margin-top: 14px !important;
+  margin-top: 6px !important;
   border-top: 0;
 }
 
@@ -505,7 +505,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail.venue-detail .detail-editorial + .detail-fan-experiences,
   html #tray-selected > #venue-detail.venue-detail .detail-fan-experiences + .detail-editorial {
-    margin-top: 14px !important;
+    margin-top: 6px !important;
     border-top: 0 !important;
   }
 
