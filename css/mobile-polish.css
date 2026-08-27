@@ -282,7 +282,7 @@
 
   /* Large numerals and small supporting labels match the board. */
   .opening-stat__item {
-    padding: 6px 10px;
+    padding: 4px 9px;
   }
 
   .opening-stat strong {
@@ -290,35 +290,35 @@
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     justify-content: center;
-    gap: 9px;
+    gap: 7px;
     text-align: left;
   }
 
   .opening-stat__number {
     color: var(--cgb-navy-950);
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 8vw, 2.25rem);
+    font-size: clamp(1.55rem, 7vw, 1.9rem);
     font-weight: 800;
-    letter-spacing: -.045em;
+    letter-spacing: -.04em;
     line-height: .9;
   }
 
   .opening-stat__copy {
     display: grid;
     gap: 1px;
-    color: var(--cgb-navy-950);
+    color: var(--cgb-navy-900);
     font-family: var(--font-condensed);
-    font-size: .64rem;
+    font-size: .6rem;
     font-weight: 900;
-    letter-spacing: .065em;
+    letter-spacing: .055em;
     line-height: 1.05;
     text-transform: uppercase;
   }
 
   .opening-stat__copy small {
     color: var(--cgb-ink-500);
-    font-size: .55rem;
-    font-weight: 750;
+    font-size: .52rem;
+    font-weight: 700;
     letter-spacing: .035em;
   }
 
@@ -395,34 +395,6 @@
 
   .command-surface--add .add-missing-location {
     display: none !important;
-  }
-
-  .mobile-command__add-mark {
-    width: 20px;
-    height: 20px;
-    margin-top: 0;
-    border-width: 1px;
-    box-shadow: none;
-    font-size: 1rem;
-  }
-
-  .mobile-command--add .mobile-command__add-mark {
-    color: inherit;
-    background: transparent;
-    border-color: currentColor;
-  }
-
-  .mobile-command--add[aria-current="page"] .mobile-command__add-mark {
-    color: var(--cgb-gold-500);
-  }
-
-  /* Active state comes from one authoritative view value. */
-  .mobile-command[aria-current="page"] {
-    color: var(--cgb-navy-950);
-  }
-
-  .mobile-command:not([aria-current="page"])::after {
-    display: none;
   }
 
   /* Map has a compact preview; the full list is a distinct List destination. */
@@ -646,9 +618,32 @@
     bottom: -31px;
     height: 82px;
     grid-template-rows: 54px 26px;
+    border-color: rgba(1, 1, 51, .1);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
   }
 
   .map-legend {
-    padding-bottom: 4px;
+    gap: clamp(6px, 2.3vw, 12px);
+    padding: 0 clamp(6px, 2vw, 8px) 4px;
+    color: var(--cgb-ink-500);
+    font-size: clamp(.62rem, 2.7vw, .66rem);
+    font-weight: 750;
+    letter-spacing: .015em;
+  }
+
+  .map-legend__item {
+    gap: 4px;
+  }
+
+  .map-legend__marker,
+  .map-legend__marker--watch-party {
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
+  }
+
+  .map-legend__marker {
+    border-width: 1.5px;
   }
 }
