@@ -68,9 +68,9 @@ function installStyles() {
     .selected-card .bear-count__number {
       color: var(--cgb-navy-950) !important;
       font-family: var(--font-display) !important;
-      font-size: 2rem !important;
+      font-size: 2.25rem !important;
       font-weight: 700 !important;
-      line-height: .9 !important;
+      line-height: .94 !important;
     }
 
     .selected-card .bear-count__label,
@@ -361,7 +361,7 @@ function installStyles() {
         }
 
         .bear-count__number {
-          font-size: 1.7rem !important;
+          font-size: 1.95rem !important;
         }
       }
     }
