@@ -68,6 +68,7 @@ test('Locate me preserves a selected mobile profile and leaves control placement
   assert.match(app, /setTrayState\(nextTrayState\);/);
   assert.doesNotMatch(mobilePolish, /--map-action-top/);
   assert.match(firstPaint, /\.map-actions\s*\{[\s\S]*?top:\s*var\(--map-action-top,\s*calc\(100dvh - var\(--footer-height\) - 156px\)\)\s*!important;/);
+  assert.match(firstPaint, /\.map-actions:has\(~ #venue-tray\.venue-tray\.tray--selected\)\s*\{[\s\S]*?top:\s*calc\(var\(--header-height\) \+ 138px\)\s*!important;/);
 });
 
 test('mobile legend has a little more white breathing room below the labels', async () => {
