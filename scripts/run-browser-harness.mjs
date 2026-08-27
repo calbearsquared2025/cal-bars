@@ -68,17 +68,15 @@ await new Promise((resolve, reject) => {
 
 const browser = findBrowser();
 const address = server.address();
-const captureScreenshots = process.env.CGB_CAPTURE_SCREENSHOTS === '1';
 
-async function run({ mode, marker, windowSize, label = mode, screenshotName = '' }) {
+async function run({ mode, marker, windowSize, label = mode }) {
   const profile = mkdtempSync(join(tmpdir(), 'cgb-smoke-'));
   const url = `http://127.0.0.1:${address.port}/__cgb_smoke__?__cgb_smoke=${mode}`;
-  const screenshotArgs = captureScreenshots && screenshotName ? [`--screenshot=${join(root, screenshotName)}`] : [];
   const child = spawn(browser, [
     '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
     '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
     '--disable-sync', '--metrics-recording-only', '--no-first-run', `--user-data-dir=${profile}`,
-    `--window-size=${windowSize}`, '--virtual-time-budget=3000', ...screenshotArgs, '--dump-dom', url
+    `--window-size=${windowSize}`, '--virtual-time-budget=3000', '--dump-dom', url
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';
@@ -100,9 +98,9 @@ async function run({ mode, marker, windowSize, label = mode, screenshotName = ''
 }
 
 try {
-  const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile', screenshotName: 'stage4-mobile-390.png' });
-  const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile', screenshotName: 'stage4-mobile-320.png' });
-  const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000', label: 'desktop', screenshotName: 'stage4-desktop.png' });
+  const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile' });
+  const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile' });
+  const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000', label: 'desktop' });
   if (!mobile || !smallMobile || !desktop) process.exitCode = 1;
 } finally {
   await new Promise((resolve) => server.close(resolve));
