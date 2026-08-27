@@ -5,10 +5,13 @@ import {
   withStoredSelection
 } from './fan-intent-core.mjs';
 import {
+  buildMapTilerFinalSearchQueries,
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
-  normalizeMapTilerResults,
+  hasStrongMapTilerVenueMatch,
+  normalizeUserLocationProximity,
+  rankMapTilerResults,
   upsertCanonicalVenue,
   validateJoinExternalVenueResponse
 } from './external-venue-core.mjs';
@@ -27,10 +30,17 @@ const SEARCH_TIMEOUT_MS = 8000;
 const WRITE_TIMEOUT_MS = 12000;
 const MINIMUM_QUERY_LENGTH = 3;
 const MISSING_LOCATION_COPY = 'Can’t find the location? Suggest it here.';
+const USER_LOCATION_OPTIONS = Object.freeze({
+  enableHighAccuracy: true,
+  timeout: 10000,
+  maximumAge: 60000
+});
 
 let searchTimer = null;
 let searchSequence = 0;
 let searchController = null;
+let addLocationProximityAttempted = false;
+let addLocationProximityPending = false;
 let dom = null;
 
 function storageGet(key) {
@@ -69,6 +79,43 @@ function ensureExternalState() {
 
 function configuredMapTilerKey() {
   return String(window.CGBApp?.mapTilerKey || '').trim();
+}
+
+function currentUserProximity() {
+  const remembered = normalizeUserLocationProximity(appState.nearbyOrigin);
+  if (remembered) return remembered;
+  const active = normalizeUserLocationProximity(appState.origin);
+  if (!active) return null;
+  appState.nearbyOrigin = { ...active, label: 'your location' };
+  return active;
+}
+
+function requestAddLocationProximity() {
+  if (appState.searchMode !== 'add-location') return;
+  if (currentUserProximity() || addLocationProximityAttempted || addLocationProximityPending) return;
+  addLocationProximityAttempted = true;
+
+  const geolocation = window.navigator?.geolocation;
+  if (!geolocation?.getCurrentPosition) return;
+
+  addLocationProximityPending = true;
+  geolocation.getCurrentPosition((position) => {
+    addLocationProximityPending = false;
+    const location = normalizeUserLocationProximity({
+      lat: position?.coords?.latitude,
+      lon: position?.coords?.longitude,
+      label: 'your location'
+    });
+    if (!location) return;
+    appState.nearbyOrigin = { ...location, label: 'your location' };
+
+    const query = dom?.searchInput?.value?.trim() || '';
+    if (appState.searchMode === 'add-location' && query.length >= MINIMUM_QUERY_LENGTH) {
+      scheduleExternalSearch({ immediate: true });
+    }
+  }, () => {
+    addLocationProximityPending = false;
+  }, USER_LOCATION_OPTIONS);
 }
 
 async function fetchJson(url, options = {}, timeoutMs = SEARCH_TIMEOUT_MS) {
@@ -203,7 +250,11 @@ function showExternalResults(results) {
   });
 }
 
-async function searchExternalPlaces(query, sequence) {
+function searchIsCurrent(query, sequence) {
+  return sequence === searchSequence && dom.searchInput.value.trim() === query;
+}
+
+async function searchExternalPlaces(query, sequence, { finalized = false } = {}) {
   const key = configuredMapTilerKey();
   if (!key) {
     showExternalFailure(Object.assign(new Error('maptiler_not_configured'), { code: 'maptiler_not_configured' }));
@@ -214,14 +265,38 @@ async function searchExternalPlaces(query, sequence) {
   searchController = new AbortController();
   const timeout = window.setTimeout(() => searchController.abort(), SEARCH_TIMEOUT_MS);
   try {
-    const url = buildMapTilerSearchUrl(query, key);
-    const response = await fetch(url, { signal: searchController.signal, cache: 'no-store' });
-    if (!response.ok) throw new Error(`external_search_http_${response.status}`);
-    const payload = await response.json();
-    if (sequence !== searchSequence || dom.searchInput.value.trim() !== query) return;
-    showExternalResults(normalizeMapTilerResults(payload));
+    const searchQueries = finalized ? buildMapTilerFinalSearchQueries(query) : [query];
+    const payloads = [];
+    const proximity = currentUserProximity();
+
+    for (let index = 0; index < searchQueries.length; index += 1) {
+      const searchQuery = searchQueries[index];
+      const url = buildMapTilerSearchUrl(searchQuery, key, {
+        limit: finalized ? 10 : 6,
+        autocomplete: !finalized,
+        fuzzyMatch: true,
+        proximity
+      });
+      const response = await fetch(url, { signal: searchController.signal, cache: 'no-store' });
+      if (!response.ok) throw new Error(`external_search_http_${response.status}`);
+      payloads.push(await response.json());
+      if (!searchIsCurrent(query, sequence)) return;
+
+      const results = rankMapTilerResults(payloads, query, {
+        maximum: 6,
+        filterWeak: finalized
+      });
+      const lastQuery = index === searchQueries.length - 1;
+      if (!finalized || hasStrongMapTilerVenueMatch(results, query) || lastQuery) {
+        showExternalResults(results);
+        return;
+      }
+    }
+
+    showExternalResults([]);
   } catch (error) {
-    if (sequence !== searchSequence || error?.name === 'AbortError' && dom.searchInput.value.trim() !== query) return;
+    if (!searchIsCurrent(query, sequence) && error?.name === 'AbortError') return;
+    if (sequence !== searchSequence) return;
     showExternalFailure(error);
   } finally {
     window.clearTimeout(timeout);
@@ -246,17 +321,18 @@ function handleSearchSubmit(event) {
 
   event.preventDefault();
   event.stopImmediatePropagation();
-  scheduleExternalSearch({ immediate: true });
+  scheduleExternalSearch({ immediate: true, finalized: true });
 }
 
 function externalSearchAllowed() {
   return appState.searchMode === 'add-location' || appState.searchMode === 'contribution-external';
 }
 
-function scheduleExternalSearch({ immediate = false } = {}) {
+function scheduleExternalSearch({ immediate = false, finalized = false } = {}) {
   const query = dom.searchInput.value.trim();
   const state = ensureExternalState();
   state.query = query;
+  requestAddLocationProximity();
   searchSequence += 1;
   const sequence = searchSequence;
   window.clearTimeout(searchTimer);
@@ -270,7 +346,7 @@ function scheduleExternalSearch({ immediate = false } = {}) {
 
   const run = () => {
     showExternalLoading();
-    searchExternalPlaces(query, sequence);
+    searchExternalPlaces(query, sequence, { finalized });
   };
   if (immediate) run();
   else searchTimer = window.setTimeout(run, SEARCH_DEBOUNCE_MS);
