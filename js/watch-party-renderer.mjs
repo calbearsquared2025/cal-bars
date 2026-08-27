@@ -84,9 +84,9 @@ export function createWatchPartyModule({
 
   const details = [];
   if (party.age_policy === '21_plus') details.push('21+');
-  if (party.age_policy === 'all_ages') details.push('All ages');
-  if (party.sound_status === 'confirmed_on') details.push('Game audio on');
-  if (party.sound_status === 'confirmed_off') details.push('Game audio off');
+  if (party.age_policy === 'all_ages') details.push('ALL AGES');
+  if (party.sound_status === 'confirmed_on') details.push('AUDIO ON');
+  if (party.sound_status === 'confirmed_off') details.push('AUDIO OFF');
   appendTags(module, details, documentObject);
   appendText(module, party.restrictions_note, 'party-module__note', documentObject);
   appendText(module, party.game_day_note, 'party-module__note', documentObject);
@@ -109,7 +109,7 @@ export function createWatchPartyModule({
     report.href = issueUrl;
     report.target = '_blank';
     report.rel = 'noopener noreferrer';
-    report.textContent = 'Report an Issue';
+    report.textContent = 'Add or update game-day details';
     module.append(report);
   }
   return module;
