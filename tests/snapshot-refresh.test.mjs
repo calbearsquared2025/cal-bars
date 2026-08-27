@@ -24,6 +24,7 @@ function snapshot(overrides = {}) {
     fanCounts: [],
     venueHistoryCounts: [],
     venueSeasonCounts: [],
+    fanExperiences: [],
     ...overrides
   };
 }
@@ -71,6 +72,10 @@ test('snapshot comparison ignores generated timestamps but detects public-data c
   assert.equal(publicSnapshotsEqual(
     snapshot(),
     snapshot({ fanCounts: [{ game_id: 'game_one', venue_id: 'venue_one', count: 1 }] })
+  ), false);
+  assert.equal(publicSnapshotsEqual(
+    snapshot(),
+    snapshot({ fanExperiences: [{ venue_id: 'venue_one', text: 'A real fan perspective.', display_name: '', year: 2026 }] })
   ), false);
 });
 

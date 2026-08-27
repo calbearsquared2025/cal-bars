@@ -147,12 +147,25 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 .venue-detail .detail-editorial h2,
 .venue-detail .detail-fan-experiences h2 {
   margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: var(--cgb-navy-950);
   font-family: var(--font-display);
   font-size: .72rem;
   font-weight: 850;
   letter-spacing: .09em;
   line-height: 1.15;
+}
+
+.venue-detail .detail-editorial h2::before,
+.venue-detail .detail-fan-experiences h2::before {
+  content: '';
+  width: 18px;
+  height: 3px;
+  flex: 0 0 18px;
+  background: var(--cgb-gold-400);
+  border-radius: var(--radius-pill);
 }
 
 .venue-detail .detail-fan-experiences h2 {
@@ -252,6 +265,15 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
   margin-top: 2px;
 }
 
+.venue-detail .detail-fan-experiences[data-experience-count="0"] .detail-fan-experiences__prompt {
+  color: var(--cgb-ink-700);
+  font-weight: 600 !important;
+}
+
+.venue-detail .detail-fan-experiences[data-experience-count="0"] .detail-fan-experiences__guidance {
+  color: var(--cgb-ink-500);
+}
+
 .venue-detail .detail-fan-experiences__item + .detail-fan-experiences__item {
   padding-top: 12px;
   border-top: 1px solid rgba(1, 1, 51, .09);
@@ -289,6 +311,17 @@ body[data-view="detail"] #venue-detail.venue-detail > .detail-contribution {
   border-top: 1px solid var(--cgb-neutral-200) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+}
+
+body[data-view="detail"] #venue-detail.venue-detail .detail-contribution h2,
+#tray-selected > #venue-detail.venue-detail .detail-contribution h2 {
+  margin: 0 0 9px !important;
+  color: var(--cgb-ink-500) !important;
+  font-family: var(--font-ui) !important;
+  font-size: .72rem !important;
+  font-weight: 750 !important;
+  letter-spacing: .035em !important;
+  line-height: 1.2 !important;
 }
 
 /* Contribution actions remain actionable, but no longer form a card inside the profile. */
@@ -424,6 +457,16 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     border-top: 1px solid var(--cgb-neutral-200) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution h2 {
+    margin: 0 0 9px !important;
+    color: var(--cgb-ink-500) !important;
+    font-family: var(--font-ui) !important;
+    font-size: .72rem !important;
+    font-weight: 750 !important;
+    letter-spacing: .035em !important;
+    line-height: 1.2 !important;
   }
 
   html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution__actions {

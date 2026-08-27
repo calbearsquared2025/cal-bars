@@ -13,7 +13,8 @@ const PUBLIC_SNAPSHOT_KEYS = [
   'watchParties',
   'fanCounts',
   'venueHistoryCounts',
-  'venueSeasonCounts'
+  'venueSeasonCounts',
+  'fanExperiences'
 ];
 
 let browserRefreshController = null;

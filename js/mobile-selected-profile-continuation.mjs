@@ -248,11 +248,13 @@ function installStyles(documentObject) {
       }
 
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution h2 {
-        margin: 0 0 10px !important;
-        color: var(--cgb-navy-950) !important;
-        font-family: var(--font-display) !important;
-        font-size: .9rem !important;
-        line-height: 1.15 !important;
+        margin: 0 0 9px !important;
+        color: var(--cgb-ink-500) !important;
+        font-family: var(--font-ui) !important;
+        font-size: .72rem !important;
+        font-weight: 750 !important;
+        letter-spacing: .035em !important;
+        line-height: 1.2 !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .action-row {
@@ -448,16 +450,17 @@ export function renderMobileSelectedProfileContinuation({
   cachedVenueDetail.dataset.profilePresentation = 'mobile-continuation';
   cachedVenueDetail.classList.add('venue-detail--selected-continuation');
 
-  const editorial = createEditorial(documentObject, venue);
-  if (editorial) cachedVenueDetail.append(editorial);
-
   const hero = documentObject.createElement('header');
   hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
   if (!venue.photo_url) {
     const localMap = createLocalMapElement(documentObject, venue, state);
     if (localMap) hero.append(localMap);
   }
-  cachedVenueDetail.append(hero, createContribution(documentObject));
+  cachedVenueDetail.append(hero);
+
+  const editorial = createEditorial(documentObject, venue);
+  if (editorial) cachedVenueDetail.append(editorial);
+  cachedVenueDetail.append(createContribution(documentObject));
   traySelected.append(cachedVenueDetail);
 
   const continuationApp = proxyApp(app, state);
@@ -467,8 +470,7 @@ export function renderMobileSelectedProfileContinuation({
     documentObject,
     onPhotoError: () => queueMicrotask(() => renderMobileSelectedProfileContinuation({ app, documentObject, windowObject }))
   });
-  const fanSection = renderFanExperiences({ app: continuationApp, documentObject });
-  if (fanSection) hero.after(fanSection);
+  renderFanExperiences({ app: continuationApp, documentObject });
   renderCalBarNominationEntry({ app: continuationApp, documentObject });
   renderPhotoFormEntry({ app: continuationApp, documentObject });
   renderListingUpdateEntry({ app: continuationApp, documentObject });

@@ -55,12 +55,6 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
 
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
   if (!actions) return '';
-  actions.append(createPhotoFormLink(documentObject, {
-    href,
-    label: 'Add a Photo',
-    entryPoint: 'contribution',
-    className: 'detail-contribution__action'
-  }));
 
   const localMap = detail.querySelector(':scope > .detail-hero > .detail-local-map');
   if (localMap) {
@@ -69,6 +63,13 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
       label: 'Add a Photo!',
       entryPoint: 'map-overlay',
       className: 'detail-local-map__photo-action'
+    }));
+  } else {
+    actions.append(createPhotoFormLink(documentObject, {
+      href,
+      label: 'Add a New Photo',
+      entryPoint: 'contribution',
+      className: 'detail-contribution__action'
     }));
   }
   syncContributionVisibility(detail);
