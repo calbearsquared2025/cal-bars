@@ -293,6 +293,10 @@
 }
 
 @media (min-width: 900px) {
+  #app[aria-busy="true"] .map-toolbar .search-add-location-action {
+    display: none;
+  }
+
   .map-toolbar .search-field {
     border-width: 1px !important;
     border-color: rgba(11, 40, 86, .46) !important;
