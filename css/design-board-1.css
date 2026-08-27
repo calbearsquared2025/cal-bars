@@ -50,19 +50,20 @@
   --space-8: 2rem;
   --space-10: 2.5rem;
 
-  /* Small radii and clipped corners replace the previous rounded-card system. */
-  --radius-sm: .25rem;
-  --radius-md: .375rem;
-  --radius-lg: .625rem;
-  --radius-xl: .875rem;
+  /* Stage 1 visual consistency: one soft surface scale; clipped corners remain an accent. */
+  --radius-sm: .5rem;
+  --radius-md: .75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
   --radius-pill: 999px;
-  --chamfer-sm: .45rem;
-  --chamfer-md: .7rem;
+  --chamfer-sm: .25rem;
+  --chamfer-md: .375rem;
 
-  --shadow-xs: 0 1px 2px rgba(1, 1, 51, .08);
-  --shadow-sm: 0 5px 14px rgba(1, 1, 51, .12);
-  --shadow-md: 0 12px 28px rgba(1, 1, 51, .16);
-  --shadow-lg: 0 24px 52px rgba(1, 1, 51, .22);
+  /* Keep elevation restrained: borders do most of the separation, shadows signal true floating surfaces. */
+  --shadow-xs: 0 1px 2px rgba(1, 1, 51, .055);
+  --shadow-sm: 0 3px 10px rgba(1, 1, 51, .075);
+  --shadow-md: 0 10px 24px rgba(1, 1, 51, .11);
+  --shadow-lg: 0 18px 40px rgba(1, 1, 51, .15);
 
   --motion-fast: 140ms;
   --motion-standard: 220ms;
@@ -79,8 +80,8 @@
   --line: var(--cgb-neutral-200);
   --surface: var(--cgb-white);
   --surface-alt: var(--cgb-neutral-50);
-  --shadow: var(--shadow-md);
-  --radius: var(--radius-lg);
+  --shadow: var(--shadow-sm);
+  --radius: var(--radius-md);
   --header-height: calc(164px + env(safe-area-inset-top, 0px));
   --footer-height: calc(var(--mobile-command-height) + env(safe-area-inset-bottom, 0px));
   --tray-handle-height: 24px;
