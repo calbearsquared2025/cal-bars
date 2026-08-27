@@ -248,17 +248,6 @@ export function createSelectedVenueCard({
   header.append(collapse);
   card.append(header);
 
-  if (venue.short_description) {
-    const description = documentObject.createElement('p');
-    description.className = 'venue-description';
-    description.textContent = venue.short_description;
-    card.append(description);
-  }
-
-  const attendance = createAttendance(state, game, venue, documentObject);
-  card.append(attendance.count);
-  if (attendance.history) card.append(attendance.history);
-
   if (parties.length) {
     parties.forEach((party, index) => card.append(createWatchPartyModule({
       party,
@@ -272,6 +261,9 @@ export function createSelectedVenueCard({
     card.append(createPlanWatchPartyAction(documentObject));
   }
 
+  const attendance = createAttendance(state, game, venue, documentObject);
+  card.append(attendance.count);
+
   card.append(createSelectedActionRow({
     state,
     venue,
@@ -279,5 +271,7 @@ export function createSelectedVenueCard({
     onShare,
     documentObject
   }));
+
+  if (attendance.history) card.append(attendance.history);
   return card;
 }
