@@ -95,14 +95,10 @@ function createQuote(documentObject, item) {
   return experience;
 }
 
-function placeSection(detail, section, prioritizePublished = false) {
+function placeSection(detail, section) {
   const hero = detail.querySelector(':scope > .detail-hero');
   const editorial = detail.querySelector(':scope > .detail-editorial');
 
-  if (prioritizePublished && hero) {
-    hero.after(section);
-    return;
-  }
   if (editorial) {
     editorial.after(section);
     return;
@@ -141,7 +137,7 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
     section.append(prompt, guidance);
     const share = createShareLink(documentObject, href);
     if (share) section.append(share);
-    placeSection(detail, section, false);
+    placeSection(detail, section);
     return section;
   }
 
@@ -173,6 +169,6 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
 
   const share = createShareLink(documentObject, href);
   if (share) section.append(share);
-  placeSection(detail, section, true);
+  placeSection(detail, section);
   return section;
 }
