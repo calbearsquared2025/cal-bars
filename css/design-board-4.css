@@ -461,17 +461,6 @@ body[data-view="detail"] #app {
     gap: 4px;
   }
 
-  .map-legend__marker,
-  .map-legend__marker--watch-party {
-    width: 12px;
-    height: 12px;
-    flex-basis: 12px;
-  }
-
-  .map-legend__marker {
-    border-width: 1.5px;
-  }
-
   .map-toolbar {
     top: 22px;
     left: 24px;
