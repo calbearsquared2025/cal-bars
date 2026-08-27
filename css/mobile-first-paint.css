@@ -62,13 +62,24 @@
     max-width: calc(100vw - 86px) !important;
   }
 
-  body:not([data-command-surface="map"]) .maplibregl-ctrl-bottom-right {
+  .maptiler-logo {
+    top: 100px !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: max(8px, env(safe-area-inset-left, 0px)) !important;
+  }
+
+  .maptiler-logo img {
+    width: 50px;
+  }
+
+  body:not([data-command-surface="map"]) .maptiler-logo,
+  body:not([data-view="map"]) .maptiler-logo {
     display: none !important;
   }
 
-  .maplibregl-ctrl-bottom-right .maplibregl-ctrl-attrib {
-    max-width: calc(100vw - 86px) !important;
-    font-size: 10px !important;
+  body:not([data-command-surface="map"]) .maplibregl-ctrl-bottom-right {
+    display: none !important;
   }
 
   #map-view > #venue-tray.venue-tray::before {

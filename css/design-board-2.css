@@ -64,22 +64,27 @@
   background-size: 20px 20px;
 }
 
-.maplibregl-ctrl-attrib {
-  color: var(--cgb-ink-700);
-  background: rgba(255, 255, 255, .94) !important;
-  border: 1px solid rgba(1, 1, 51, .12);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-xs);
-  backdrop-filter: blur(10px) saturate(115%);
+/* Keep MapLibre attribution presentation native so its compact licensing control remains reliable. */
+
+/* Required MapTiler Free-plan logo: official asset, linked, with no decorative container. */
+.maptiler-logo {
+  position: absolute;
+  z-index: 5;
+  left: 10px;
+  bottom: 10px;
+  display: block;
+  line-height: 0;
 }
 
-.maplibregl-ctrl-attrib a {
-  color: var(--cgb-navy-900);
+.maptiler-logo img {
+  display: block;
+  width: 56px;
+  height: auto;
 }
 
-.maplibregl-ctrl-attrib-button {
-  width: 30px !important;
-  height: 30px !important;
+.maptiler-logo:focus-visible {
+  outline: 2px solid var(--cgb-gold-400);
+  outline-offset: 2px;
 }
 
 .map-toolbar .location-search {

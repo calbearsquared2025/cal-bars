@@ -17,7 +17,7 @@ test('floating MapLibre controls use the shared 44px control treatment', async (
   const css = await read('css/design-board-2.css');
   assert.match(css, /\.maplibregl-ctrl-group button\s*\{[\s\S]*?width:\s*44px\s*!important;[\s\S]*?height:\s*44px\s*!important;/);
   assert.match(css, /\.maplibregl-ctrl-group button:focus-visible/);
-  assert.match(css, /\.maplibregl-ctrl-attrib\s*\{/);
+  assert.doesNotMatch(css, /\.maplibregl-ctrl-attrib\s*\{/);
   assert.match(css, /\.map-toolbar \.search-field\s*\{/);
 });
 
@@ -38,8 +38,9 @@ test('marker states use the Bootstrap geo-alt-fill silhouette with distinct sele
   assert.match(css, /viewBox='0 0 12 16'/);
   assert.match(css, /M6 16s6-5\.686 6-10A6 6 0 0 0 0 6c0 4\.314 6 10 6 10Z/);
   assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?width:\s*32px;[\s\S]*?height:\s*43px;/);
-  assert.match(css, /\.cgb-marker \.marker-star::after[\s\S]*?top:\s*6\.5px;[\s\S]*?width:\s*19px;[\s\S]*?height:\s*19px;/);
-  assert.match(css, /\.cgb-marker \.marker-star__icon[\s\S]*?top:\s*9px;/);
+  assert.match(css, /\.cgb-marker \.marker-star::after[\s\S]*?top:\s*7\.5px;[\s\S]*?width:\s*17px;[\s\S]*?height:\s*17px;/);
+  assert.match(css, /\.cgb-marker \.marker-star__icon[\s\S]*?top:\s*9\.5px;[\s\S]*?width:\s*13px;[\s\S]*?height:\s*13px;/);
+  assert.match(css, /\.cgb-marker \.marker-pin::before,[\s\S]*?inset:\s*1\.25px;/);
   assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?mask:\s*var\(--marker-shape\)/);
   assert.match(css, /\.cgb-marker\.marker--cal-bar \.marker-pin/);
   assert.match(css, /\.cgb-marker\.is-selected \.marker-pin,[\s\S]*?scale:\s*1\.12;/);
@@ -71,4 +72,25 @@ test('Bootstrap marker geometry retains the required MIT notice', async () => {
   const notice = await read('LICENSES/bootstrap-icons-MIT.txt');
   assert.match(notice, /Copyright \(c\) 2019-2024 The Bootstrap Authors/);
   assert.match(notice, /MIT License/);
+});
+
+
+test('MapTiler Free logo is official, linked, and deliberately unobtrusive', async () => {
+  const [html, controls, mobile, logo] = await Promise.all([
+    read('index.html'),
+    read('css/design-board-2.css'),
+    read('css/mobile-first-paint.css'),
+    read('assets/maptiler-logo.svg')
+  ]);
+  assert.match(html, /class="maptiler-logo"[\s\S]*?href="https:\/\/www\.maptiler\.com"[\s\S]*?src="assets\/maptiler-logo\.svg"/);
+  assert.match(controls, /\.maptiler-logo img[\s\S]*?width:\s*56px/);
+  assert.match(mobile, /\.maptiler-logo img[\s\S]*?width:\s*50px/);
+  assert.match(mobile, /\.maptiler-logo[\s\S]*?top:\s*100px/);
+  assert.match(logo, /<svg/);
+});
+
+
+test('Locate icon is centered in its circular mobile control', async () => {
+  const css = await read('css/mobile-polish.css');
+  assert.match(css, /\.map-actions #near-me-button \.ui-icon\s*\{[\s\S]*?width:\s*19px;[\s\S]*?height:\s*19px;[\s\S]*?transform:\s*none;/);
 });
