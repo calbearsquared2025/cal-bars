@@ -97,7 +97,7 @@ export function createWatchPartyModule({
     link.href = party.official_event_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = detail ? 'External event details' : 'Event information';
+    link.textContent = 'OFFICIAL EVENT DETAILS ↗';
     module.append(link);
   }
 
