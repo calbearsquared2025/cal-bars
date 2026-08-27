@@ -56,14 +56,9 @@
   justify-self: start;
   margin-top: 5px;
   padding-top: 0;
-  color: var(--cgb-navy-900);
-  border: 0;
   font-size: .67rem;
-  font-weight: 650;
   line-height: 1.25;
   text-align: left;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
 }
 
 .party-module--multiple {
@@ -86,13 +81,29 @@
   justify-self: start;
   display: block;
   margin: .55rem 0 0;
-  color: var(--cgb-navy-900);
+  color: var(--cgb-ink-500);
   font-size: .75rem;
-  font-weight: 650;
+  font-weight: 400;
   line-height: 1.25;
   text-align: left;
+  text-decoration: none;
+}
+
+.party-module__report-prompt {
+  color: var(--cgb-ink-500);
+  font-weight: 400;
+}
+
+.party-module__report-action {
+  color: var(--cgb-navy-900);
+  font-weight: 700;
+}
+
+.party-module__report:hover .party-module__report-action,
+.party-module__report:focus-visible .party-module__report-action {
   text-decoration: underline;
-  text-underline-offset: .15em;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 @media (min-width: 900px) {
@@ -108,6 +119,5 @@
 
   #tray-selected > #venue-detail > .party-module .party-module__report {
     font-size: .65rem;
-    font-weight: 650;
   }
 }
