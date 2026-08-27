@@ -20,17 +20,6 @@ jobs:
           node-version: 22
       - name: Compact test suite
         timeout-minutes: 5
-        env:
-          CGB_CAPTURE_SCREENSHOTS: '1'
         run: time npm test
       - name: Public data validation
         run: npm run validate:data
-      - name: Upload Stage 4 previews
-        uses: actions/upload-artifact@v4
-        with:
-          name: stage4-header-navigation-previews
-          path: |
-            stage4-mobile-390.png
-            stage4-mobile-320.png
-            stage4-desktop.png
-          if-no-files-found: error
