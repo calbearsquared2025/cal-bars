@@ -69,12 +69,49 @@ async function selectFirstVenue() {
   check((element('#tray-selected')?.textContent || '').trim().length > 0, 'Selected venue profile should contain venue content');
 }
 
+function validateMobileNavigationGeometry() {
+  const commands = [...document.querySelectorAll('.mobile-command-bar .mobile-command')];
+  check(commands.length === 5, 'Mobile navigation should expose five primary commands');
+  check(commands.every((command) => visible(command)), 'All five mobile commands should remain visible');
+  const widths = commands.map((command) => command.getBoundingClientRect().width);
+  check(Math.max(...widths) - Math.min(...widths) <= 1.5, 'Mobile commands should occupy equal-width navigation columns');
+}
+
+async function validateLongGameLabel() {
+  const label = element('#header-game-label');
+  const gameButton = element('#game-button');
+  if (!label || !gameButton) {
+    failures.push('Game selector should be present for long-label validation');
+    return;
+  }
+  const original = label.textContent;
+  label.textContent = 'California Golden Bears vs. Northwestern Wildcats';
+  await sleep();
+  const style = getComputedStyle(label);
+  const buttonRect = gameButton.getBoundingClientRect();
+  check(style.whiteSpace === 'nowrap' && style.overflow === 'hidden', 'Long game labels should remain constrained to one clipped line');
+  check(buttonRect.left >= -1 && buttonRect.right <= innerWidth + 1, 'Long game labels should not push the game selector outside the viewport');
+  label.textContent = original;
+}
+
+async function openMobileSurface(buttonSelector, surfaceSelector, surfaceName) {
+  element(buttonSelector)?.click();
+  await waitFor(() => visible(surfaceSelector), `mobile ${surfaceName} surface`);
+  check(visible('.mobile-command-bar'), `Mobile navigation should remain visible on ${surfaceName}`);
+}
+
 async function runMobile() {
   await ready(false);
   check(visible('#map-view') && visible('#map'), 'Mobile map surface should render');
+  validateMobileNavigationGeometry();
+  await validateLongGameLabel();
+
+  await openMobileSurface('#mobile-search-button', '#search-surface', 'Search');
+  await openMobileSurface('#mobile-add-button', '#add-surface', 'Add');
 
   element('#mobile-list-button')?.click();
   await waitFor(() => visible('#tray-list'), 'mobile location list');
+  check(visible('.mobile-command-bar'), 'Mobile navigation should remain visible on List');
   element('#mobile-map-button')?.click();
   await waitFor(() =>
     document.body.dataset.commandSurface === 'map' &&
