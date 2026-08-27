@@ -5,6 +5,29 @@ function installStyles() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
+    .party-module .party-meta {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      gap: 5px !important;
+      margin: 2px 0 1px !important;
+    }
+
+    .party-module .party-meta__tag {
+      min-height: 22px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      padding: 2px 7px !important;
+      color: var(--cgb-navy-900) !important;
+      background: var(--cgb-gold-50) !important;
+      border: 1px solid var(--cgb-gold-200) !important;
+      border-radius: var(--radius-pill) !important;
+      font-family: var(--font-ui) !important;
+      font-size: .64rem !important;
+      font-weight: 700 !important;
+      line-height: 1.1 !important;
+    }
+
     #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count {
       grid-column: 2 !important;
       grid-row: 1 !important;
@@ -29,6 +52,8 @@ function installStyles() {
     .selected-card .bear-count--empty {
       min-height: 64px !important;
       padding: 8px 7px !important;
+      background: var(--cgb-white) !important;
+      border-color: var(--cgb-gold-200) !important;
     }
 
     .selected-card .bear-count:not(.bear-count--empty) .bear-count__icon {
@@ -62,7 +87,7 @@ function installStyles() {
 
     .selected-card .bear-count__prompt {
       margin-top: 2px !important;
-      font-weight: 850 !important;
+      font-weight: 750 !important;
     }
 
     @media (max-width: 899px) {
@@ -70,6 +95,7 @@ function installStyles() {
         grid-template-columns: minmax(0, 1fr) 98px !important;
         gap: 9px 14px !important;
         padding: 0 14px 12px !important;
+        border-bottom: 0 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header {
@@ -133,6 +159,35 @@ function installStyles() {
         grid-column: 1 / -1 !important;
       }
 
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
+        min-height: 50px !important;
+        display: grid !important;
+        justify-items: start !important;
+        gap: 3px !important;
+        padding: 9px 12px !important;
+        color: var(--cgb-navy-950) !important;
+        background: var(--cgb-gold-50) !important;
+        border: 0 !important;
+        border-left: 3px solid var(--cgb-gold-400) !important;
+        border-radius: 0 10px 10px 0 !important;
+        box-shadow: none !important;
+        text-align: left !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party-status {
+        color: var(--cgb-ink-700) !important;
+        font-size: .7rem !important;
+        font-weight: 550 !important;
+        line-height: 1.2 !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party-action {
+        color: var(--cgb-gold-600) !important;
+        font-size: .78rem !important;
+        font-weight: 800 !important;
+        line-height: 1.15 !important;
+      }
+
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module {
         display: grid !important;
         gap: 4px !important;
@@ -151,6 +206,10 @@ function installStyles() {
         display: flex !important;
       }
 
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title strong {
+        font-weight: 800 !important;
+      }
+
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p {
         margin: 0 !important;
         color: var(--cgb-ink-700) !important;
@@ -158,16 +217,26 @@ function installStyles() {
         line-height: 1.27 !important;
       }
 
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__host strong {
+        font-weight: 700 !important;
+      }
+
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta {
-        color: var(--cgb-navy-900) !important;
-        font-weight: 850 !important;
+        margin: 3px 0 2px !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta__tag {
+        min-height: 21px !important;
+        padding: 2px 7px !important;
+        font-size: .62rem !important;
+        font-weight: 700 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module a:not(.party-module__report) {
         width: fit-content !important;
         color: var(--cgb-navy-900) !important;
         font-size: .73rem !important;
-        font-weight: 800 !important;
+        font-weight: 700 !important;
         line-height: 1.25 !important;
         text-decoration-thickness: 1px !important;
         text-underline-offset: 3px !important;
@@ -184,7 +253,7 @@ function installStyles() {
         color: var(--cgb-ink-500) !important;
         border: 0 !important;
         font-size: .64rem !important;
-        font-weight: 650 !important;
+        font-weight: 550 !important;
         line-height: 1.2 !important;
         text-decoration-thickness: 1px !important;
         text-underline-offset: 3px !important;
@@ -239,7 +308,7 @@ function installStyles() {
         border: 1px solid var(--cgb-neutral-300) !important;
         border-radius: 11px !important;
         font-size: .78rem !important;
-        font-weight: 800 !important;
+        font-weight: 700 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__details {
@@ -263,6 +332,14 @@ function installStyles() {
         width: 17px !important;
         height: 17px !important;
         display: inline-block !important;
+      }
+
+      html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card + #venue-detail.venue-detail--selected-continuation {
+        border-top: 0 !important;
+      }
+
+      html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero {
+        border-top: 0 !important;
       }
 
       @media (max-width: 359px) {
