@@ -158,7 +158,17 @@ function createSelectedActionRow({ state, venue, hasWatchParty, onShare, documen
   share.type = 'button';
   share.className = 'secondary-button selected-card__share';
   share.setAttribute('aria-label', hasWatchParty ? 'Share Watch Party' : 'Share');
-  share.textContent = hasWatchParty ? 'Share Watch Party' : 'Share';
+  if (hasWatchParty) {
+    const fullLabel = documentObject.createElement('span');
+    fullLabel.className = 'selected-card__share-label-full';
+    fullLabel.textContent = 'Share Watch Party';
+    const shortLabel = documentObject.createElement('span');
+    shortLabel.className = 'selected-card__share-label-short';
+    shortLabel.textContent = 'Share';
+    share.append(fullLabel, shortLabel);
+  } else {
+    share.textContent = 'Share';
+  }
   share.addEventListener('click', onShare);
   row.append(share);
   return row;
