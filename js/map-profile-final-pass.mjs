@@ -131,6 +131,7 @@ function installStyles() {
         display: flex !important;
         flex-wrap: wrap !important;
         align-items: center !important;
+        gap: 10px !important;
         margin-top: 0 !important;
         color: var(--cgb-ink-500) !important;
         font-size: .78rem !important;
@@ -145,8 +146,8 @@ function installStyles() {
         min-height: 32px !important;
         display: inline-flex !important;
         align-items: center !important;
-        margin: 0 0 0 -8px !important;
-        padding: 6px 8px !important;
+        margin: 0 !important;
+        padding: 6px 0 !important;
         color: var(--cgb-navy-900) !important;
         font-weight: 800 !important;
         text-decoration: underline !important;
@@ -208,7 +209,7 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title strong {
-        font-weight: 800 !important;
+        font-weight: 850 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p {
@@ -236,8 +237,8 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module a:not(.party-module__report) {
         width: fit-content !important;
         color: var(--cgb-navy-900) !important;
-        font-size: .73rem !important;
-        font-weight: 700 !important;
+        font-size: .74rem !important;
+        font-weight: 800 !important;
         line-height: 1.25 !important;
         text-decoration-thickness: 1px !important;
         text-underline-offset: 3px !important;

@@ -78,10 +78,6 @@
   font-weight: 820;
 }
 
-#venue-tray .selected-card__directions-inline {
-  margin-left: 8px !important;
-}
-
 @keyframes cgb-intent-spin {
   to { transform: rotate(360deg); }
 }

@@ -136,10 +136,11 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 
 .venue-detail .detail-editorial {
   margin: 0 !important;
-  padding: 16px;
+  padding: 16px 16px 16px 13px;
   background: var(--cgb-white);
   border: 0;
   border-top: 1px solid var(--cgb-neutral-200);
+  border-left: 3px solid var(--cgb-gold-400);
   border-radius: 0;
   box-shadow: none;
 }
@@ -147,32 +148,12 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 .venue-detail .detail-editorial h2,
 .venue-detail .detail-fan-experiences h2 {
   margin: 0 0 6px;
-  display: flex;
-  align-items: center;
-  gap: 9px;
   color: var(--cgb-navy-950);
   font-family: var(--font-display);
   font-size: .72rem;
   font-weight: 850;
   letter-spacing: .09em;
   line-height: 1.15;
-}
-
-.venue-detail .detail-editorial h2::before,
-.venue-detail .detail-fan-experiences h2::before {
-  content: '';
-  width: 3px;
-  height: 18px;
-  flex: 0 0 3px;
-  border-radius: var(--radius-pill);
-}
-
-.venue-detail .detail-editorial h2::before {
-  background: var(--cgb-gold-400);
-}
-
-.venue-detail .detail-fan-experiences h2::before {
-  background: var(--cgb-navy-700);
 }
 
 .venue-detail .detail-fan-experiences h2 {
@@ -188,10 +169,11 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 
 .venue-detail .detail-fan-experiences {
   margin: 0 !important;
-  padding: 16px;
+  padding: 16px 16px 16px 13px;
   background: var(--cgb-white);
   border: 0;
   border-top: 1px solid var(--cgb-neutral-200);
+  border-left: 3px solid var(--cgb-navy-700);
   border-radius: 0;
   box-shadow: none;
 }
@@ -247,7 +229,7 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 }
 
 .venue-detail .detail-fan-experiences__name {
-  color: var(--cgb-navy-950);
+  color: var(--cgb-ink-600);
   font-weight: 500;
 }
 
@@ -432,9 +414,10 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 @media (max-width: 899px) {
   html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-editorial {
     margin: 0 !important;
-    padding: 16px !important;
+    padding: 16px 16px 16px 13px !important;
     background: var(--cgb-white) !important;
     border: 0 !important;
+    border-left: 3px solid var(--cgb-gold-400) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
@@ -448,10 +431,11 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences {
     margin: 0 !important;
-    padding: 16px !important;
+    padding: 16px 16px 16px 13px !important;
     background: var(--cgb-white) !important;
     border: 0 !important;
     border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-left: 3px solid var(--cgb-navy-700) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }
@@ -514,6 +498,16 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     box-shadow: none !important;
   }
 
+  html #tray-selected > #venue-detail.venue-detail .detail-editorial {
+    padding-left: 15px !important;
+    border-left: 3px solid var(--cgb-gold-400) !important;
+  }
+
+  html #tray-selected > #venue-detail.venue-detail .detail-fan-experiences {
+    padding-left: 15px !important;
+    border-left: 3px solid var(--cgb-navy-700) !important;
+  }
+
   html #tray-selected > #venue-detail.venue-detail > .party-module {
     margin: 16px 18px 0 !important;
     padding: 13px 14px !important;
@@ -535,7 +529,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   }
 
   .venue-detail .detail-fan-experiences {
-    padding: 14px 12px;
+    padding: 14px 12px 14px 9px;
   }
 }
 

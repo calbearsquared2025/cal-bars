@@ -75,6 +75,16 @@ async function runMobile() {
 
   element('#mobile-list-button')?.click();
   await waitFor(() => visible('#tray-list'), 'mobile location list');
+  element('#mobile-map-button')?.click();
+  await waitFor(() =>
+    document.body.dataset.commandSurface === 'map' &&
+    state()?.trayState !== 'full' &&
+    !visible('#tray-list'),
+  'direct mobile list to map navigation');
+  check(!visible('#tray-list'), 'Mobile Map navigation should not leave the location list visible');
+
+  element('#mobile-list-button')?.click();
+  await waitFor(() => visible('#tray-list'), 'mobile location list reopened');
   await selectFirstVenue();
 
   element('#mobile-map-button')?.click();

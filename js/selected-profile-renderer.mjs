@@ -202,13 +202,15 @@ export function createSelectedVenueCard({
   location.className = 'venue-location';
   const distanceCopy = formatDistance(distance);
   const compactLocation = compactVenueLocation(venue);
-  const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
-  const mobileLocation = locality
-    ? compactLocation.replace(locality, locality.replaceAll(' ', '\u00a0'))
-    : compactLocation;
-  location.textContent = mobile
-    ? mobileLocation
-    : [compactLocation, distanceCopy].filter(Boolean).join(' · ');
+  if (mobile) {
+    const street = [venue?.address_line_1, venue?.address_line_2].filter(Boolean).join(', ');
+    const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
+    if (street) location.append(documentObject.createTextNode(street));
+    if (street && locality) location.append(documentObject.createElement('br'));
+    if (locality) location.append(documentObject.createTextNode(locality));
+  } else {
+    location.textContent = [compactLocation, distanceCopy].filter(Boolean).join(' · ');
+  }
   heading.append(location);
 
   if (mobile) {
@@ -220,9 +222,7 @@ export function createSelectedVenueCard({
       distanceElement.textContent = distanceCopy;
       proximity.append(distanceElement);
     }
-    const directions = createDirectionsLink(directionsHref, documentObject);
-    if (distanceCopy) directions.textContent = '\u00a0Directions';
-    proximity.append(directions);
+    proximity.append(createDirectionsLink(directionsHref, documentObject));
     heading.append(proximity);
   } else {
     location.append(documentObject.createTextNode(' '), createDirectionsLink(directionsHref, documentObject));

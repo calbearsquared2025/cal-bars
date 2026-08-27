@@ -71,33 +71,6 @@ function installStyles(documentObject) {
         box-shadow: none !important;
       }
 
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-editorial {
-        margin: 0 !important;
-        padding: 16px 16px 15px !important;
-        background: var(--cgb-gold-50) !important;
-        border: 0 !important;
-        border-bottom: 1px solid var(--cgb-gold-200) !important;
-        border-radius: 0 !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-editorial h2,
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences h2 {
-        margin: 0 0 6px !important;
-        color: var(--cgb-navy-950) !important;
-        font-family: var(--font-display) !important;
-        font-size: .72rem !important;
-        font-weight: 850 !important;
-        letter-spacing: .09em !important;
-        line-height: 1.15 !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-editorial__copy {
-        margin: 0 !important;
-        color: var(--cgb-ink-700) !important;
-        font-size: var(--text-sm) !important;
-        line-height: 1.48 !important;
-      }
-
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero {
         min-height: 0 !important;
         display: block !important;
@@ -175,86 +148,6 @@ function installStyles(documentObject) {
 
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-local-map .maplibregl-control-container {
         display: none !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences {
-        margin: 0 !important;
-        padding: 16px !important;
-        background: #f1f6fb !important;
-        border: 0 !important;
-        border-top: 1px solid rgba(1, 1, 51, .09) !important;
-        border-bottom: 1px solid rgba(1, 1, 51, .12) !important;
-        border-radius: 0 !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__quotes {
-        display: grid !important;
-        gap: 12px !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__quote-row {
-        display: grid !important;
-        grid-template-columns: 18px minmax(0, 1fr) !important;
-        align-items: start !important;
-        gap: 7px !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__mark {
-        color: var(--cgb-gold-500) !important;
-        font-family: var(--font-display) !important;
-        font-size: 24px !important;
-        line-height: .85 !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__quote,
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__prompt,
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__guidance {
-        margin: 0 !important;
-        color: var(--cgb-ink-700) !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__quote {
-        font-size: 13px !important;
-        line-height: 1.45 !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__attribution {
-        margin: 7px 0 0 25px !important;
-        color: var(--cgb-ink-500) !important;
-        font-size: 12px !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__toggle,
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences__share {
-        width: fit-content !important;
-        margin-top: 10px !important;
-        padding: 0 !important;
-        color: var(--cgb-navy-900) !important;
-        background: transparent !important;
-        border: 0 !important;
-        font-size: var(--text-sm) !important;
-        font-weight: 700 !important;
-        text-decoration: underline !important;
-        text-underline-offset: 3px !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution {
-        margin: 0 !important;
-        padding: 16px !important;
-        background: var(--cgb-white) !important;
-        border: 0 !important;
-        border-top: 1px solid var(--cgb-neutral-200) !important;
-        border-radius: 0 !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution h2 {
-        margin: 0 0 9px !important;
-        color: var(--cgb-ink-500) !important;
-        font-family: var(--font-ui) !important;
-        font-size: .72rem !important;
-        font-weight: 750 !important;
-        letter-spacing: .035em !important;
-        line-height: 1.2 !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .action-row {

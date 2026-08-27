@@ -52,7 +52,7 @@ function createShareLink(documentObject, href) {
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = 'Share your experience';
+  link.textContent = 'Add your experience';
   return link;
 }
 
@@ -71,21 +71,27 @@ function createQuote(documentObject, item) {
   quote.textContent = item.text;
   quoteRow.append(mark, quote);
 
-  const attribution = documentObject.createElement('p');
-  attribution.className = 'detail-fan-experiences__attribution';
-  const name = documentObject.createElement('strong');
-  name.className = 'detail-fan-experiences__name';
-  name.textContent = item.display_name || 'Anonymous';
-  attribution.append(name);
-  if (item.year) {
-    attribution.append(documentObject.createTextNode(' · '));
-    const year = documentObject.createElement('span');
-    year.className = 'detail-fan-experiences__year';
-    year.textContent = String(item.year);
-    attribution.append(year);
+  experience.append(quoteRow);
+
+  if (item.display_name || item.year) {
+    const attribution = documentObject.createElement('p');
+    attribution.className = 'detail-fan-experiences__attribution';
+    if (item.display_name) {
+      const name = documentObject.createElement('strong');
+      name.className = 'detail-fan-experiences__name';
+      name.textContent = item.display_name;
+      attribution.append(name);
+    }
+    if (item.year) {
+      if (item.display_name) attribution.append(documentObject.createTextNode(' · '));
+      const year = documentObject.createElement('span');
+      year.className = 'detail-fan-experiences__year';
+      year.textContent = String(item.year);
+      attribution.append(year);
+    }
+    experience.append(attribution);
   }
 
-  experience.append(quoteRow, attribution);
   return experience;
 }
 

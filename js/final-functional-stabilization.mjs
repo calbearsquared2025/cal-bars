@@ -1,6 +1,5 @@
 import './map-zoom-coordination.mjs';
 
-const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-final-functional-stabilization';
 const CONTEXTUAL_ADD_SELECTOR = [
   '#add-watch-party-button',
@@ -10,16 +9,11 @@ const CONTEXTUAL_ADD_SELECTOR = [
   '#add-report-party-button'
 ].join(',');
 
-let listSurfaceLocked = false;
 let addContextVenueId = '';
 let postRenderFrame = 0;
 let appConnected = false;
 let appConnectAttempts = 0;
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
-
-function isMobile() {
-  return window.matchMedia(MOBILE_QUERY).matches;
-}
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
@@ -36,24 +30,6 @@ function installStyles() {
     style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      .selected-card__directions-inline::before {
-        content: none !important;
-      }
-
-      .selected-card__location-separator {
-        flex: 0 0 auto;
-        margin: 0 6px 0 2px;
-        color: var(--cgb-ink-500, #657083);
-        text-decoration: none;
-        pointer-events: none;
-      }
-
-      .selected-card__directions-inline {
-        min-height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-
       .cgb-safe-area-fill {
         position: fixed;
         z-index: 1000;
@@ -100,48 +76,6 @@ function ensureSafeAreaFills() {
   }
 }
 
-function setCommandActive(command) {
-  document.body.dataset.commandSurface = command;
-  document.querySelectorAll('.mobile-command').forEach((button) => {
-    const buttonCommand = button.dataset.command || ({
-      'mobile-map-button': 'map',
-      'mobile-search-button': 'search',
-      'mobile-add-button': 'add',
-      'mobile-list-button': 'list'
-    })[button.id];
-    const active = buttonCommand === command;
-    button.classList.toggle('mobile-command--active', active);
-    if (active) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
-}
-
-function setTrayState(next) {
-  const state = appState();
-  const tray = document.querySelector('#venue-tray');
-  if (!state || !tray) return;
-  state.trayState = next;
-  tray.dataset.state = next;
-  tray.className = `venue-tray tray--${next}`;
-  document.querySelector('#tray-handle')?.setAttribute('aria-expanded', String(next !== 'peek'));
-  const peek = document.querySelector('#tray-peek');
-  const selected = document.querySelector('#tray-selected');
-  const list = document.querySelector('#tray-list');
-  if (peek) peek.hidden = next !== 'peek';
-  if (selected) selected.hidden = next !== 'selected';
-  if (list) list.hidden = next !== 'full';
-}
-
-function restoreListSurface() {
-  if (!isMobile() || !listSurfaceLocked || document.body.dataset.view === 'detail') return;
-  const searchSurface = document.querySelector('#search-surface');
-  const addSurface = document.querySelector('#add-surface');
-  if (searchSurface) searchSurface.hidden = true;
-  if (addSurface) addSurface.hidden = true;
-  setTrayState('full');
-  setCommandActive('list');
-}
-
 function captureAddContext() {
   addContextVenueId = appState()?.selectedVenueId || '';
 }
@@ -182,22 +116,8 @@ function schedulePostRender() {
   postRenderFrame = window.requestAnimationFrame(() => {
     installStyles();
     ensureSafeAreaFills();
-
-    if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
-    if (listSurfaceLocked) restoreListSurface();
     syncAddContext();
   });
-}
-
-function setListLockFromEvent(event) {
-  if (event.target.closest?.('#mobile-list-button, #list-location-toggle')) {
-    listSurfaceLocked = true;
-    return;
-  }
-  if (event.target.closest?.('#mobile-map-button, #mobile-search-button, #mobile-add-button, [data-command-close]')) {
-    listSurfaceLocked = false;
-  }
-  if (event.target.closest?.('#location-list .location-card')) listSurfaceLocked = false;
 }
 
 function handleNavigationContext(event) {
@@ -228,11 +148,6 @@ function initialize() {
     ensureSafeAreaFills();
   });
 
-  document.addEventListener('pointerdown', setListLockFromEvent, { capture: true });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') setListLockFromEvent(event);
-  }, { capture: true });
-  document.addEventListener('click', setListLockFromEvent, { capture: true });
   document.addEventListener('pointerdown', handleNavigationContext, { capture: true });
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') handleNavigationContext(event);
@@ -240,8 +155,6 @@ function initialize() {
   document.addEventListener('click', handleNavigationContext, { capture: true });
   document.addEventListener('click', restoreContextForAddAction, { capture: true });
 
-  if (document.body.dataset.commandSurface === 'list') listSurfaceLocked = true;
-  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', schedulePostRender);
   connectApp();
   schedulePostRender();
 }
