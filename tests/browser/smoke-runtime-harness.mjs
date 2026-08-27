@@ -22,6 +22,14 @@ function visible(target) {
   return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
 }
 
+function rendered(target) {
+  const node = typeof target === 'string' ? element(target) : target;
+  if (!node) return false;
+  const style = getComputedStyle(node);
+  const rect = node.getBoundingClientRect();
+  return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+}
+
 function sleep(ms = 20) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -130,10 +138,34 @@ async function runMobile() {
   finish('CGB_SMOKE_MOBILE');
 }
 
+async function validateDesktopSearchHelper() {
+  const input = element('#location-query');
+  const helper = element('#search-add-location-button');
+  if (!input || !helper) {
+    failures.push('Desktop search input and add-location helper should render');
+    return;
+  }
+
+  check(!rendered(helper), 'Desktop add-location helper should be visually hidden before search interaction');
+  input.focus();
+  await sleep();
+  check(!rendered(helper), 'Desktop add-location helper should stay hidden on focus before typing');
+
+  input.value = 'Synthetic';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(() => rendered(helper), 'desktop add-location helper after typing');
+
+  input.value = '';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(() => !rendered(helper), 'desktop add-location helper after clearing search');
+  input.blur();
+}
+
 async function runDesktop() {
   await ready(true);
   check(visible('#map-view') && visible('#map'), 'Desktop map surface should render');
   check(visible('#tray-list'), 'Desktop venue list should render');
+  await validateDesktopSearchHelper();
   await selectFirstVenue();
   finish('CGB_SMOKE_DESKTOP');
 }
