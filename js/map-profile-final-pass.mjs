@@ -48,6 +48,16 @@ function installStyles() {
       text-align: center !important;
     }
 
+    .selected-card .bear-count:not(.bear-count--empty) {
+      grid-template-columns: auto minmax(0, 48px) !important;
+      align-items: center !important;
+      justify-content: center !important;
+      justify-items: stretch !important;
+      column-gap: 5px !important;
+      padding-inline: 2px !important;
+      text-align: left !important;
+    }
+
     .selected-card .bear-count--empty {
       min-height: 64px !important;
       padding: 8px 7px !important;
@@ -66,11 +76,13 @@ function installStyles() {
     }
 
     .selected-card .bear-count__number {
+      justify-self: end !important;
       color: var(--cgb-navy-950) !important;
-      font-family: var(--font-display) !important;
-      font-size: 2.25rem !important;
-      font-weight: 700 !important;
-      line-height: .94 !important;
+      font-family: var(--font-ui) !important;
+      font-size: 2.4rem !important;
+      font-weight: 850 !important;
+      letter-spacing: -.045em !important;
+      line-height: .9 !important;
     }
 
     .selected-card .bear-count__label,
@@ -82,6 +94,15 @@ function installStyles() {
       font-weight: 750 !important;
       line-height: 1.14 !important;
       text-transform: none !important;
+    }
+
+    .selected-card .bear-count:not(.bear-count--empty) .bear-count__label {
+      max-width: 48px !important;
+      justify-self: start !important;
+      font-size: .65rem !important;
+      font-weight: 800 !important;
+      line-height: 1.06 !important;
+      text-align: left !important;
     }
 
     .selected-card .bear-count__prompt {
@@ -249,14 +270,15 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__report {
-        justify-self: end !important;
-        margin-top: 1px !important;
-        padding-top: 2px !important;
-        color: var(--cgb-ink-500) !important;
+        justify-self: start !important;
+        margin-top: 5px !important;
+        padding-top: 0 !important;
+        color: var(--cgb-navy-900) !important;
         border: 0 !important;
-        font-size: .64rem !important;
-        font-weight: 550 !important;
-        line-height: 1.2 !important;
+        font-size: .67rem !important;
+        font-weight: 650 !important;
+        line-height: 1.25 !important;
+        text-align: left !important;
         text-decoration-thickness: 1px !important;
         text-underline-offset: 3px !important;
       }
@@ -353,15 +375,25 @@ function installStyles() {
 
         body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count {
           min-height: 82px !important;
-          padding-inline: 4px !important;
+          padding-inline: 2px !important;
         }
 
         body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
           min-height: 58px !important;
         }
 
+        .selected-card .bear-count:not(.bear-count--empty) {
+          grid-template-columns: auto minmax(0, 40px) !important;
+          column-gap: 3px !important;
+        }
+
         .bear-count__number {
-          font-size: 1.95rem !important;
+          font-size: 2.05rem !important;
+        }
+
+        .selected-card .bear-count:not(.bear-count--empty) .bear-count__label {
+          max-width: 40px !important;
+          font-size: .58rem !important;
         }
       }
     }
