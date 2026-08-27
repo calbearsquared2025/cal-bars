@@ -20,21 +20,29 @@
   display: none;
 }
 
-/* Fan attendance status is one compact CGB-community unit. */
+/* Positive fan attendance is one compact CGB-community unit. */
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) {
   width: 100% !important;
-  min-height: 84px !important;
-  grid-template-columns: minmax(0, 1fr) auto !important;
+  min-height: 94px !important;
+  display: grid !important;
+  grid-template-columns: auto auto !important;
   grid-template-rows: auto auto !important;
   align-content: center !important;
   align-items: end !important;
-  justify-content: stretch !important;
+  justify-content: end !important;
   justify-items: stretch !important;
-  column-gap: 4px !important;
-  row-gap: 0 !important;
-  padding: 7px 0 7px 5px !important;
-  transform: translateX(4px) !important;
+  column-gap: 3px !important;
+  row-gap: 2px !important;
+  margin: 2px 0 0 !important;
+  padding: 8px 0 !important;
+  color: var(--cgb-navy-950) !important;
+  background: transparent !important;
+  border: 0 !important;
   text-align: center !important;
+}
+
+#map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__icon {
+  display: none !important;
 }
 
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
@@ -156,6 +164,25 @@
 
   .selected-card__share-label-short {
     display: inline;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) {
+    min-height: 82px !important;
+    column-gap: 2px !important;
+    row-gap: 1px !important;
+    padding: 6px 0 !important;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
+    font-size: 2.15rem !important;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label::before {
+    font-size: .68rem;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label::after {
+    font-size: .62rem;
   }
 }
 
