@@ -89,13 +89,18 @@ function createQuote(documentObject, item) {
   return experience;
 }
 
-function placeSection(detail, section) {
+function placeSection(detail, section, prioritizePublished = false) {
+  const hero = detail.querySelector(':scope > .detail-hero');
   const editorial = detail.querySelector(':scope > .detail-editorial');
+
+  if (prioritizePublished && hero) {
+    hero.after(section);
+    return;
+  }
   if (editorial) {
     editorial.after(section);
     return;
   }
-  const hero = detail.querySelector(':scope > .detail-hero');
   if (hero) hero.after(section);
   else detail.prepend(section);
 }
@@ -130,7 +135,7 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
     section.append(prompt, guidance);
     const share = createShareLink(documentObject, href);
     if (share) section.append(share);
-    placeSection(detail, section);
+    placeSection(detail, section, false);
     return section;
   }
 
@@ -162,6 +167,6 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
 
   const share = createShareLink(documentObject, href);
   if (share) section.append(share);
-  placeSection(detail, section);
+  placeSection(detail, section, true);
   return section;
 }

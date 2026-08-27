@@ -26,6 +26,20 @@ function appendText(module, text, className, documentObject) {
   module.append(line);
 }
 
+function appendTags(module, labels, documentObject) {
+  if (!labels.length) return;
+  const tags = documentObject.createElement('div');
+  tags.className = 'party-meta';
+  tags.setAttribute('aria-label', 'Watch Party details');
+  labels.forEach((label) => {
+    const tag = documentObject.createElement('span');
+    tag.className = 'party-meta__tag';
+    tag.textContent = label;
+    tags.append(tag);
+  });
+  module.append(tags);
+}
+
 export function createWatchPartyModule({
   party,
   index = 0,
@@ -73,7 +87,7 @@ export function createWatchPartyModule({
   if (party.age_policy === 'all_ages') details.push('All ages');
   if (party.sound_status === 'confirmed_on') details.push('Game audio on');
   if (party.sound_status === 'confirmed_off') details.push('Game audio off');
-  appendText(module, details.join(' · '), 'party-meta', documentObject);
+  appendTags(module, details, documentObject);
   appendText(module, party.restrictions_note, 'party-module__note', documentObject);
   appendText(module, party.game_day_note, 'party-module__note', documentObject);
 
