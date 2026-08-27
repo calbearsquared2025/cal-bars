@@ -1,5 +1,4 @@
 import {
-  bearCountCopy,
   compactVenueLocation,
   getFanCount,
   venueBadgeDescriptors
@@ -13,6 +12,13 @@ function formatDistance(distance) {
   if (!Number.isFinite(distance)) return '';
   if (distance < 0.1) return 'Nearby';
   return `${distance.toFixed(distance < 10 ? 1 : 0)} mi away`;
+}
+
+function cgbAttendanceCopy(count) {
+  const total = Number(count);
+  if (total === 1) return '1 Bear on CGB';
+  if (total > 1) return `${total} Bears on CGB`;
+  return 'No Bears on CGB yet.';
 }
 
 function createBadges(venue, party, documentObject) {
@@ -31,7 +37,7 @@ export function selectedAttendanceViewModel({ state, game, venue } = {}) {
   const publicCount = getFanCount(state?.snapshot, state?.gameId, venue?.venue_id);
   const selectedByThisBrowser = state?.fanIntent?.selections?.[state?.gameId] === venue?.venue_id;
   const number = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
-  const currentCopy = bearCountCopy(number);
+  const currentCopy = cgbAttendanceCopy(number);
   const presentation = venueActivityPresentation({
     snapshot: state?.snapshot,
     game,
@@ -66,23 +72,24 @@ function createAttendance(state, game, venue, documentObject) {
 
   if (view.kind === 'completed') {
     count.textContent = view.primary;
-  } else {
+  } else if (view.kind === 'empty') {
+    count.classList.add('bear-count--empty');
     const icon = createIcon('users', { className: 'ui-icon bear-count__icon', documentObject });
-    if (view.kind === 'empty') {
-      count.classList.add('bear-count--empty');
-      const prompt = documentObject.createElement('strong');
-      prompt.className = 'bear-count__prompt';
-      prompt.textContent = 'Be the first.';
-      count.append(icon, prompt);
-    } else {
-      const numeral = documentObject.createElement('span');
-      numeral.className = 'bear-count__number';
-      numeral.textContent = String(view.number);
-      const label = documentObject.createElement('span');
-      label.className = 'bear-count__label';
-      label.textContent = view.number === 1 ? 'Bear watching here' : 'Bears watching here';
-      count.append(icon, numeral, label);
-    }
+    const prompt = documentObject.createElement('strong');
+    prompt.className = 'bear-count__prompt';
+    prompt.textContent = 'Be the first.';
+    count.append(icon, prompt);
+  } else {
+    const numeral = documentObject.createElement('span');
+    numeral.className = 'bear-count__number';
+    numeral.textContent = String(view.number);
+    const label = documentObject.createElement('span');
+    label.className = 'bear-count__label';
+    label.textContent = view.number === 1 ? 'BEAR' : 'BEARS';
+    const context = documentObject.createElement('span');
+    context.className = 'bear-count__context';
+    context.textContent = 'ON CGB';
+    count.append(numeral, label, context);
   }
 
   let history = null;
