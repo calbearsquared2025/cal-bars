@@ -31,7 +31,7 @@
   justify-content: stretch !important;
   justify-items: stretch !important;
   column-gap: 4px !important;
-  row-gap: 3px !important;
+  row-gap: 0 !important;
   padding: 7px 0 7px 5px !important;
   transform: translateX(4px) !important;
   text-align: center !important;
@@ -82,7 +82,7 @@
   font-size: .68rem;
   font-weight: 800;
   letter-spacing: .055em;
-  line-height: 1.05;
+  line-height: 1;
   text-align: center;
   white-space: nowrap;
 }
