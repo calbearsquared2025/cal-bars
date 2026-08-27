@@ -16,8 +16,8 @@ function formatDistance(distance) {
 
 function cgbAttendanceCopy(count) {
   const total = Number(count);
-  if (total === 1) return '1 Bear on CGB';
-  if (total > 1) return `${total} Bears on CGB`;
+  if (total === 1) return '1 Bear attending on CGB';
+  if (total > 1) return `${total} Bears attending on CGB`;
   return 'No Bears on CGB yet.';
 }
 
@@ -86,10 +86,13 @@ function createAttendance(state, game, venue, documentObject) {
     const label = documentObject.createElement('span');
     label.className = 'bear-count__label';
     label.textContent = view.number === 1 ? 'BEAR' : 'BEARS';
+    const attending = documentObject.createElement('span');
+    attending.className = 'bear-count__attending';
+    attending.textContent = 'ATTENDING';
     const context = documentObject.createElement('span');
     context.className = 'bear-count__context';
     context.textContent = 'ON CGB';
-    count.append(numeral, label, context);
+    count.append(numeral, label, attending, context);
   }
 
   let history = null;
