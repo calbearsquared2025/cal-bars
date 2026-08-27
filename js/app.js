@@ -1093,7 +1093,9 @@ function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
 
 function locateOnMap() {
   const mobile = isMobileLayout();
-  if (!normalizedUserLocation(state.origin) && showNearbyLocations({ trayState: mobile ? 'peek' : 'full', focus: true })) return;
+  const preserveSelectedProfile = mobile && Boolean(state.selectedVenueId) && state.trayState === 'selected';
+  const nextTrayState = preserveSelectedProfile ? 'selected' : mobile ? 'peek' : 'full';
+  if (!normalizedUserLocation(state.origin) && showNearbyLocations({ trayState: nextTrayState, focus: true })) return;
   if (!navigator.geolocation) return showStatus('Location is not available in this browser');
 
   dom.nearMe.disabled = true;
@@ -1105,7 +1107,7 @@ function locateOnMap() {
     state.detailMode = false;
     dom.searchInput.value = '';
     dom.searchDropdown.hidden = true;
-    setTrayState(mobile ? 'peek' : 'full');
+    setTrayState(nextTrayState);
     updateRouteForGame();
     const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
     renderAll();
@@ -1483,6 +1485,7 @@ window.CGBApp = Object.freeze({
   showAllLocations,
   showNearbyLocations,
   showLocations,
+  showSelectedVenue,
   restoreSelection,
   selectGame,
   shareVenue,
