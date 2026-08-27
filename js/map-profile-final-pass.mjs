@@ -61,8 +61,8 @@ function installStyles() {
     }
 
     .selected-card .bear-count__icon {
-      width: 18px !important;
-      height: 18px !important;
+      width: 21px !important;
+      height: 21px !important;
       color: var(--cgb-gold-500) !important;
     }
 
@@ -77,17 +77,19 @@ function installStyles() {
     .selected-card .bear-count__label,
     .selected-card .bear-count__prompt {
       display: block !important;
-      max-width: 78px !important;
+      max-width: 84px !important;
       font-family: var(--font-ui) !important;
-      font-size: .65rem !important;
+      font-size: .7rem !important;
       font-weight: 750 !important;
-      line-height: 1.12 !important;
+      line-height: 1.14 !important;
       text-transform: none !important;
     }
 
     .selected-card .bear-count__prompt {
-      margin-top: 2px !important;
+      margin-top: 3px !important;
+      font-size: .72rem !important;
       font-weight: 750 !important;
+      line-height: 1.16 !important;
     }
 
     @media (max-width: 899px) {
