@@ -381,7 +381,6 @@ body[data-view="detail"] #app {
   .game-button {
     min-height: 66px;
     border: 0;
-    border-left: 1px solid rgba(255, 255, 255, .18);
     padding: 6px 32px 6px 22px;
   }
 
