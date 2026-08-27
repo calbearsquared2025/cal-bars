@@ -1,4 +1,5 @@
 @import url('./mobile-typography.css');
+@import url('./secondary-surfaces-consistency.css');
 
 .support-dialog {
   width: min(92vw, 480px);
