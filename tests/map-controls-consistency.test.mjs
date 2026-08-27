@@ -54,12 +54,20 @@ test('map attendance badges explain Bear counts while the marker retains its ful
   assert.match(app, /badge\.setAttribute\('aria-hidden', 'true'\);/);
 });
 
-test('Locate me works on desktop without changing the existing mobile nearby presentation', async () => {
-  const app = await read('js/app.js');
+test('Locate me preserves a selected mobile profile and leaves control placement to CSS', async () => {
+  const [app, mobilePolish, firstPaint] = await Promise.all([
+    read('js/app.js'),
+    read('js/mobile-polish.mjs'),
+    read('css/mobile-first-paint.css')
+  ]);
   assert.doesNotMatch(app, /function locateOnMap\(\) \{\s*if \(!isMobileLayout\(\)\) return;/);
   assert.match(app, /const mobile = isMobileLayout\(\);/);
-  assert.match(app, /showNearbyLocations\(\{ trayState: mobile \? 'peek' : 'full', focus: true \}\)/);
-  assert.match(app, /setTrayState\(mobile \? 'peek' : 'full'\);/);
+  assert.match(app, /const preserveSelectedProfile = mobile && Boolean\(state\.selectedVenueId\) && state\.trayState === 'selected';/);
+  assert.match(app, /const nextTrayState = preserveSelectedProfile \? 'selected' : mobile \? 'peek' : 'full';/);
+  assert.match(app, /showNearbyLocations\(\{ trayState: nextTrayState, focus: true \}\)/);
+  assert.match(app, /setTrayState\(nextTrayState\);/);
+  assert.doesNotMatch(mobilePolish, /--map-action-top/);
+  assert.match(firstPaint, /\.map-actions\s*\{[\s\S]*?top:\s*var\(--map-action-top,\s*calc\(100dvh - var\(--footer-height\) - 156px\)\)\s*!important;/);
 });
 
 test('mobile legend has a little more white breathing room below the labels', async () => {
