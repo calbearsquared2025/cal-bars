@@ -103,7 +103,7 @@ function installStyles() {
         grid-column: 1 !important;
         grid-row: 1 !important;
         margin: 0 !important;
-        padding: 8px 0 9px !important;
+        padding: 8px 0 0 !important;
         background: transparent !important;
         border-left: 0 !important;
         border-bottom: 0 !important;
@@ -223,7 +223,7 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta {
-        margin: 3px 0 2px !important;
+        margin: 3px 0 2px -6px !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta__tag {
