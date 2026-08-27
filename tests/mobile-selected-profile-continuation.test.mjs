@@ -54,3 +54,19 @@ test('selected cards do not render the superseded detail gateway', async () => {
   assert.doesNotMatch(source, /More About This Location/);
   assert.doesNotMatch(source, /detailHref/);
 });
+
+test('continuous profile places photo or fallback map before the editorial sections', async () => {
+  const source = await readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8');
+  const heroPlacement = source.indexOf('cachedVenueDetail.append(hero);');
+  const editorialPlacement = source.indexOf('if (editorial) cachedVenueDetail.append(editorial);');
+  assert.ok(heroPlacement >= 0);
+  assert.ok(editorialPlacement > heroPlacement);
+  assert.doesNotMatch(source, /if \(fanSection\) hero\.after\(fanSection\)/);
+});
+
+test('no-photo profile uses the contextual map photo action without duplicating it in maintenance rows', async () => {
+  const source = await readFile(new URL('../js/photo-form.js', import.meta.url), 'utf8');
+  assert.match(source, /if \(localMap\) \{[\s\S]*entryPoint: 'map-overlay'[\s\S]*\} else \{[\s\S]*entryPoint: 'contribution'/);
+  assert.equal((source.match(/entryPoint: 'map-overlay'/g) || []).length, 1);
+  assert.equal((source.match(/entryPoint: 'contribution'/g) || []).length, 1);
+});
