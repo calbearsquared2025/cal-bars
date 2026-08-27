@@ -1,3 +1,9 @@
+/* Cal Golden Bars v2 — Venue Profile presentation.
+   Stage 2 keeps the existing content and behavior while making the profile read as
+   one continuous editorial surface. Watch Party information remains the deliberate
+   highlighted module; ordinary profile sections use spacing and rules rather than
+   nested cards. */
+
 body[data-view="detail"] .venue-detail {
   background: var(--cgb-white) !important;
   border-radius: 16px !important;
@@ -111,22 +117,31 @@ body[data-view="detail"] .detail-hero .venue-badges + h1 {
   margin-top: 5px !important;
 }
 
-body[data-view="detail"] .activity-card {
-  margin-top: 0 !important;
-  background: transparent !important;
+/* Ordinary Venue Profile sections share one white surface. */
+body[data-view="detail"] #venue-detail.venue-detail > .activity-card {
+  margin: 0 !important;
+  padding: 16px !important;
+  color: var(--cgb-navy-950) !important;
+  background: var(--cgb-white) !important;
   border: 0 !important;
   border-top: 1px solid var(--cgb-neutral-200) !important;
   border-radius: 0 !important;
+  box-shadow: none !important;
+  clip-path: none !important;
+}
+
+body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
+  display: none !important;
 }
 
 .venue-detail .detail-editorial {
   margin: 0 !important;
   padding: 16px;
-  background: var(--cgb-gold-50);
+  background: var(--cgb-white);
   border: 0;
-  border-top: 1px solid var(--cgb-gold-200);
-  border-bottom: 1px solid var(--cgb-gold-200);
+  border-top: 1px solid var(--cgb-neutral-200);
   border-radius: 0;
+  box-shadow: none;
 }
 
 .venue-detail .detail-editorial h2,
@@ -154,14 +169,15 @@ body[data-view="detail"] .activity-card {
 .venue-detail .detail-fan-experiences {
   margin: 0 !important;
   padding: 16px;
-  background: #f1f6fb;
+  background: var(--cgb-white);
   border: 0;
-  border-bottom: 1px solid rgba(1, 1, 51, .12);
+  border-top: 1px solid var(--cgb-neutral-200);
   border-radius: 0;
+  box-shadow: none;
 }
 
 .venue-detail .detail-editorial + .detail-fan-experiences {
-  border-top: 0;
+  border-top: 1px solid var(--cgb-neutral-200);
 }
 
 .venue-detail .detail-fan-experiences__quotes {
@@ -265,41 +281,74 @@ body[data-view="detail"] .activity-card {
   font-weight: 700;
 }
 
-body[data-view="detail"] .detail-contribution {
-  margin-top: 0 !important;
-  background: transparent !important;
+body[data-view="detail"] #venue-detail.venue-detail > .detail-contribution {
+  margin: 0 !important;
+  padding: 16px !important;
+  background: var(--cgb-white) !important;
   border: 0 !important;
   border-top: 1px solid var(--cgb-neutral-200) !important;
   border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
-@media (max-width: 359px) {
-  body[data-view="detail"] .detail-hero.detail-hero--has-photo {
-    padding-inline: 12px !important;
-  }
-
-  body[data-view="detail"] .back-link {
-    left: 20px !important;
-  }
-
-  .venue-detail .detail-fan-experiences {
-    padding: 14px 12px;
-  }
+/* Contribution actions remain actionable, but no longer form a card inside the profile. */
+body[data-view="detail"] #venue-detail .detail-contribution__actions,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--cgb-neutral-200);
+  border-radius: 0;
 }
 
-@media (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
-  body[data-view="detail"] .detail-hero.detail-hero--has-photo {
-    padding: 10px 14px 14px !important;
-  }
-
-  body[data-view="detail"] .back-link {
-    top: 18px !important;
-    left: 22px !important;
-  }
+body[data-view="detail"] #venue-detail .detail-contribution__action,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action {
+  position: relative;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 28px 8px 0;
+  color: var(--cgb-navy-900);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--cgb-neutral-200);
+  border-radius: 0;
+  font-size: var(--text-xs);
+  font-weight: 750;
+  line-height: 1.25;
+  text-decoration: none;
 }
 
-/* Canonical Venue Profile utility polish. These selectors intentionally outrank
-   older layout-only rules in venue-detail.css without changing their structure. */
+body[data-view="detail"] #venue-detail .detail-contribution__action::after,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action::after {
+  content: '›';
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  transform: translateY(-50%);
+  color: var(--cgb-ink-500);
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+body[data-view="detail"] #venue-detail .detail-contribution__action:last-child,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action:last-child {
+  border-bottom: 0;
+}
+
+body[data-view="detail"] #venue-detail .detail-contribution__action:hover,
+body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visible,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action:hover,
+#tray-selected > #venue-detail.venue-detail .detail-contribution__action:focus-visible {
+  background: transparent;
+}
+
+/* Bear activity keeps its compact count treatment without becoming a separate card. */
 .venue-detail .activity-card:has(.bear-count__number) {
   display: grid !important;
   grid-template-columns: auto minmax(0, 1fr);
@@ -337,57 +386,112 @@ body[data-view="detail"] .detail-contribution {
   grid-row: 2;
 }
 
-body[data-view="detail"] #venue-detail .detail-contribution__actions,
-#tray-selected > #venue-detail.venue-detail .detail-contribution__actions {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-  overflow: hidden;
-  background: var(--cgb-white);
-  border: 1px solid var(--cgb-neutral-200);
-  border-radius: 10px;
+/* Runtime mobile continuation styles are injected after linked stylesheets.
+   Extra selector specificity keeps the same continuous-surface treatment authoritative
+   without changing the continuation rendering code. */
+@media (max-width: 899px) {
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-editorial {
+    margin: 0 !important;
+    padding: 16px !important;
+    background: var(--cgb-white) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero {
+    border: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-fan-experiences {
+    margin: 0 !important;
+    padding: 16px !important;
+    background: var(--cgb-white) !important;
+    border: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution {
+    margin: 0 !important;
+    padding: 16px !important;
+    background: var(--cgb-white) !important;
+    border: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution__actions {
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution__action {
+    padding-inline: 0 28px !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-contribution__action::after {
+    right: 2px !important;
+  }
 }
 
-body[data-view="detail"] #venue-detail .detail-contribution__action,
-#tray-selected > #venue-detail.venue-detail .detail-contribution__action {
-  position: relative;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 8px 34px 8px 12px;
-  color: var(--cgb-navy-900);
-  background: transparent;
-  border: 0;
-  border-bottom: 1px solid var(--cgb-neutral-200);
-  border-radius: 0;
-  font-size: var(--text-xs);
-  font-weight: 750;
-  line-height: 1.25;
-  text-decoration: none;
+/* Desktop selected-venue profile follows the same editorial rhythm. Watch Party
+   remains the exception: an inset gold-accented module within the continuous profile. */
+@media (min-width: 900px) {
+  html #tray-selected > #venue-detail.venue-detail .activity-card,
+  html #tray-selected > #venue-detail.venue-detail .detail-editorial,
+  html #tray-selected > #venue-detail.venue-detail .detail-fan-experiences,
+  html #tray-selected > #venue-detail.venue-detail .detail-contribution {
+    margin: 0 !important;
+    padding: 16px 18px !important;
+    background: var(--cgb-white) !important;
+    border: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  html #tray-selected > #venue-detail.venue-detail > .party-module {
+    margin: 16px 18px 0 !important;
+    padding: 13px 14px !important;
+    background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 82%) !important;
+    border: 1px solid var(--cgb-gold-200) !important;
+    border-left: 4px solid var(--cgb-gold-400) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+  }
 }
 
-body[data-view="detail"] #venue-detail .detail-contribution__action::after,
-#tray-selected > #venue-detail.venue-detail .detail-contribution__action::after {
-  content: '›';
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  color: var(--cgb-ink-500);
-  font-size: 1.15rem;
-  font-weight: 500;
-  line-height: 1;
+@media (max-width: 359px) {
+  body[data-view="detail"] .detail-hero.detail-hero--has-photo {
+    padding-inline: 12px !important;
+  }
+
+  body[data-view="detail"] .back-link {
+    left: 20px !important;
+  }
+
+  .venue-detail .detail-fan-experiences {
+    padding: 14px 12px;
+  }
 }
 
-body[data-view="detail"] #venue-detail .detail-contribution__action:last-child,
-#tray-selected > #venue-detail.venue-detail .detail-contribution__action:last-child {
-  border-bottom: 0;
-}
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 500px) {
+  body[data-view="detail"] .detail-hero.detail-hero--has-photo {
+    padding: 10px 14px 14px !important;
+  }
 
-body[data-view="detail"] #venue-detail .detail-contribution__action:hover,
-body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visible,
-#tray-selected > #venue-detail.venue-detail .detail-contribution__action:hover,
-#tray-selected > #venue-detail.venue-detail .detail-contribution__action:focus-visible {
-  background: var(--cgb-neutral-50);
+  body[data-view="detail"] .back-link {
+    top: 18px !important;
+    left: 22px !important;
+  }
 }
