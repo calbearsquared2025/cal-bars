@@ -30,16 +30,6 @@ function installStyles() {
     style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = `
-      .selected-card__directions-inline::before {
-        content: none !important;
-      }
-
-      .selected-card__directions-inline {
-        min-height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-
       .cgb-safe-area-fill {
         position: fixed;
         z-index: 1000;
