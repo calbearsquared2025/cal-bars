@@ -625,7 +625,8 @@
 
   .map-legend {
     gap: clamp(6px, 2.3vw, 12px);
-    padding: 0 clamp(6px, 2vw, 8px) 4px;
+    padding-inline: clamp(6px, 2vw, 8px);
+    padding-bottom: 4px;
     color: var(--cgb-ink-500);
     font-size: clamp(.62rem, 2.7vw, .66rem);
     font-weight: 750;
