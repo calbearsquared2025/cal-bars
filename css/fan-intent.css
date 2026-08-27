@@ -41,10 +41,6 @@
   text-align: center !important;
 }
 
-#map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__icon {
-  display: none !important;
-}
-
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
   grid-column: 1 !important;
   grid-row: 1 !important;
@@ -57,42 +53,29 @@
 }
 
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
-  display: contents !important;
-  max-width: none !important;
-  font-size: 0 !important;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  align-self: end !important;
+  justify-self: start !important;
+  padding-bottom: 2px !important;
+  font-family: var(--font-ui) !important;
+  font-size: .78rem !important;
+  font-weight: 850 !important;
+  letter-spacing: .025em !important;
+  line-height: 1 !important;
+}
+
+#map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+  grid-column: 1 / -1 !important;
+  grid-row: 2 !important;
+  justify-self: stretch !important;
+  font-family: var(--font-ui) !important;
+  font-size: .68rem !important;
+  font-weight: 800 !important;
+  letter-spacing: .055em !important;
+  line-height: 1 !important;
   text-align: center !important;
-}
-
-#map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label::before {
-  content: 'BEARS';
-  grid-column: 2;
-  grid-row: 1;
-  align-self: end;
-  justify-self: start;
-  padding-bottom: 2px;
-  font-family: var(--font-ui);
-  font-size: .78rem;
-  font-weight: 850;
-  letter-spacing: .025em;
-  line-height: 1;
-}
-
-#map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count[aria-label^="1 Bear"] .bear-count__label::before {
-  content: 'BEAR';
-}
-
-#map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label::after {
-  content: 'ON CGB';
-  grid-column: 1 / -1;
-  grid-row: 2;
-  justify-self: stretch;
-  font-family: var(--font-ui);
-  font-size: .68rem;
-  font-weight: 800;
-  letter-spacing: .055em;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
+  white-space: nowrap !important;
 }
 
 .intent-button:hover:not(:disabled) {
@@ -177,12 +160,12 @@
     font-size: 2.15rem !important;
   }
 
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label::before {
-    font-size: .68rem;
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
+    font-size: .68rem !important;
   }
 
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label::after {
-    font-size: .62rem;
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+    font-size: .62rem !important;
   }
 }
 
