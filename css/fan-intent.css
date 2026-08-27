@@ -20,16 +20,19 @@
   display: none;
 }
 
-/* Fan attendance status is one compact unit: count + noun, then context. */
+/* Fan attendance status uses the full right-hand column: count + noun, then context. */
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) {
-  grid-template-columns: auto auto !important;
+  width: 100% !important;
+  min-height: 84px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
   grid-template-rows: auto auto !important;
+  align-content: center !important;
   align-items: end !important;
-  justify-content: center !important;
-  justify-items: center !important;
+  justify-content: stretch !important;
+  justify-items: stretch !important;
   column-gap: 4px !important;
-  row-gap: 1px !important;
-  padding-inline: 4px !important;
+  row-gap: 4px !important;
+  padding: 7px 2px !important;
   text-align: center !important;
 }
 
@@ -38,10 +41,10 @@
   grid-row: 1 !important;
   justify-self: end !important;
   font-family: var(--font-ui) !important;
-  font-size: 1.95rem !important;
+  font-size: 2.5rem !important;
   font-weight: 850 !important;
-  letter-spacing: -.045em !important;
-  line-height: .86 !important;
+  letter-spacing: -.055em !important;
+  line-height: .82 !important;
 }
 
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
@@ -59,7 +62,7 @@
   justify-self: start;
   padding-bottom: 2px;
   font-family: var(--font-ui);
-  font-size: .66rem;
+  font-size: .78rem;
   font-weight: 850;
   letter-spacing: .025em;
   line-height: 1;
@@ -73,12 +76,13 @@
   content: 'watching here';
   grid-column: 1 / -1;
   grid-row: 2;
-  justify-self: center;
+  justify-self: stretch;
   font-family: var(--font-ui);
-  font-size: .65rem;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .005em;
   line-height: 1.05;
+  text-align: center;
   white-space: nowrap;
 }
 
