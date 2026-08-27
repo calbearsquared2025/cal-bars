@@ -49,6 +49,12 @@ function normalizeComparable(value) {
     .trim();
 }
 
+function comparableTokens(value) {
+  return normalizeComparable(value)
+    .split(' ')
+    .filter((token) => token && (token.length > 1 || /^\d+$/.test(token)));
+}
+
 function featureTypes(feature) {
   return Array.isArray(feature?.place_type)
     ? feature.place_type.map((value) => cleanText(value, 40).toLowerCase())
@@ -226,7 +232,135 @@ export function normalizeMapTilerResults(payload, maximum = 6) {
   return results;
 }
 
-export function buildMapTilerSearchUrl(query, key, { limit = 6, language = 'en' } = {}) {
+export function normalizeUserLocationProximity(origin) {
+  const latitude = Number(origin?.lat);
+  const longitude = Number(origin?.lon);
+  if (origin?.label !== 'your location') return null;
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return null;
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return null;
+  return Object.freeze({ lat: latitude, lon: longitude });
+}
+
+function venueNameCoverage(place, query) {
+  const nameTokens = comparableTokens(place?.name);
+  const queryTokens = comparableTokens(query);
+  if (!nameTokens.length || !queryTokens.length) return 0;
+  const querySet = new Set(queryTokens);
+  return nameTokens.filter((token) => querySet.has(token)).length / nameTokens.length;
+}
+
+function mapTilerResultScore(place, query, providerRelevance = 0) {
+  const normalizedQuery = normalizeComparable(query);
+  const normalizedName = normalizeComparable(place?.name);
+  const nameTokens = comparableTokens(place?.name);
+  const queryTokens = comparableTokens(query);
+  const querySet = new Set(queryTokens);
+  const overlapCount = nameTokens.filter((token) => querySet.has(token)).length;
+  const nameCoverage = nameTokens.length ? overlapCount / nameTokens.length : 0;
+  const queryCoverage = queryTokens.length ? overlapCount / queryTokens.length : 0;
+  const exactName = normalizedQuery === normalizedName;
+  const namePrefix = normalizedName && normalizedQuery.startsWith(`${normalizedName} `);
+  const normalizedCity = normalizeComparable(place?.city);
+  const normalizedRegion = normalizeComparable(place?.region);
+  const normalizedPostalCode = normalizeComparable(place?.postalCode);
+  const cityMatch = normalizedCity && (` ${normalizedQuery} `).includes(` ${normalizedCity} `);
+  const queryComparableTokens = comparableTokens(query);
+  const regionMatch = normalizedRegion && queryComparableTokens.includes(normalizedRegion);
+  const postalCodeMatch = normalizedPostalCode && queryComparableTokens.includes(normalizedPostalCode);
+  const relevance = Number.isFinite(Number(providerRelevance))
+    ? Math.max(0, Math.min(1, Number(providerRelevance)))
+    : 0;
+
+  return (
+    nameCoverage * 55 +
+    queryCoverage * 10 +
+    relevance * 20 +
+    (cityMatch ? 30 : 0) +
+    (regionMatch ? 5 : 0) +
+    (postalCodeMatch ? 20 : 0) +
+    (exactName ? 30 : namePrefix ? 20 : 0) +
+    (place?.placeType === 'poi' ? 5 : 0)
+  );
+}
+
+export function rankMapTilerResults(payloads, query, { maximum = 6, filterWeak = false } = {}) {
+  const sourcePayloads = Array.isArray(payloads) ? payloads : [payloads];
+  const queryTokenCount = comparableTokens(query).length;
+  const byPlaceId = new Map();
+  let sourceOrder = 0;
+
+  for (const payload of sourcePayloads) {
+    const features = Array.isArray(payload?.features) ? payload.features : [];
+    for (const feature of features) {
+      const place = normalizeMapTilerFeature(feature);
+      if (!place) continue;
+      const providerRelevance = Number(feature?.relevance) || 0;
+      const score = mapTilerResultScore(place, query, providerRelevance);
+      const existing = byPlaceId.get(place.placeId);
+      if (!existing || score > existing.score) {
+        byPlaceId.set(place.placeId, { place, score, providerRelevance, sourceOrder });
+      }
+      sourceOrder += 1;
+    }
+  }
+
+  const minimumScore = filterWeak && queryTokenCount >= 3 ? 50 : -Infinity;
+  return [...byPlaceId.values()]
+    .filter((entry) => entry.score >= minimumScore)
+    .sort((a, b) =>
+      b.score - a.score ||
+      b.providerRelevance - a.providerRelevance ||
+      a.sourceOrder - b.sourceOrder
+    )
+    .slice(0, Math.max(1, Math.min(10, Number(maximum) || 6)))
+    .map((entry) => entry.place);
+}
+
+export function hasStrongMapTilerVenueMatch(results, query) {
+  const first = Array.isArray(results) ? results[0] : null;
+  if (!first) return false;
+  const normalizedQuery = normalizeComparable(query);
+  const normalizedName = normalizeComparable(first.name);
+  if (normalizedName && (normalizedQuery === normalizedName || normalizedQuery.startsWith(`${normalizedName} `))) {
+    return true;
+  }
+  return venueNameCoverage(first, query) >= 0.75;
+}
+
+export function buildMapTilerFinalSearchQueries(query, { maximumRetries = 3 } = {}) {
+  const normalizedQuery = cleanText(query, 240);
+  if (!normalizedQuery) return [];
+  const words = normalizedQuery.split(' ').filter(Boolean);
+  const variants = [normalizedQuery];
+  const maximumDrop = Math.min(
+    Math.max(0, Number(maximumRetries) || 0),
+    Math.max(0, words.length - 1)
+  );
+
+  for (let drop = 1; drop <= maximumDrop; drop += 1) {
+    const candidate = words.slice(0, -drop).join(' ').trim();
+    if (candidate.length >= 3 && !variants.includes(candidate)) variants.push(candidate);
+  }
+  return variants;
+}
+
+function mapTilerProximityValue(proximity) {
+  const longitude = Number(Array.isArray(proximity)
+    ? proximity[0]
+    : proximity?.lon ?? proximity?.longitude);
+  const latitude = Number(Array.isArray(proximity)
+    ? proximity[1]
+    : proximity?.lat ?? proximity?.latitude);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) return '';
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) return '';
+  return `${longitude},${latitude}`;
+}
+
+export function buildMapTilerSearchUrl(
+  query,
+  key,
+  { limit = 6, language = 'en', autocomplete = true, fuzzyMatch = true, proximity = null } = {}
+) {
   const normalizedQuery = cleanText(query, 240);
   const normalizedKey = cleanText(key, 240);
   if (!normalizedQuery || !normalizedKey) throw new Error('maptiler_not_configured');
@@ -234,9 +368,12 @@ export function buildMapTilerSearchUrl(query, key, { limit = 6, language = 'en' 
   url.searchParams.set('key', normalizedKey);
   url.searchParams.set('language', language);
   url.searchParams.set('limit', String(Math.max(1, Math.min(10, Number(limit) || 6))));
-  url.searchParams.set('autocomplete', 'true');
+  url.searchParams.set('autocomplete', String(Boolean(autocomplete)));
+  url.searchParams.set('fuzzyMatch', String(Boolean(fuzzyMatch)));
   url.searchParams.set('country', 'us');
   url.searchParams.set('types', 'poi,address');
+  const proximityValue = mapTilerProximityValue(proximity);
+  if (proximityValue) url.searchParams.set('proximity', proximityValue);
   return url.toString();
 }
 

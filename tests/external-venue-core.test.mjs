@@ -2,11 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  buildMapTilerFinalSearchQueries,
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
+  hasStrongMapTilerVenueMatch,
   normalizeMapTilerFeature,
   normalizeMapTilerResults,
+  normalizeUserLocationProximity,
+  rankMapTilerResults,
   upsertCanonicalVenue,
   validateJoinExternalVenueResponse
 } from '../js/external-venue-core.mjs';
@@ -59,6 +63,25 @@ function response(overrides = {}) {
     venueHistoryCounts: [{ venue_id: publicVenue.venue_id, past_game_count: 0 }],
     generatedAt: '2026-07-29T05:00:00.000Z',
     ...overrides
+  };
+}
+
+function poiFeature({ id, name, address, city, postalCode, center, relevance }) {
+  return {
+    id,
+    type: 'Feature',
+    place_type: ['poi'],
+    text: name,
+    place_name: `${name}, ${address}, ${city}, California ${postalCode}, United States`,
+    center,
+    relevance,
+    properties: { country_code: 'us' },
+    context: [
+      { id: `municipality.${id}`, place_type: ['municipality'], text: city, place_designation: 'city' },
+      { id: `region.${id}`, place_type: ['region'], text: 'California', country_code: 'us' },
+      { id: `postal_code.${id}`, place_type: ['postal_code'], text: postalCode },
+      { id: `country.${id}`, place_type: ['country'], text: 'United States', short_code: 'us' }
+    ]
   };
 }
 
@@ -160,15 +183,139 @@ test('normalization requires a concrete POI or address with canonical address co
   assert.deepEqual(normalizeMapTilerResults({ features: [feature, feature] }).map((item) => item.placeId), ['poi.98765']);
 });
 
-test('MapTiler external-place request uses concrete result types, autocomplete, US scope, and bounded results', () => {
+test('only browser geolocation is accepted as user proximity', () => {
+  assert.deepEqual(
+    normalizeUserLocationProximity({ lat: 37.8044, lon: -122.2712, label: 'your location' }),
+    { lat: 37.8044, lon: -122.2712 }
+  );
+  assert.equal(
+    normalizeUserLocationProximity({ lat: 33.7701, lon: -118.1937, label: 'Long Beach, CA' }),
+    null
+  );
+});
+
+test('MapTiler external-place request uses concrete result types, autocomplete, fuzzy matching, US scope, and bounded results', () => {
   const url = new URL(buildMapTilerSearchUrl('McNally Oakland', 'existing-public-key', { limit: 99 }));
   assert.equal(url.hostname, 'api.maptiler.com');
   assert.equal(url.pathname, '/geocoding/McNally%20Oakland.json');
   assert.equal(url.searchParams.get('key'), 'existing-public-key');
   assert.equal(url.searchParams.get('types'), 'poi,address');
   assert.equal(url.searchParams.get('autocomplete'), 'true');
+  assert.equal(url.searchParams.get('fuzzyMatch'), 'true');
   assert.equal(url.searchParams.get('country'), 'us');
   assert.equal(url.searchParams.get('limit'), '10');
+  assert.equal(url.searchParams.has('proximity'), false);
+});
+
+test('MapTiler proximity biases results without applying a bounding box', () => {
+  const url = new URL(buildMapTilerSearchUrl('District 4 Pizza', 'existing-public-key', {
+    proximity: { lon: -118.1937, lat: 33.7701 }
+  }));
+  assert.equal(url.searchParams.get('proximity'), '-118.1937,33.7701');
+  assert.equal(url.searchParams.has('bbox'), false);
+});
+
+test('invalid proximity is ignored rather than corrupting the search request', () => {
+  const url = new URL(buildMapTilerSearchUrl('District 4 Pizza', 'existing-public-key', {
+    proximity: { lon: 999, lat: 33.7701 }
+  }));
+  assert.equal(url.searchParams.has('proximity'), false);
+});
+
+test('finalized MapTiler requests disable autocomplete without disabling typo tolerance', () => {
+  const url = new URL(buildMapTilerSearchUrl('District 4 Pizza long beach', 'existing-public-key', {
+    autocomplete: false,
+    fuzzyMatch: true
+  }));
+  assert.equal(url.searchParams.get('autocomplete'), 'false');
+  assert.equal(url.searchParams.get('fuzzyMatch'), 'true');
+});
+
+test('finalized venue search progressively removes trailing location words for name-focused retries', () => {
+  assert.deepEqual(buildMapTilerFinalSearchQueries('District 4 Pizza long beach'), [
+    'District 4 Pizza long beach',
+    'District 4 Pizza long',
+    'District 4 Pizza',
+    'District 4'
+  ]);
+});
+
+test('venue-name ranking promotes District 4 Pizza in Long Beach and suppresses weak pizza matches', () => {
+  const weakPayload = {
+    features: [
+      poiFeature({
+        id: 'poi.pizza-hut',
+        name: 'Pizza Hut',
+        address: '1956 South University',
+        city: 'Mobile',
+        postalCode: '36609',
+        center: [-88.15, 30.67],
+        relevance: 0.7
+      }),
+      poiFeature({
+        id: 'poi.donatos',
+        name: 'Donatos Pizza',
+        address: '2048 North High Street',
+        city: 'Columbus',
+        postalCode: '43201',
+        center: [-83.01, 40.00],
+        relevance: 0.68
+      })
+    ]
+  };
+  const focusedPayload = {
+    features: [
+      poiFeature({
+        id: 'poi.district-4',
+        name: 'District 4 Pizza',
+        address: '2123 N Bellflower Blvd',
+        city: 'Long Beach',
+        postalCode: '90815',
+        center: [-118.125, 33.795],
+        relevance: 0.46
+      })
+    ]
+  };
+
+  const results = rankMapTilerResults(
+    [weakPayload, focusedPayload],
+    'District 4 Pizza long beach',
+    { maximum: 6, filterWeak: true }
+  );
+
+  assert.equal(results[0].name, 'District 4 Pizza');
+  assert.equal(results[0].city, 'Long Beach');
+  assert.equal(hasStrongMapTilerVenueMatch(results, 'District 4 Pizza long beach'), true);
+  assert.equal(results.some((place) => place.name === 'Pizza Hut'), false);
+  assert.equal(results.some((place) => place.name === 'Donatos Pizza'), false);
+});
+
+test('explicit city text outranks a stronger provider relevance signal from another city', () => {
+  const payload = {
+    features: [
+      poiFeature({
+        id: 'poi.district-4-oakland',
+        name: 'District 4 Pizza',
+        address: '100 Broadway',
+        city: 'Oakland',
+        postalCode: '94607',
+        center: [-122.27, 37.80],
+        relevance: 1
+      }),
+      poiFeature({
+        id: 'poi.district-4-long-beach',
+        name: 'District 4 Pizza',
+        address: '2123 N Bellflower Blvd',
+        city: 'Long Beach',
+        postalCode: '90815',
+        center: [-118.125, 33.795],
+        relevance: 0.1
+      })
+    ]
+  };
+
+  const results = rankMapTilerResults(payload, 'District 4 Pizza long beach', { maximum: 2 });
+  assert.equal(results[0].city, 'Long Beach');
 });
 
 test('joinExternalVenue responses accept only the public Venue whitelist', () => {
