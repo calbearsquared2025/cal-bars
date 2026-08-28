@@ -216,8 +216,7 @@ function selectedVenueRouteActive(state = appState()) {
 }
 
 function syncSelectedVenueRoute(state = appState()) {
-  if (!isMobile() || state?.detailMode || document.body.dataset.view !== 'map' ||
-      document.body.dataset.commandSurface !== 'map') return false;
+  if (!isMobile() || state?.detailMode || document.body.dataset.view !== 'map') return false;
   const tray = document.querySelector('#venue-tray');
   if (!state?.selectedVenueId || tray?.dataset.state !== 'selected') return false;
   const venue = selectedVenue(state.selectedVenueId, state);
@@ -489,13 +488,13 @@ function sync() {
 
   const state = appState();
   const tray = document.querySelector('#venue-tray');
-  const selectedProfileActive = isMobile() &&
+  const selectedVenueChosen = isMobile() &&
     document.body.dataset.view === 'map' &&
-    document.body.dataset.commandSurface === 'map' &&
     Boolean(state?.selectedVenueId) &&
     tray?.dataset.state === 'selected';
-  const routeChanged = selectedProfileActive ? syncSelectedVenueRoute(state) : false;
-  const routeActive = selectedProfileActive && selectedVenueRouteActive(state);
+  const selectedProfileActive = selectedVenueChosen && document.body.dataset.commandSurface === 'map';
+  const routeChanged = selectedVenueChosen ? syncSelectedVenueRoute(state) : false;
+  const routeActive = selectedVenueChosen && selectedVenueRouteActive(state);
 
   if (selectedProfileActive) {
     const handle = document.querySelector('#tray-handle');
@@ -516,7 +515,7 @@ function sync() {
     state.locationFocusVenueId = null;
     if (!routeActive) return;
   }
-  if (!selectedProfileActive) return;
+  if (!selectedVenueChosen) return;
   focusVenue(state.selectedVenueId, { force: routeChanged });
 }
 
