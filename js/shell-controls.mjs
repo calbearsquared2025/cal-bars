@@ -406,8 +406,18 @@ function showAddLocationSearch() {
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('add-location');
-  setSurface('search', { focus: true });
   configureMissingLocationLink();
+
+  if (isMobileLayout()) {
+    setSurface('search', { focus: true });
+    return;
+  }
+
+  setSurface('map');
+  requestAnimationFrame(() => {
+    dom.searchInput?.focus({ preventScroll: true });
+    dom.searchInput?.select?.();
+  });
 }
 
 function beginContribution(intent, {
