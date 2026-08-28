@@ -92,3 +92,15 @@
     min-width: 104px;
   }
 }
+
+@media (max-width: 899px) {
+  .command-surface--add .add-actions {
+    border: 1px solid var(--cgb-neutral-300, #cbd5df);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .command-surface--add .add-action {
+    padding-inline: 12px;
+  }
+}
