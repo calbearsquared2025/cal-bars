@@ -56,32 +56,10 @@ function placeAddLocationAction() {
   return button;
 }
 
-function syncContributionCopy() {
-  const button = document.querySelector('#mobile-add-button');
-  const label = button?.querySelector('span:last-child');
-  const title = document.querySelector('#add-surface-title');
-  const intro = document.querySelector('#add-surface > .command-surface__shell > .command-surface__intro');
-  if (!button || !label || !title || !intro) return;
-
-  if (isMobile()) {
-    label.textContent = 'Add';
-    button.setAttribute('aria-label', 'Add');
-    title.textContent = 'Add to the map';
-    intro.textContent = 'Choose what you would like to add or correct.';
-    return;
-  }
-
-  label.textContent = 'Add to CGB';
-  button.setAttribute('aria-label', 'Add to Cal Golden Bars');
-  title.textContent = 'Add to Cal Golden Bars';
-  intro.textContent = 'Add a Watch Party, contribute details, or add another location.';
-}
-
 function syncDesktopContributionEntry() {
   const bar = document.querySelector('.mobile-command-bar');
   const button = document.querySelector('#mobile-add-button');
   const mark = button?.querySelector('.mobile-command__add-mark');
-  syncContributionCopy();
   if (!bar || !button || !mark) return;
 
   if (isMobile()) {
@@ -206,9 +184,6 @@ function initialize() {
   });
   document.querySelector('#add-new-location-button')?.addEventListener('click', () => {
     document.querySelector('#search-add-location-button')?.click();
-  });
-  document.querySelectorAll('.mobile-command').forEach((button) => {
-    button.addEventListener('click', () => requestAnimationFrame(syncDesktopContributionEntry));
   });
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
     desktopSearchEngaged = false;
