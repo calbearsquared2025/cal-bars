@@ -56,11 +56,13 @@ function processAddExternalVenueRequest_(request) {
   requireHeaders_(venueTable.headers, CGB_TABS.Venues, 'Venues');
 
   let venueRecord = findCanonicalExternalVenue_(venueTable.rows, request.externalPlace);
+  let verifiedPlace = null;
   let createdVenueRowNumber = null;
+  let identityRollback = null;
 
   try {
     if (!venueRecord) {
-      const verifiedPlace = verifyExternalPlaceWithMapTiler_(request.externalPlace);
+      verifiedPlace = verifyExternalPlaceWithMapTiler_(request.externalPlace);
       venueRecord = findCanonicalExternalVenue_(venueTable.rows, verifiedPlace);
       if (!venueRecord) {
         const venue = buildExternalVenueRecord_(venueTable.rows, verifiedPlace, now);
@@ -79,7 +81,17 @@ function processAddExternalVenueRequest_(request) {
       throw externalVenueError_('external_venue_unavailable');
     }
 
-    if (createdVenueRowNumber) clearPublicSnapshotCache_();
+    if (verifiedPlace && !createdVenueRowNumber) {
+      identityRollback = adoptVerifiedExternalVenueIdentity_(
+        venueSheet,
+        venueTable.headers,
+        venueRecord,
+        verifiedPlace,
+        now
+      );
+    }
+
+    if (createdVenueRowNumber || identityRollback) clearPublicSnapshotCache_();
     const venues = readSheetObjects_(workbook, 'Venues');
     const canonicalVenue = venues.find(function(row) {
       return String(row.venue_id) === String(venueRecord.object.venue_id);
@@ -94,8 +106,9 @@ function processAddExternalVenueRequest_(request) {
       generatedAt: now
     };
   } catch (error) {
+    if (identityRollback) rollbackExternalVenueIdentity_(venueSheet, identityRollback);
     if (createdVenueRowNumber) rollbackCreatedVenue_(venueSheet, createdVenueRowNumber);
-    if (createdVenueRowNumber) clearPublicSnapshotCache_();
+    if (createdVenueRowNumber || identityRollback) clearPublicSnapshotCache_();
     throw error;
   }
 }
