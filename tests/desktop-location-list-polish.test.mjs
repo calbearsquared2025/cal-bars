@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const refinementSource = readFileSync(new URL('../js/search-map-refinement.mjs', import.meta.url), 'utf8');
 const fanIntentCore = readFileSync(new URL('../js/fan-intent-core.mjs', import.meta.url), 'utf8');
+const watchPartyDisplayCss = readFileSync(new URL('../css/watch-party-display.css', import.meta.url), 'utf8');
 
 test('desktop location list folds CGB activity into the venue metadata line', () => {
   assert.match(fanIntentCore, /return `\$\{total\} \$\{total === 1 \? 'Bear' : 'Bears'\} on CGB`/);
@@ -32,8 +33,12 @@ test('desktop restores breathing room below the location-range control without r
   assert.doesNotMatch(refinementSource, /list-location-toggle__option[^}]*border-radius/);
 });
 
-test('desktop Watch Party and Cal Bar badges use lighter fills while Fan-Added stays outlined', () => {
-  assert.match(refinementSource, /\.badge--party \{[\s\S]*background: #ffd35a;/);
+test('desktop Watch Party and Cal Bar badges stay distinct while final event styling is warmer', () => {
+  assert.match(watchPartyDisplayCss, /#tray-list \.location-card \.badge--party \{[\s\S]*background: #f3c24f !important;/);
   assert.match(refinementSource, /\.badge--cal \{[\s\S]*background: var\(--cgb-navy-700/);
   assert.doesNotMatch(refinementSource, /\.badge--fan-added \{/);
+});
+
+test('desktop Watch Party host line has deliberate separation from venue metadata', () => {
+  assert.match(watchPartyDisplayCss, /#tray-list \.location-card__party \{[\s\S]*margin-top: 3px !important;/);
 });
