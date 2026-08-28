@@ -58,6 +58,32 @@ function placeAddLocationAction() {
   return button;
 }
 
+function styleDesktopListAddButton(button) {
+  Object.assign(button.style, {
+    minWidth: '0',
+    width: 'auto',
+    height: '32px',
+    minHeight: '32px',
+    padding: '0 10px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: '0 0 auto',
+    color: 'var(--cgb-navy-900, #0b2856)',
+    background: 'var(--cgb-white, #fff)',
+    border: '1px solid var(--cgb-navy-700, #1f4f82)',
+    borderRadius: '8px',
+    boxShadow: 'var(--shadow-xs)',
+    clipPath: 'none',
+    fontFamily: 'var(--font-condensed, sans-serif)',
+    fontSize: '.66rem',
+    fontWeight: '850',
+    letterSpacing: '.01em',
+    lineHeight: '1',
+    whiteSpace: 'nowrap'
+  });
+}
+
 function ensureDesktopListAddButton() {
   if (desktopListAddButton) return desktopListAddButton;
   const button = document.createElement('button');
@@ -66,6 +92,7 @@ function ensureDesktopListAddButton() {
   button.type = 'button';
   button.textContent = '+ Add location';
   button.setAttribute('aria-label', 'Add a location');
+  styleDesktopListAddButton(button);
   button.addEventListener('click', () => {
     document.querySelector('#search-add-location-button')?.click();
   });
