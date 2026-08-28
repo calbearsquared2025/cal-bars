@@ -209,6 +209,55 @@
   }
 }
 
+/* Keep the desktop Venue Profile attendance unit compact. Later profile CSS also
+   styles this block, so these selectors intentionally pin the count and helper
+   copy into the same two-column hierarchy instead of letting the helper drift. */
+@media (min-width: 900px) {
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: baseline !important;
+    justify-items: start !important;
+    column-gap: 8px !important;
+    row-gap: 1px !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) > strong {
+    display: contents !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) .bear-count__number {
+    grid-column: 1 !important;
+    grid-row: 1 / span 2 !important;
+    align-self: start !important;
+    justify-self: start !important;
+    font-size: 1.65rem !important;
+    line-height: .92 !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) .bear-count__label {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    align-self: baseline !important;
+    justify-self: start !important;
+    font-size: .82rem !important;
+    line-height: 1.15 !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) > .activity-card__presence {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    justify-self: start !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 2px 0 0 !important;
+    font-size: .75rem !important;
+    line-height: 1.35 !important;
+    text-align: left !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .intent-button.is-pending::before { animation: none; }
 }
