@@ -1,0 +1,148 @@
+import { spawn } from 'node:child_process';
+import { createReadStream, mkdirSync, readFileSync, statSync } from 'node:fs';
+import { createServer } from 'node:http';
+import { extname, join, normalize, resolve } from 'node:path';
+import { findBrowser } from './browser-discovery.mjs';
+
+const root = resolve('.');
+const outputDir = resolve('taxonomy-review');
+const browser = findBrowser();
+const mimeTypes = new Map([
+  ['.css', 'text/css; charset=utf-8'], ['.html', 'text/html; charset=utf-8'],
+  ['.js', 'text/javascript; charset=utf-8'], ['.json', 'application/json; charset=utf-8'],
+  ['.mjs', 'text/javascript; charset=utf-8'], ['.png', 'image/png'], ['.svg', 'image/svg+xml'],
+  ['.webp', 'image/webp']
+]);
+
+const scenarios = [
+  { name: 'map-legend-mobile', width: 390, height: 844, scenario: 'map' },
+  { name: 'representative-list-desktop', width: 1280, height: 900, scenario: 'list' },
+  { name: 'community-watch-party-mobile', width: 390, height: 844, scenario: 'community-party' }
+];
+
+mkdirSync(outputDir, { recursive: true });
+
+function safePath(requestUrl) {
+  const pathname = decodeURIComponent(new URL(requestUrl, 'http://127.0.0.1').pathname);
+  const relative = normalize(pathname).replace(/^[/\\]+/, '');
+  const candidate = join(root, relative || 'index.html');
+  return candidate.startsWith(root) ? candidate : null;
+}
+
+function reviewPage(request, response) {
+  const scenario = new URL(request.url || '/', 'http://127.0.0.1').searchParams.get('scenario') || 'map';
+  const snapshot = JSON.parse(readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8'));
+  const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');
+  const productionIndex = readFileSync(join(root, 'index.html'), 'utf8');
+  const prelude = `<script>
+    (() => {
+      const snapshot = ${snapshotJson};
+      localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
+      const nativeFetch = window.fetch.bind(window);
+      const json = (payload) => new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
+      window.fetch = async (input, init = {}) => {
+        const url = new URL(typeof input === 'string' ? input : input.url, location.href);
+        if (url.pathname === '/__cgb_mock_api__' || url.pathname.endsWith('/data/fallback-v2.json')) return json(snapshot);
+        if (url.hostname === 'api.maptiler.com') return json({ features: [] });
+        return nativeFetch(input, init);
+      };
+    })();
+  </script>`;
+  const driver = `<script>
+    (() => {
+      const scenario = ${JSON.stringify(scenario)};
+      const sleep = (ms = 40) => new Promise((resolve) => setTimeout(resolve, ms));
+      const visible = (node) => {
+        if (!node || node.hidden) return false;
+        const style = getComputedStyle(node);
+        const rect = node.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+      };
+      const waitFor = async (predicate, timeout = 3500) => {
+        const deadline = performance.now() + timeout;
+        while (performance.now() < deadline) {
+          try { if (predicate()) return true; } catch (_) {}
+          await sleep();
+        }
+        return false;
+      };
+      (async () => {
+        await waitFor(() => document.querySelector('#app')?.getAttribute('aria-busy') === 'false' && window.CGBApp?.getState?.()?.snapshot);
+        const mobile = matchMedia('(max-width: 899px)').matches;
+        if (scenario === 'list' || scenario === 'community-party') {
+          if (mobile) {
+            document.querySelector('#mobile-list-button')?.click();
+            await waitFor(() => document.body.dataset.commandSurface === 'list' && visible(document.querySelector('#tray-list')));
+          } else {
+            window.CGBApp?.showLocations?.();
+            await waitFor(() => visible(document.querySelector('#tray-list')));
+          }
+        }
+        if (scenario === 'community-party') {
+          const card = document.querySelector('#location-list .location-card[data-venue-id="ven_000003"]');
+          card?.click();
+          await waitFor(() => visible(document.querySelector('#tray-selected')) && /WATCH PARTY/.test(document.querySelector('#tray-selected')?.textContent || ''));
+        }
+        document.body.dataset.reviewReady = 'true';
+      })();
+    })();
+  </script>`;
+  const html = productionIndex
+    .replace('<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
+    .replace('</head>', `${prelude}\n</head>`)
+    .replace('</body>', `${driver}\n</body>`);
+  response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+  response.end(html);
+}
+
+const server = createServer((request, response) => {
+  const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
+  if (pathname === '/__cgb_review__') return reviewPage(request, response);
+  if (pathname === '/__cgb_mock_api__') {
+    const snapshot = readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8');
+    response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+    return response.end(snapshot);
+  }
+  const filePath = safePath(request.url || '/');
+  try {
+    if (!filePath || !statSync(filePath).isFile()) throw new Error('not_found');
+    response.writeHead(200, { 'Content-Type': mimeTypes.get(extname(filePath).toLowerCase()) || 'application/octet-stream', 'Cache-Control': 'no-store' });
+    createReadStream(filePath).pipe(response);
+  } catch (_) {
+    response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Not found');
+  }
+});
+
+await new Promise((resolvePromise, reject) => {
+  server.once('error', reject);
+  server.listen(0, '127.0.0.1', resolvePromise);
+});
+
+try {
+  const port = server.address().port;
+  for (const item of scenarios) {
+    const output = join(outputDir, `${item.name}.png`);
+    const profile = join(outputDir, `.chrome-${item.name}`);
+    const args = [
+      '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
+      '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
+      '--disable-sync', '--hide-scrollbars', '--metrics-recording-only', '--no-first-run',
+      `--user-data-dir=${profile}`, `--window-size=${item.width},${item.height}`,
+      '--virtual-time-budget=5500', `--screenshot=${output}`,
+      `http://127.0.0.1:${port}/__cgb_review__?scenario=${item.scenario}`
+    ];
+    const child = spawn(browser, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stderr = '';
+    child.stderr.setEncoding('utf8');
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    const exitCode = await new Promise((resolvePromise) => child.once('close', resolvePromise));
+    if (exitCode !== 0) {
+      console.error(stderr.slice(-4000));
+      throw new Error(`Screenshot capture failed for ${item.name}`);
+    }
+    console.log(`Captured ${item.name}: ${output}`);
+  }
+} finally {
+  await new Promise((resolvePromise) => server.close(resolvePromise));
+}
