@@ -5,13 +5,14 @@ import test from 'node:test';
 const refinementSource = readFileSync(new URL('../js/search-map-refinement.mjs', import.meta.url), 'utf8');
 const shellSource = readFileSync(new URL('../js/shell-controls.mjs', import.meta.url), 'utf8');
 
-test('desktop reuses the shared Add command as a quiet global CGB contribution entry', () => {
+test('desktop reuses the shared Add command as a centered global CGB contribution entry', () => {
   assert.match(refinementSource, /function syncDesktopContributionEntry\(\)/);
   assert.match(refinementSource, /#mobile-add-button/);
-  assert.match(refinementSource, /gridTemplateColumns = 'minmax\(0, 1fr\) minmax\(0, 1fr\) 12px auto'/);
-  assert.match(refinementSource, /gridColumn: '4'/);
-  assert.match(refinementSource, /height: '34px'/);
-  assert.match(refinementSource, /padding: '0 4px'/);
+  assert.match(refinementSource, /gridTemplateColumns = 'repeat\(3, minmax\(0, 1fr\)\)'/);
+  assert.match(refinementSource, /gridColumn: '3'/);
+  assert.match(refinementSource, /width: '100%'/);
+  assert.match(refinementSource, /height: '40px'/);
+  assert.match(refinementSource, /padding: '0'/);
   assert.match(refinementSource, /background: 'transparent'/);
   assert.match(refinementSource, /border: '0'/);
   assert.match(refinementSource, /color: 'var\(--cgb-gold-500/);
