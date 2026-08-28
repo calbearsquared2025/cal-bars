@@ -1,3 +1,5 @@
+import { createIcon } from './icons.mjs';
+
 function clean(value) {
   return String(value ?? '').trim();
 }
@@ -164,6 +166,50 @@ function profileMedia(detail, hero) {
     detail.querySelector(':scope > .detail-photo, :scope > .detail-local-map');
 }
 
+function addressLabel(venue) {
+  const street = [venue?.address_line_1, venue?.address_line_2].filter(Boolean).join(', ');
+  return (street
+    ? [street, venue?.city, venue?.region, venue?.postal_code].filter(Boolean).join(', ')
+    : [venue?.city, venue?.region].filter(Boolean).join(', ')) || clean(venue?.name);
+}
+
+function arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documentObject }) {
+  const address = hero.querySelector(':scope > .detail-address');
+  if (!address) return false;
+
+  if (!wideDesktop) {
+    if (address.dataset.desktopIdentity !== 'true') return false;
+    const directions = address.querySelector(':scope > .detail-directions-inline');
+    if (!directions) return false;
+    directions.classList.remove('detail-directions-inline--desktop');
+    directions.replaceChildren(
+      createIcon('directions', { documentObject }),
+      documentObject.createTextNode(addressLabel(venue))
+    );
+    address.replaceChildren(directions);
+    delete address.dataset.desktopIdentity;
+    return false;
+  }
+
+  if (address.dataset.desktopIdentity === 'true') return true;
+  const directions = address.querySelector(':scope > .detail-directions-inline');
+  if (!directions) return false;
+
+  const location = documentObject.createElement('span');
+  location.className = 'detail-address__location';
+  const street = [venue?.address_line_1, venue?.address_line_2].filter(Boolean).join(', ');
+  const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
+  if (street) location.append(documentObject.createTextNode(street));
+  if (street && locality) location.append(documentObject.createElement('br'));
+  if (locality) location.append(documentObject.createTextNode(locality));
+
+  directions.classList.add('detail-directions-inline--desktop');
+  directions.replaceChildren(documentObject.createTextNode('Directions'));
+  address.replaceChildren(location, directions);
+  address.dataset.desktopIdentity = 'true';
+  return true;
+}
+
 export function arrangeDesktopVenueMedia({
   state = globalThis.window?.CGBApp?.getState?.(),
   documentObject = globalThis.document,
@@ -172,12 +218,20 @@ export function arrangeDesktopVenueMedia({
   if (!state?.detailMode || !documentObject) return false;
   const detail = documentObject.querySelector('#venue-detail');
   const hero = detail?.querySelector(':scope > .detail-hero');
-  if (!detail || !hero) return false;
+  const venue = state.snapshot?.venues?.find((item) => clean(item?.venue_id) === clean(state.selectedVenueId));
+  if (!detail || !hero || !venue) return false;
 
   const media = profileMedia(detail, hero);
+  const activity = detail.querySelector(':scope > .activity-card');
+  const editorial = detail.querySelector(':scope > .detail-editorial');
+  const fanExperiences = detail.querySelector(':scope > .detail-fan-experiences');
+  const parties = [...detail.querySelectorAll(':scope > .party-module')];
   const wideDesktop = windowObject?.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
+  arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documentObject });
+
   if (!wideDesktop) {
     detail.removeAttribute('data-desktop-profile-arrangement');
+    if (activity) parties.forEach((party) => detail.insertBefore(party, activity));
     if (media) {
       media.classList.remove('detail-profile-media--desktop');
       if (media.parentElement !== hero) hero.prepend(media);
@@ -185,14 +239,24 @@ export function arrangeDesktopVenueMedia({
     return false;
   }
 
-  detail.dataset.desktopProfileArrangement = 'editorial-first';
-  if (!media) return true;
+  detail.dataset.desktopProfileArrangement = 'editorial-party-media';
+  let cursor = activity || hero;
+  if (editorial) {
+    cursor.after(editorial);
+    cursor = editorial;
+  }
+  if (fanExperiences) {
+    cursor.after(fanExperiences);
+    cursor = fanExperiences;
+  }
+  parties.forEach((party) => {
+    cursor.after(party);
+    cursor = party;
+  });
 
+  if (!media) return true;
   media.classList.add('detail-profile-media--desktop');
-  const fanExperiences = detail.querySelector(':scope > .detail-fan-experiences');
-  const editorial = detail.querySelector(':scope > .detail-editorial');
-  const anchor = fanExperiences || editorial || detail.querySelector(':scope > .activity-card') || hero;
-  if (media.previousElementSibling !== anchor) anchor.after(media);
+  if (media.previousElementSibling !== cursor) cursor.after(media);
   return true;
 }
 
