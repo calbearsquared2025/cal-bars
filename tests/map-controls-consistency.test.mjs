@@ -52,10 +52,11 @@ test('map attendance badges explain Bear counts while the marker retains its ful
   assert.match(app, /badge\.setAttribute\('aria-hidden', 'true'\);/);
 });
 
-test('Locate me preserves a selected mobile profile and leaves control placement to CSS', async () => {
-  const [app, mobilePolish, firstPaint] = await Promise.all([
+test('Locate me preserves a selected mobile profile with a CSS fallback and live tray-edge placement', async () => {
+  const [app, mobilePolish, mobileRefinement, firstPaint] = await Promise.all([
     read('js/app.js'),
     read('js/mobile-polish.mjs'),
+    read('js/map-mobile-refinement.mjs'),
     read('css/mobile-first-paint.css')
   ]);
   assert.doesNotMatch(app, /function locateOnMap\(\) \{\s*if \(!isMobileLayout\(\)\) return;/);
@@ -65,6 +66,7 @@ test('Locate me preserves a selected mobile profile and leaves control placement
   assert.match(app, /showNearbyLocations\(\{ trayState: nextTrayState, focus: true \}\)/);
   assert.match(app, /setTrayState\(nextTrayState\);/);
   assert.doesNotMatch(mobilePolish, /--map-action-top/);
+  assert.match(mobileRefinement, /function syncLocateControlPosition\(\)[\s\S]*?const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
   assert.match(firstPaint, /\.map-actions\s*\{[\s\S]*?top:\s*var\(--map-action-top,\s*calc\(100dvh - var\(--footer-height\) - 156px\)\)\s*!important;/);
   assert.match(firstPaint, /\.map-actions:has\(~ #venue-tray\.venue-tray\.tray--selected\)\s*\{[\s\S]*?top:\s*calc\(var\(--header-height\) \+ 138px\)\s*!important;/);
 });
