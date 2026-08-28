@@ -165,6 +165,15 @@ async function validateDesktopSearchHelper() {
   await waitFor(() => form.contains(helper) && rendered(helper), 'desktop add-location helper after typing');
   check(helper.textContent.includes('Search for another location.'), 'Desktop typed search should use the contextual add-location helper');
 
+  helper.click();
+  await waitFor(() => visible('#add-surface') && Boolean(element('#add-surface .desktop-add-search-slot #location-search')), 'desktop contextual add-location search inside Add modal');
+  check(visible('#add-surface'), 'Desktop contextual add-location search should stay in the contribution modal');
+  check((input.value || '').trim() === 'Synthetic', 'Desktop contextual add-location transition should preserve the typed query');
+  check((input.placeholder || '').trim() === 'Venue or address', 'Desktop inline Add search should use venue-or-address copy');
+  check(state()?.searchMode === 'add-location', 'Desktop inline Add search should use canonical add-location mode');
+
+  element('#add-surface [data-command-close]')?.click();
+  await waitFor(() => !visible('#add-surface'), 'desktop contextual add-location modal close');
   input.value = '';
   input.dispatchEvent(new Event('input', { bubbles: true }));
   await waitFor(() => helper.hidden || !rendered(helper), 'desktop add-location helper hidden after clearing search');
@@ -177,18 +186,27 @@ async function validateDesktopContributionWithoutSelection() {
   if (!add) return;
 
   add.click();
-  await waitFor(() => visible('#add-surface'), 'desktop contribution surface without selection');
+  await waitFor(() =>
+    visible('#add-surface') &&
+    Boolean(element('#add-surface .desktop-add-search-slot #location-search')) &&
+    (element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('select it on the map or in Locations first') &&
+    (element('#add-somewhere-else-title')?.textContent || '').trim() === 'Place not listed yet?' &&
+    (element('#add-surface .add-somewhere-else > .command-surface__intro')?.textContent || '').trim() === 'Search for the venue or address below.',
+  'finalized desktop contribution surface without selection');
   check(!visible('#add-surface .add-context'), 'Desktop selected-place context should stay hidden without a selected venue');
   check(!visible('#add-watch-party-button'), 'Desktop Watch Party action should stay hidden until a listed venue is selected');
   check(!visible('#add-cal-bar-button'), 'Desktop Cal Bar action should stay hidden until a listed venue is selected');
   check(!visible('#add-report-button'), 'Desktop reporting action should stay hidden until a listed venue is selected');
   check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Desktop venue-specific actions should remain owned by selected-place context');
-  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('select it first to add a Watch Party or other content'), 'Desktop contribution intro should explain how listed locations work');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('select it on the map or in Locations first'), 'Desktop contribution intro should explain how listed locations work');
   check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('search below to add it'), 'Desktop contribution intro should explain how unlisted locations work');
-  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'New location', 'Desktop no-selection state should lead with the new-location path');
-  check(!visible('#add-surface .add-somewhere-else > .command-surface__intro'), 'Desktop new-location section should not repeat explanatory copy above the action');
-  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Search for another location', 'Desktop no-selection state should offer Search for another location');
-  check(visible('#add-new-location-button'), 'Desktop no-selection state should keep the new-location search action visible');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Place not listed yet?', 'Desktop no-selection state should label the unlisted-place path clearly');
+  check((element('#add-surface .add-somewhere-else > .command-surface__intro')?.textContent || '').trim() === 'Search for the venue or address below.', 'Desktop unlisted-place section should explain the inline search');
+  check(visible('#add-surface .add-somewhere-else > .command-surface__intro'), 'Desktop inline search helper copy should be visible');
+  check(Boolean(element('#add-surface .desktop-add-search-slot #location-search')), 'Desktop should move the shared search form into the Add modal');
+  check(!visible('#add-new-location-button'), 'Desktop should remove the intermediate Search for another location card');
+  check(!visible('#add-missing-location-link'), 'Desktop should not show the missing-location fallback before search fails');
+  check(state()?.searchMode === 'add-location', 'Desktop Add to CGB should enter canonical add-location search mode inside the modal');
 
   element('#add-surface [data-command-close]')?.click();
   await waitFor(() => !visible('#add-surface'), 'desktop contribution surface close');
@@ -229,9 +247,15 @@ async function validateDesktopContributionEntry() {
   const selectedVenueId = state()?.selectedVenueId || '';
   const selectedVenueName = state()?.snapshot?.venues?.find((venue) => venue.venue_id === selectedVenueId)?.name || '';
   add.click();
-  await waitFor(() => visible('#add-surface'), 'desktop Add to CGB surface');
+  await waitFor(() =>
+    visible('#add-surface') &&
+    Boolean(element('#add-surface .desktop-add-search-slot #location-search')) &&
+    (element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose an action for this location. To add a different place, search below.' &&
+    (element('#add-somewhere-else-title')?.textContent || '').trim() === 'Different location?' &&
+    (element('#add-surface .add-somewhere-else > .command-surface__intro')?.textContent || '').trim() === 'Search for a venue or address that isn’t listed in CGB yet.',
+  'finalized desktop Add to CGB surface');
   check((element('#add-surface-title')?.textContent || '').trim() === 'Add to Cal Golden Bars', 'Desktop contribution surface should explain the global Add action');
-  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose an action for the selected location, or search for another location.', 'Desktop selected-state intro should explain both contribution paths');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose an action for this location. To add a different place, search below.', 'Desktop selected-state intro should explain both contribution paths');
   check(visible('#add-surface .add-context'), 'Selected venue context should remain available when opening desktop Add');
   check(visible('#add-watch-party-button') && visible('#add-cal-bar-button') && visible('#add-report-button'), 'Desktop selected Venue should expose all venue-specific contribution actions');
   check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Desktop venue-specific actions should remain grouped with selected-place context');
@@ -239,9 +263,12 @@ async function validateDesktopContributionEntry() {
     check((element('#add-context-name')?.textContent || '').trim() === selectedVenueName, 'Desktop Add should preserve the selected venue context');
   }
   check(!(element('#add-context-copy')?.textContent || '').includes('Available actions'), 'Desktop selected-place context should avoid explanatory repetition');
-  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Add somewhere else', 'Desktop selected-state new-location section should read as an alternate path');
-  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Search for another location', 'Desktop selected-state should retain the alternate location-search path');
-  check(state()?.searchMode === 'existing', 'Desktop Add to CGB should open the shared contribution surface rather than forcing Add-location search');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Different location?', 'Desktop selected-state search should read as an alternate path');
+  check((element('#add-surface .add-somewhere-else > .command-surface__intro')?.textContent || '').trim() === 'Search for a venue or address that isn’t listed in CGB yet.', 'Desktop selected-state search should explain the different-location path');
+  check(Boolean(element('#add-surface .desktop-add-search-slot #location-search')), 'Desktop selected-state should keep the shared search form in the modal');
+  check(!visible('#add-new-location-button'), 'Desktop selected-state should not require an intermediate search card');
+  check(!visible('#add-missing-location-link'), 'Desktop selected-state should not show missing-location fallback before search fails');
+  check(state()?.searchMode === 'add-location', 'Desktop selected-state should keep the inline search in canonical add-location mode');
 }
 
 async function runDesktop() {

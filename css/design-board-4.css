@@ -528,7 +528,8 @@ body[data-view="detail"] #app {
     background: var(--cgb-neutral-50);
   }
 
-  .venue-tray .tray-list__header {
+  .venue-tray #tray-list .tray-list__header {
+    padding-bottom: 0;
     background: rgba(242, 242, 242, .98);
   }
 
@@ -704,6 +705,35 @@ body[data-view="detail"] #app {
 
   .location-card {
     padding: 14px 15px;
+  }
+
+  .location-card__count {
+    color: var(--cgb-navy-900, #0b2856) !important;
+    font-size: .66rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .location-card__party {
+    color: var(--cgb-ink-500, #657083) !important;
+    font-weight: 600;
+  }
+
+  .location-card .venue-badges {
+    gap: 4px;
+  }
+
+  .location-card .venue-badge {
+    min-height: 19px;
+    padding: 2px 7px;
+    font-size: .54rem;
+    letter-spacing: .07em;
+    clip-path: polygon(0 0, calc(100% - .2rem) 0, 100% .2rem, 100% 100%, .2rem 100%, 0 calc(100% - .2rem));
+  }
+
+  .location-card .badge--fan-added::before {
+    clip-path: polygon(0 0, calc(100% - .2rem) 0, 100% .2rem, 100% 100%, .2rem 100%, 0 calc(100% - .2rem));
   }
 
   .mobile-command-bar {

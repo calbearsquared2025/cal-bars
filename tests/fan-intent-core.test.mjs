@@ -38,10 +38,10 @@ test('stored selections tolerate malformed storage and preserve one venue per ga
   assert.deepEqual(withStoredSelection({ game_1: 'ven_1' }, 'game_1', null), {});
 });
 
-test('list fan counts suppress zero and use compact singular/plural copy', () => {
+test('list fan counts suppress zero and identify CGB activity', () => {
   assert.equal(compactListFanCountCopy(0), '');
-  assert.equal(compactListFanCountCopy(1), '1 BEAR');
-  assert.equal(compactListFanCountCopy(2), '2 BEARS');
+  assert.equal(compactListFanCountCopy(1), '1 Bear on CGB');
+  assert.equal(compactListFanCountCopy(2), '2 Bears on CGB');
 });
 
 test('selected detail presence never describes a zero-count venue as one of many', () => {
