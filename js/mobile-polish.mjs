@@ -17,10 +17,6 @@ function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
 }
 
-function reducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 function appState() {
   return window.CGBApp?.getState?.() || null;
 }
@@ -148,13 +144,15 @@ function focusSelectedVenue() {
   if (!venue || points.length === 0) return;
   lastCameraVenueId = venueId;
 
-  const duration = reducedMotion() ? 0 : 500;
+  // Apply the zoom immediately. app.js already schedules the selected-marker visibility
+  // correction two animation frames later, so that correction can pan at the new zoom
+  // without interrupting a competing camera animation.
   if (points.length === 1) {
     const currentZoom = Number(state.map.getZoom?.());
     state.map.easeTo({
       center: points[0],
       zoom: Math.max(Number.isFinite(currentZoom) ? currentZoom : 0, SELECTED_CAMERA_CITY_ZOOM),
-      duration,
+      duration: 0,
       essential: true
     });
     return;
@@ -168,7 +166,7 @@ function focusSelectedVenue() {
   ], {
     padding: SELECTED_CAMERA_PADDING,
     maxZoom: SELECTED_CAMERA_REGIONAL_MAX_ZOOM,
-    duration,
+    duration: 0,
     essential: true
   });
 }
