@@ -1,3 +1,5 @@
+import { getWatchParty } from './core.mjs';
+
 function clean(value) {
   return String(value ?? '').trim();
 }
@@ -33,6 +35,10 @@ export function venuePhotoPresentation(venue = {}) {
     creditUrl: safeHttpUrl(venue.photo_credit_url),
     alt: venuePhotoAltText(venue)
   });
+}
+
+export function detailShareLabel({ snapshot, gameId, venueId } = {}) {
+  return getWatchParty(snapshot, gameId, venueId) ? 'Share Watch Party' : 'Share';
 }
 
 function photoKey(venue, photoUrl) {
@@ -156,6 +162,19 @@ function moveEditorialDescription(detail, hero, documentObject) {
   return true;
 }
 
+function syncDetailShareLabel(detail, state, venue) {
+  const share = detail.querySelector('.detail-primary-actions .detail-share');
+  if (!share) return false;
+  const label = detailShareLabel({
+    snapshot: state.snapshot,
+    gameId: state.gameId,
+    venueId: venue.venue_id
+  });
+  share.textContent = label;
+  share.setAttribute('aria-label', label);
+  return true;
+}
+
 export function enhanceVenueProfile({
   state = globalThis.window?.CGBApp?.getState?.(),
   documentObject = globalThis.document,
@@ -191,5 +210,6 @@ export function enhanceVenueProfile({
   }
 
   moveEditorialDescription(detail, hero, documentObject);
+  syncDetailShareLabel(detail, state, venue);
   return true;
 }
