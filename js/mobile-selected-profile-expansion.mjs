@@ -3,6 +3,7 @@ const STYLE_ID = 'cgb-mobile-selected-profile-expansion';
 const EXPAND_SWIPE_THRESHOLD_PX = 42;
 const DRAG_ACTIVATION_PX = 6;
 const MAP_REVEAL_PX = 72;
+const HANDLE_CLICK_SUPPRESSION_MS = 420;
 
 let appConnected = false;
 let activeVenueId = '';
@@ -10,6 +11,8 @@ let expandedVenueId = '';
 let baseHeightPx = 0;
 let gesture = null;
 let syncFrame = 0;
+let suppressNextHandleClick = false;
+let suppressHandleClickTimer = 0;
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -130,11 +133,25 @@ function applyHeight(tray, height) {
 function setHandleLabel(documentObject, expanded) {
   const handle = documentObject.querySelector('#tray-handle');
   if (!handle) return;
-  if (expanded) {
-    handle.setAttribute('aria-label', 'Return to map-first profile');
-    return;
-  }
-  handle.setAttribute('aria-label', 'Collapse selected location');
+  handle.setAttribute('aria-label', expanded
+    ? 'Return to map-first profile'
+    : 'Collapse selected location');
+}
+
+function markHandleClickSuppressed(windowObject = window) {
+  suppressNextHandleClick = true;
+  if (suppressHandleClickTimer) windowObject.clearTimeout?.(suppressHandleClickTimer);
+  suppressHandleClickTimer = windowObject.setTimeout?.(() => {
+    suppressNextHandleClick = false;
+    suppressHandleClickTimer = 0;
+  }, HANDLE_CLICK_SUPPRESSION_MS) || 0;
+}
+
+function interceptSuppressedHandleClick(event) {
+  if (!suppressNextHandleClick || !event.target?.closest?.('#tray-handle')) return;
+  suppressNextHandleClick = false;
+  event.preventDefault?.();
+  event.stopImmediatePropagation?.();
 }
 
 function resetPresentation({ preserveBase = false } = {}) {
@@ -257,6 +274,7 @@ function finishGesture(event, documentObject = document, windowObject = window) 
     applyHeight(tray, current.maxHeight);
     setHandleLabel(documentObject, true);
     scheduleMapLayout(windowObject);
+    markHandleClickSuppressed(windowObject);
     event.preventDefault?.();
     return;
   }
@@ -267,13 +285,17 @@ function finishGesture(event, documentObject = document, windowObject = window) 
     applyHeight(tray, current.minHeight);
     setHandleLabel(documentObject, false);
     scheduleMapLayout(windowObject);
+    markHandleClickSuppressed(windowObject);
     event.preventDefault?.();
     event.stopImmediatePropagation?.();
     return;
   }
 
   applyHeight(tray, current.wasExpanded ? current.maxHeight : current.minHeight);
-  if (current.moved) event.preventDefault?.();
+  if (current.moved) {
+    markHandleClickSuppressed(windowObject);
+    event.preventDefault?.();
+  }
 }
 
 function cancelGesture(_event, documentObject = document, windowObject = window) {
@@ -297,6 +319,7 @@ function connect() {
 
   appConnected = true;
   installStyles(document);
+  window.addEventListener('click', interceptSuppressedHandleClick, { capture: true });
   document.addEventListener('pointerdown', (event) => beginGesture(event, document, window), { capture: true });
   document.addEventListener('pointermove', (event) => moveGesture(event, document), { capture: true, passive: false });
   document.addEventListener('pointerup', (event) => finishGesture(event, document, window), { capture: true });
