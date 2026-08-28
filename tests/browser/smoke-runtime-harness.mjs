@@ -194,6 +194,18 @@ async function validateDesktopContributionWithoutSelection() {
   await waitFor(() => !visible('#add-surface'), 'desktop contribution surface close');
 }
 
+async function validateDesktopMapDeselect() {
+  const map = element('#map');
+  check(Boolean(map), 'Desktop map should exist for deselection validation');
+  if (!map) return;
+
+  map.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  await waitFor(() => !state()?.selectedVenueId && !state()?.detailMode && visible('#tray-list'), 'desktop map background deselection');
+  check(!state()?.selectedVenueId, 'Desktop map background click should clear the selected venue');
+  check(!state()?.detailMode, 'Desktop map background click should leave venue detail mode');
+  check(visible('#tray-list'), 'Desktop map background click should return to the Locations list');
+}
+
 async function validateDesktopContributionEntry() {
   const add = element('#mobile-add-button');
   const locations = element('#mobile-list-button');
@@ -240,6 +252,9 @@ async function runDesktop() {
   await validateDesktopContributionWithoutSelection();
   await selectFirstVenue();
   await validateDesktopContributionEntry();
+  element('#add-surface [data-command-close]')?.click();
+  await waitFor(() => !visible('#add-surface'), 'desktop contribution surface close after selected venue');
+  await validateDesktopMapDeselect();
   finish('CGB_SMOKE_DESKTOP');
 }
 
