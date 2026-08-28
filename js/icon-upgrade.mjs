@@ -5,6 +5,7 @@ import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
 import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
+import './mobile-direct-venue-profile.mjs';
 import { renderMobileSelectedProfileContinuation } from './mobile-selected-profile-continuation.mjs';
 import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
