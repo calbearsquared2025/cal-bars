@@ -12,6 +12,22 @@ function numericText(element) {
   return match ? match[0] : '—';
 }
 
+function syncStatLayout(element, number, copy) {
+  if (isMobile()) {
+    element.style.removeProperty('align-items');
+    element.style.removeProperty('gap');
+    return;
+  }
+
+  element.style.alignItems = 'center';
+  element.style.gap = '8px';
+  number.style.minWidth = '2ch';
+  number.style.textAlign = 'right';
+  number.style.fontVariantNumeric = 'tabular-nums';
+  copy.style.justifyItems = 'start';
+  copy.style.textAlign = 'left';
+}
+
 function renderStat(element, label, detail) {
   if (!element) return;
   const value = numericText(element);
@@ -25,6 +41,7 @@ function renderStat(element, label, detail) {
   const supporting = document.createElement('small');
   supporting.textContent = detail;
   copy.append(main, supporting);
+  syncStatLayout(element, number, copy);
   element.replaceChildren(number, copy);
   element.setAttribute('aria-label', `${value} ${label.toLowerCase()} ${detail.toLowerCase()}`);
 }
