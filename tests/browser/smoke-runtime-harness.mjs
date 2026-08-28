@@ -142,19 +142,18 @@ async function validateDesktopSearchHelper() {
   const input = element('#location-query');
   const helper = element('#search-add-location-button');
   const form = element('#location-search');
-  const header = element('#tray-list .tray-list__header');
-  if (!input || !helper || !form || !header) {
+  if (!input || !helper || !form) {
     failures.push('Desktop search input and shared add-location action should render');
     return;
   }
 
-  await waitFor(() => helper.parentElement === header && rendered(helper), 'desktop browse add-location action');
-  check(helper.textContent.trim() === '+ Add location', 'Desktop browse should expose a concise Add location action');
-  check(!form.contains(helper), 'Desktop search should not show its contextual helper before typing');
+  await sleep();
+  check(helper.hidden || !rendered(helper), 'Desktop Add location action should stay hidden before typing');
+  check(form.contains(helper), 'Desktop shared Add location action should remain owned by the search form');
 
   input.focus();
   await sleep();
-  check(helper.parentElement === header, 'Desktop Add location action should remain with browse controls on focus before typing');
+  check(helper.hidden || !rendered(helper), 'Focusing an empty desktop search should not reveal Add location');
 
   input.value = 'Synthetic';
   input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -163,7 +162,7 @@ async function validateDesktopSearchHelper() {
 
   input.value = '';
   input.dispatchEvent(new Event('input', { bubbles: true }));
-  await waitFor(() => helper.parentElement === header && rendered(helper), 'desktop browse add-location action after clearing search');
+  await waitFor(() => helper.hidden || !rendered(helper), 'desktop add-location helper hidden after clearing search');
   input.blur();
 }
 
@@ -172,8 +171,14 @@ async function validateDesktopAddLocationEntry() {
   await waitFor(() => visible('#tray-list'), 'desktop location list before Add location');
   const add = element('#search-add-location-button');
   const input = element('#location-query');
-  check(Boolean(add) && rendered(add), 'Desktop Add location action should be available from the location browser');
+  check(Boolean(add) && Boolean(input), 'Desktop shared Add location action and search input should exist');
   if (!add || !input) return;
+
+  check(add.hidden || !rendered(add), 'Desktop Add location action should remain hidden until search text exists');
+  input.focus();
+  input.value = 'Synthetic';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  await waitFor(() => rendered(add), 'desktop contextual Add location action after typing');
 
   add.click();
   await waitFor(() => state()?.searchMode === 'add-location', 'desktop Add location search mode');
