@@ -1,5 +1,11 @@
 import { rankVenues } from './core.mjs';
+import {
+  applyDesktopReviewPreview,
+  desktopReviewPreviewRequested,
+  desktopReviewPreviewUrl
+} from './desktop-review-preview.mjs';
 
+const desktopReviewPreviewActive = applyDesktopReviewPreview();
 const MOBILE_QUERY = '(max-width: 899px)';
 let desktopSearchEngaged = false;
 let desktopListAddButton = null;
@@ -11,6 +17,15 @@ function isMobile() {
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
+}
+
+function preserveDesktopReviewPreviewUrl() {
+  if (!desktopReviewPreviewActive || desktopReviewPreviewRequested(window.location.search)) return;
+  window.history.replaceState(
+    window.history.state,
+    '',
+    desktopReviewPreviewUrl(window.location.href)
+  );
 }
 
 function setAddLocationCopy(button, prefix) {
@@ -91,6 +106,7 @@ function desktopMatchCount(query, state = appState()) {
 }
 
 function syncDesktopSearchUi() {
+  preserveDesktopReviewPreviewUrl();
   syncDesktopListAddButton();
   if (isMobile()) {
     placeAddLocationAction();
