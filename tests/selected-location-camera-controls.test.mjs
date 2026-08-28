@@ -4,31 +4,30 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('mobile selected venue camera moves from national view to city or regional context', async () => {
-  const polish = await read('js/mobile-polish.mjs');
+test('mobile selected venue camera uses city focus when isolated and regional bounds when nearby venues exist', async () => {
+  const refinement = await read('js/map-mobile-refinement.mjs');
 
-  assert.match(polish, /import \{ rankNearbyVenues \} from '\.\/core\.mjs';/);
-  assert.match(polish, /const SELECTED_CAMERA_CITY_ZOOM = 11;/);
-  assert.match(polish, /const SELECTED_CAMERA_REGIONAL_MAX_ZOOM = 9\.75;/);
-  assert.match(polish, /rankNearbyVenues\([\s\S]*?SELECTED_CAMERA_RADIUS_MILES[\s\S]*?candidate\.venue_id !== venue\.venue_id/);
-  assert.match(polish, /if \(points\.length === 1\) \{[\s\S]*?state\.map\.easeTo\([\s\S]*?SELECTED_CAMERA_CITY_ZOOM[\s\S]*?duration: 0/);
-  assert.match(polish, /state\.map\.fitBounds\([\s\S]*?maxZoom: SELECTED_CAMERA_REGIONAL_MAX_ZOOM,[\s\S]*?duration: 0/);
+  assert.match(refinement, /const FOCUS_ZOOM = 11;/);
+  assert.match(refinement, /const REGIONAL_FOCUS_MAX_ZOOM = 9\.75;/);
+  assert.match(refinement, /function nearbyVenuesForSelected\([\s\S]*?Number\(distance\) <= NEARBY_RADIUS_MILES/);
+  assert.match(refinement, /if \(nearby\.length > 0\) \{[\s\S]*?state\.map\.fitBounds\([\s\S]*?maxZoom: REGIONAL_FOCUS_MAX_ZOOM/);
+  assert.match(refinement, /state\.map\.easeTo\([\s\S]*?zoom: Math\.max\(currentZoom, FOCUS_ZOOM\)[\s\S]*?offset: \[0, verticalOffset\]/);
 });
 
-test('selected venue camera runs only for a new selection so Locate me can retain its explicit viewport', async () => {
-  const polish = await read('js/mobile-polish.mjs');
+test('selected venue camera still focuses only once unless the user explicitly selects a marker again', async () => {
+  const refinement = await read('js/map-mobile-refinement.mjs');
 
-  assert.match(polish, /if \(venueId === lastCameraVenueId\) return;/);
-  assert.match(polish, /lastCameraVenueId = venueId;/);
-  assert.match(polish, /if \(!venueId\) \{[\s\S]*?lastCameraVenueId = null;/);
+  assert.match(refinement, /if \(!force && lastAutoFocusedVenueId === venueId\) return;/);
+  assert.match(refinement, /lastAutoFocusedVenueId = venueId;/);
+  assert.match(refinement, /lastAutoFocusedVenueId = '';[\s\S]*?focusVenue\(marker\.dataset\.venueId, \{ force: true \}\)/);
 });
 
-test('mobile Locate me control is positioned from the live selected tray edge', async () => {
-  const polish = await read('js/mobile-polish.mjs');
+test('mobile Locate me control follows the live selected tray edge', async () => {
+  const refinement = await read('js/map-mobile-refinement.mjs');
 
-  assert.match(polish, /function syncMapActionPosition\(\)[\s\S]*?state\?\.trayState === 'selected'/);
-  assert.match(polish, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
-  assert.match(polish, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
-  assert.match(polish, /new ResizeObserver\(scheduleMapGeometry\)/);
-  assert.match(polish, /window\.visualViewport\?\.addEventListener\?\.\('resize', scheduleMapGeometry\)/);
+  assert.match(refinement, /function syncLocateControlPosition\(\)[\s\S]*?state\?\.trayState === 'selected'/);
+  assert.match(refinement, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
+  assert.match(refinement, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
+  assert.match(refinement, /new ResizeObserver\(scheduleLocateControlPosition\)/);
+  assert.match(refinement, /window\.visualViewport\?\.addEventListener\?\.\('resize', scheduleLocateControlPosition\)/);
 });
