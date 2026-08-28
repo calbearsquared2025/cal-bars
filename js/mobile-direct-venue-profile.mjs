@@ -41,22 +41,6 @@ function replaceWithGameRoute(state, windowObject) {
   windowObject.history.replaceState({}, '', `${nextUrl.pathname}${nextUrl.search}${nextUrl.hash}`);
 }
 
-function focusDirectVenue(app, venue, windowObject) {
-  const latitude = Number(venue?.latitude);
-  const longitude = Number(venue?.longitude);
-  if (![latitude, longitude].every(Number.isFinite)) return;
-  windowObject.requestAnimationFrame(() => {
-    const state = app.getState?.();
-    if (!state?.map || clean(state.selectedVenueId) !== clean(venue.venue_id)) return;
-    app.focusLocation?.({
-      lat: latitude,
-      lon: longitude,
-      label: clean(venue.name) || 'selected venue',
-      venueId: venue.venue_id
-    }, []);
-  });
-}
-
 export function bridgeMobileDirectVenueProfile({
   app = globalThis.window?.CGBApp,
   documentObject = globalThis.document,
@@ -96,7 +80,6 @@ export function bridgeMobileDirectVenueProfile({
     state.detailMode = false;
     app.showSelectedVenue?.();
     app.render?.();
-    focusDirectVenue(app, routeVenue, windowObject);
   } finally {
     state.detailMode = true;
     bridging = false;
