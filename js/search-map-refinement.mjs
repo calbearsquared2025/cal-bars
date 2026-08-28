@@ -1,5 +1,5 @@
 import { clearSelectedMapVenue } from './app-state.mjs';
-import { rankVenues } from './core.mjs';
+import { getWatchParty, rankVenues } from './core.mjs';
 import {
   applyDesktopReviewPreview,
   desktopReviewPreviewRequested,
@@ -81,7 +81,7 @@ function syncDesktopContributionEntry() {
     return;
   }
 
-  bar.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr) 10px auto';
+  bar.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr) 12px auto';
   Object.assign(button.style, {
     display: 'flex',
     gridRow: '1',
@@ -94,14 +94,14 @@ function syncDesktopContributionEntry() {
     justifyContent: 'center',
     gap: '4px',
     margin: '0',
-    padding: '0 7px',
-    color: 'var(--cgb-navy-950, #010133)',
-    background: 'rgba(253, 181, 21, .08)',
-    border: '1px solid rgba(230, 164, 17, .68)',
-    borderRadius: '8px',
+    padding: '0 4px',
+    color: 'var(--cgb-navy-800, #0b2856)',
+    background: 'transparent',
+    border: '0',
+    borderRadius: '0',
     boxShadow: 'none',
     fontSize: '.64rem',
-    fontWeight: '825',
+    fontWeight: '800',
     letterSpacing: '.01em',
     lineHeight: '1',
     whiteSpace: 'nowrap'
@@ -113,13 +113,13 @@ function syncDesktopContributionEntry() {
     placeItems: 'center',
     margin: '0',
     padding: '0',
-    color: 'inherit',
+    color: 'var(--cgb-gold-500, #e6a411)',
     background: 'transparent',
     border: '0',
     borderRadius: '0',
     boxShadow: 'none',
-    fontSize: '.9rem',
-    fontWeight: '700',
+    fontSize: '.92rem',
+    fontWeight: '800',
     lineHeight: '1'
   });
 }
@@ -130,6 +130,140 @@ function ensureDesktopAddSearchStyle() {
   style.id = DESKTOP_ADD_SEARCH_STYLE_ID;
   style.textContent = `
     @media (min-width: 900px) {
+      .mobile-command-bar {
+        padding-inline: 10px;
+      }
+
+      #mobile-list-button,
+      #mobile-map-button {
+        position: relative;
+        min-height: 40px;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        color: var(--cgb-ink-500, #657083);
+        font-size: .7rem;
+        font-weight: 780;
+      }
+
+      #mobile-list-button > .ui-icon,
+      #mobile-map-button > .ui-icon {
+        display: none;
+      }
+
+      #mobile-list-button:hover:not(:disabled),
+      #mobile-map-button:hover:not(:disabled),
+      #mobile-list-button:focus-visible,
+      #mobile-map-button:focus-visible {
+        background: transparent !important;
+        color: var(--cgb-navy-950, #010133);
+      }
+
+      #mobile-list-button[aria-current="page"],
+      #mobile-map-button[aria-current="page"] {
+        background: transparent !important;
+        color: var(--cgb-navy-950, #010133);
+        font-weight: 850;
+      }
+
+      #mobile-list-button[aria-current="page"]::after,
+      #mobile-map-button[aria-current="page"]::after {
+        content: "";
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        bottom: 1px;
+        height: 2px;
+        background: var(--cgb-gold-400, #fdb515);
+        border-radius: 999px;
+      }
+
+      #mobile-map-button:disabled {
+        opacity: .38;
+      }
+
+      #mobile-add-button:hover,
+      #mobile-add-button:focus-visible {
+        color: var(--cgb-navy-950, #010133) !important;
+        background: transparent !important;
+        text-decoration: underline;
+        text-decoration-color: var(--cgb-gold-400, #fdb515);
+        text-underline-offset: .22em;
+      }
+
+      #tray-list .tray-list__header {
+        padding-bottom: 14px !important;
+      }
+
+      #tray-list .tray-list__toolbar {
+        display: none;
+      }
+
+      #tray-list .location-card__top {
+        align-items: flex-start;
+      }
+
+      #tray-list .location-card__top > div {
+        width: 100%;
+      }
+
+      #tray-list .location-card__meta-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0;
+        margin-top: 1px;
+        color: var(--cgb-ink-500, #657083);
+      }
+
+      #tray-list .location-card__meta-line > span {
+        font-size: var(--text-xs);
+      }
+
+      #tray-list .location-card__count {
+        flex: 0 0 auto;
+        margin: 0 !important;
+        color: var(--cgb-navy-800, #0b2856) !important;
+        font-family: inherit;
+        font-size: var(--text-xs) !important;
+        font-weight: 700 !important;
+        letter-spacing: 0;
+        line-height: inherit;
+        text-align: left;
+        text-transform: none;
+      }
+
+      #tray-list .location-card__count:not([hidden])::before {
+        content: "·";
+        display: inline-block;
+        margin: 0 6px;
+        color: var(--cgb-ink-500, #657083);
+        font-weight: 500;
+      }
+
+      #tray-list .location-card__party {
+        color: var(--cgb-ink-500, #657083) !important;
+        font-size: var(--text-xs);
+        font-weight: 600;
+      }
+
+      #tray-list .location-card__party-host {
+        color: var(--cgb-gold-600, #b77900);
+        font-weight: 750;
+      }
+
+      #tray-list .location-card .badge--party {
+        color: var(--cgb-navy-950, #010133);
+        background: #ffd35a;
+        border-color: var(--cgb-gold-500, #e6a411);
+      }
+
+      #tray-list .location-card .badge--cal {
+        color: var(--cgb-white, #fff);
+        background: var(--cgb-navy-700, #153f75);
+        border-color: var(--cgb-navy-900, #071e41);
+      }
+
       #add-surface .add-somewhere-else {
         margin-top: 18px;
         padding-top: 16px;
@@ -247,6 +381,46 @@ function syncDesktopMissingLocationFallback() {
   });
 }
 
+function syncDesktopLocationListPresentation() {
+  if (isMobile()) return;
+  const state = appState();
+  if (!state?.snapshot) return;
+
+  document.querySelectorAll('#location-list .location-card[data-venue-id]').forEach((card) => {
+    const info = card.querySelector('.location-card__top > div');
+    const count = card.querySelector('.location-card__count');
+    if (info && count) {
+      let metaLine = info.querySelector(':scope > .location-card__meta-line');
+      if (!metaLine) {
+        const locationMeta = Array.from(info.children).find((child) =>
+          child.tagName === 'SPAN' &&
+          !child.classList.contains('venue-badge') &&
+          !child.classList.contains('location-card__count'));
+        if (locationMeta) {
+          metaLine = document.createElement('div');
+          metaLine.className = 'location-card__meta-line';
+          locationMeta.insertAdjacentElement('beforebegin', metaLine);
+          metaLine.append(locationMeta, count);
+        }
+      } else if (count.parentElement !== metaLine) {
+        metaLine.append(count);
+      }
+      count.hidden = count.textContent.trim() === '';
+    }
+
+    const venueId = card.dataset.venueId;
+    const party = getWatchParty(state.snapshot, state.gameId, venueId);
+    const host = card.querySelector('.location-card__party');
+    if (party?.organizer_name && host) {
+      host.replaceChildren(document.createTextNode('Watch Party hosted by '));
+      const organizer = document.createElement('strong');
+      organizer.className = 'location-card__party-host';
+      organizer.textContent = party.organizer_name;
+      host.append(organizer);
+    }
+  });
+}
+
 function activateDesktopAddSearch({ preserveQuery = true, refresh = true } = {}) {
   if (!desktopAddSurfaceVisible()) return false;
   ensureDesktopAddSearchStyle();
@@ -328,6 +502,8 @@ function syncDesktopSearchUi() {
     placeAddLocationAction();
     return;
   }
+
+  syncDesktopLocationListPresentation();
 
   const state = appState();
   const input = document.querySelector('#location-query');
