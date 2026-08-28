@@ -7,7 +7,9 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 test('mobile selected profile activates its canonical venue route on initial selection', async () => {
   const source = await read('js/map-mobile-refinement.mjs');
   assert.match(source, /function syncSelectedVenueRoute\(state = appState\(\)\)[\s\S]*?buildVenueUrl\(venue\.slug, game, window\.location\.href\)[\s\S]*?history\.replaceState/);
-  assert.match(source, /const routeChanged = selectedProfileActive \? syncSelectedVenueRoute\(state\) : false;/);
+  assert.match(source, /const selectedVenueChosen = isMobile\(\)[\s\S]*?tray\?\.dataset\.state === 'selected';/);
+  assert.match(source, /const routeChanged = selectedVenueChosen \? syncSelectedVenueRoute\(state\) : false;/);
+  assert.match(source, /const selectedProfileActive = selectedVenueChosen && document\.body\.dataset\.commandSurface === 'map';/);
   assert.match(source, /focusVenue\(state\.selectedVenueId, \{ force: routeChanged \}\);/);
 });
 
@@ -25,6 +27,6 @@ test('direct venue links defer camera focus to the shared mobile map refinement'
     read('js/map-mobile-refinement.mjs')
   ]);
   assert.doesNotMatch(directBridge, /focusDirectVenue|focusLocation\?\./);
-  assert.match(mapRefinement, /const routeActive = selectedProfileActive && selectedVenueRouteActive\(state\);/);
+  assert.match(mapRefinement, /const routeActive = selectedVenueChosen && selectedVenueRouteActive\(state\);/);
   assert.match(mapRefinement, /if \(restoredCamera[\s\S]*?!routeActive\)/);
 });
