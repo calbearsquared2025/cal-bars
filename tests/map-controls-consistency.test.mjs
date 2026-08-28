@@ -69,6 +69,12 @@ test('Locate me preserves a selected mobile profile and leaves control placement
   assert.match(firstPaint, /\.map-actions:has\(~ #venue-tray\.venue-tray\.tray--selected\)\s*\{[\s\S]*?top:\s*calc\(var\(--header-height\) \+ 138px\)\s*!important;/);
 });
 
+test('mobile tray collapse does not recenter a retained selected venue over an explicit map viewport', async () => {
+  const app = await read('js/app.js');
+  assert.match(app, /function scheduleSelectedVenueVisibility\(\)[\s\S]*?isMobileLayout\(\) && \(state\.detailMode \|\| state\.trayState !== 'selected'\)/);
+  assert.match(app, /if \(delta > 0\) \{[\s\S]*?setTrayState\('peek', \{ animate: true \}\);/);
+});
+
 test('mobile legend has a little more white breathing room below the labels', async () => {
   const css = await read('css/mobile-polish.css');
   assert.match(css, /\.opening-stat\s*\{[\s\S]*?height:\s*82px;[\s\S]*?grid-template-rows:\s*54px 26px;/);
