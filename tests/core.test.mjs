@@ -43,18 +43,22 @@ test('TBD kickoff is displayed without a timestamp', () => {
   assert.match(formatKickoff(game, 'en-US'), /Time TBD/);
 });
 
-test('public venue taxonomy is Cal Bar or Fan-Added with Watch Party as an overlay', () => {
+test('venue category, provenance badges, and Watch Party overlays remain distinct', () => {
   const calBar = snapshot.venues.find((item) => item.venue_id === 'ven_000001');
   const fanAdded = snapshot.venues.find((item) => item.venue_id === 'ven_000004');
-  const reviewedFanAdded = { ...fanAdded, verification_status: 'cgb_reviewed' };
+  const reviewedCommunity = { ...fanAdded, verification_status: 'cgb_reviewed' };
   const party = { watch_party_id: 'wp_taxonomy_test' };
 
   assert.equal(venueTypeLabel(calBar), 'CAL BAR');
-  assert.equal(venueTypeLabel(reviewedFanAdded), 'FAN-ADDED');
+  assert.equal(venueTypeLabel(fanAdded), 'COMMUNITY LOCATION');
+  assert.equal(venueTypeLabel(reviewedCommunity), 'COMMUNITY LOCATION');
+
   assert.deepEqual(venueBadgeDescriptors(calBar, null).map(({ text }) => text), ['CAL BAR']);
-  assert.deepEqual(venueBadgeDescriptors(reviewedFanAdded, null).map(({ text }) => text), ['FAN-ADDED']);
+  assert.deepEqual(venueBadgeDescriptors(fanAdded, null).map(({ text }) => text), ['FAN-ADDED']);
+  assert.deepEqual(venueBadgeDescriptors(reviewedCommunity, null).map(({ text }) => text), []);
   assert.deepEqual(venueBadgeDescriptors(calBar, party).map(({ text }) => text), ['WATCH PARTY', 'CAL BAR']);
-  assert.deepEqual(venueBadgeDescriptors(reviewedFanAdded, party).map(({ text }) => text), ['WATCH PARTY', 'FAN-ADDED']);
+  assert.deepEqual(venueBadgeDescriptors(fanAdded, party).map(({ text }) => text), ['WATCH PARTY']);
+  assert.deepEqual(venueBadgeDescriptors(reviewedCommunity, party).map(({ text }) => text), ['WATCH PARTY']);
 
   assert.equal(markerKind(snapshot, SYRACUSE_GAME_ID, calBar), 'cal-bar');
   assert.equal(markerKind(snapshot, UCLA_GAME_ID, fanAdded), 'fan-added');
@@ -72,6 +76,18 @@ test('public venue taxonomy is Cal Bar or Fan-Added with Watch Party as an overl
     ]
   };
   assert.equal(markerKind(watchPartySnapshot, SYRACUSE_GAME_ID, fanAdded), 'watch-party');
+  assert.equal(markerKind(watchPartySnapshot, UCLA_GAME_ID, fanAdded), 'fan-added');
+});
+
+test('map legend names the neutral Community Location category', async () => {
+  const index = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  const legendStart = index.indexOf('<div class="map-legend"');
+  const legendEnd = index.indexOf('</div>', legendStart);
+  const legend = index.slice(legendStart, legendEnd);
+  assert.match(legend, />Watch Party</);
+  assert.match(legend, />Cal Bar</);
+  assert.match(legend, />Community Location</);
+  assert.doesNotMatch(legend, />Fan-Added</);
 });
 
 test('selected-game activity and venue type drive result priority', () => {
