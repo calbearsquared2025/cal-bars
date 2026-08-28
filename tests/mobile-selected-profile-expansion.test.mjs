@@ -68,3 +68,10 @@ test('the existing mobile profile bridge loads expansion without adding another 
   const source = await read('js/mobile-direct-venue-profile.mjs');
   assert.match(source, /import '\.\/mobile-selected-profile-expansion\.mjs';/);
 });
+
+test('expanded reading position keeps the same continuous selected profile rather than reopening Detail', async () => {
+  const source = await read('js/mobile-selected-profile-expansion.mjs');
+  assert.doesNotMatch(source, /window\.location\.assign/);
+  assert.doesNotMatch(source, /buildVenueUrl/);
+  assert.doesNotMatch(source, /data-selected-density/);
+});
