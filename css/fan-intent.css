@@ -209,6 +209,56 @@
   }
 }
 
+/* Desktop Venue Profile attendance stays attached to the game activity hierarchy,
+   but reads as a compact status row rather than a standalone section. */
+@media (min-width: 900px) {
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: center !important;
+    justify-items: start !important;
+    column-gap: 7px !important;
+    row-gap: 3px !important;
+    padding: 10px 18px !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) > strong {
+    display: contents !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) .bear-count__number {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    align-self: center !important;
+    justify-self: start !important;
+    font-size: 1.55rem !important;
+    line-height: .92 !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) .bear-count__label {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    align-self: center !important;
+    justify-self: start !important;
+    font-size: .8rem !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) > .activity-card__presence {
+    display: none !important;
+  }
+
+  body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) > p:not(.activity-card__presence) {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    margin: 0 !important;
+    font-size: .7rem !important;
+    line-height: 1.25 !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .intent-button.is-pending::before { animation: none; }
 }

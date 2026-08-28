@@ -1,3 +1,7 @@
+#search-dropdown[hidden] {
+  display: none !important;
+}
+
 .search-result-group {
   display: grid;
   gap: .35rem;
