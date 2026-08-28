@@ -16,6 +16,10 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         background: var(--cgb-warm-50, #f7f6f2) !important;
       }
 
+      .map-toolbar .search-field {
+        background: var(--cgb-white, #fff) !important;
+      }
+
       #add-surface .add-context {
         color: var(--cgb-navy-950, #010133) !important;
         background: #fbfaf5 !important;
