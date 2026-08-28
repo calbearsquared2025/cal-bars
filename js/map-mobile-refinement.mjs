@@ -1,5 +1,6 @@
 import {
   bearCountCopy,
+  buildGameUrl,
   buildVenueUrl,
   compactVenueLocation,
   markerKind,
@@ -14,14 +15,11 @@ const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
 const REGIONAL_FOCUS_MAX_ZOOM = 9.75;
 const MAP_ACTION_GAP = 12;
-const SELECTED_DETAIL_SWIPE_THRESHOLD = 48;
 const STYLE_ID = 'cgb-map-mobile-refinement';
 const MAP_CAMERA_STORAGE_KEY = 'cgb_v2_map_camera';
 const VENUE_FOCUS_SUPPRESSION_MS = 900;
 
 let lastAutoFocusedVenueId = '';
-let selectedHandlePointer = null;
-let suppressSelectedHandleClick = false;
 let trackedMap = null;
 let trackedMapMoveEnd = null;
 let returnCameraPending = false;
@@ -198,9 +196,49 @@ function installStyles() {
   document.head.append(style);
 }
 
-
 function selectedVenue(venueId, state = appState()) {
   return state?.snapshot?.venues?.find((venue) => venue.venue_id === venueId) || null;
+}
+
+function selectedGame(state = appState()) {
+  return state?.snapshot?.games?.find((game) => game.game_id === state?.gameId) || null;
+}
+
+function routeString(url) {
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+function selectedVenueRouteActive(state = appState()) {
+  const venue = selectedVenue(state?.selectedVenueId, state);
+  if (!venue) return false;
+  const current = new URL(window.location.href);
+  return current.searchParams.get('venue') === venue.slug;
+}
+
+function syncSelectedVenueRoute(state = appState()) {
+  if (!isMobile() || state?.detailMode || document.body.dataset.view !== 'map') return false;
+  const tray = document.querySelector('#venue-tray');
+  if (!state?.selectedVenueId || tray?.dataset.state !== 'selected') return false;
+  const venue = selectedVenue(state.selectedVenueId, state);
+  const game = selectedGame(state);
+  if (!venue || !game) return false;
+
+  const current = new URL(window.location.href);
+  const next = new URL(buildVenueUrl(venue.slug, game, window.location.href));
+  if (routeString(current) === routeString(next)) return false;
+  window.history.replaceState({}, '', routeString(next));
+  return true;
+}
+
+function clearSelectedVenueRoute(state = appState()) {
+  const game = selectedGame(state);
+  if (!game) return false;
+  const current = new URL(window.location.href);
+  if (!current.searchParams.get('venue')) return false;
+  const next = new URL(buildGameUrl(game, window.location.href));
+  if (routeString(current) === routeString(next)) return false;
+  window.history.replaceState({}, '', routeString(next));
+  return true;
 }
 
 function rankedVenue(state, venueId) {
@@ -333,57 +371,8 @@ function handleMapDeselect(event) {
   if (!clearSelectedMapVenue()) return;
 
   lastAutoFocusedVenueId = '';
+  clearSelectedVenueRoute();
   window.CGBApp?.render?.();
-}
-
-function openSelectedVenueDetail(venueId) {
-  const state = appState();
-  const venue = selectedVenue(venueId, state);
-  const game = state?.snapshot?.games?.find((item) => item.game_id === state?.gameId) || null;
-  if (!venue || !game) return false;
-  captureMapCamera(state.map);
-  window.location.assign(buildVenueUrl(venue.slug, game, window.location.href));
-  return true;
-}
-
-function trackSelectedHandleSwipe(event) {
-  const handle = event.target.closest?.('#tray-handle');
-  const state = appState();
-  const tray = document.querySelector('#venue-tray');
-  if (!handle || !isMobile() || document.body.dataset.commandSurface !== 'map' ||
-      tray?.dataset.state !== 'selected' || !state?.selectedVenueId) {
-    selectedHandlePointer = null;
-    return;
-  }
-  captureMapCamera(state.map);
-  selectedHandlePointer = {
-    pointerId: event.pointerId,
-    startY: event.clientY,
-    venueId: state.selectedVenueId
-  };
-}
-
-function handleSelectedHandleSwipe(event) {
-  const gesture = selectedHandlePointer;
-  if (!gesture || event.pointerId !== gesture.pointerId) return;
-  selectedHandlePointer = null;
-
-  const delta = event.clientY - gesture.startY;
-  if (delta >= -SELECTED_DETAIL_SWIPE_THRESHOLD) return;
-
-  const tray = document.querySelector('#venue-tray');
-  if (!isMobile() || document.body.dataset.commandSurface !== 'map' || tray?.dataset.state !== 'selected') return;
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  suppressSelectedHandleClick = true;
-  window.setTimeout(() => { suppressSelectedHandleClick = false; }, 0);
-  openSelectedVenueDetail(gesture.venueId);
-}
-
-function resetSelectedHandleSwipe(event) {
-  if (event?.pointerId != null && selectedHandlePointer?.pointerId !== event.pointerId) return;
-  selectedHandlePointer = null;
 }
 
 function handleTrayTopTap(event) {
@@ -394,10 +383,6 @@ function handleTrayTopTap(event) {
 
   event.preventDefault();
   event.stopImmediatePropagation();
-  if (suppressSelectedHandleClick) {
-    suppressSelectedHandleClick = false;
-    return;
-  }
   document.querySelector('#tray-selected .selected-card__header > .icon-button')?.click();
 }
 
@@ -503,7 +488,15 @@ function sync() {
 
   const state = appState();
   const tray = document.querySelector('#venue-tray');
-  if (isMobile() && document.body.dataset.commandSurface === 'map' && tray?.dataset.state === 'selected') {
+  const selectedVenueChosen = isMobile() &&
+    document.body.dataset.view === 'map' &&
+    Boolean(state?.selectedVenueId) &&
+    tray?.dataset.state === 'selected';
+  const selectedProfileActive = selectedVenueChosen && document.body.dataset.commandSurface === 'map';
+  const routeChanged = selectedVenueChosen ? syncSelectedVenueRoute(state) : false;
+  const routeActive = selectedVenueChosen && selectedVenueRouteActive(state);
+
+  if (selectedProfileActive) {
     const handle = document.querySelector('#tray-handle');
     handle?.setAttribute('aria-expanded', 'true');
     handle?.setAttribute('aria-label', 'Collapse selected location');
@@ -513,18 +506,17 @@ function sync() {
     restorePendingReturnCamera();
     return;
   }
-  if (restoredCamera && state?.selectedVenueId && tray?.dataset.state === 'selected') {
+  if (restoredCamera && state?.selectedVenueId && tray?.dataset.state === 'selected' && !routeActive) {
     lastAutoFocusedVenueId = state.selectedVenueId;
     state.locationFocusVenueId = null;
     return;
   }
   if (state?.locationFocusVenueId === state.selectedVenueId) {
     state.locationFocusVenueId = null;
-    return;
+    if (!routeActive) return;
   }
-  if (!isMobile() || document.body.dataset.commandSurface !== 'map' ||
-      !state?.selectedVenueId || tray?.dataset.state !== 'selected') return;
-  focusVenue(state.selectedVenueId);
+  if (!selectedVenueChosen) return;
+  focusVenue(state.selectedVenueId, { force: routeChanged });
 }
 
 function initialize() {
@@ -533,9 +525,6 @@ function initialize() {
   document.addEventListener('click', markDetailReturnForCamera, { capture: true });
   document.addEventListener('click', captureCameraBeforeVenueNavigation, { capture: true });
   document.addEventListener('click', openPreviewVenue, { capture: true });
-  document.addEventListener('pointerdown', trackSelectedHandleSwipe, { capture: true });
-  document.addEventListener('pointerup', handleSelectedHandleSwipe, { capture: true });
-  document.addEventListener('pointercancel', resetSelectedHandleSwipe, { capture: true });
   document.addEventListener('click', handleTrayTopTap, { capture: true });
   document.addEventListener('click', handleMapDeselect);
 
