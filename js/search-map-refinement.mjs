@@ -2,6 +2,8 @@ import { rankVenues } from './core.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 let desktopSearchEngaged = false;
+let desktopListAddButton = null;
+let desktopListActions = null;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -41,12 +43,55 @@ function placeAddLocationAction() {
   return button;
 }
 
+function ensureDesktopListAddButton() {
+  if (desktopListAddButton) return desktopListAddButton;
+  const button = document.createElement('button');
+  button.id = 'list-add-location-button';
+  button.className = 'secondary-button list-add-location-button';
+  button.type = 'button';
+  button.textContent = '+ Add location';
+  button.setAttribute('aria-label', 'Add a location');
+  button.addEventListener('click', () => {
+    document.querySelector('#search-add-location-button')?.click();
+  });
+  desktopListAddButton = button;
+  return button;
+}
+
+function syncDesktopListAddButton() {
+  const header = document.querySelector('#tray-list .tray-list__header');
+  const toggle = document.querySelector('#list-location-toggle');
+  if (!header || !toggle) return;
+
+  if (isMobile()) {
+    if (desktopListActions?.parentElement === header) {
+      header.insertBefore(toggle, desktopListActions);
+      desktopListActions.remove();
+    }
+    return;
+  }
+
+  if (!desktopListActions) {
+    const actions = document.createElement('div');
+    actions.className = 'tray-list__actions';
+    actions.dataset.desktopListActions = 'true';
+    desktopListActions = actions;
+  }
+
+  if (desktopListActions.parentElement !== header) toggle.after(desktopListActions);
+  if (toggle.parentElement !== desktopListActions) desktopListActions.append(toggle);
+
+  const button = ensureDesktopListAddButton();
+  if (button.parentElement !== desktopListActions) desktopListActions.append(button);
+}
+
 function desktopMatchCount(query, state = appState()) {
   if (!query || !state?.snapshot) return 0;
   return rankVenues(state.snapshot, state.gameId, state.origin, query).length;
 }
 
 function syncDesktopSearchUi() {
+  syncDesktopListAddButton();
   if (isMobile()) {
     placeAddLocationAction();
     return;
