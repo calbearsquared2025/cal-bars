@@ -230,8 +230,7 @@ function setSurface(next, { focus = false } = {}) {
 
 function moveSearchForm() {
   if (!dom.searchForm || !dom.searchSlot || !dom.mapToolbar) return;
-  const mobile = isMobileLayout();
-  if (mobile || currentSurface === 'search') {
+  if (isMobileLayout()) {
     if (dom.searchForm.parentElement !== dom.searchSlot) dom.searchSlot.append(dom.searchForm);
     return;
   }
