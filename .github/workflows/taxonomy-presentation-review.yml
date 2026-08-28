@@ -1,0 +1,32 @@
+name: Taxonomy presentation review
+
+on:
+  push:
+    branches:
+      - feature/community-location-presentation
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Focused and browser test suite
+        run: npm test
+      - name: Public data validation
+        run: npm run validate:data
+      - name: Capture taxonomy review screenshots
+        run: node scripts/capture-taxonomy-review.mjs
+      - name: Upload taxonomy review screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: taxonomy-presentation-screenshots
+          path: taxonomy-review/*.png
+          if-no-files-found: error
+          retention-days: 14
