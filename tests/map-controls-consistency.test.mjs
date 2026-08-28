@@ -31,18 +31,19 @@ test('desktop Locate me and zoom controls share one aligned stack beside the ven
   assert.match(mobilePolish, /\.map-actions #near-me-button[\s\S]*?width:\s*44px;/);
 });
 
-test('marker states use the Bootstrap geo-alt-fill silhouette with distinct selected and nearby hierarchy', async () => {
+test('marker states use the slimmer layered Bootstrap pin silhouette with distinct selected and nearby hierarchy', async () => {
   const css = await read('css/mobile-polish.css');
   assert.match(css, /--marker-shape:\s*url\("data:image\/svg\+xml/);
   assert.match(css, /Bootstrap Icons geo-alt-fill/);
   assert.match(css, /viewBox='0 0 12 16'/);
   assert.match(css, /M6 16s6-5\.686 6-10A6 6 0 0 0 0 6c0 4\.314 6 10 6 10Z/);
-  assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?width:\s*32px;[\s\S]*?height:\s*43px;/);
-  assert.match(css, /\.cgb-marker \.marker-star::after[\s\S]*?top:\s*7\.5px;[\s\S]*?width:\s*17px;[\s\S]*?height:\s*17px;/);
+  assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?left:\s*10px;[\s\S]*?width:\s*28px;[\s\S]*?height:\s*43px;/);
+  assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?background:\s*var\(--cgb-white\);[\s\S]*?mask:\s*var\(--marker-shape\)/);
+  assert.match(css, /\.cgb-marker \.marker-pin::before,[\s\S]*?inset:\s*1\.5px;[\s\S]*?background:\s*var\(--cgb-navy-950\);/);
+  assert.match(css, /\.cgb-marker \.marker-pin::after,[\s\S]*?inset:\s*3px;[\s\S]*?background-color:\s*var\(--marker-fill\);[\s\S]*?radial-gradient/);
+  assert.match(css, /\.cgb-marker \.marker-star\s*\{[\s\S]*?--marker-fill:\s*var\(--cgb-gold-400\);[\s\S]*?--marker-center-radius:\s*8\.5px;/);
   assert.match(css, /\.cgb-marker \.marker-star__icon[\s\S]*?top:\s*9\.5px;[\s\S]*?width:\s*13px;[\s\S]*?height:\s*13px;/);
-  assert.match(css, /\.cgb-marker \.marker-pin::before,[\s\S]*?inset:\s*1\.25px;/);
-  assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?mask:\s*var\(--marker-shape\)/);
-  assert.match(css, /\.cgb-marker\.marker--cal-bar \.marker-pin/);
+  assert.match(css, /\.cgb-marker\.marker--cal-bar \.marker-pin[\s\S]*?--marker-fill:\s*var\(--cgb-navy-900\);[\s\S]*?--marker-center:\s*var\(--cgb-white\);/);
   assert.match(css, /\.cgb-marker\.is-selected \.marker-pin,[\s\S]*?scale:\s*1\.12;/);
   assert.match(css, /\.cgb-marker\.is-nearby-preview:not\(\.is-selected\)[\s\S]*?scale:\s*1\.06;/);
 });
