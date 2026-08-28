@@ -41,3 +41,18 @@ test('wide desktop editorial columns meet cleanly with continuous borders', asyn
   assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?border-right:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
   assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-fan-experiences\s*\{[\s\S]*?grid-column:\s*2\s*!important;/);
 });
+
+test('additional Watch Party and listing maintenance use sentence case with secondary styling', async () => {
+  const [watchPartySource, listingSource, watchPartyCss] = await Promise.all([
+    read('js/watch-party-form.js'),
+    read('js/listing-update.js'),
+    read('css/watch-party-form.css')
+  ]);
+
+  assert.match(watchPartySource, /detail-watch-party-cta--additional/);
+  assert.match(watchPartySource, /'Another watch party\?'/);
+  assert.match(watchPartySource, /'Add another watch party'/);
+  assert.match(listingSource, /'Suggest an update or report an issue'/);
+  assert.match(watchPartyCss, /\.detail-watch-party-cta--additional \.detail-watch-party-cta__action\s*\{[\s\S]*?width:\s*fit-content;[\s\S]*?min-height:\s*36px;[\s\S]*?background:\s*var\(--cgb-white\);/);
+  assert.match(watchPartyCss, /@media \(max-width: 599px\)[\s\S]*?\.detail-watch-party-cta:not\(\.detail-watch-party-cta--additional\) \.detail-watch-party-cta__action\s*\{[\s\S]*?width:\s*100%;/);
+});
