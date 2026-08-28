@@ -14,7 +14,10 @@
 }
 
 #venue-tray .selected-card > .party-module .party-module__title {
+  display: flex;
+  align-items: center;
   gap: 7px;
+  width: 100%;
   color: var(--cgb-navy-950);
   font-size: .82rem;
   line-height: 1.1;
@@ -26,11 +29,32 @@
   color: var(--cgb-gold-500);
 }
 
+#venue-tray .selected-card > .party-module .party-module__date {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--cgb-ink-500);
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .045em;
+  white-space: nowrap;
+}
+
 #venue-tray .selected-card > .party-module p {
   margin: 0;
   color: var(--cgb-ink-700);
   font-size: .71rem;
   line-height: 1.24;
+}
+
+#venue-tray .selected-card > .party-module .party-game-context {
+  color: var(--cgb-navy-900);
+  font-weight: 800;
+  letter-spacing: .025em;
+}
+
+#venue-tray .selected-card > .party-module .party-module__time {
+  color: var(--cgb-ink-700);
+  font-weight: 600;
 }
 
 #venue-tray .selected-card > .party-module .party-meta {
