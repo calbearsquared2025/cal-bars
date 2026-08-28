@@ -179,14 +179,16 @@ async function validateDesktopContributionWithoutSelection() {
   add.click();
   await waitFor(() => visible('#add-surface'), 'desktop contribution surface without selection');
   check(!visible('#add-surface .add-context'), 'Desktop selected-place context should stay hidden without a selected venue');
-  check(visible('#add-watch-party-button'), 'Desktop should still expose Add a Watch Party without a selected venue');
-  check(visible('#add-cal-bar-button'), 'Desktop should still expose location contribution without a selected venue');
-  check(visible('#add-report-button'), 'Desktop should still expose reporting without a selected venue');
-  check(!element('#add-watch-party-button')?.closest('.add-context'), 'Desktop contribution actions should sit outside selected-place context');
-  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose what you’d like to contribute.', 'Desktop contribution intro should be concise');
-  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'New location', 'Desktop new-location section should use a concise label');
+  check(!visible('#add-watch-party-button'), 'Desktop Watch Party action should stay hidden until a listed venue is selected');
+  check(!visible('#add-cal-bar-button'), 'Desktop Cal Bar action should stay hidden until a listed venue is selected');
+  check(!visible('#add-report-button'), 'Desktop reporting action should stay hidden until a listed venue is selected');
+  check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Desktop venue-specific actions should remain owned by selected-place context');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('select it first to add a Watch Party or other content'), 'Desktop contribution intro should explain how listed locations work');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('search below to add it'), 'Desktop contribution intro should explain how unlisted locations work');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'New location', 'Desktop no-selection state should lead with the new-location path');
   check(!visible('#add-surface .add-somewhere-else > .command-surface__intro'), 'Desktop new-location section should not repeat explanatory copy above the action');
-  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Add a new location', 'Desktop new-location action should use direct copy');
+  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Search for another location', 'Desktop no-selection state should offer Search for another location');
+  check(visible('#add-new-location-button'), 'Desktop no-selection state should keep the new-location search action visible');
 
   element('#add-surface [data-command-close]')?.click();
   await waitFor(() => !visible('#add-surface'), 'desktop contribution surface close');
@@ -217,14 +219,16 @@ async function validateDesktopContributionEntry() {
   add.click();
   await waitFor(() => visible('#add-surface'), 'desktop Add to CGB surface');
   check((element('#add-surface-title')?.textContent || '').trim() === 'Add to Cal Golden Bars', 'Desktop contribution surface should explain the global Add action');
-  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose what you’d like to contribute.', 'Desktop contribution surface should use concise introductory copy');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose an action for the selected location, or search for another location.', 'Desktop selected-state intro should explain both contribution paths');
   check(visible('#add-surface .add-context'), 'Selected venue context should remain available when opening desktop Add');
-  check(visible('#add-watch-party-button') && visible('#add-cal-bar-button') && visible('#add-report-button'), 'Desktop contribution actions should remain visible with selected context');
-  check(!element('#add-watch-party-button')?.closest('.add-context'), 'Selected-place context should not own or hide the desktop action list');
+  check(visible('#add-watch-party-button') && visible('#add-cal-bar-button') && visible('#add-report-button'), 'Desktop selected Venue should expose all venue-specific contribution actions');
+  check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Desktop venue-specific actions should remain grouped with selected-place context');
   if (selectedVenueName) {
     check((element('#add-context-name')?.textContent || '').trim() === selectedVenueName, 'Desktop Add should preserve the selected venue context');
   }
   check(!(element('#add-context-copy')?.textContent || '').includes('Available actions'), 'Desktop selected-place context should avoid explanatory repetition');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Add somewhere else', 'Desktop selected-state new-location section should read as an alternate path');
+  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Search for another location', 'Desktop selected-state should retain the alternate location-search path');
   check(state()?.searchMode === 'existing', 'Desktop Add to CGB should open the shared contribution surface rather than forcing Add-location search');
 }
 
