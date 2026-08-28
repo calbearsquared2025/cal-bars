@@ -82,26 +82,26 @@ function syncDesktopContributionEntry() {
     return;
   }
 
-  bar.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr) 12px auto';
+  bar.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
   Object.assign(button.style, {
     display: 'flex',
     gridRow: '1',
-    gridColumn: '4',
-    width: 'auto',
-    height: '34px',
-    minHeight: '34px',
+    gridColumn: '3',
+    width: '100%',
+    height: '40px',
+    minHeight: '40px',
     minWidth: '0',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '4px',
     margin: '0',
-    padding: '0 4px',
+    padding: '0',
     color: 'var(--cgb-navy-800, #0b2856)',
     background: 'transparent',
     border: '0',
     borderRadius: '0',
     boxShadow: 'none',
-    fontSize: '.64rem',
+    fontSize: '.7rem',
     fontWeight: '800',
     letterSpacing: '.01em',
     lineHeight: '1',
