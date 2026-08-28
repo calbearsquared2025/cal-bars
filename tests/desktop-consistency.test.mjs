@@ -31,14 +31,14 @@ test('desktop selected profile uses the current two-action renderer without a st
   assert.match(renderer, /location\.append\([\s\S]*createDirectionsLink/);
 });
 
-test('desktop attendance is compact while the shared mobile attendance structure remains unchanged', async () => {
+test('desktop attendance stays compact while the shared mobile attendance structure remains unchanged', async () => {
   const [desktopCss, fanIntentCss] = await Promise.all([
     read('css/design-board-4.css'),
     read('css/fan-intent.css')
   ]);
   const desktop = desktopBlock(desktopCss);
   assert.match(desktop, /\.bear-count:not\(\.bear-count--empty\)\s*\{[\s\S]*?min-height:\s*48px\s*!important;[\s\S]*?display:\s*flex\s*!important;/);
-  assert.match(desktop, /\.bear-count__number\s*\{[\s\S]*?font-size:\s*1\.9rem\s*!important;/);
+  assert.match(fanIntentCss, /@media \(min-width: 900px\)[\s\S]*?activity-card:has\(\.bear-count__number\)[\s\S]*?grid-template-columns:\s*auto auto minmax\(0, 1fr\)\s*!important;/);
   assert.match(fanIntentCss, /min-height:\s*94px\s*!important;/);
   assert.match(fanIntentCss, /font-size:\s*2\.5rem\s*!important;/);
 });
