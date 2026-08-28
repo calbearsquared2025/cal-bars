@@ -23,30 +23,16 @@ function restoreMobileAddLocationCopy(button) {
   setAddLocationCopy(button, 'Watching somewhere else? ');
 }
 
-function restoreDesktopBrowseCopy(button) {
-  button.replaceChildren(document.createTextNode('+ Add location'));
-}
-
-function placeAddLocationAction({ existingMode = true, query = '' } = {}) {
+function placeAddLocationAction() {
   const form = document.querySelector('#location-search');
   const dropdown = document.querySelector('#search-dropdown');
   const button = document.querySelector('#search-add-location-button');
-  const listToggle = document.querySelector('#list-location-toggle');
   if (!form || !dropdown || !button) return null;
 
   if (isMobile()) {
     button.classList.remove('search-add-location-action--browse');
     if (button.parentElement !== dropdown) dropdown.append(button);
     restoreMobileAddLocationCopy(button);
-    return button;
-  }
-
-  if (existingMode && !query && listToggle?.parentElement) {
-    if (button.parentElement !== listToggle.parentElement || button.nextElementSibling !== listToggle) {
-      listToggle.before(button);
-    }
-    button.classList.add('search-add-location-action--browse');
-    restoreDesktopBrowseCopy(button);
     return button;
   }
 
@@ -74,15 +60,14 @@ function syncDesktopSearchUi() {
 
   const existingMode = (state?.searchMode || 'existing') === 'existing';
   const query = input.value.trim();
-  const button = placeAddLocationAction({ existingMode, query });
+  const button = placeAddLocationAction();
   if (!button) return;
 
   const matchCount = desktopMatchCount(query, state);
   const listQuery = String(state?.listQuery || '').trim();
   const showSearchHelper = existingMode && desktopSearchEngaged && Boolean(query);
-  const showBrowseAdd = existingMode && !query;
 
-  button.hidden = !(showSearchHelper || showBrowseAdd);
+  button.hidden = !showSearchHelper;
   if (showSearchHelper) {
     setAddLocationCopy(
       button,
