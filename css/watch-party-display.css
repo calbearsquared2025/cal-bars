@@ -120,4 +120,13 @@
   #tray-selected > #venue-detail > .party-module .party-module__report {
     font-size: .65rem;
   }
+
+  /* Desktop Locations list: keep the event signal warm and give host metadata room to breathe. */
+  #tray-list .location-card .badge--party {
+    background: #f3c24f !important;
+  }
+
+  #tray-list .location-card__party {
+    margin-top: 3px !important;
+  }
 }
