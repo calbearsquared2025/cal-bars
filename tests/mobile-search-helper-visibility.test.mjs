@@ -9,5 +9,6 @@ test('mobile search helper stays hidden until the query is non-empty', () => {
   assert.match(source, /@media \(max-width: 899px\)/);
   assert.match(source, /#location-search:has\(#location-query:placeholder-shown\) #search-dropdown/);
   assert.match(source, /display: none !important;/);
+  assert.match(source, /function installMobileSearchHelperVisibility\(\)/);
   assert.match(source, /installMobileSearchHelperVisibility\(\);/);
 });
