@@ -7,11 +7,11 @@ import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
 import './mobile-direct-venue-profile.mjs';
 import { renderMobileSelectedProfileContinuation } from './mobile-selected-profile-continuation.mjs';
-import { markerKind } from './core.mjs';
+import { getFanCount, markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
 import { renderPhotoFormEntry } from './photo-form.js';
 import { renderFanExperiences } from './fan-experiences.mjs';
-import { enhanceVenueProfile } from './venue-profile-enhancement.mjs';
+import { arrangeDesktopVenueMedia, enhanceVenueProfile } from './venue-profile-enhancement.mjs';
 
 let appConnected = false;
 let appConnectAttempts = 0;
@@ -22,6 +22,7 @@ const APP_CONNECT_MAX_ATTEMPTS = 1200;
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
 const MOBILE_QUERY = '(max-width: 899px)';
+const WIDE_DESKTOP_QUERY = '(min-width: 1100px)';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
@@ -49,6 +50,10 @@ function destroyDetailLocalMap() {
 
 function detailVenue(state) {
   return state?.snapshot?.venues?.find((venue) => venue.venue_id === state.selectedVenueId) || null;
+}
+
+function detailGame(state) {
+  return state?.snapshot?.games?.find((game) => game.game_id === state.gameId) || null;
 }
 
 function mobileDirectMapProfile(state) {
@@ -80,13 +85,14 @@ function revealDetailLocalMap(container) {
 
 function revealPendingDetailViewWhenSettled() {
   const state = window.CGBApp?.getState?.();
-  const hero = document.querySelector('#venue-detail > .detail-hero');
+  const detail = document.querySelector('#venue-detail');
+  const hero = detail?.querySelector(':scope > .detail-hero');
   if (mobileDirectMapProfile(state) || !state?.detailMode || !detailVenue(state) || !hero) return;
 
-  const localMap = hero.querySelector(':scope > .detail-local-map');
+  const localMap = detail.querySelector('.detail-local-map');
   if (localMap && !localMap.classList.contains('is-ready')) return;
 
-  const photo = hero.querySelector(':scope > .detail-photo .detail-photo__image');
+  const photo = detail.querySelector('.detail-photo .detail-photo__image');
   if (photo && (!photo.complete || photo.naturalWidth === 0)) {
     if (!photo.dataset.detailReadyListener) {
       photo.dataset.detailReadyListener = 'true';
@@ -101,8 +107,8 @@ function revealPendingDetailViewWhenSettled() {
   document.querySelector('#detail-view')?.setAttribute('aria-busy', 'false');
 }
 
-function syncDetailLocalMap(hero, venue, state) {
-  const container = hero?.querySelector('.detail-local-map');
+function syncDetailLocalMap(root, venue, state) {
+  const container = root?.querySelector('.detail-local-map');
   if (!container) {
     destroyDetailLocalMap();
     return;
@@ -165,6 +171,56 @@ function syncDetailLocalMap(hero, venue, state) {
   });
 }
 
+function syncDesktopProfileAttendance(state) {
+  const detail = document.querySelector('#venue-detail');
+  const activity = detail?.querySelector(':scope > .activity-card');
+  const venue = detailVenue(state);
+  const game = detailGame(state);
+  const wideDesktop = window.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
+  const upcoming = String(game?.game_status || '').toLowerCase() === 'upcoming';
+  const eligible = Boolean(state?.detailMode && detail && activity && venue && wideDesktop && upcoming);
+
+  if (!eligible) {
+    activity?.classList.remove('activity-card--desktop-attendance');
+    activity?.querySelector(':scope > .detail-attendance-compact')?.remove();
+    return false;
+  }
+
+  const publicCount = getFanCount(state.snapshot, state.gameId, venue.venue_id);
+  const selectedByThisBrowser = state?.fanIntent?.selections?.[state.gameId] === venue.venue_id;
+  const count = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
+  let compact = activity.querySelector(':scope > .detail-attendance-compact');
+  if (!compact) {
+    compact = document.createElement('div');
+    compact.className = 'detail-attendance-compact';
+    activity.prepend(compact);
+  }
+  compact.replaceChildren();
+
+  if (count <= 0) {
+    compact.classList.add('detail-attendance-compact--empty');
+    compact.append(createIcon('users', { className: 'ui-icon detail-attendance-compact__icon' }));
+    const prompt = document.createElement('strong');
+    prompt.className = 'detail-attendance-compact__prompt';
+    prompt.textContent = 'Be the first.';
+    compact.append(prompt);
+    compact.setAttribute('aria-label', 'No Bears attending yet. Be the first.');
+  } else {
+    compact.classList.remove('detail-attendance-compact--empty');
+    const number = document.createElement('strong');
+    number.className = 'detail-attendance-compact__number';
+    number.textContent = String(count);
+    const label = document.createElement('span');
+    label.className = 'detail-attendance-compact__label';
+    label.textContent = count === 1 ? 'Bear attending' : 'Bears attending';
+    compact.append(number, label);
+    compact.setAttribute('aria-label', `${count} ${count === 1 ? 'Bear' : 'Bears'} attending on CGB`);
+  }
+
+  activity.classList.add('activity-card--desktop-attendance');
+  return true;
+}
+
 export function upgradeRenderedIcons(root = document) {
   inlineSpriteIcons(root);
 
@@ -194,13 +250,16 @@ function runRefinements() {
   if (!directMobileProfile) {
     enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
     renderFanExperiences({ app: window.CGBApp, documentObject: document });
+    arrangeDesktopVenueMedia({ state, documentObject: document, windowObject: window });
+    syncDesktopProfileAttendance(state);
     renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
   }
   upgradeRenderedIcons();
   const venue = detailVenue(state);
-  const hero = document.querySelector('#venue-detail .detail-hero');
-  if (directMobileProfile || !state?.detailMode || !venue || !hero) destroyDetailLocalMap();
-  else syncDetailLocalMap(hero, venue, state);
+  const detail = document.querySelector('#venue-detail');
+  const hero = detail?.querySelector(':scope > .detail-hero');
+  if (directMobileProfile || !state?.detailMode || !venue || !hero || !detail) destroyDetailLocalMap();
+  else syncDetailLocalMap(detail, venue, state);
   if (!directMobileProfile) revealPendingDetailViewWhenSettled();
 
   if (renderMobileSelectedProfileContinuation({
@@ -237,6 +296,7 @@ function connectApp() {
 
 function initialize() {
   runRefinements();
+  window.matchMedia?.(WIDE_DESKTOP_QUERY)?.addEventListener?.('change', scheduleUpgrade);
   connectApp();
 }
 
