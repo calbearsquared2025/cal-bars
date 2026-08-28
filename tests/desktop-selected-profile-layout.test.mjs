@@ -15,19 +15,24 @@ test('wide desktop expands only the selected profile and keeps browse width unch
   assert.match(profileCss, /\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) \.maplibregl-ctrl-top-right\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 36vw, 520px\) \+ 26px\)\s*!important;/);
 });
 
-test('wide desktop leads with venue identity and compact attendance', async () => {
-  const [css, source] = await Promise.all([
+test('wide desktop reuses the mobile identity language without layering a second style injector', async () => {
+  const [css, iconSource, profileSource] = await Promise.all([
     read('css/venue-profile.css'),
-    read('js/icon-upgrade.mjs')
+    read('js/icon-upgrade.mjs'),
+    read('js/venue-profile-enhancement.mjs')
   ]);
 
   assert.match(css, /grid-template-columns:\s*repeat\(12, minmax\(0, 1fr\)\)/);
-  assert.match(css, /:has\(> \.activity-card--desktop-attendance\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 10\s*!important;/);
-  assert.match(css, /> \.activity-card--desktop-attendance\s*\{[\s\S]*?grid-column:\s*10 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
-  assert.match(source, /function syncDesktopProfileAttendance\(state\)/);
-  assert.match(source, /getFanCount\(state\.snapshot, state\.gameId, venue\.venue_id\)/);
-  assert.match(source, /createIcon\('users'/);
-  assert.match(source, /prompt\.textContent = 'Be the first\.'/);
+  assert.match(css, /:has\(> \.activity-card--desktop-attendance\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 9\s*!important;/);
+  assert.match(css, /> \.activity-card--desktop-attendance\s*\{[\s\S]*?grid-column:\s*9 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(profileSource, /function arrangeDesktopVenueIdentity/);
+  assert.match(profileSource, /detail-address__location/);
+  assert.match(profileSource, /directions\.replaceChildren\(documentObject\.createTextNode\('Directions'\)\)/);
+  assert.match(iconSource, /function syncDesktopProfileAttendance\(state\)/);
+  assert.match(iconSource, /getFanCount\(state\.snapshot, state\.gameId, venue\.venue_id\)/);
+  assert.match(iconSource, /detail-attendance-compact__attending/);
+  assert.match(iconSource, /detail-attendance-compact__context/);
+  assert.doesNotMatch(iconSource, /document\.createElement\('style'\)/);
 });
 
 test('wide desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
@@ -49,16 +54,18 @@ test('wide desktop editorial columns meet cleanly with continuous borders', asyn
   assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-fan-experiences\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;/);
 });
 
-test('wide desktop places full-width venue media after editorial content', async () => {
+test('wide desktop order is identity, editorial, watch party, then full-width media', async () => {
   const [css, source] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/venue-profile-enhancement.mjs')
   ]);
 
-  assert.match(source, /export function arrangeDesktopVenueMedia/);
-  assert.match(source, /const anchor = fanExperiences \|\| editorial \|\| detail\.querySelector\(':scope > \.activity-card'\) \|\| hero;/);
+  assert.match(source, /detail\.dataset\.desktopProfileArrangement = 'editorial-party-media'/);
+  assert.match(source, /if \(editorial\) \{[\s\S]*?cursor\.after\(editorial\);[\s\S]*?cursor = editorial;/);
+  assert.match(source, /if \(fanExperiences\) \{[\s\S]*?cursor\.after\(fanExperiences\);[\s\S]*?cursor = fanExperiences;/);
+  assert.match(source, /parties\.forEach\(\(party\) => \{[\s\S]*?cursor\.after\(party\);[\s\S]*?cursor = party;/);
   assert.match(source, /media\.classList\.add\('detail-profile-media--desktop'\)/);
-  assert.match(source, /anchor\.after\(media\)/);
+  assert.match(source, /cursor\.after\(media\)/);
   assert.match(css, /> \.detail-photo\.detail-profile-media--desktop\s*\{[\s\S]*?width:\s*calc\(100% - 36px\)\s*!important;/);
   assert.match(css, /> \.detail-local-map\.detail-profile-media--desktop\s*\{[\s\S]*?height:\s*220px\s*!important;/);
 });
