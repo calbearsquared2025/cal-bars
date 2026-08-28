@@ -5,17 +5,25 @@ import test from 'node:test';
 const refinementSource = readFileSync(new URL('../js/search-map-refinement.mjs', import.meta.url), 'utf8');
 const shellSource = readFileSync(new URL('../js/shell-controls.mjs', import.meta.url), 'utf8');
 
-test('desktop reuses the shared Add command as a global CGB contribution entry', () => {
+test('desktop reuses the shared Add command as a quiet global CGB contribution entry', () => {
   assert.match(refinementSource, /function syncDesktopContributionEntry\(\)/);
   assert.match(refinementSource, /#mobile-add-button/);
-  assert.match(refinementSource, /gridTemplateColumns = 'minmax\(0, 1fr\) minmax\(0, 1fr\) 10px auto'/);
+  assert.match(refinementSource, /gridTemplateColumns = 'minmax\(0, 1fr\) minmax\(0, 1fr\) 12px auto'/);
   assert.match(refinementSource, /gridColumn: '4'/);
   assert.match(refinementSource, /height: '34px'/);
-  assert.match(refinementSource, /padding: '0 7px'/);
-  assert.match(refinementSource, /background: 'rgba\(253, 181, 21, \.08\)'/);
-  assert.match(refinementSource, /border: '1px solid rgba\(230, 164, 17, \.68\)'/);
-  assert.match(refinementSource, /fontSize: '\.64rem'/);
+  assert.match(refinementSource, /padding: '0 4px'/);
+  assert.match(refinementSource, /background: 'transparent'/);
+  assert.match(refinementSource, /border: '0'/);
+  assert.match(refinementSource, /color: 'var\(--cgb-gold-500/);
   assert.match(refinementSource, /whiteSpace: 'nowrap'/);
+});
+
+test('desktop rail uses text-led Locations and Selected navigation', () => {
+  assert.match(refinementSource, /#mobile-list-button > \.ui-icon/);
+  assert.match(refinementSource, /#mobile-map-button > \.ui-icon/);
+  assert.match(refinementSource, /display: none;/);
+  assert.match(refinementSource, /\[aria-current="page"\]::after/);
+  assert.match(refinementSource, /background: var\(--cgb-gold-400/);
 });
 
 test('desktop Add keeps the shared search form inside the contribution modal', () => {
