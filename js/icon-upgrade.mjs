@@ -7,7 +7,7 @@ import './search-map-refinement.mjs';
 import './map-profile-final-pass.mjs';
 import './mobile-direct-venue-profile.mjs';
 import { renderMobileSelectedProfileContinuation } from './mobile-selected-profile-continuation.mjs';
-import { getFanCount, markerKind } from './core.mjs';
+import { markerKind } from './core.mjs';
 import { createIcon, inlineSpriteIcons } from './icons.mjs';
 import { renderPhotoFormEntry } from './photo-form.js';
 import { renderFanExperiences } from './fan-experiences.mjs';
@@ -18,7 +18,6 @@ let appConnectAttempts = 0;
 let detailLocalMap = null;
 let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
-const desktopAttendanceSources = new WeakMap();
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
@@ -51,10 +50,6 @@ function destroyDetailLocalMap() {
 
 function detailVenue(state) {
   return state?.snapshot?.venues?.find((venue) => venue.venue_id === state.selectedVenueId) || null;
-}
-
-function detailGame(state) {
-  return state?.snapshot?.games?.find((game) => game.game_id === state.gameId) || null;
 }
 
 function mobileDirectMapProfile(state) {
@@ -172,72 +167,6 @@ function syncDetailLocalMap(root, venue, state) {
   });
 }
 
-function restoreDesktopProfileAttendance(activity) {
-  if (!activity) return false;
-  const compact = activity.querySelector(':scope > .detail-attendance-compact');
-  const source = desktopAttendanceSources.get(activity);
-  if (compact && source) compact.replaceWith(source);
-  else compact?.remove();
-  desktopAttendanceSources.delete(activity);
-  activity.classList.remove('activity-card--desktop-attendance');
-  return Boolean(compact);
-}
-
-function syncDesktopProfileAttendance(state) {
-  const detail = document.querySelector('#venue-detail');
-  const activity = detail?.querySelector(':scope > .activity-card');
-  const venue = detailVenue(state);
-  const game = detailGame(state);
-  const wideDesktop = window.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
-  const upcoming = String(game?.game_status || '').toLowerCase() === 'upcoming';
-  const eligible = Boolean(state?.detailMode && detail && activity && venue && wideDesktop && upcoming);
-
-  if (!eligible) return restoreDesktopProfileAttendance(activity);
-
-  const publicCount = getFanCount(state.snapshot, state.gameId, venue.venue_id);
-  const selectedByThisBrowser = state?.fanIntent?.selections?.[state.gameId] === venue.venue_id;
-  const count = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
-  let compact = activity.querySelector(':scope > .detail-attendance-compact');
-  if (!compact) {
-    const source = activity.querySelector(':scope > strong');
-    if (!source) return false;
-    compact = document.createElement('div');
-    compact.className = 'detail-attendance-compact';
-    desktopAttendanceSources.set(activity, source);
-    source.replaceWith(compact);
-  }
-  compact.replaceChildren();
-
-  if (count <= 0) {
-    compact.classList.add('detail-attendance-compact--empty');
-    compact.append(createIcon('users', { className: 'ui-icon detail-attendance-compact__icon' }));
-    const prompt = document.createElement('strong');
-    prompt.className = 'detail-attendance-compact__prompt';
-    prompt.textContent = 'Be the first.';
-    compact.append(prompt);
-    compact.setAttribute('aria-label', 'No Bears attending yet. Be the first.');
-  } else {
-    compact.classList.remove('detail-attendance-compact--empty');
-    const number = document.createElement('strong');
-    number.className = 'detail-attendance-compact__number';
-    number.textContent = String(count);
-    const label = document.createElement('span');
-    label.className = 'detail-attendance-compact__label';
-    label.textContent = count === 1 ? 'BEAR' : 'BEARS';
-    const attending = document.createElement('span');
-    attending.className = 'detail-attendance-compact__attending';
-    attending.textContent = 'ATTENDING';
-    const context = document.createElement('span');
-    context.className = 'detail-attendance-compact__context';
-    context.textContent = 'ON CGB';
-    compact.append(number, label, attending, context);
-    compact.setAttribute('aria-label', `${count} ${count === 1 ? 'Bear' : 'Bears'} attending on CGB`);
-  }
-
-  activity.classList.add('activity-card--desktop-attendance');
-  return true;
-}
-
 export function upgradeRenderedIcons(root = document) {
   inlineSpriteIcons(root);
 
@@ -270,7 +199,6 @@ function runRefinements() {
     arrangeDesktopVenueMedia({ state, documentObject: document, windowObject: window });
     renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
   }
-  syncDesktopProfileAttendance(state);
   upgradeRenderedIcons();
   const venue = detailVenue(state);
   const detail = document.querySelector('#venue-detail');
