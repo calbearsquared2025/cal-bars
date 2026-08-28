@@ -1,0 +1,38 @@
+name: Desktop consistency review
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  screenshots:
+    if: github.head_ref == 'feature/desktop-consistency-pass'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: before
+      - name: Checkout review head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: after
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Capture responsive comparison screenshots
+        run: node after/scripts/capture-responsive-review.mjs before after responsive-review
+      - name: Upload responsive comparison screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-consistency-screenshots
+          path: responsive-review/*.png
+          if-no-files-found: error
+          retention-days: 14
