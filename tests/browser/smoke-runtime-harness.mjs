@@ -120,6 +120,7 @@ async function runMobile() {
   element('#mobile-list-button')?.click();
   await waitFor(() => visible('#tray-list'), 'mobile location list');
   check(visible('.mobile-command-bar'), 'Mobile navigation should remain visible on List');
+  check(!element('#list-add-location-button'), 'Desktop list Add location button should not exist on mobile');
   element('#mobile-map-button')?.click();
   await waitFor(() =>
     document.body.dataset.commandSurface === 'map' &&
@@ -169,19 +170,24 @@ async function validateDesktopSearchHelper() {
 async function validateDesktopAddLocationEntry() {
   window.CGBApp?.showLocations?.();
   await waitFor(() => visible('#tray-list'), 'desktop location list before Add location');
-  const add = element('#search-add-location-button');
+  const add = element('#list-add-location-button');
+  const toggle = element('#list-location-toggle');
+  const sharedAdd = element('#search-add-location-button');
   const input = element('#location-query');
-  check(Boolean(add) && Boolean(input), 'Desktop shared Add location action and search input should exist');
-  if (!add || !input) return;
+  check(Boolean(add) && Boolean(toggle) && Boolean(sharedAdd) && Boolean(input), 'Desktop list Add location, range toggle, shared action, and search input should exist');
+  if (!add || !toggle || !sharedAdd || !input) return;
 
-  check(add.hidden || !rendered(add), 'Desktop Add location action should remain hidden until search text exists');
-  input.focus();
-  input.value = 'Synthetic';
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  await waitFor(() => rendered(add), 'desktop contextual Add location action after typing');
+  check(rendered(add), 'Desktop Locations browser should expose the standalone Add location button');
+  check(add.classList.contains('secondary-button'), 'Desktop list Add location should use the existing standalone secondary-button treatment');
+  check(add.parentElement === toggle.parentElement && add.parentElement?.classList.contains('tray-list__actions'), 'Desktop list Add location should sit beside the range toggle in the existing action group');
+  const addRect = add.getBoundingClientRect();
+  const toggleRect = toggle.getBoundingClientRect();
+  check(addRect.left - toggleRect.right >= 6, 'Desktop list Add location should be visually separated from the range toggle');
+  check(Math.abs((addRect.top + addRect.bottom) / 2 - (toggleRect.top + toggleRect.bottom) / 2) <= 6, 'Desktop list Add location should align beside the range toggle');
+  check(sharedAdd.hidden || !rendered(sharedAdd), 'Contextual Search Add location action should remain hidden before typing');
 
   add.click();
-  await waitFor(() => state()?.searchMode === 'add-location', 'desktop Add location search mode');
+  await waitFor(() => state()?.searchMode === 'add-location', 'desktop Add location search mode from list button');
   check(rendered('#location-search'), 'Desktop Add location should keep the search field visible');
   check(element('#location-search')?.parentElement?.classList.contains('map-toolbar'), 'Desktop Add location should reuse the map toolbar search field');
   check(input.placeholder === 'Venue or address', 'Desktop Add location should use the existing add-location search mode');
