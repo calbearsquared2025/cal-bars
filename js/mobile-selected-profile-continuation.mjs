@@ -25,14 +25,14 @@ function clean(value) {
 
 export function shouldRenderContinuousProfile({
   mobile = false,
-  detailMode = false,
+  mapView = false,
   selectedVenueId = '',
   trayState = '',
   commandSurface = ''
 } = {}) {
   return Boolean(
     mobile &&
-    !detailMode &&
+    mapView &&
     clean(selectedVenueId) &&
     trayState === 'selected' &&
     commandSurface === 'map'
@@ -310,11 +310,12 @@ export function renderMobileSelectedProfileContinuation({
   installStyles(documentObject);
   const state = app.getState?.();
   const mobile = windowObject.matchMedia?.(MOBILE_QUERY)?.matches === true;
+  const mapView = documentObject.body?.dataset.view === 'map';
   const commandSurface = documentObject.body?.dataset.commandSurface || '';
   const trayState = documentObject.querySelector('#venue-tray')?.dataset.state || state?.trayState || '';
   const eligible = shouldRenderContinuousProfile({
     mobile,
-    detailMode: state?.detailMode,
+    mapView,
     selectedVenueId: state?.selectedVenueId,
     trayState,
     commandSurface
