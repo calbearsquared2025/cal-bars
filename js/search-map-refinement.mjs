@@ -1,3 +1,4 @@
+import { clearSelectedMapVenue } from './app-state.mjs';
 import { rankVenues } from './core.mjs';
 import {
   applyDesktopReviewPreview,
@@ -162,6 +163,15 @@ function syncDesktopSearchUi() {
   if (listEyebrow) listEyebrow.textContent = listQuery ? 'Search results' : 'Browse';
 }
 
+function handleDesktopMapDeselect(event) {
+  if (isMobile() || document.body.dataset.commandSurface !== 'map') return;
+  const map = event.target.closest?.('#map');
+  if (!map) return;
+  if (event.target.closest?.('.cgb-marker, .maplibregl-control-container, .maplibregl-ctrl')) return;
+  if (!clearSelectedMapVenue({ allowDetailMode: true })) return;
+  window.CGBApp?.showLocations?.();
+}
+
 function initialize() {
   const form = document.querySelector('#location-search');
   const searchInput = document.querySelector('#location-query');
@@ -185,6 +195,7 @@ function initialize() {
   document.querySelector('#add-new-location-button')?.addEventListener('click', () => {
     document.querySelector('#search-add-location-button')?.click();
   });
+  document.addEventListener('click', handleDesktopMapDeselect);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
     desktopSearchEngaged = false;
     syncDesktopSearchUi();
