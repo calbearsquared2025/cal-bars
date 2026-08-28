@@ -176,13 +176,26 @@ function updateResponsiveCommandLabels() {
   const mobile = isMobileLayout();
   const labels = mobile
     ? { map: 'Map', search: 'Search', add: 'Add', list: 'List', about: 'About' }
-    : { map: 'Selected', search: 'Search', add: 'Add', list: 'Locations', about: 'About' };
+    : { map: 'Selected', search: 'Search', add: 'Add to CGB', list: 'Locations', about: 'About' };
 
   dom.commandButtons.forEach((button) => {
     const label = button.querySelector('span:last-child');
     const command = button.dataset.command;
     if (label && labels[command]) label.textContent = labels[command];
   });
+
+  const addButton = dom.commandButtons.find((button) => button.dataset.command === 'add');
+  if (addButton) {
+    addButton.setAttribute('aria-label', mobile ? 'Add' : 'Add to Cal Golden Bars');
+  }
+  const addTitle = document.querySelector('#add-surface-title');
+  const addIntro = document.querySelector('#add-surface > .command-surface__shell > .command-surface__intro');
+  if (addTitle) addTitle.textContent = mobile ? 'Add to the map' : 'Add to Cal Golden Bars';
+  if (addIntro) {
+    addIntro.textContent = mobile
+      ? 'Choose what you would like to add or correct.'
+      : 'Add a Watch Party, contribute details, or add another location.';
+  }
 
   const selectedButton = dom.commandButtons.find((button) => button.dataset.command === 'map');
   if (selectedButton) {
