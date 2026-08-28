@@ -10,7 +10,8 @@ test('desktop location list folds CGB activity into the venue metadata line', ()
   assert.match(refinementSource, /function syncDesktopLocationListPresentation\(\)/);
   assert.match(refinementSource, /location-card__meta-line/);
   assert.match(refinementSource, /metaLine\.append\(locationMeta, count\)/);
-  assert.match(refinementSource, /location-card__count:not\(\[hidden\]\)::before/);
+  assert.match(refinementSource, /compactListFanCountCopy\(fanCount\)/);
+  assert.match(refinementSource, /count\.hidden = fanCount <= 0/);
 });
 
 test('desktop Watch Party host line names the event context and emphasizes the organizer', () => {
