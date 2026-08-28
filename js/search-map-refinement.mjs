@@ -62,22 +62,23 @@ function styleDesktopListAddButton(button) {
   Object.assign(button.style, {
     minWidth: '0',
     width: 'auto',
-    height: '32px',
-    minHeight: '32px',
-    padding: '0 10px',
+    height: '28px',
+    minHeight: '28px',
+    padding: '0 8px',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'center',
     flex: '0 0 auto',
-    color: 'var(--cgb-navy-900, #0b2856)',
+    color: 'var(--cgb-navy-800, #0b2856)',
     background: 'var(--cgb-white, #fff)',
-    border: '1px solid var(--cgb-navy-700, #1f4f82)',
-    borderRadius: '8px',
-    boxShadow: 'var(--shadow-xs)',
+    border: '1px solid var(--cgb-neutral-300, #c9d0d8)',
+    borderRadius: '7px',
+    boxShadow: 'none',
     clipPath: 'none',
     fontFamily: 'var(--font-condensed, sans-serif)',
-    fontSize: '.66rem',
-    fontWeight: '850',
+    fontSize: '.62rem',
+    fontWeight: '800',
     letterSpacing: '.01em',
     lineHeight: '1',
     whiteSpace: 'nowrap'
@@ -117,6 +118,8 @@ function syncDesktopListAddButton() {
     const actions = document.createElement('div');
     actions.className = 'tray-list__actions';
     actions.dataset.desktopListActions = 'true';
+    actions.style.gap = '8px';
+    actions.style.alignItems = 'center';
     desktopListActions = actions;
   }
 
