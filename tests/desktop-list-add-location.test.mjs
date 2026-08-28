@@ -12,6 +12,17 @@ test('desktop location browser uses a standalone Add location button beside the 
   assert.match(source, /desktopListActions\.append\(button\)/);
 });
 
+test('desktop list Add location is compact and remains visually separate from the range toggle', () => {
+  assert.match(source, /function styleDesktopListAddButton\(button\)/);
+  assert.match(source, /height: '32px'/);
+  assert.match(source, /minHeight: '32px'/);
+  assert.match(source, /padding: '0 10px'/);
+  assert.match(source, /borderRadius: '8px'/);
+  assert.match(source, /fontSize: '\.66rem'/);
+  assert.match(source, /whiteSpace: 'nowrap'/);
+  assert.match(source, /styleDesktopListAddButton\(button\)/);
+});
+
 test('desktop list Add location reuses the canonical Add-location search path and stays off mobile', () => {
   assert.match(
     source,
