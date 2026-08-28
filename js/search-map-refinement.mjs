@@ -56,6 +56,70 @@ function placeAddLocationAction() {
   return button;
 }
 
+function syncDesktopContributionEntry() {
+  const bar = document.querySelector('.mobile-command-bar');
+  const button = document.querySelector('#mobile-add-button');
+  const mark = button?.querySelector('.mobile-command__add-mark');
+  if (!bar || !button || !mark) return;
+
+  if (isMobile()) {
+    bar.style.removeProperty('grid-template-columns');
+    [
+      'display', 'grid-row', 'grid-column', 'width', 'height', 'min-height', 'min-width',
+      'align-items', 'justify-content', 'gap', 'margin', 'padding', 'color', 'background',
+      'border', 'border-radius', 'box-shadow', 'font-size', 'font-weight', 'letter-spacing',
+      'line-height', 'white-space'
+    ].forEach((property) => button.style.removeProperty(property));
+    [
+      'width', 'height', 'display', 'place-items', 'margin', 'padding', 'color', 'background',
+      'border', 'border-radius', 'box-shadow', 'font-size', 'font-weight', 'line-height'
+    ].forEach((property) => mark.style.removeProperty(property));
+    return;
+  }
+
+  bar.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr) 10px auto';
+  Object.assign(button.style, {
+    display: 'flex',
+    gridRow: '1',
+    gridColumn: '4',
+    width: 'auto',
+    height: '34px',
+    minHeight: '34px',
+    minWidth: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '4px',
+    margin: '0',
+    padding: '0 9px',
+    color: 'var(--cgb-navy-950, #010133)',
+    background: 'var(--cgb-gold-50, #fff7dc)',
+    border: '1px solid var(--cgb-gold-500, #e6a411)',
+    borderRadius: '8px',
+    boxShadow: 'none',
+    fontSize: '.66rem',
+    fontWeight: '850',
+    letterSpacing: '.01em',
+    lineHeight: '1',
+    whiteSpace: 'nowrap'
+  });
+  Object.assign(mark.style, {
+    width: '14px',
+    height: '14px',
+    display: 'grid',
+    placeItems: 'center',
+    margin: '0',
+    padding: '0',
+    color: 'inherit',
+    background: 'transparent',
+    border: '0',
+    borderRadius: '0',
+    boxShadow: 'none',
+    fontSize: '.9rem',
+    fontWeight: '700',
+    lineHeight: '1'
+  });
+}
+
 function desktopMatchCount(query, state = appState()) {
   if (!query || !state?.snapshot) return 0;
   return rankVenues(state.snapshot, state.gameId, state.origin, query).length;
@@ -63,6 +127,7 @@ function desktopMatchCount(query, state = appState()) {
 
 function syncDesktopSearchUi() {
   preserveDesktopReviewPreviewUrl();
+  syncDesktopContributionEntry();
   if (isMobile()) {
     placeAddLocationAction();
     return;
