@@ -1,4 +1,5 @@
 import {
+  bearCountCopy,
   compactVenueLocation,
   getFanCount,
   venueBadgeDescriptors
@@ -12,13 +13,6 @@ function formatDistance(distance) {
   if (!Number.isFinite(distance)) return '';
   if (distance < 0.1) return 'Nearby';
   return `${distance.toFixed(distance < 10 ? 1 : 0)} mi away`;
-}
-
-function cgbAttendanceCopy(count) {
-  const total = Number(count);
-  if (total === 1) return '1 Bear attending on CGB';
-  if (total > 1) return `${total} Bears attending on CGB`;
-  return 'No Bears on CGB yet.';
 }
 
 function createBadges(venue, party, documentObject) {
@@ -37,7 +31,7 @@ export function selectedAttendanceViewModel({ state, game, venue } = {}) {
   const publicCount = getFanCount(state?.snapshot, state?.gameId, venue?.venue_id);
   const selectedByThisBrowser = state?.fanIntent?.selections?.[state?.gameId] === venue?.venue_id;
   const number = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
-  const currentCopy = cgbAttendanceCopy(number);
+  const currentCopy = bearCountCopy(number);
   const presentation = venueActivityPresentation({
     snapshot: state?.snapshot,
     game,
@@ -248,17 +242,6 @@ export function createSelectedVenueCard({
   header.append(collapse);
   card.append(header);
 
-  if (venue.short_description) {
-    const description = documentObject.createElement('p');
-    description.className = 'venue-description';
-    description.textContent = venue.short_description;
-    card.append(description);
-  }
-
-  const attendance = createAttendance(state, game, venue, documentObject);
-  card.append(attendance.count);
-  if (attendance.history) card.append(attendance.history);
-
   if (parties.length) {
     parties.forEach((party, index) => card.append(createWatchPartyModule({
       party,
@@ -272,6 +255,9 @@ export function createSelectedVenueCard({
     card.append(createPlanWatchPartyAction(documentObject));
   }
 
+  const attendance = createAttendance(state, game, venue, documentObject);
+  card.append(attendance.count);
+
   card.append(createSelectedActionRow({
     state,
     venue,
@@ -279,5 +265,7 @@ export function createSelectedVenueCard({
     onShare,
     documentObject
   }));
+
+  if (attendance.history) card.append(attendance.history);
   return card;
 }

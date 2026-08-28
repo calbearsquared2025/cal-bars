@@ -483,10 +483,37 @@
 
   .mobile-command-bar {
     grid-template-columns: repeat(5, minmax(0, 1fr));
+    padding-top: 4px;
+    border-top: 1px solid rgba(1, 1, 51, .1);
+    box-shadow: 0 -1px 0 rgba(255, 255, 255, .72);
   }
 
   .mobile-command {
     position: relative;
+    min-width: 0;
+    min-height: 52px;
+    display: grid;
+    grid-template-rows: 22px auto;
+    place-items: center;
+    align-content: center;
+    gap: 3px;
+    padding: 4px 2px 3px;
+    color: var(--cgb-ink-500);
+    background: transparent;
+    border: 0;
+    font-size: .64rem;
+    font-weight: 750;
+    line-height: 1;
+  }
+
+  .mobile-command > .ui-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-command > span:last-child {
+    line-height: 1;
+    white-space: nowrap;
   }
 
   .mobile-command--add {
@@ -494,23 +521,24 @@
   }
 
   .mobile-command__add-mark {
-    width: 30px;
-    height: 30px;
+    width: 22px;
+    height: 22px;
     display: grid;
     place-items: center;
-    margin-top: -9px;
-    color: var(--cgb-navy-950);
-    background: var(--cgb-gold-400);
-    border: 2px solid var(--cgb-white);
+    margin-top: 0;
+    color: inherit;
+    background: transparent;
+    border: 1.5px solid currentColor;
     border-radius: 50%;
-    box-shadow: 0 2px 0 rgba(1, 1, 51, .16);
-    font-size: 1.35rem;
-    font-weight: 500;
+    box-shadow: none;
+    font-size: 1rem;
+    font-weight: 650;
     line-height: 1;
   }
 
   .mobile-command[aria-current="page"] {
     color: var(--cgb-navy-950);
+    font-weight: 850;
   }
 
   .mobile-command[aria-current="page"]::after {
@@ -518,14 +546,21 @@
     position: absolute;
     top: 0;
     left: 50%;
-    width: 24px;
-    height: 3px;
+    width: 22px;
+    height: 2px;
     transform: translateX(-50%);
     background: var(--cgb-gold-400);
+    border-radius: var(--radius-pill);
   }
 
   .mobile-command--add[aria-current="page"]::after {
     display: none;
+  }
+
+  .mobile-command--add[aria-current="page"] .mobile-command__add-mark {
+    color: var(--cgb-navy-950);
+    background: var(--cgb-gold-400);
+    border-color: var(--cgb-gold-400);
   }
 
   .tray--peek {
@@ -630,7 +665,7 @@
     border-radius: 7px;
   }
 
-  .map-toolbar .search-add-location-action {
+  .map-toolbar .search-add-location-action:not([hidden]) {
     width: 100%;
     min-height: 30px;
     display: flex;

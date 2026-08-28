@@ -45,8 +45,8 @@ test('list fan counts suppress zero and use compact singular/plural copy', () =>
 });
 
 test('selected detail presence never describes a zero-count venue as one of many', () => {
-  assert.equal(detailPresenceCopy(0), 'You’re the first Bear here.');
-  assert.equal(detailPresenceCopy(1), 'You’re the first Bear here.');
+  assert.equal(detailPresenceCopy(0), 'You’re the first Bear on CGB.');
+  assert.equal(detailPresenceCopy(1), 'You’re the first Bear on CGB.');
   assert.equal(detailPresenceCopy(2), 'You’re one of them.');
 });
 

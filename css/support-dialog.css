@@ -332,4 +332,40 @@
     clip-path: none !important;
   }
 
+  #tray-list .tray-list__header {
+    flex-wrap: wrap;
+  }
+
+  #tray-list .tray-list__heading {
+    flex: 1 0 100%;
+  }
+
+  #tray-list .search-add-location-action--browse:not([hidden]) {
+    width: auto;
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0 0;
+    padding: 0 9px;
+    color: var(--cgb-navy-900, #0b2856);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-family: var(--font-condensed, sans-serif);
+    font-size: .68rem;
+    font-weight: 800;
+    line-height: 1;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  #tray-list .search-add-location-action--browse:hover,
+  #tray-list .search-add-location-action--browse:focus-visible {
+    color: var(--cgb-navy-950, #010133);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
 }

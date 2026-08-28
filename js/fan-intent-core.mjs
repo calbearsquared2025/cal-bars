@@ -46,7 +46,7 @@ export function compactListFanCountCopy(count) {
 export function detailPresenceCopy(count) {
   const total = Math.max(0, Math.trunc(Number(count) || 0));
   return total <= 1
-    ? 'You’re the first Bear here.'
+    ? 'You’re the first Bear on CGB.'
     : 'You’re one of them.';
 }
 

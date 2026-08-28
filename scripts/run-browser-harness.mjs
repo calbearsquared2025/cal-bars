@@ -69,7 +69,7 @@ await new Promise((resolve, reject) => {
 const browser = findBrowser();
 const address = server.address();
 
-async function run({ mode, marker, windowSize }) {
+async function run({ mode, marker, windowSize, label = mode }) {
   const profile = mkdtempSync(join(tmpdir(), 'cgb-smoke-'));
   const url = `http://127.0.0.1:${address.port}/__cgb_smoke__?__cgb_smoke=${mode}`;
   const child = spawn(browser, [
@@ -87,10 +87,10 @@ async function run({ mode, marker, windowSize }) {
   const exitCode = await new Promise((resolve) => child.once('close', resolve));
   rmSync(profile, { recursive: true, force: true, maxRetries: 3 });
   if (exitCode === 0 && stdout.includes(marker)) {
-    console.log(`${mode} browser smoke passed.`);
+    console.log(`${label} browser smoke passed.`);
     return true;
   }
-  console.error(`${mode} browser smoke failed.`);
+  console.error(`${label} browser smoke failed.`);
   const match = stdout.match(/<output id="cgb-smoke-result">([\s\S]*?)<\/output>/i);
   console.error(match?.[1]?.replace(/<[^>]*>/g, '').trim() || stdout.slice(-10000));
   if (stderr) console.error(stderr.slice(-3000));
@@ -98,9 +98,10 @@ async function run({ mode, marker, windowSize }) {
 }
 
 try {
-  const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844' });
-  const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000' });
-  if (!mobile || !desktop) process.exitCode = 1;
+  const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile' });
+  const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile' });
+  const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000', label: 'desktop' });
+  if (!mobile || !smallMobile || !desktop) process.exitCode = 1;
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }

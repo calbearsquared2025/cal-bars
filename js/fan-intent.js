@@ -1,5 +1,5 @@
 import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';
-import { getFanCount } from './core.mjs';
+import { bearCountCopy, getFanCount } from './core.mjs';
 import {
   BROWSER_ID_STORAGE_KEY,
   INTENT_SELECTIONS_STORAGE_KEY,
@@ -280,10 +280,43 @@ function renderLocationCardActivity(game) {
   });
 }
 
+function renderDetailActivity(game) {
+  const venue = selectedVenue();
+  const detail = document.querySelector('#venue-detail');
+  const card = detail?.querySelector(':scope > .activity-card');
+  const current = card?.querySelector(':scope > strong');
+  if (!venue || detail?.dataset.venueId !== venue.venue_id || !card || !current) return;
+
+  const publicCount = getFanCount(appState.snapshot, appState.gameId, venue.venue_id);
+  const selectedByThisBrowser = activeVenueId() === venue.venue_id;
+  const count = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
+  const presentation = activityPresentation(game, venue, bearCountCopy(count));
+  current.setAttribute('aria-label', presentation.primary);
+
+  if (game.game_status === 'completed' || count <= 0) {
+    current.textContent = presentation.primary;
+  } else {
+    const numeral = document.createElement('span');
+    numeral.className = 'bear-count__number';
+    numeral.textContent = String(count);
+    const label = document.createElement('span');
+    label.className = 'bear-count__label';
+    label.textContent = count === 1 ? 'Bear attending on CGB' : 'Bears attending on CGB';
+    current.replaceChildren(numeral, label);
+  }
+
+  const historical = Array.from(card.children).find((child) =>
+    child.tagName === 'P' && !child.classList.contains('activity-card__presence'));
+  if (!historical) return;
+  historical.hidden = presentation.secondary.length === 0;
+  replaceTextLines(historical, presentation.secondary);
+}
+
 function renderVenueActivity() {
   const game = currentGame();
   if (!game || !appState.snapshot) return;
   renderLocationCardActivity(game);
+  renderDetailActivity(game);
 }
 
 function renderIntentButtons() {
