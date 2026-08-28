@@ -7,7 +7,7 @@ import { shouldRenderContinuousProfile } from '../js/mobile-selected-profile-con
 test('continuous profile renders only for the mobile selected map tray', () => {
   assert.equal(shouldRenderContinuousProfile({
     mobile: true,
-    detailMode: false,
+    mapView: true,
     selectedVenueId: 'venue-1',
     trayState: 'selected',
     commandSurface: 'map'
@@ -15,7 +15,7 @@ test('continuous profile renders only for the mobile selected map tray', () => {
 
   assert.equal(shouldRenderContinuousProfile({
     mobile: false,
-    detailMode: false,
+    mapView: true,
     selectedVenueId: 'venue-1',
     trayState: 'selected',
     commandSurface: 'map'
@@ -23,7 +23,7 @@ test('continuous profile renders only for the mobile selected map tray', () => {
 
   assert.equal(shouldRenderContinuousProfile({
     mobile: true,
-    detailMode: true,
+    mapView: false,
     selectedVenueId: 'venue-1',
     trayState: 'selected',
     commandSurface: 'map'
@@ -31,7 +31,7 @@ test('continuous profile renders only for the mobile selected map tray', () => {
 
   assert.equal(shouldRenderContinuousProfile({
     mobile: true,
-    detailMode: false,
+    mapView: true,
     selectedVenueId: 'venue-1',
     trayState: 'full',
     commandSurface: 'list'
@@ -41,7 +41,7 @@ test('continuous profile renders only for the mobile selected map tray', () => {
 test('continuous profile requires a selected venue', () => {
   assert.equal(shouldRenderContinuousProfile({
     mobile: true,
-    detailMode: false,
+    mapView: true,
     selectedVenueId: '',
     trayState: 'selected',
     commandSurface: 'map'
