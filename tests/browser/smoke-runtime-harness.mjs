@@ -141,24 +141,45 @@ async function runMobile() {
 async function validateDesktopSearchHelper() {
   const input = element('#location-query');
   const helper = element('#search-add-location-button');
-  if (!input || !helper) {
-    failures.push('Desktop search input and add-location helper should render');
+  const form = element('#location-search');
+  const header = element('#tray-list .tray-list__header');
+  if (!input || !helper || !form || !header) {
+    failures.push('Desktop search input and shared add-location action should render');
     return;
   }
 
-  check(!rendered(helper), 'Desktop add-location helper should be visually hidden before search interaction');
+  await waitFor(() => helper.parentElement === header && rendered(helper), 'desktop browse add-location action');
+  check(helper.textContent.trim() === '+ Add location', 'Desktop browse should expose a concise Add location action');
+  check(!form.contains(helper), 'Desktop search should not show its contextual helper before typing');
+
   input.focus();
   await sleep();
-  check(!rendered(helper), 'Desktop add-location helper should stay hidden on focus before typing');
+  check(helper.parentElement === header, 'Desktop Add location action should remain with browse controls on focus before typing');
 
   input.value = 'Synthetic';
   input.dispatchEvent(new Event('input', { bubbles: true }));
-  await waitFor(() => rendered(helper), 'desktop add-location helper after typing');
+  await waitFor(() => form.contains(helper) && rendered(helper), 'desktop add-location helper after typing');
+  check(helper.textContent.includes('Search for another location.'), 'Desktop typed search should use the contextual add-location helper');
 
   input.value = '';
   input.dispatchEvent(new Event('input', { bubbles: true }));
-  await waitFor(() => !rendered(helper), 'desktop add-location helper after clearing search');
+  await waitFor(() => helper.parentElement === header && rendered(helper), 'desktop browse add-location action after clearing search');
   input.blur();
+}
+
+async function validateDesktopAddLocationEntry() {
+  window.CGBApp?.showLocations?.();
+  await waitFor(() => visible('#tray-list'), 'desktop location list before Add location');
+  const add = element('#search-add-location-button');
+  const input = element('#location-query');
+  check(Boolean(add) && rendered(add), 'Desktop Add location action should be available from the location browser');
+  if (!add || !input) return;
+
+  add.click();
+  await waitFor(() => state()?.searchMode === 'add-location', 'desktop Add location search mode');
+  check(rendered('#location-search'), 'Desktop Add location should keep the search field visible');
+  check(element('#location-search')?.parentElement?.classList.contains('map-toolbar'), 'Desktop Add location should reuse the map toolbar search field');
+  check(input.placeholder === 'Venue or address', 'Desktop Add location should use the existing add-location search mode');
 }
 
 async function runDesktop() {
@@ -167,6 +188,7 @@ async function runDesktop() {
   check(visible('#tray-list'), 'Desktop venue list should render');
   await validateDesktopSearchHelper();
   await selectFirstVenue();
+  await validateDesktopAddLocationEntry();
   finish('CGB_SMOKE_DESKTOP');
 }
 
