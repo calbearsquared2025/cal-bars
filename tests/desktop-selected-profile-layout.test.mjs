@@ -15,12 +15,19 @@ test('wide desktop expands only the selected profile and keeps browse width unch
   assert.match(profileCss, /\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) \.maplibregl-ctrl-top-right\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 36vw, 520px\) \+ 26px\)\s*!important;/);
 });
 
-test('wide desktop gives venue media more presence without widening the selected panel', async () => {
-  const css = await read('css/venue-profile.css');
+test('wide desktop leads with venue identity and compact attendance', async () => {
+  const [css, source] = await Promise.all([
+    read('css/venue-profile.css'),
+    read('js/icon-upgrade.mjs')
+  ]);
 
-  assert.match(css, /#tray-selected > #venue-detail\[data-profile-presentation="desktop"\] > \.detail-hero\.detail-hero--has-photo,[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*215px minmax\(0, 1fr\)\s*!important;/);
-  assert.match(css, /#tray-selected > #venue-detail\[data-profile-presentation="desktop"\] > \.detail-hero > \.detail-photo,[\s\S]*?width:\s*215px\s*!important;/);
-  assert.match(css, /#tray-selected > #venue-detail\[data-profile-presentation="desktop"\] > \.detail-hero > \.venue-badges,[\s\S]*?grid-column:\s*2\s*!important;/);
+  assert.match(css, /grid-template-columns:\s*repeat\(12, minmax\(0, 1fr\)\)/);
+  assert.match(css, /:has\(> \.activity-card--desktop-attendance\) > \.detail-hero[\s\S]*?grid-column:\s*1 \/ 10\s*!important;/);
+  assert.match(css, /> \.activity-card--desktop-attendance\s*\{[\s\S]*?grid-column:\s*10 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(source, /function syncDesktopProfileAttendance\(state\)/);
+  assert.match(source, /getFanCount\(state\.snapshot, state\.gameId, venue\.venue_id\)/);
+  assert.match(source, /createIcon\('users'/);
+  assert.match(source, /prompt\.textContent = 'Be the first\.'/);
 });
 
 test('wide desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
@@ -38,8 +45,22 @@ test('wide desktop editorial columns meet cleanly with continuous borders', asyn
 
   assert.match(css, /#venue-detail\[data-profile-presentation="desktop"\]\s*\{[\s\S]*?column-gap:\s*0\s*!important;[\s\S]*?row-gap:\s*0\s*!important;/);
   assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial,[\s\S]*?> \.detail-fan-experiences\s*\{[\s\S]*?border-top:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
-  assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?border-right:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
-  assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-fan-experiences\s*\{[\s\S]*?grid-column:\s*2\s*!important;/);
+  assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ 7\s*!important;[\s\S]*?border-right:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
+  assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-fan-experiences\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;/);
+});
+
+test('wide desktop places full-width venue media after editorial content', async () => {
+  const [css, source] = await Promise.all([
+    read('css/venue-profile.css'),
+    read('js/venue-profile-enhancement.mjs')
+  ]);
+
+  assert.match(source, /export function arrangeDesktopVenueMedia/);
+  assert.match(source, /const anchor = fanExperiences \|\| editorial \|\| detail\.querySelector\(':scope > \.activity-card'\) \|\| hero;/);
+  assert.match(source, /media\.classList\.add\('detail-profile-media--desktop'\)/);
+  assert.match(source, /anchor\.after\(media\)/);
+  assert.match(css, /> \.detail-photo\.detail-profile-media--desktop\s*\{[\s\S]*?width:\s*calc\(100% - 36px\)\s*!important;/);
+  assert.match(css, /> \.detail-local-map\.detail-profile-media--desktop\s*\{[\s\S]*?height:\s*220px\s*!important;/);
 });
 
 test('additional Watch Party and listing maintenance use sentence case with secondary styling', async () => {
