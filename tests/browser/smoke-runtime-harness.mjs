@@ -186,7 +186,13 @@ async function validateDesktopContributionWithoutSelection() {
   if (!add) return;
 
   add.click();
-  await waitFor(() => visible('#add-surface') && Boolean(element('#add-surface .desktop-add-search-slot #location-search')), 'desktop contribution surface without selection');
+  await waitFor(() =>
+    visible('#add-surface') &&
+    Boolean(element('#add-surface .desktop-add-search-slot #location-search')) &&
+    (element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('select it on the map or in Locations first') &&
+    (element('#add-somewhere-else-title')?.textContent || '').trim() === 'Place not listed yet?' &&
+    (element('#add-surface .add-somewhere-else > .command-surface__intro')?.textContent || '').trim() === 'Search for the venue or address below.',
+  'finalized desktop contribution surface without selection');
   check(!visible('#add-surface .add-context'), 'Desktop selected-place context should stay hidden without a selected venue');
   check(!visible('#add-watch-party-button'), 'Desktop Watch Party action should stay hidden until a listed venue is selected');
   check(!visible('#add-cal-bar-button'), 'Desktop Cal Bar action should stay hidden until a listed venue is selected');
@@ -241,7 +247,13 @@ async function validateDesktopContributionEntry() {
   const selectedVenueId = state()?.selectedVenueId || '';
   const selectedVenueName = state()?.snapshot?.venues?.find((venue) => venue.venue_id === selectedVenueId)?.name || '';
   add.click();
-  await waitFor(() => visible('#add-surface') && Boolean(element('#add-surface .desktop-add-search-slot #location-search')), 'desktop Add to CGB surface');
+  await waitFor(() =>
+    visible('#add-surface') &&
+    Boolean(element('#add-surface .desktop-add-search-slot #location-search')) &&
+    (element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose an action for this location. To add a different place, search below.' &&
+    (element('#add-somewhere-else-title')?.textContent || '').trim() === 'Different location?' &&
+    (element('#add-surface .add-somewhere-else > .command-surface__intro')?.textContent || '').trim() === 'Search for a venue or address that isn’t listed in CGB yet.',
+  'finalized desktop Add to CGB surface');
   check((element('#add-surface-title')?.textContent || '').trim() === 'Add to Cal Golden Bars', 'Desktop contribution surface should explain the global Add action');
   check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose an action for this location. To add a different place, search below.', 'Desktop selected-state intro should explain both contribution paths');
   check(visible('#add-surface .add-context'), 'Selected venue context should remain available when opening desktop Add');
