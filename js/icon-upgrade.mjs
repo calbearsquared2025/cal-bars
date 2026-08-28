@@ -18,6 +18,7 @@ let appConnectAttempts = 0;
 let detailLocalMap = null;
 let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
+const desktopAttendanceSources = new WeakMap();
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
@@ -171,6 +172,17 @@ function syncDetailLocalMap(root, venue, state) {
   });
 }
 
+function restoreDesktopProfileAttendance(activity) {
+  if (!activity) return false;
+  const compact = activity.querySelector(':scope > .detail-attendance-compact');
+  const source = desktopAttendanceSources.get(activity);
+  if (compact && source) compact.replaceWith(source);
+  else compact?.remove();
+  desktopAttendanceSources.delete(activity);
+  activity.classList.remove('activity-card--desktop-attendance');
+  return Boolean(compact);
+}
+
 function syncDesktopProfileAttendance(state) {
   const detail = document.querySelector('#venue-detail');
   const activity = detail?.querySelector(':scope > .activity-card');
@@ -180,20 +192,19 @@ function syncDesktopProfileAttendance(state) {
   const upcoming = String(game?.game_status || '').toLowerCase() === 'upcoming';
   const eligible = Boolean(state?.detailMode && detail && activity && venue && wideDesktop && upcoming);
 
-  if (!eligible) {
-    activity?.classList.remove('activity-card--desktop-attendance');
-    activity?.querySelector(':scope > .detail-attendance-compact')?.remove();
-    return false;
-  }
+  if (!eligible) return restoreDesktopProfileAttendance(activity);
 
   const publicCount = getFanCount(state.snapshot, state.gameId, venue.venue_id);
   const selectedByThisBrowser = state?.fanIntent?.selections?.[state.gameId] === venue.venue_id;
   const count = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
   let compact = activity.querySelector(':scope > .detail-attendance-compact');
   if (!compact) {
+    const source = activity.querySelector(':scope > strong');
+    if (!source) return false;
     compact = document.createElement('div');
     compact.className = 'detail-attendance-compact';
-    activity.prepend(compact);
+    desktopAttendanceSources.set(activity, source);
+    source.replaceWith(compact);
   }
   compact.replaceChildren();
 
@@ -257,9 +268,9 @@ function runRefinements() {
     enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
     renderFanExperiences({ app: window.CGBApp, documentObject: document });
     arrangeDesktopVenueMedia({ state, documentObject: document, windowObject: window });
-    syncDesktopProfileAttendance(state);
     renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
   }
+  syncDesktopProfileAttendance(state);
   upgradeRenderedIcons();
   const venue = detailVenue(state);
   const detail = document.querySelector('#venue-detail');
