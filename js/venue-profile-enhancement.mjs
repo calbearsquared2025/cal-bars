@@ -231,7 +231,11 @@ export function arrangeDesktopVenueMedia({
 
   if (!wideDesktop) {
     detail.removeAttribute('data-desktop-profile-arrangement');
-    if (activity) parties.forEach((party) => detail.insertBefore(party, activity));
+    if (activity) {
+      parties.forEach((party) => detail.insertBefore(party, activity));
+      if (editorial) activity.after(editorial);
+      if (fanExperiences) (editorial || activity).after(fanExperiences);
+    }
     if (media) {
       media.classList.remove('detail-profile-media--desktop');
       if (media.parentElement !== hero) hero.prepend(media);
@@ -239,20 +243,24 @@ export function arrangeDesktopVenueMedia({
     return false;
   }
 
-  detail.dataset.desktopProfileArrangement = 'editorial-party-media';
-  let cursor = activity || hero;
+  detail.dataset.desktopProfileArrangement = 'identity-editorial-party-attendance-community-media';
+  let cursor = hero;
   if (editorial) {
     cursor.after(editorial);
     cursor = editorial;
-  }
-  if (fanExperiences) {
-    cursor.after(fanExperiences);
-    cursor = fanExperiences;
   }
   parties.forEach((party) => {
     cursor.after(party);
     cursor = party;
   });
+  if (activity) {
+    cursor.after(activity);
+    cursor = activity;
+  }
+  if (fanExperiences) {
+    cursor.after(fanExperiences);
+    cursor = fanExperiences;
+  }
 
   if (!media) return true;
   media.classList.add('detail-profile-media--desktop');
