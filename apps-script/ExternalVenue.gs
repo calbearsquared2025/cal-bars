@@ -88,12 +88,14 @@ function processJoinExternalVenueRequest_(request) {
   requireHeaders_(venueTable.headers, CGB_TABS.Venues, 'Venues');
 
   let venueRecord = findCanonicalExternalVenue_(venueTable.rows, request.externalPlace);
+  let verifiedPlace = null;
   let createdVenueRowNumber = null;
+  let identityRollback = null;
   let fanRollback = null;
 
   try {
     if (!venueRecord) {
-      const verifiedPlace = verifyExternalPlaceWithMapTiler_(request.externalPlace);
+      verifiedPlace = verifyExternalPlaceWithMapTiler_(request.externalPlace);
       venueRecord = findCanonicalExternalVenue_(venueTable.rows, verifiedPlace);
       if (!venueRecord) {
         const venue = buildExternalVenueRecord_(venueTable.rows, verifiedPlace, now);
@@ -114,6 +116,16 @@ function processJoinExternalVenueRequest_(request) {
 
     const fanResult = applyExternalFanIntent_(workbook, request, String(venueRecord.object.venue_id), now);
     fanRollback = fanResult.rollback;
+
+    if (verifiedPlace && !createdVenueRowNumber) {
+      identityRollback = adoptVerifiedExternalVenueIdentity_(
+        venueSheet,
+        venueTable.headers,
+        venueRecord,
+        verifiedPlace,
+        now
+      );
+    }
 
     clearPublicSnapshotCache_();
     const venues = readSheetObjects_(workbook, 'Venues');
@@ -142,6 +154,7 @@ function processJoinExternalVenueRequest_(request) {
       generatedAt: now
     };
   } catch (error) {
+    if (identityRollback) rollbackExternalVenueIdentity_(venueSheet, identityRollback);
     if (fanRollback) rollbackExternalFanIntent_(workbook, fanRollback);
     if (createdVenueRowNumber) rollbackCreatedVenue_(venueSheet, createdVenueRowNumber);
     clearPublicSnapshotCache_();
@@ -384,6 +397,38 @@ function findCanonicalExternalVenue_(rows, place) {
   return rows.find(function(record) {
     return normalizeExternalAddressParts_(record.object) === place.normalizedAddress;
   }) || null;
+}
+
+function adoptVerifiedExternalVenueIdentity_(sheet, headers, record, place, now) {
+  if (!sheet || !record || !place || !place.normalizedAddress) return null;
+  if (normalizeExternalAddressParts_(record.object) !== place.normalizedAddress) return null;
+
+  const existingSource = cleanExternalText_(record.object.external_source, 40).toLowerCase();
+  const existingPlaceId = cleanExternalText_(record.object.external_place_id, 200);
+  if (existingSource || existingPlaceId) return null;
+
+  const source = cleanExternalText_(place.source, 40).toLowerCase();
+  const placeId = cleanExternalText_(place.placeId, 200);
+  if (source !== CGB_EXTERNAL_SOURCE || !CGB_EXTERNAL_PLACE_ID_PATTERN.test(placeId)) return null;
+
+  requireHeaders_(headers, ['external_source', 'external_place_id', 'updated_at'], 'Venues');
+  const originalValues = record.values.slice();
+  const values = record.values.slice();
+  values[headers.indexOf('external_source')] = source;
+  values[headers.indexOf('external_place_id')] = placeId;
+  values[headers.indexOf('updated_at')] = now;
+  sheet.getRange(record.rowNumber, 1, 1, headers.length).setValues([values]);
+
+  record.values = values;
+  record.object.external_source = source;
+  record.object.external_place_id = placeId;
+  record.object.updated_at = now;
+  return { rowNumber: record.rowNumber, values: originalValues };
+}
+
+function rollbackExternalVenueIdentity_(sheet, rollback) {
+  if (!rollback) return;
+  sheet.getRange(rollback.rowNumber, 1, 1, rollback.values.length).setValues([rollback.values]);
 }
 
 function buildExternalVenueRecord_(existingRows, place, now) {
