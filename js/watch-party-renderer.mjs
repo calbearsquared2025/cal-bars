@@ -40,6 +40,27 @@ function appendTags(module, labels, documentObject) {
   module.append(tags);
 }
 
+function formatLocalTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(undefined, {
+    hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+  }).format(date);
+}
+
+function kickoffLabel(game) {
+  if (!game) return '';
+  if (game.kickoff_status === 'tbd' || !game.kickoff_at) return 'Kickoff Time TBD';
+  const time = formatLocalTime(game.kickoff_at);
+  return time ? `Kickoff ${time}` : 'Kickoff Time TBD';
+}
+
+function arrivalLabel(party) {
+  const time = formatLocalTime(party?.event_start_at);
+  return time ? `Arrive ${time}` : '';
+}
+
 export function createWatchPartyModule({
   party,
   index = 0,
@@ -52,6 +73,7 @@ export function createWatchPartyModule({
   module.className = 'party-module party-module--multiple';
   module.dataset.watchPartyId = party.watch_party_id;
 
+  const game = snapshot?.games?.find((item) => item.game_id === party.game_id);
   const title = documentObject.createElement('div');
   title.className = 'party-module__title';
   const star = documentObject.createElement('span');
@@ -60,10 +82,18 @@ export function createWatchPartyModule({
   const titleText = documentObject.createElement('strong');
   titleText.textContent = total > 1 ? `Watch Party ${index + 1} of ${total}` : 'Watch Party';
   title.append(star, titleText);
+  if (game) {
+    const date = documentObject.createElement('span');
+    date.className = 'party-module__date';
+    date.textContent = formatGameDate(game).toUpperCase();
+    title.append(date);
+  }
   module.append(title);
 
-  const game = snapshot?.games?.find((item) => item.game_id === party.game_id);
-  if (game) appendText(module, `${gameTitle(game)} · ${formatGameDate(game)}`, 'party-game-context', documentObject);
+  if (game) appendText(module, `CAL ${gameTitle(game).toUpperCase()}`, 'party-game-context', documentObject);
+
+  const timing = [kickoffLabel(game), arrivalLabel(party)].filter(Boolean).join(' · ');
+  appendText(module, timing, 'party-module__time', documentObject);
 
   const hosted = documentObject.createElement('p');
   hosted.className = 'party-module__host';
@@ -72,15 +102,6 @@ export function createWatchPartyModule({
   host.textContent = party.organizer_name;
   hosted.append(host);
   module.append(hosted);
-
-  if (party.event_start_at) {
-    const start = new Date(party.event_start_at);
-    if (!Number.isNaN(start.getTime())) {
-      appendText(module, `Arrive ${new Intl.DateTimeFormat(undefined, {
-        hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
-      }).format(start)}`, 'party-module__time', documentObject);
-    }
-  }
 
   const details = [];
   if (party.age_policy === '21_plus') details.push('21+');
