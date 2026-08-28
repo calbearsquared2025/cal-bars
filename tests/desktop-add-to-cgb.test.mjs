@@ -30,6 +30,13 @@ test('shared shell explains the desktop selected-location workflow while mobile 
   assert.doesNotMatch(refinementSource, /function syncContributionCopy\(\)/);
 });
 
+test('desktop Search for another location returns to the persistent map search in add-location mode', () => {
+  assert.match(
+    shellSource,
+    /function showAddLocationSearch\(\) \{[\s\S]*setSearchMode\('add-location'\);[\s\S]*if \(isMobileLayout\(\)\) \{[\s\S]*setSurface\('search', \{ focus: true \}\);[\s\S]*return;[\s\S]*setSurface\('map'\);[\s\S]*dom\.searchInput\?\.focus\(\{ preventScroll: true \}\)/
+  );
+});
+
 test('venue-specific contribution actions stay inside selected-place context on desktop and mobile', () => {
   assert.match(shellSource, /function syncContributionStructure\(\)/);
   assert.match(shellSource, /dom\.addContext\.append\(dom\.addContextActions\)/);
