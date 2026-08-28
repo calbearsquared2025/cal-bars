@@ -35,6 +35,17 @@ test('wide desktop reuses the mobile identity language without layering a second
   assert.doesNotMatch(iconSource, /document\.createElement\('style'\)/);
 });
 
+test('wide desktop attendance replaces the existing detail count instead of rendering beside it', async () => {
+  const source = await read('js/icon-upgrade.mjs');
+
+  assert.match(source, /const desktopAttendanceSources = new WeakMap\(\)/);
+  assert.match(source, /const source = activity\.querySelector\(':scope > strong'\)/);
+  assert.match(source, /desktopAttendanceSources\.set\(activity, source\)/);
+  assert.match(source, /source\.replaceWith\(compact\)/);
+  assert.match(source, /if \(compact && source\) compact\.replaceWith\(source\)/);
+  assert.doesNotMatch(source, /activity\.prepend\(compact\)/);
+});
+
 test('wide desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
   const css = await read('css/venue-profile.css');
 
