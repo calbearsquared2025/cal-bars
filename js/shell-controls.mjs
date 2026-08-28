@@ -173,22 +173,15 @@ function contributionUrl(intent, venueId, state = appState()) {
 }
 
 function syncContributionStructure() {
-  if (!dom?.addContext || !dom.addContextActions || !dom.addSomewhereElse) return;
-
-  if (isMobileLayout()) {
-    if (dom.addContextActions.parentElement !== dom.addContext) {
-      dom.addContext.append(dom.addContextActions);
-    }
-    return;
-  }
-
-  if (dom.addContextActions.parentElement === dom.addContext) {
-    dom.addContext.after(dom.addContextActions);
+  if (!dom?.addContext || !dom.addContextActions) return;
+  if (dom.addContextActions.parentElement !== dom.addContext) {
+    dom.addContext.append(dom.addContextActions);
   }
 }
 
 function updateResponsiveCommandLabels() {
   const mobile = isMobileLayout();
+  const venue = selectedVenue();
   const labels = mobile
     ? { map: 'Map', search: 'Search', add: 'Add', list: 'List', about: 'About' }
     : { map: 'Selected', search: 'Search', add: 'Add to CGB', list: 'Locations', about: 'About' };
@@ -211,26 +204,30 @@ function updateResponsiveCommandLabels() {
   if (addIntro) {
     addIntro.textContent = mobile
       ? 'Choose what you would like to add or correct.'
-      : 'Choose what you’d like to contribute.';
+      : venue
+        ? 'Choose an action for the selected location, or search for another location.'
+        : 'If the location is already listed in CGB, select it first to add a Watch Party or other content. If it isn’t listed yet, search below to add it.';
   }
 
   if (dom.addCalBarTitle) {
     dom.addCalBarTitle.textContent = mobile ? 'Tell us about this location' : 'Tell us about a location';
   }
   if (dom.addSomewhereElseTitle) {
-    dom.addSomewhereElseTitle.textContent = mobile ? 'Add somewhere else' : 'New location';
+    dom.addSomewhereElseTitle.textContent = mobile
+      ? 'Add somewhere else'
+      : venue ? 'Add somewhere else' : 'New location';
   }
   if (dom.addSomewhereElseIntro) {
     dom.addSomewhereElseIntro.hidden = !mobile;
     dom.addSomewhereElseIntro.textContent = 'Search for a place that isn’t listed in Cal Golden Bars yet.';
   }
   if (dom.addNewLocationTitle) {
-    dom.addNewLocationTitle.textContent = mobile ? 'Search for another location' : 'Add a new location';
+    dom.addNewLocationTitle.textContent = mobile ? 'Search for another location' : 'Search for another location';
   }
   if (dom.addNewLocationDetail) {
     dom.addNewLocationDetail.textContent = mobile
       ? 'Find a place that isn’t listed yet.'
-      : 'Search for a place that isn’t listed yet.';
+      : 'Find a place that isn’t listed in CGB yet.';
   }
   if (dom.missingLocationLink) {
     dom.missingLocationLink.textContent = mobile
@@ -240,7 +237,7 @@ function updateResponsiveCommandLabels() {
 
   const selectedButton = dom.commandButtons.find((button) => button.dataset.command === 'map');
   if (selectedButton) {
-    selectedButton.disabled = !mobile && !selectedVenue();
+    selectedButton.disabled = !mobile && !venue;
     selectedButton.setAttribute('aria-disabled', String(selectedButton.disabled));
   }
 }
