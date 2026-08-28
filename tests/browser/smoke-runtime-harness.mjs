@@ -118,6 +118,8 @@ async function runMobile() {
   await openMobileSurface('#mobile-add-button', '#add-surface', 'Add');
   check((element('#mobile-add-button span:last-child')?.textContent || '').trim() === 'Add', 'Mobile contribution command should remain labeled Add');
   check((element('#add-surface-title')?.textContent || '').trim() === 'Add to the map', 'Mobile Add surface title should remain unchanged');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Add somewhere else', 'Mobile new-location section copy should remain unchanged');
+  check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Mobile contribution actions should remain nested in selected-place context');
 
   element('#mobile-list-button')?.click();
   await waitFor(() => visible('#tray-list'), 'mobile location list');
@@ -169,6 +171,27 @@ async function validateDesktopSearchHelper() {
   input.blur();
 }
 
+async function validateDesktopContributionWithoutSelection() {
+  const add = element('#mobile-add-button');
+  check(Boolean(add), 'Desktop Add to CGB should exist before a venue is selected');
+  if (!add) return;
+
+  add.click();
+  await waitFor(() => visible('#add-surface'), 'desktop contribution surface without selection');
+  check(!visible('#add-surface .add-context'), 'Desktop selected-place context should stay hidden without a selected venue');
+  check(visible('#add-watch-party-button'), 'Desktop should still expose Add a Watch Party without a selected venue');
+  check(visible('#add-cal-bar-button'), 'Desktop should still expose location contribution without a selected venue');
+  check(visible('#add-report-button'), 'Desktop should still expose reporting without a selected venue');
+  check(!element('#add-watch-party-button')?.closest('.add-context'), 'Desktop contribution actions should sit outside selected-place context');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose what you’d like to contribute.', 'Desktop contribution intro should be concise');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'New location', 'Desktop new-location section should use a concise label');
+  check(!visible('#add-surface .add-somewhere-else > .command-surface__intro'), 'Desktop new-location section should not repeat explanatory copy above the action');
+  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Add a new location', 'Desktop new-location action should use direct copy');
+
+  element('#add-surface [data-command-close]')?.click();
+  await waitFor(() => !visible('#add-surface'), 'desktop contribution surface close');
+}
+
 async function validateDesktopContributionEntry() {
   const add = element('#mobile-add-button');
   const locations = element('#mobile-list-button');
@@ -194,11 +217,14 @@ async function validateDesktopContributionEntry() {
   add.click();
   await waitFor(() => visible('#add-surface'), 'desktop Add to CGB surface');
   check((element('#add-surface-title')?.textContent || '').trim() === 'Add to Cal Golden Bars', 'Desktop contribution surface should explain the global Add action');
-  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('Add a Watch Party'), 'Desktop contribution surface should name the available contribution types');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose what you’d like to contribute.', 'Desktop contribution surface should use concise introductory copy');
   check(visible('#add-surface .add-context'), 'Selected venue context should remain available when opening desktop Add');
+  check(visible('#add-watch-party-button') && visible('#add-cal-bar-button') && visible('#add-report-button'), 'Desktop contribution actions should remain visible with selected context');
+  check(!element('#add-watch-party-button')?.closest('.add-context'), 'Selected-place context should not own or hide the desktop action list');
   if (selectedVenueName) {
     check((element('#add-context-name')?.textContent || '').trim() === selectedVenueName, 'Desktop Add should preserve the selected venue context');
   }
+  check(!(element('#add-context-copy')?.textContent || '').includes('Available actions'), 'Desktop selected-place context should avoid explanatory repetition');
   check(state()?.searchMode === 'existing', 'Desktop Add to CGB should open the shared contribution surface rather than forcing Add-location search');
 }
 
@@ -207,6 +233,7 @@ async function runDesktop() {
   check(visible('#map-view') && visible('#map'), 'Desktop map surface should render');
   check(visible('#tray-list'), 'Desktop venue list should render');
   await validateDesktopSearchHelper();
+  await validateDesktopContributionWithoutSelection();
   await selectFirstVenue();
   await validateDesktopContributionEntry();
   finish('CGB_SMOKE_DESKTOP');
