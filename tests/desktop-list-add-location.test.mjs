@@ -12,14 +12,19 @@ test('desktop location browser uses a standalone Add location button beside the 
   assert.match(source, /desktopListActions\.append\(button\)/);
 });
 
-test('desktop list Add location is compact and remains visually separate from the range toggle', () => {
+test('desktop list Add location is subordinate, compact, and visually separate from the range toggle', () => {
   assert.match(source, /function styleDesktopListAddButton\(button\)/);
-  assert.match(source, /height: '32px'/);
-  assert.match(source, /minHeight: '32px'/);
-  assert.match(source, /padding: '0 10px'/);
-  assert.match(source, /borderRadius: '8px'/);
-  assert.match(source, /fontSize: '\.66rem'/);
+  assert.match(source, /height: '28px'/);
+  assert.match(source, /minHeight: '28px'/);
+  assert.match(source, /padding: '0 8px'/);
+  assert.match(source, /border: '1px solid var\(--cgb-neutral-300/);
+  assert.match(source, /borderRadius: '7px'/);
+  assert.match(source, /boxShadow: 'none'/);
+  assert.match(source, /fontSize: '\.62rem'/);
+  assert.match(source, /fontWeight: '800'/);
   assert.match(source, /whiteSpace: 'nowrap'/);
+  assert.match(source, /actions\.style\.gap = '8px'/);
+  assert.match(source, /actions\.style\.alignItems = 'center'/);
   assert.match(source, /styleDesktopListAddButton\(button\)/);
 });
 
