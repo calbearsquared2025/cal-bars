@@ -15,7 +15,7 @@ test('wide desktop expands only the selected profile and keeps browse width unch
   assert.match(profileCss, /\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) \.maplibregl-ctrl-top-right\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 36vw, 520px\) \+ 26px\)\s*!important;/);
 });
 
-test('wide desktop reuses the mobile identity language without layering a second style injector', async () => {
+test('wide desktop pairs venue identity with CGB Says instead of a separate attendance column', async () => {
   const [css, iconSource, profileSource] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/icon-upgrade.mjs'),
@@ -23,27 +23,14 @@ test('wide desktop reuses the mobile identity language without layering a second
   ]);
 
   assert.match(css, /grid-template-columns:\s*repeat\(12, minmax\(0, 1fr\)\)/);
-  assert.match(css, /:has\(> \.activity-card--desktop-attendance\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 9\s*!important;/);
-  assert.match(css, /> \.activity-card--desktop-attendance\s*\{[\s\S]*?grid-column:\s*9 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(css, /:has\(> \.detail-editorial\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 8\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(css, /> \.detail-editorial\s*\{[\s\S]*?grid-column:\s*8 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
   assert.match(profileSource, /function arrangeDesktopVenueIdentity/);
   assert.match(profileSource, /detail-address__location/);
   assert.match(profileSource, /directions\.replaceChildren\(documentObject\.createTextNode\('Directions'\)\)/);
-  assert.match(iconSource, /function syncDesktopProfileAttendance\(state\)/);
-  assert.match(iconSource, /getFanCount\(state\.snapshot, state\.gameId, venue\.venue_id\)/);
-  assert.match(iconSource, /detail-attendance-compact__attending/);
-  assert.match(iconSource, /detail-attendance-compact__context/);
-  assert.doesNotMatch(iconSource, /document\.createElement\('style'\)/);
-});
-
-test('wide desktop attendance replaces the existing detail count instead of rendering beside it', async () => {
-  const source = await read('js/icon-upgrade.mjs');
-
-  assert.match(source, /const desktopAttendanceSources = new WeakMap\(\)/);
-  assert.match(source, /const source = activity\.querySelector\(':scope > strong'\)/);
-  assert.match(source, /desktopAttendanceSources\.set\(activity, source\)/);
-  assert.match(source, /source\.replaceWith\(compact\)/);
-  assert.match(source, /if \(compact && source\) compact\.replaceWith\(source\)/);
-  assert.doesNotMatch(source, /activity\.prepend\(compact\)/);
+  assert.doesNotMatch(iconSource, /syncDesktopProfileAttendance/);
+  assert.doesNotMatch(iconSource, /detail-attendance-compact/);
+  assert.doesNotMatch(css, /activity-card--desktop-attendance/);
 });
 
 test('wide desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
@@ -56,25 +43,27 @@ test('wide desktop watch party uses structured two-column metadata and full-widt
   assert.match(css, /> \.party-module > \.party-module__title,[\s\S]*?> \.party-module > \.party-module__report\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;/);
 });
 
-test('wide desktop editorial columns meet cleanly with continuous borders', async () => {
+test('wide desktop keeps attendance horizontal and community voices below the watch party', async () => {
   const css = await read('css/venue-profile.css');
 
-  assert.match(css, /#venue-detail\[data-profile-presentation="desktop"\]\s*\{[\s\S]*?column-gap:\s*0\s*!important;[\s\S]*?row-gap:\s*0\s*!important;/);
-  assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial,[\s\S]*?> \.detail-fan-experiences\s*\{[\s\S]*?border-top:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
-  assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ 7\s*!important;[\s\S]*?border-right:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
-  assert.match(css, /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-fan-experiences\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;/);
+  assert.match(css, /> \.activity-card\s*\{[\s\S]*?padding:\s*11px 18px\s*!important;/);
+  assert.match(css, /> \.activity-card > strong\s*\{[\s\S]*?display:\s*block\s*!important;[\s\S]*?font-size:\s*\.8rem\s*!important;/);
+  assert.match(css, /> \.activity-card > \.activity-card__presence\s*\{[\s\S]*?display:\s*none\s*!important;/);
+  assert.match(css, /> \.detail-fan-experiences\s*\{[\s\S]*?border-top:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
 });
 
-test('wide desktop order is identity, editorial, watch party, then full-width media', async () => {
+test('wide desktop order is identity, CGB Says, watch party, attendance, Bears Say, then media', async () => {
   const [css, source] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/venue-profile-enhancement.mjs')
   ]);
 
-  assert.match(source, /detail\.dataset\.desktopProfileArrangement = 'editorial-party-media'/);
+  assert.match(source, /detail\.dataset\.desktopProfileArrangement = 'identity-editorial-party-attendance-community-media'/);
+  assert.match(source, /let cursor = hero;/);
   assert.match(source, /if \(editorial\) \{[\s\S]*?cursor\.after\(editorial\);[\s\S]*?cursor = editorial;/);
-  assert.match(source, /if \(fanExperiences\) \{[\s\S]*?cursor\.after\(fanExperiences\);[\s\S]*?cursor = fanExperiences;/);
   assert.match(source, /parties\.forEach\(\(party\) => \{[\s\S]*?cursor\.after\(party\);[\s\S]*?cursor = party;/);
+  assert.match(source, /if \(activity\) \{[\s\S]*?cursor\.after\(activity\);[\s\S]*?cursor = activity;/);
+  assert.match(source, /if \(fanExperiences\) \{[\s\S]*?cursor\.after\(fanExperiences\);[\s\S]*?cursor = fanExperiences;/);
   assert.match(source, /media\.classList\.add\('detail-profile-media--desktop'\)/);
   assert.match(source, /cursor\.after\(media\)/);
   assert.match(css, /> \.detail-photo\.detail-profile-media--desktop\s*\{[\s\S]*?width:\s*calc\(100% - 36px\)\s*!important;/);
