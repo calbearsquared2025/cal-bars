@@ -483,7 +483,8 @@ function clearVenueVisibilitySchedule() {
 
 function scheduleSelectedVenueVisibility() {
   clearVenueVisibilitySchedule();
-  if (!state.map || !state.selectedVenueId || (state.detailMode && isMobileLayout())) return;
+  if (!state.map || !state.selectedVenueId ||
+      (isMobileLayout() && (state.detailMode || state.trayState !== 'selected'))) return;
   state.venueVisibilityFrame = requestAnimationFrame(() => {
     state.venueVisibilityFrame = requestAnimationFrame(() => {
       state.venueVisibilityFrame = null;
