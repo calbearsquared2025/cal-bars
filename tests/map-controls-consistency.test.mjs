@@ -31,20 +31,18 @@ test('desktop Locate me and zoom controls share one aligned stack beside the ven
   assert.match(mobilePolish, /\.map-actions #near-me-button[\s\S]*?width:\s*44px;/);
 });
 
-test('marker states use the Bootstrap geo-alt-fill silhouette with distinct selected and nearby hierarchy', async () => {
+test('marker states use the original rotated pin treatment', async () => {
   const css = await read('css/mobile-polish.css');
-  assert.match(css, /--marker-shape:\s*url\("data:image\/svg\+xml/);
-  assert.match(css, /Bootstrap Icons geo-alt-fill/);
-  assert.match(css, /viewBox='0 0 12 16'/);
-  assert.match(css, /M6 16s6-5\.686 6-10A6 6 0 0 0 0 6c0 4\.314 6 10 6 10Z/);
-  assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?width:\s*32px;[\s\S]*?height:\s*43px;/);
-  assert.match(css, /\.cgb-marker \.marker-star::after[\s\S]*?top:\s*7\.5px;[\s\S]*?width:\s*17px;[\s\S]*?height:\s*17px;/);
-  assert.match(css, /\.cgb-marker \.marker-star__icon[\s\S]*?top:\s*9\.5px;[\s\S]*?width:\s*13px;[\s\S]*?height:\s*13px;/);
-  assert.match(css, /\.cgb-marker \.marker-pin::before,[\s\S]*?inset:\s*1\.25px;/);
-  assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?mask:\s*var\(--marker-shape\)/);
-  assert.match(css, /\.cgb-marker\.marker--cal-bar \.marker-pin/);
-  assert.match(css, /\.cgb-marker\.is-selected \.marker-pin,[\s\S]*?scale:\s*1\.12;/);
-  assert.match(css, /\.cgb-marker\.is-nearby-preview:not\(\.is-selected\)[\s\S]*?scale:\s*1\.06;/);
+  assert.doesNotMatch(css, /--marker-shape:\s*url\("data:image\/svg\+xml/);
+  assert.match(css, /\.cgb-marker \.marker-pin,[\s\S]*?\.cgb-marker \.marker-star\s*\{[\s\S]*?transform:\s*rotate\(-45deg\);/);
+  assert.match(css, /\.cgb-marker \.marker-pin\s*\{[\s\S]*?width:\s*32px;[\s\S]*?height:\s*32px;[\s\S]*?border-radius:\s*50% 50% 50% 0;/);
+  assert.match(css, /\.cgb-marker \.marker-pin\s*\{[\s\S]*?box-shadow:\s*0 0 0 2px rgba\(255,255,255,\.96\), 0 6px 14px rgba\(1,1,51,\.28\);/);
+  assert.match(css, /\.cgb-marker\.marker--cal-bar \.marker-pin[\s\S]*?background:\s*var\(--cgb-navy-900\);/);
+  assert.match(css, /\.cgb-marker \.marker-star\s*\{[\s\S]*?width:\s*38px;[\s\S]*?height:\s*38px;[\s\S]*?background:\s*var\(--cgb-gold-400\);/);
+  assert.match(css, /\.cgb-marker \.marker-star::before[\s\S]*?inset:\s*6px;[\s\S]*?background:\s*var\(--cgb-navy-950\);/);
+  assert.match(css, /\.cgb-marker \.marker-star__icon[\s\S]*?width:\s*17px;[\s\S]*?height:\s*17px;[\s\S]*?transform:\s*rotate\(45deg\);/);
+  assert.match(css, /\.cgb-marker\.is-selected \.marker-pin,[\s\S]*?scale:\s*1\.1;/);
+  assert.match(css, /\.cgb-marker \.marker-count[\s\S]*?top:\s*-6px;[\s\S]*?right:\s*-27px;/);
 });
 
 test('map attendance badges explain Bear counts while the marker retains its full accessible label', async () => {
@@ -77,7 +75,7 @@ test('mobile legend has a little more white breathing room below the labels', as
   assert.match(css, /\.map-legend\s*\{[\s\S]*?padding-bottom:\s*4px;/);
 });
 
-test('Bootstrap marker geometry retains the required MIT notice', async () => {
+test('Bootstrap geometry dependency retains the required MIT notice', async () => {
   const notice = await read('LICENSES/bootstrap-icons-MIT.txt');
   assert.match(notice, /Copyright \(c\) 2019-2024 The Bootstrap Authors/);
   assert.match(notice, /MIT License/);
