@@ -14,6 +14,13 @@ test('desktop location list folds CGB activity into the venue metadata line', ()
   assert.match(refinementSource, /count\.hidden = fanCount <= 0/);
 });
 
+test('desktop activity and Watch Party host copy share the UI typography hierarchy', () => {
+  assert.match(refinementSource, /location-card__meta-line[\s\S]*font-family: var\(--font-ui\);[\s\S]*font-weight: 500;/);
+  assert.match(refinementSource, /location-card__count[\s\S]*font-family: var\(--font-ui\) !important;[\s\S]*font-weight: 650 !important;/);
+  assert.match(refinementSource, /location-card__party[\s\S]*font-family: var\(--font-ui\);[\s\S]*font-weight: 500;/);
+  assert.match(refinementSource, /location-card__party-host[\s\S]*font-family: var\(--font-ui\) !important;[\s\S]*font-size: inherit !important;[\s\S]*font-weight: 700;/);
+});
+
 test('desktop Watch Party host line names the event context and emphasizes the organizer', () => {
   assert.match(refinementSource, /Watch Party hosted by /);
   assert.match(refinementSource, /location-card__party-host/);
