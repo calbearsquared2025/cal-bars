@@ -11,8 +11,8 @@ test('mobile selected venue camera moves from national view to city or regional 
   assert.match(polish, /const SELECTED_CAMERA_CITY_ZOOM = 11;/);
   assert.match(polish, /const SELECTED_CAMERA_REGIONAL_MAX_ZOOM = 9\.75;/);
   assert.match(polish, /rankNearbyVenues\([\s\S]*?SELECTED_CAMERA_RADIUS_MILES[\s\S]*?candidate\.venue_id !== venue\.venue_id/);
-  assert.match(polish, /if \(points\.length === 1\) \{[\s\S]*?state\.map\.easeTo\([\s\S]*?SELECTED_CAMERA_CITY_ZOOM/);
-  assert.match(polish, /state\.map\.fitBounds\([\s\S]*?maxZoom: SELECTED_CAMERA_REGIONAL_MAX_ZOOM/);
+  assert.match(polish, /if \(points\.length === 1\) \{[\s\S]*?state\.map\.easeTo\([\s\S]*?SELECTED_CAMERA_CITY_ZOOM[\s\S]*?duration: 0/);
+  assert.match(polish, /state\.map\.fitBounds\([\s\S]*?maxZoom: SELECTED_CAMERA_REGIONAL_MAX_ZOOM,[\s\S]*?duration: 0/);
 });
 
 test('selected venue camera runs only for a new selection so Locate me can retain its explicit viewport', async () => {
