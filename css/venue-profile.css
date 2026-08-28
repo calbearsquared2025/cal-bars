@@ -551,8 +551,8 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   }
 }
 
-/* Wide desktop selected profile: identity and attendance lead, followed by the
-   selected-game module, editorial/community context, then supporting media. */
+/* Wide desktop selected profile: mobile-referenced identity and attendance lead,
+   followed by editorial/community context, the selected-game module, then media. */
 @media (min-width: 1100px) {
   html body[data-view="map"] #map-view > #venue-tray.venue-tray.tray--selected {
     width: clamp(500px, 36vw, 520px) !important;
@@ -580,16 +580,16 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     min-height: 0 !important;
     display: block !important;
     grid-column: 1 / -1 !important;
-    padding: 14px 18px 14px !important;
+    padding: 14px 18px 16px !important;
     color: var(--cgb-ink-900) !important;
     overflow: visible !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .activity-card--desktop-attendance) > .detail-hero.detail-hero--has-photo,
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .activity-card--desktop-attendance) > .detail-hero.detail-hero--no-photo {
-    grid-column: 1 / 10 !important;
+    grid-column: 1 / 9 !important;
     grid-row: 1 !important;
-    padding-right: 8px !important;
+    padding-right: 10px !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .venue-badges {
@@ -602,25 +602,47 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > h1 {
     margin: 5px 0 0 !important;
-    font-size: clamp(1.48rem, 1.8vw, 1.76rem) !important;
-    line-height: 1.02 !important;
+    font-size: clamp(1.72rem, 2vw, 2rem) !important;
+    line-height: 1 !important;
   }
 
-  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address {
-    margin-top: 8px !important;
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address[data-desktop-identity="true"] {
+    display: grid !important;
+    justify-items: start;
+    gap: 7px;
+    margin: 10px 0 0 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__location {
+    color: var(--cgb-ink-500);
+    font-family: var(--font-ui);
+    font-size: .82rem;
+    font-weight: 650;
+    line-height: 1.24;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-directions-inline--desktop {
+    color: var(--cgb-navy-900) !important;
+    font-family: var(--font-ui);
+    font-size: .82rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card--desktop-attendance {
-    grid-column: 10 / 13 !important;
+    grid-column: 9 / 13 !important;
     grid-row: 1 !important;
     min-width: 0;
-    min-height: 92px;
+    min-height: 112px;
     display: flex !important;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 3px;
-    padding: 12px 16px 12px 4px !important;
+    padding: 12px 12px 12px 0 !important;
     color: var(--cgb-navy-950) !important;
     background: var(--cgb-white) !important;
     border: 0 !important;
@@ -642,13 +664,16 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact {
     min-width: 0;
+    color: var(--cgb-navy-950);
+    font-family: var(--font-ui);
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact--empty {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    color: var(--cgb-navy-950);
-    font-family: var(--font-ui);
+    gap: 4px;
     text-align: center;
   }
 
@@ -659,24 +684,66 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__prompt {
-    max-width: 78px;
+    max-width: 88px;
     font-size: .72rem;
     font-weight: 800;
     line-height: 1.14;
   }
 
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact:not(.detail-attendance-compact--empty) {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: auto auto;
+    grid-template-rows: repeat(3, auto);
+    align-content: center;
+    align-items: start;
+    justify-content: center;
+    justify-items: start;
+    column-gap: 4px;
+    row-gap: 0;
+    text-align: left;
+  }
+
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__number {
-    font-family: var(--font-display);
-    font-size: 1.55rem;
+    grid-column: 1;
+    grid-row: 1 / 4;
+    align-self: start;
+    justify-self: end;
+    font-family: var(--font-ui);
+    font-size: 2.5rem;
     font-weight: 850;
-    line-height: .95;
+    letter-spacing: -.055em;
+    line-height: .82;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__label,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__attending,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__context {
+    grid-column: 2;
+    font-family: var(--font-ui);
+    font-weight: 850;
+    line-height: 1.02;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__label {
-    max-width: 88px;
+    grid-row: 1;
+    font-size: .78rem;
+    letter-spacing: .025em;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__attending {
+    grid-row: 2;
+    margin-top: 2px;
     font-size: .64rem;
-    font-weight: 750;
-    line-height: 1.16;
+    letter-spacing: .055em;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-attendance-compact__context {
+    grid-row: 3;
+    font-size: .62rem;
+    letter-spacing: .055em;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module {
