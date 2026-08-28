@@ -484,8 +484,8 @@
   .mobile-command-bar {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     padding-top: 4px;
-    border-top: 1px solid rgba(1, 1, 51, .1);
-    box-shadow: 0 -1px 0 rgba(255, 255, 255, .72);
+    border-top: 1px solid rgba(1, 1, 51, .14);
+    box-shadow: 0 -1px 0 rgba(1, 1, 51, .06), 0 -7px 20px rgba(1, 1, 51, .10);
   }
 
   .mobile-command {
