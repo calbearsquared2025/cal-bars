@@ -11,8 +11,10 @@ test('desktop reuses the shared Add command as a global CGB contribution entry',
   assert.match(refinementSource, /gridTemplateColumns = 'minmax\(0, 1fr\) minmax\(0, 1fr\) 10px auto'/);
   assert.match(refinementSource, /gridColumn: '4'/);
   assert.match(refinementSource, /height: '34px'/);
-  assert.match(refinementSource, /background: 'var\(--cgb-gold-50/);
-  assert.match(refinementSource, /border: '1px solid var\(--cgb-gold-500/);
+  assert.match(refinementSource, /padding: '0 7px'/);
+  assert.match(refinementSource, /background: 'rgba\(253, 181, 21, \.08\)'/);
+  assert.match(refinementSource, /border: '1px solid rgba\(230, 164, 17, \.68\)'/);
+  assert.match(refinementSource, /fontSize: '\.64rem'/);
   assert.match(refinementSource, /whiteSpace: 'nowrap'/);
 });
 
