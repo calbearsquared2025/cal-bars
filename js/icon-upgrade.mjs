@@ -21,6 +21,7 @@ let detailLocalMapVenueId = '';
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
+const MOBILE_QUERY = '(max-width: 899px)';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
@@ -50,6 +51,14 @@ function detailVenue(state) {
   return state?.snapshot?.venues?.find((venue) => venue.venue_id === state.selectedVenueId) || null;
 }
 
+function mobileDirectMapProfile(state) {
+  return Boolean(
+    state?.detailMode &&
+    document.body?.dataset.view === 'map' &&
+    window.matchMedia?.(MOBILE_QUERY)?.matches === true
+  );
+}
+
 function createDetailLocalMarker(venue, state) {
   const kind = markerKind(state.snapshot, state.gameId, venue);
   const marker = document.createElement('div');
@@ -72,7 +81,7 @@ function revealDetailLocalMap(container) {
 function revealPendingDetailViewWhenSettled() {
   const state = window.CGBApp?.getState?.();
   const hero = document.querySelector('#venue-detail > .detail-hero');
-  if (!state?.detailMode || !detailVenue(state) || !hero) return;
+  if (mobileDirectMapProfile(state) || !state?.detailMode || !detailVenue(state) || !hero) return;
 
   const localMap = hero.querySelector(':scope > .detail-local-map');
   if (localMap && !localMap.classList.contains('is-ready')) return;
@@ -181,15 +190,18 @@ export function upgradeRenderedIcons(root = document) {
 
 function runRefinements() {
   const state = window.CGBApp?.getState?.();
-  enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
-  renderFanExperiences({ app: window.CGBApp, documentObject: document });
-  renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
+  const directMobileProfile = mobileDirectMapProfile(state);
+  if (!directMobileProfile) {
+    enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
+    renderFanExperiences({ app: window.CGBApp, documentObject: document });
+    renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
+  }
   upgradeRenderedIcons();
   const venue = detailVenue(state);
   const hero = document.querySelector('#venue-detail .detail-hero');
-  if (!state?.detailMode || !venue || !hero) destroyDetailLocalMap();
+  if (directMobileProfile || !state?.detailMode || !venue || !hero) destroyDetailLocalMap();
   else syncDetailLocalMap(hero, venue, state);
-  revealPendingDetailViewWhenSettled();
+  if (!directMobileProfile) revealPendingDetailViewWhenSettled();
 
   if (renderMobileSelectedProfileContinuation({
     app: window.CGBApp,
