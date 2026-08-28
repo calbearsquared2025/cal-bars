@@ -3,6 +3,7 @@ function clean(value) {
 }
 
 const failedPhotoKeys = new Set();
+const WIDE_DESKTOP_QUERY = '(min-width: 1100px)';
 
 export function safeHttpUrl(value) {
   const raw = clean(value);
@@ -56,7 +57,9 @@ function createLocalMapFallback(documentObject, venue) {
 }
 
 function ensureLocalMapFallback(hero, documentObject, venue) {
-  const existing = hero.querySelector(':scope > .detail-local-map');
+  const detail = hero.closest?.('#venue-detail');
+  const existing = hero.querySelector(':scope > .detail-local-map') ||
+    detail?.querySelector(':scope > .detail-local-map');
   if (existing) {
     hero.prepend(existing);
     return true;
@@ -156,6 +159,43 @@ function moveEditorialDescription(detail, hero, documentObject) {
   return true;
 }
 
+function profileMedia(detail, hero) {
+  return hero.querySelector(':scope > .detail-photo, :scope > .detail-local-map') ||
+    detail.querySelector(':scope > .detail-photo, :scope > .detail-local-map');
+}
+
+export function arrangeDesktopVenueMedia({
+  state = globalThis.window?.CGBApp?.getState?.(),
+  documentObject = globalThis.document,
+  windowObject = globalThis.window
+} = {}) {
+  if (!state?.detailMode || !documentObject) return false;
+  const detail = documentObject.querySelector('#venue-detail');
+  const hero = detail?.querySelector(':scope > .detail-hero');
+  if (!detail || !hero) return false;
+
+  const media = profileMedia(detail, hero);
+  const wideDesktop = windowObject?.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
+  if (!wideDesktop) {
+    detail.removeAttribute('data-desktop-profile-arrangement');
+    if (media) {
+      media.classList.remove('detail-profile-media--desktop');
+      if (media.parentElement !== hero) hero.prepend(media);
+    }
+    return false;
+  }
+
+  detail.dataset.desktopProfileArrangement = 'editorial-first';
+  if (!media) return true;
+
+  media.classList.add('detail-profile-media--desktop');
+  const fanExperiences = detail.querySelector(':scope > .detail-fan-experiences');
+  const editorial = detail.querySelector(':scope > .detail-editorial');
+  const anchor = fanExperiences || editorial || detail.querySelector(':scope > .activity-card') || hero;
+  if (media.previousElementSibling !== anchor) anchor.after(media);
+  return true;
+}
+
 export function enhanceVenueProfile({
   state = globalThis.window?.CGBApp?.getState?.(),
   documentObject = globalThis.document,
@@ -170,23 +210,25 @@ export function enhanceVenueProfile({
   const presentation = venuePhotoPresentation(venue);
   const failed = Boolean(presentation && failedPhotoKeys.has(photoKey(venue, presentation.photoUrl)));
   const showPhoto = Boolean(presentation && !failed);
-  const existingPhoto = hero.querySelector(':scope > .detail-photo');
+  const existingPhoto = hero.querySelector(':scope > .detail-photo') ||
+    detail.querySelector(':scope > .detail-photo');
+  const existingLocalMap = hero.querySelector(':scope > .detail-local-map') ||
+    detail.querySelector(':scope > .detail-local-map');
 
   hero.classList.toggle('detail-hero--has-photo', showPhoto);
   hero.classList.toggle('detail-hero--no-photo', !showPhoto);
 
   if (showPhoto) {
-    hero.querySelector(':scope > .detail-local-map')?.remove();
+    existingLocalMap?.remove();
     let photo = existingPhoto;
     if (existingPhoto?.dataset.photoUrl !== presentation.photoUrl) {
       existingPhoto?.remove();
       photo = createPhotoFigure(documentObject, venue, presentation, onPhotoError);
     }
-    hero.prepend(photo);
+    if (photo) hero.prepend(photo);
   } else {
     existingPhoto?.remove();
-    const localMap = hero.querySelector(':scope > .detail-local-map');
-    if (localMap) hero.prepend(localMap);
+    if (existingLocalMap) hero.prepend(existingLocalMap);
     else if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 
