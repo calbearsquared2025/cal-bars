@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('desktop Venue Profile renders attendance as one compact status row', async () => {
+test('desktop Venue Profile renders attendance as one compact horizontal status row', async () => {
   const css = await read('css/fan-intent.css');
   assert.match(css, /@media \(min-width: 900px\)[\s\S]*?#venue-detail\.venue-detail > \.activity-card:has\(\.bear-count__number\)[\s\S]*?grid-template-columns:\s*auto auto minmax\(0, 1fr\)\s*!important;[\s\S]*?padding:\s*10px 18px\s*!important;/);
   assert.match(css, /activity-card:has\(\.bear-count__number\) > strong\s*\{[\s\S]*?display:\s*contents\s*!important;/);
