@@ -25,12 +25,13 @@
   /* Geometry adapted from Bootstrap Icons geo-alt-fill (MIT); see LICENSES/bootstrap-icons-MIT.txt. */
   --marker-shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 16'%3E%3Cpath fill='black' d='M6 16s6-5.686 6-10A6 6 0 0 0 0 6c0 4.314 6 10 6 10Z'/%3E%3C/svg%3E");
   --marker-fill: var(--cgb-white);
-  --marker-stroke: var(--cgb-navy-950);
+  --marker-center: var(--cgb-navy-950);
+  --marker-center-radius: 5px;
   position: absolute;
   box-sizing: border-box;
   isolation: isolate;
   overflow: visible;
-  background: var(--marker-stroke);
+  background: var(--cgb-white);
   -webkit-mask: var(--marker-shape) center / 100% 100% no-repeat;
   mask: var(--marker-shape) center / 100% 100% no-repeat;
   transform: none !important;
@@ -40,15 +41,16 @@
 
 .cgb-marker .marker-pin,
 .cgb-marker .marker-star {
-  left: 8px;
+  left: 10px;
   top: 3px;
-  width: 32px;
+  width: 28px;
   height: 43px;
 }
 
 .cgb-marker .marker-star {
   --marker-fill: var(--cgb-gold-400);
-  --marker-stroke: var(--cgb-gold-400);
+  --marker-center: var(--cgb-navy-950);
+  --marker-center-radius: 8.5px;
   display: block;
   color: var(--cgb-white);
   font-size: 0;
@@ -59,45 +61,31 @@
   content: '';
   position: absolute;
   z-index: 0;
-  inset: 1.25px;
-  background: var(--marker-fill);
+  inset: 1.5px;
+  background: var(--cgb-navy-950);
   -webkit-mask: var(--marker-shape) center / 100% 100% no-repeat;
   mask: var(--marker-shape) center / 100% 100% no-repeat;
 }
 
-.cgb-marker .marker-pin::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  top: 11px;
-  width: 10px;
-  height: 10px;
-  background: var(--cgb-navy-950);
-  border-radius: 50%;
-  transform: translateX(-50%);
-}
-
-.cgb-marker.marker--cal-bar .marker-pin {
-  --marker-fill: var(--cgb-navy-900);
-  --marker-stroke: var(--cgb-navy-900);
-}
-
-.cgb-marker.marker--cal-bar .marker-pin::after {
-  background: var(--cgb-white);
-}
-
+.cgb-marker .marker-pin::after,
 .cgb-marker .marker-star::after {
   content: '';
   position: absolute;
   z-index: 1;
-  left: 50%;
-  top: 7.5px;
-  width: 17px;
-  height: 17px;
-  background: var(--cgb-navy-950);
-  border-radius: 50%;
-  transform: translateX(-50%);
+  inset: 3px;
+  background-color: var(--marker-fill);
+  background-image: radial-gradient(
+    circle at 50% 35%,
+    var(--marker-center) 0 var(--marker-center-radius),
+    transparent calc(var(--marker-center-radius) + .5px)
+  );
+  -webkit-mask: var(--marker-shape) center / 100% 100% no-repeat;
+  mask: var(--marker-shape) center / 100% 100% no-repeat;
+}
+
+.cgb-marker.marker--cal-bar .marker-pin {
+  --marker-fill: var(--cgb-navy-900);
+  --marker-center: var(--cgb-white);
 }
 
 .cgb-marker .marker-star__icon {
