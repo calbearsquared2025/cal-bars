@@ -9,6 +9,12 @@ const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-selected-profile-continuation';
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
+const BASE_TRAY_VIEWPORT_RATIO = 0.58;
+const BASE_TRAY_MAX_PX = 520;
+const REVEAL_TRAY_VIEWPORT_RATIO = 0.66;
+const REVEAL_TRAY_MAX_PX = 584;
+const TRAY_HANDLE_HEIGHT_PX = 24;
+const CONTINUATION_REVEAL_PX = 64;
 const cachedVenueDetail = typeof document !== 'undefined'
   ? document.querySelector('#venue-detail')
   : null;
@@ -39,6 +45,22 @@ export function shouldRenderContinuousProfile({
   );
 }
 
+export function selectedTrayHeightForContinuation({
+  viewportHeight = 0,
+  selectedCardHeight = 0,
+  revealHeight = CONTINUATION_REVEAL_PX
+} = {}) {
+  const viewport = Number(viewportHeight);
+  const card = Number(selectedCardHeight);
+  const reveal = Number(revealHeight);
+  if (!Number.isFinite(viewport) || viewport <= 0 || !Number.isFinite(card) || card <= 0) return 0;
+
+  const baseline = Math.min(viewport * BASE_TRAY_VIEWPORT_RATIO, BASE_TRAY_MAX_PX);
+  const expanded = Math.min(viewport * REVEAL_TRAY_VIEWPORT_RATIO, REVEAL_TRAY_MAX_PX);
+  const desired = card + TRAY_HANDLE_HEIGHT_PX + (Number.isFinite(reveal) && reveal > 0 ? reveal : 0);
+  return Math.min(Math.max(baseline, desired), expanded);
+}
+
 function selectedVenue(state) {
   return state?.snapshot?.venues?.find((venue) =>
     clean(venue?.venue_id) === clean(state?.selectedVenueId)) || null;
@@ -50,8 +72,12 @@ function installStyles(documentObject) {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected {
+        max-height: var(--cgb-selected-tray-max-height, min(58dvh, 520px)) !important;
+      }
+
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-selected {
-        max-height: calc(min(58dvh, 520px) - 24px) !important;
+        max-height: calc(var(--cgb-selected-tray-max-height, min(58dvh, 520px)) - 24px) !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
         overscroll-behavior: contain !important;
@@ -292,6 +318,17 @@ function removeGateway(documentObject) {
   documentObject.querySelectorAll('#tray-selected .selected-card__details').forEach((link) => link.remove());
 }
 
+function syncContinuationRevealHeight(venueTray, selectedCard, windowObject) {
+  const viewportHeight = Number(windowObject?.innerHeight) || 0;
+  const selectedCardHeight = Number(selectedCard?.getBoundingClientRect?.().height) || 0;
+  const targetHeight = selectedTrayHeightForContinuation({ viewportHeight, selectedCardHeight });
+  if (!targetHeight) {
+    venueTray?.style?.removeProperty?.('--cgb-selected-tray-max-height');
+    return;
+  }
+  venueTray?.style?.setProperty?.('--cgb-selected-tray-max-height', `${Math.round(targetHeight)}px`);
+}
+
 function clearContinuation() {
   destroyContinuationMap();
   if (cachedVenueDetail?.dataset.profilePresentation === 'mobile-continuation') {
@@ -312,7 +349,8 @@ export function renderMobileSelectedProfileContinuation({
   const mobile = windowObject.matchMedia?.(MOBILE_QUERY)?.matches === true;
   const mapView = documentObject.body?.dataset.view === 'map';
   const commandSurface = documentObject.body?.dataset.commandSurface || '';
-  const trayState = documentObject.querySelector('#venue-tray')?.dataset.state || state?.trayState || '';
+  const venueTray = documentObject.querySelector('#venue-tray');
+  const trayState = venueTray?.dataset.state || state?.trayState || '';
   const eligible = shouldRenderContinuousProfile({
     mobile,
     mapView,
@@ -329,7 +367,7 @@ export function renderMobileSelectedProfileContinuation({
   const venue = selectedVenue(state);
   const traySelected = documentObject.querySelector('#tray-selected');
   const selectedCard = traySelected?.querySelector(':scope > .selected-card');
-  if (!venue || !traySelected || !selectedCard) {
+  if (!venue || !venueTray || !traySelected || !selectedCard) {
     clearContinuation();
     return false;
   }
@@ -371,6 +409,8 @@ export function renderMobileSelectedProfileContinuation({
 
   const localMap = hero.querySelector(':scope > .detail-local-map');
   syncLocalMap(localMap, venue, continuationState, windowObject);
+  syncContinuationRevealHeight(venueTray, selectedCard, windowObject);
+  windowObject.requestAnimationFrame?.(() => syncContinuationRevealHeight(venueTray, selectedCard, windowObject));
   if (changedVenue) traySelected.scrollTop = 0;
   return true;
 }
