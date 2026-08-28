@@ -1,4 +1,5 @@
 import { buildGameUrl } from './core.mjs';
+import './mobile-selected-profile-expansion.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 
