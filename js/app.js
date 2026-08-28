@@ -362,6 +362,10 @@ function rankedVisibleVenues(query = state.listQuery) {
   return rankVenues(state.snapshot, state.gameId);
 }
 
+function rankedMapVenues(query = state.listQuery) {
+  return rankVenues(state.snapshot, state.gameId, state.origin, query);
+}
+
 function focusLocation(origin, nearby) {
   if (!state.map || !origin) return;
   const center = [Number(origin.lon), Number(origin.lat)];
@@ -403,7 +407,7 @@ function renderMarkers() {
   if (!state.map) return;
   state.markers.forEach((marker) => marker.remove());
   state.markers.clear();
-  rankedVisibleVenues().forEach(({ venue }) => {
+  rankedMapVenues().forEach(({ venue }) => {
     const element = markerElement(venue);
     element.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
     const marker = new maplibregl.Marker({ element, anchor: 'bottom' })
