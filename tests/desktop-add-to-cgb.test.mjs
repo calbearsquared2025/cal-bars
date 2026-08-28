@@ -9,8 +9,9 @@ test('desktop reuses the shared Add command as a centered global CGB contributio
   assert.match(refinementSource, /function syncDesktopContributionEntry\(\)/);
   assert.match(refinementSource, /#mobile-add-button/);
   assert.match(refinementSource, /gridTemplateColumns = 'repeat\(3, minmax\(0, 1fr\)\)'/);
-  assert.match(refinementSource, /gridColumn: '3'/);
-  assert.match(refinementSource, /width: '100%'/);
+  assert.match(refinementSource, /Object\.assign\(locations\.style,[\s\S]*?gridColumn: '1',[\s\S]*?width: '100%'/);
+  assert.match(refinementSource, /Object\.assign\(selected\.style,[\s\S]*?gridColumn: '2',[\s\S]*?width: '100%'/);
+  assert.match(refinementSource, /Object\.assign\(button\.style,[\s\S]*?gridColumn: '3',[\s\S]*?width: '100%'/);
   assert.match(refinementSource, /height: '40px'/);
   assert.match(refinementSource, /padding: '0'/);
   assert.match(refinementSource, /background: 'transparent'/);
