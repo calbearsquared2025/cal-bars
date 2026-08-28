@@ -1,3 +1,4 @@
+import './desktop-visual-cohesion.mjs';
 import { getWatchParty } from './core.mjs';
 
 const MOBILE_PLAN_PARTY_ALIGNMENT_STYLE_ID = 'cgb-mobile-plan-party-alignment';
