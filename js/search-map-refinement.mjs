@@ -215,19 +215,23 @@ function ensureDesktopAddSearchStyle() {
         gap: 0;
         margin-top: 1px;
         color: var(--cgb-ink-500, #657083);
+        font-family: var(--font-ui);
+        font-size: var(--text-xs);
+        font-weight: 500;
+        line-height: 1.35;
       }
 
       #tray-list .location-card__meta-line > span {
-        font-size: var(--text-xs);
+        font: inherit;
       }
 
       #tray-list .location-card__count {
         flex: 0 0 auto;
         margin: 0 !important;
         color: var(--cgb-navy-800, #0b2856) !important;
-        font-family: inherit;
-        font-size: var(--text-xs) !important;
-        font-weight: 700 !important;
+        font-family: var(--font-ui) !important;
+        font-size: inherit !important;
+        font-weight: 650 !important;
         letter-spacing: 0;
         line-height: inherit;
         text-align: left;
@@ -244,13 +248,19 @@ function ensureDesktopAddSearchStyle() {
 
       #tray-list .location-card__party {
         color: var(--cgb-ink-500, #657083) !important;
+        font-family: var(--font-ui);
         font-size: var(--text-xs);
-        font-weight: 600;
+        font-weight: 500;
+        line-height: 1.35;
       }
 
       #tray-list .location-card__party-host {
         color: var(--cgb-gold-600, #b77900);
-        font-weight: 750;
+        font-family: var(--font-ui) !important;
+        font-size: inherit !important;
+        font-weight: 700;
+        letter-spacing: inherit;
+        line-height: inherit;
       }
 
       #tray-list .location-card .badge--party {
