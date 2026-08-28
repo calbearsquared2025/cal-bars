@@ -210,11 +210,11 @@
 }
 
 /* Desktop Venue Profile attendance stays attached to the game activity hierarchy,
-   but reads as one compact horizontal status row rather than a standalone section. */
+   but reads as a compact status row rather than a standalone section. */
 @media (min-width: 900px) {
   body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) {
     display: grid !important;
-    grid-template-columns: auto auto minmax(0, 1fr) !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
     grid-template-rows: auto auto !important;
     align-items: center !important;
     justify-items: start !important;
@@ -247,21 +247,11 @@
   }
 
   body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) > .activity-card__presence {
-    grid-column: 3 !important;
-    grid-row: 1 !important;
-    align-self: center !important;
-    justify-self: start !important;
-    width: auto !important;
-    max-width: none !important;
-    margin: 0 !important;
-    color: var(--cgb-ink-500) !important;
-    font-size: .72rem !important;
-    line-height: 1.25 !important;
-    text-align: left !important;
+    display: none !important;
   }
 
   body[data-view="map"] #map-view #tray-selected > #venue-detail.venue-detail > .activity-card:has(.bear-count__number) > p:not(.activity-card__presence) {
-    grid-column: 2 / -1 !important;
+    grid-column: 2 !important;
     grid-row: 2 !important;
     margin: 0 !important;
     font-size: .7rem !important;
