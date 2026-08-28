@@ -12,6 +12,8 @@ import { clearSelectedMapVenue } from './app-state.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
+const REGIONAL_FOCUS_MAX_ZOOM = 9.75;
+const MAP_ACTION_GAP = 12;
 const SELECTED_DETAIL_SWIPE_THRESHOLD = 48;
 const STYLE_ID = 'cgb-map-mobile-refinement';
 const MAP_CAMERA_STORAGE_KEY = 'cgb_v2_map_camera';
@@ -24,6 +26,8 @@ let trackedMap = null;
 let trackedMapMoveEnd = null;
 let returnCameraPending = false;
 let returnCameraFrame = 0;
+let selectedTrayResizeObserver = null;
+let mapActionFrame = 0;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -205,6 +209,35 @@ function rankedVenue(state, venueId) {
     .find(({ venue }) => venue.venue_id === venueId) || null;
 }
 
+function nearbyVenuesForSelected(state, venue) {
+  const latitude = Number(venue?.latitude);
+  const longitude = Number(venue?.longitude);
+  if (!state?.snapshot || !state.gameId || ![latitude, longitude].every(Number.isFinite)) return [];
+  return rankVenues(state.snapshot, state.gameId, { lat: latitude, lon: longitude })
+    .filter(({ venue: candidate, distance }) =>
+      candidate.venue_id !== venue.venue_id &&
+      Number.isFinite(Number(distance)) &&
+      Number(distance) <= NEARBY_RADIUS_MILES);
+}
+
+function selectedTrayCameraMetrics() {
+  const map = document.querySelector('#map');
+  const tray = document.querySelector('#venue-tray.tray--selected');
+  const mapRect = map?.getBoundingClientRect();
+  const trayVisible = Boolean(tray && getComputedStyle(tray).display !== 'none');
+  const trayRect = trayVisible ? tray.getBoundingClientRect() : null;
+  const trayHeight = trayRect?.height || 0;
+  const trayOverlap = mapRect && trayRect
+    ? Math.max(0, mapRect.bottom - Math.max(mapRect.top, trayRect.top))
+    : 0;
+  const maxBottomPadding = mapRect ? Math.max(24, mapRect.height - 96) : 280;
+  return {
+    trayHeight,
+    verticalOffset: -Math.min(170, Math.max(82, trayHeight * .34)),
+    bottomPadding: Math.min(Math.max(24, trayOverlap + 18), maxBottomPadding)
+  };
+}
+
 function nearestNearbyVenue(state) {
   if (!state?.snapshot || !state.gameId || !state.origin) return null;
   return rankVenues(state.snapshot, state.gameId, state.origin).reduce((nearest, candidate) => {
@@ -378,11 +411,26 @@ function focusVenue(venueId, { force = false } = {}) {
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      const tray = document.querySelector('#venue-tray.tray--selected');
-      const trayHeight = tray && getComputedStyle(tray).display !== 'none'
-        ? tray.getBoundingClientRect().height
-        : 0;
-      const verticalOffset = -Math.min(170, Math.max(82, trayHeight * .34));
+      const { verticalOffset, bottomPadding } = selectedTrayCameraMetrics();
+      const nearby = nearbyVenuesForSelected(state, venue);
+      if (nearby.length > 0) {
+        const points = [venue, ...nearby.map(({ venue: candidate }) => candidate)]
+          .map((candidate) => [Number(candidate.longitude), Number(candidate.latitude)])
+          .filter(([longitude, latitude]) => Number.isFinite(longitude) && Number.isFinite(latitude));
+        const longitudes = points.map(([longitude]) => longitude);
+        const latitudes = points.map(([, latitude]) => latitude);
+        state.map.fitBounds([
+          [Math.min(...longitudes), Math.min(...latitudes)],
+          [Math.max(...longitudes), Math.max(...latitudes)]
+        ], {
+          padding: { top: 36, right: 36, bottom: bottomPadding, left: 36 },
+          maxZoom: REGIONAL_FOCUS_MAX_ZOOM,
+          duration: reducedMotion() ? 0 : 420,
+          essential: true
+        });
+        return;
+      }
+
       const currentZoom = Number(state.map.getZoom?.()) || 0;
       state.map.easeTo({
         center: [Number(venue.longitude), Number(venue.latitude)],
@@ -395,11 +443,63 @@ function focusVenue(venueId, { force = false } = {}) {
   });
 }
 
+function syncLocateControlPosition() {
+  const actions = document.querySelector('.map-actions');
+  if (!actions) return;
+  const state = appState();
+  const tray = document.querySelector('#venue-tray');
+  const map = document.querySelector('#map');
+  const nearMe = document.querySelector('#near-me-button');
+  const selectedProfileVisible = isMobile() &&
+    document.body.dataset.view === 'map' &&
+    document.body.dataset.commandSurface === 'map' &&
+    state?.trayState === 'selected' &&
+    tray?.dataset.state === 'selected' &&
+    map && nearMe;
+
+  if (!selectedProfileVisible) {
+    actions.style.removeProperty('top');
+    return;
+  }
+
+  const trayRect = tray.getBoundingClientRect();
+  const mapRect = map.getBoundingClientRect();
+  const controlHeight = nearMe.getBoundingClientRect().height || 44;
+  const toolbarRect = document.querySelector('.map-toolbar')?.getBoundingClientRect();
+  const toolbarBottom = toolbarRect && toolbarRect.bottom > mapRect.top && toolbarRect.top < mapRect.bottom
+    ? toolbarRect.bottom
+    : mapRect.top;
+  const minimumTop = Math.max(mapRect.top + MAP_ACTION_GAP, toolbarBottom + MAP_ACTION_GAP);
+  const maximumTop = Math.max(minimumTop, mapRect.bottom - controlHeight - MAP_ACTION_GAP);
+  const preferredTop = trayRect.top - controlHeight - MAP_ACTION_GAP;
+  const top = Math.min(Math.max(preferredTop, minimumTop), maximumTop);
+  actions.style.setProperty('top', `${Math.round(top)}px`, 'important');
+}
+
+function scheduleLocateControlPosition() {
+  if (mapActionFrame) cancelAnimationFrame(mapActionFrame);
+  mapActionFrame = requestAnimationFrame(() => {
+    mapActionFrame = requestAnimationFrame(() => {
+      mapActionFrame = 0;
+      syncLocateControlPosition();
+    });
+  });
+}
+
+function observeSelectedTrayGeometry() {
+  const tray = document.querySelector('#venue-tray');
+  if (!tray || typeof ResizeObserver !== 'function') return;
+  selectedTrayResizeObserver?.disconnect();
+  selectedTrayResizeObserver = new ResizeObserver(scheduleLocateControlPosition);
+  selectedTrayResizeObserver.observe(tray);
+}
+
 function sync() {
   installStyles();
   const restoredCamera = attachMapCameraTracking();
   updatePreviewIntent();
   requestAnimationFrame(updatePreviewIntent);
+  scheduleLocateControlPosition();
 
   const state = appState();
   const tray = document.querySelector('#venue-tray');
@@ -429,6 +529,7 @@ function sync() {
 
 function initialize() {
   installStyles();
+  observeSelectedTrayGeometry();
   document.addEventListener('click', markDetailReturnForCamera, { capture: true });
   document.addEventListener('click', captureCameraBeforeVenueNavigation, { capture: true });
   document.addEventListener('click', openPreviewVenue, { capture: true });
@@ -446,6 +547,8 @@ function initialize() {
   });
 
   window.addEventListener('pagehide', () => captureMapCamera());
+  window.addEventListener('resize', scheduleLocateControlPosition);
+  window.visualViewport?.addEventListener?.('resize', scheduleLocateControlPosition);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
   window.CGBApp?.subscribe?.('ready', sync);
