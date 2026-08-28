@@ -405,8 +405,8 @@ body[data-view="detail"] #app {
     grid-row: 1;
     position: static;
     width: 100%;
-    height: 72px;
-    grid-template-rows: 48px 22px;
+    height: 78px;
+    grid-template-rows: 48px 28px;
     background: rgba(255, 255, 255, .98);
     border-color: rgba(1, 1, 51, .1);
     border-radius: var(--radius-md);
