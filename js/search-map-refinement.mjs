@@ -8,8 +8,6 @@ import {
 const desktopReviewPreviewActive = applyDesktopReviewPreview();
 const MOBILE_QUERY = '(max-width: 899px)';
 let desktopSearchEngaged = false;
-let desktopListAddButton = null;
-let desktopListActions = null;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -58,78 +56,6 @@ function placeAddLocationAction() {
   return button;
 }
 
-function styleDesktopListAddButton(button) {
-  Object.assign(button.style, {
-    minWidth: '0',
-    width: 'auto',
-    height: '28px',
-    minHeight: '28px',
-    padding: '0 8px',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    flex: '0 0 auto',
-    color: 'var(--cgb-navy-800, #0b2856)',
-    background: 'var(--cgb-white, #fff)',
-    border: '1px solid var(--cgb-neutral-300, #c9d0d8)',
-    borderRadius: '7px',
-    boxShadow: 'none',
-    clipPath: 'none',
-    fontFamily: 'var(--font-condensed, sans-serif)',
-    fontSize: '.62rem',
-    fontWeight: '800',
-    letterSpacing: '.01em',
-    lineHeight: '1',
-    whiteSpace: 'nowrap'
-  });
-}
-
-function ensureDesktopListAddButton() {
-  if (desktopListAddButton) return desktopListAddButton;
-  const button = document.createElement('button');
-  button.id = 'list-add-location-button';
-  button.className = 'secondary-button list-add-location-button';
-  button.type = 'button';
-  button.textContent = '+ Add location';
-  button.setAttribute('aria-label', 'Add a location');
-  styleDesktopListAddButton(button);
-  button.addEventListener('click', () => {
-    document.querySelector('#search-add-location-button')?.click();
-  });
-  desktopListAddButton = button;
-  return button;
-}
-
-function syncDesktopListAddButton() {
-  const header = document.querySelector('#tray-list .tray-list__header');
-  const toggle = document.querySelector('#list-location-toggle');
-  if (!header || !toggle) return;
-
-  if (isMobile()) {
-    if (desktopListActions?.parentElement === header) {
-      header.insertBefore(toggle, desktopListActions);
-      desktopListActions.remove();
-    }
-    return;
-  }
-
-  if (!desktopListActions) {
-    const actions = document.createElement('div');
-    actions.className = 'tray-list__actions';
-    actions.dataset.desktopListActions = 'true';
-    actions.style.gap = '8px';
-    actions.style.alignItems = 'center';
-    desktopListActions = actions;
-  }
-
-  if (desktopListActions.parentElement !== header) toggle.after(desktopListActions);
-  if (toggle.parentElement !== desktopListActions) desktopListActions.append(toggle);
-
-  const button = ensureDesktopListAddButton();
-  if (button.parentElement !== desktopListActions) desktopListActions.append(button);
-}
-
 function desktopMatchCount(query, state = appState()) {
   if (!query || !state?.snapshot) return 0;
   return rankVenues(state.snapshot, state.gameId, state.origin, query).length;
@@ -137,7 +63,6 @@ function desktopMatchCount(query, state = appState()) {
 
 function syncDesktopSearchUi() {
   preserveDesktopReviewPreviewUrl();
-  syncDesktopListAddButton();
   if (isMobile()) {
     placeAddLocationAction();
     return;
