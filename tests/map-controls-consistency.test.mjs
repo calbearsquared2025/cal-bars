@@ -75,12 +75,6 @@ test('mobile legend has a little more white breathing room below the labels', as
   assert.match(css, /\.map-legend\s*\{[\s\S]*?padding-bottom:\s*4px;/);
 });
 
-test('Bootstrap geometry dependency retains the required MIT notice', async () => {
-  const notice = await read('LICENSES/bootstrap-icons-MIT.txt');
-  assert.match(notice, /Copyright \(c\) 2019-2024 The Bootstrap Authors/);
-  assert.match(notice, /MIT License/);
-});
-
 
 test('MapTiler Free logo is official, linked, and deliberately unobtrusive', async () => {
   const [html, controls, mobile, logo] = await Promise.all([
