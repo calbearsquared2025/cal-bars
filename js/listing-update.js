@@ -43,7 +43,7 @@ export function renderListingUpdateEntry({
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = 'Suggest an Update or Report an Issue';
+  link.textContent = 'Suggest an update or report an issue';
 
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
   if (!actions) return '';
