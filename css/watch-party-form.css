@@ -80,6 +80,40 @@
   border-color: var(--cgb-gold-600);
 }
 
+/* An additional Watch Party is useful but secondary once a party is already listed. */
+.detail-watch-party-cta--additional {
+  gap: 5px;
+  padding-block: 14px;
+}
+
+.detail-watch-party-cta--additional .detail-watch-party-cta__title {
+  font-size: .9rem;
+}
+
+.detail-watch-party-cta--additional .detail-watch-party-cta__prompt {
+  font-size: .78rem;
+}
+
+.detail-watch-party-cta--additional .detail-watch-party-cta__action {
+  width: fit-content;
+  min-height: 36px;
+  margin-top: 3px;
+  padding: 6px 10px;
+  color: var(--cgb-navy-900);
+  background: var(--cgb-white);
+  border-color: var(--cgb-neutral-300);
+  border-radius: 8px;
+  font-family: var(--font-ui);
+  font-size: .72rem;
+  font-weight: 750;
+}
+
+.detail-watch-party-cta--additional .detail-watch-party-cta__action:hover,
+.detail-watch-party-cta--additional .detail-watch-party-cta__action:focus-visible {
+  background: var(--cgb-neutral-50);
+  border-color: var(--cgb-navy-300);
+}
+
 .watch-party-attendance-handoff {
   width: min(92vw, 420px);
   max-width: 420px;
@@ -160,8 +194,12 @@
 
 @media (max-width: 599px) {
   .watch-party-contribution__action,
-  .detail-watch-party-cta__action {
+  .detail-watch-party-cta:not(.detail-watch-party-cta--additional) .detail-watch-party-cta__action {
     width: 100%;
+  }
+
+  .detail-watch-party-cta--additional .detail-watch-party-cta__action {
+    width: fit-content;
   }
 
   .watch-party-attendance-handoff {
@@ -192,9 +230,15 @@
     font-size: .75rem;
   }
 
-  #tray-selected > #venue-detail .detail-watch-party-cta__action {
+  #tray-selected > #venue-detail .detail-watch-party-cta:not(.detail-watch-party-cta--additional) .detail-watch-party-cta__action {
     width: 100%;
     min-height: 42px;
     font-size: .78rem;
+  }
+
+  #tray-selected > #venue-detail .detail-watch-party-cta--additional .detail-watch-party-cta__action {
+    width: fit-content;
+    min-height: 34px;
+    font-size: .7rem;
   }
 }
