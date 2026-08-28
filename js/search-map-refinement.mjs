@@ -1,5 +1,6 @@
 import { clearSelectedMapVenue } from './app-state.mjs';
-import { getWatchParty, rankVenues } from './core.mjs';
+import { getFanCount, getWatchParty, rankVenues } from './core.mjs';
+import { compactListFanCountCopy } from './fan-intent-core.mjs';
 import {
   applyDesktopReviewPreview,
   desktopReviewPreviewRequested,
@@ -405,10 +406,15 @@ function syncDesktopLocationListPresentation() {
       } else if (count.parentElement !== metaLine) {
         metaLine.append(count);
       }
-      count.hidden = count.textContent.trim() === '';
     }
 
     const venueId = card.dataset.venueId;
+    if (count) {
+      const fanCount = getFanCount(state.snapshot, state.gameId, venueId);
+      count.textContent = compactListFanCountCopy(fanCount);
+      count.hidden = fanCount <= 0;
+    }
+
     const party = getWatchParty(state.snapshot, state.gameId, venueId);
     const host = card.querySelector('.location-card__party');
     if (party?.organizer_name && host) {
