@@ -146,8 +146,38 @@
   }
 
   /* Desktop Locations list: keep the event signal warm and give host metadata room to breathe. */
-  #tray-list .location-card .badge--party {
+  #tray-list .location-card .badge--party,
+  #venue-tray .selected-card .badge--party,
+  #tray-selected > #venue-detail.venue-detail .badge--party,
+  body[data-view="detail"] #venue-detail.venue-detail .badge--party {
+    color: var(--cgb-navy-950, #010133) !important;
     background: #f3c24f !important;
+    border-color: var(--cgb-gold-500, #e6a411) !important;
+  }
+
+  /* Keep the selected venue surfaces on the same compact badge component as Locations. */
+  #venue-tray .selected-card .venue-badges,
+  #tray-selected > #venue-detail.venue-detail .venue-badges,
+  body[data-view="detail"] #venue-detail.venue-detail .venue-badges {
+    gap: 4px !important;
+  }
+
+  #venue-tray .selected-card .venue-badge,
+  #tray-selected > #venue-detail.venue-detail .venue-badge,
+  body[data-view="detail"] #venue-detail.venue-detail .venue-badge {
+    min-height: 19px !important;
+    padding: 2px 7px !important;
+    font-size: .54rem !important;
+    letter-spacing: .07em !important;
+    clip-path: polygon(0 0, calc(100% - .2rem) 0, 100% .2rem, 100% 100%, .2rem 100%, 0 calc(100% - .2rem)) !important;
+  }
+
+  #venue-tray .selected-card .badge--cal,
+  #tray-selected > #venue-detail.venue-detail .badge--cal,
+  body[data-view="detail"] #venue-detail.venue-detail .badge--cal {
+    color: var(--cgb-white, #fff) !important;
+    background: var(--cgb-navy-700, #153f75) !important;
+    border-color: var(--cgb-navy-900, #071e41) !important;
   }
 
   #tray-list .location-card__party {
