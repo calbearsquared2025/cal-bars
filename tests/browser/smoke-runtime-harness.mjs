@@ -116,11 +116,15 @@ async function runMobile() {
 
   await openMobileSurface('#mobile-search-button', '#search-surface', 'Search');
   await openMobileSurface('#mobile-add-button', '#add-surface', 'Add');
+  check((element('#mobile-add-button span:last-child')?.textContent || '').trim() === 'Add', 'Mobile contribution command should remain labeled Add');
+  check((element('#add-surface-title')?.textContent || '').trim() === 'Add to the map', 'Mobile Add surface title should remain unchanged');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Add somewhere else', 'Mobile new-location section copy should remain unchanged');
+  check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Mobile contribution actions should remain nested in selected-place context');
 
   element('#mobile-list-button')?.click();
   await waitFor(() => visible('#tray-list'), 'mobile location list');
   check(visible('.mobile-command-bar'), 'Mobile navigation should remain visible on List');
-  check(!element('#list-add-location-button'), 'Desktop list Add location button should not exist on mobile');
+  check(!element('#list-add-location-button'), 'List-specific Add location control should not exist');
   element('#mobile-map-button')?.click();
   await waitFor(() =>
     document.body.dataset.commandSurface === 'map' &&
@@ -167,30 +171,77 @@ async function validateDesktopSearchHelper() {
   input.blur();
 }
 
-async function validateDesktopAddLocationEntry() {
-  window.CGBApp?.showLocations?.();
-  await waitFor(() => visible('#tray-list'), 'desktop location list before Add location');
-  const add = element('#list-add-location-button');
-  const toggle = element('#list-location-toggle');
-  const sharedAdd = element('#search-add-location-button');
-  const input = element('#location-query');
-  check(Boolean(add) && Boolean(toggle) && Boolean(sharedAdd) && Boolean(input), 'Desktop list Add location, range toggle, shared action, and search input should exist');
-  if (!add || !toggle || !sharedAdd || !input) return;
-
-  check(rendered(add), 'Desktop Locations browser should expose the standalone Add location button');
-  check(add.classList.contains('secondary-button'), 'Desktop list Add location should use the existing standalone secondary-button treatment');
-  check(add.parentElement === toggle.parentElement && add.parentElement?.classList.contains('tray-list__actions'), 'Desktop list Add location should sit beside the range toggle in the existing action group');
-  const addRect = add.getBoundingClientRect();
-  const toggleRect = toggle.getBoundingClientRect();
-  check(addRect.left - toggleRect.right >= 6, 'Desktop list Add location should be visually separated from the range toggle');
-  check(Math.abs((addRect.top + addRect.bottom) / 2 - (toggleRect.top + toggleRect.bottom) / 2) <= 6, 'Desktop list Add location should align beside the range toggle');
-  check(sharedAdd.hidden || !rendered(sharedAdd), 'Contextual Search Add location action should remain hidden before typing');
+async function validateDesktopContributionWithoutSelection() {
+  const add = element('#mobile-add-button');
+  check(Boolean(add), 'Desktop Add to CGB should exist before a venue is selected');
+  if (!add) return;
 
   add.click();
-  await waitFor(() => state()?.searchMode === 'add-location', 'desktop Add location search mode from list button');
-  check(rendered('#location-search'), 'Desktop Add location should keep the search field visible');
-  check(element('#location-search')?.parentElement?.classList.contains('map-toolbar'), 'Desktop Add location should reuse the map toolbar search field');
-  check(input.placeholder === 'Venue or address', 'Desktop Add location should use the existing add-location search mode');
+  await waitFor(() => visible('#add-surface'), 'desktop contribution surface without selection');
+  check(!visible('#add-surface .add-context'), 'Desktop selected-place context should stay hidden without a selected venue');
+  check(!visible('#add-watch-party-button'), 'Desktop Watch Party action should stay hidden until a listed venue is selected');
+  check(!visible('#add-cal-bar-button'), 'Desktop Cal Bar action should stay hidden until a listed venue is selected');
+  check(!visible('#add-report-button'), 'Desktop reporting action should stay hidden until a listed venue is selected');
+  check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Desktop venue-specific actions should remain owned by selected-place context');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('select it first to add a Watch Party or other content'), 'Desktop contribution intro should explain how listed locations work');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').includes('search below to add it'), 'Desktop contribution intro should explain how unlisted locations work');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'New location', 'Desktop no-selection state should lead with the new-location path');
+  check(!visible('#add-surface .add-somewhere-else > .command-surface__intro'), 'Desktop new-location section should not repeat explanatory copy above the action');
+  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Search for another location', 'Desktop no-selection state should offer Search for another location');
+  check(visible('#add-new-location-button'), 'Desktop no-selection state should keep the new-location search action visible');
+
+  element('#add-surface [data-command-close]')?.click();
+  await waitFor(() => !visible('#add-surface'), 'desktop contribution surface close');
+}
+
+async function validateDesktopMapDeselect() {
+  const map = element('#map');
+  check(Boolean(map), 'Desktop map should exist for deselection validation');
+  if (!map) return;
+
+  map.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  await waitFor(() => !state()?.selectedVenueId && !state()?.detailMode && visible('#tray-list'), 'desktop map background deselection');
+  check(!state()?.selectedVenueId, 'Desktop map background click should clear the selected venue');
+  check(!state()?.detailMode, 'Desktop map background click should leave venue detail mode');
+  check(visible('#tray-list'), 'Desktop map background click should return to the Locations list');
+}
+
+async function validateDesktopContributionEntry() {
+  const add = element('#mobile-add-button');
+  const locations = element('#mobile-list-button');
+  const selected = element('#mobile-map-button');
+  const toggle = element('#list-location-toggle');
+  check(Boolean(add) && Boolean(locations) && Boolean(selected) && Boolean(toggle), 'Desktop rail controls and location-range toggle should exist');
+  if (!add || !locations || !selected || !toggle) return;
+
+  check(rendered(add), 'Desktop rail should expose Add to CGB');
+  check(!element('#list-add-location-button'), 'Desktop list should not create a separate Add location control');
+  check((add.querySelector('span:last-child')?.textContent || '').trim() === 'Add to CGB', 'Desktop contribution action should be labeled Add to CGB');
+  check(add.getAttribute('aria-label') === 'Add to Cal Golden Bars', 'Desktop contribution action should have an explicit accessible label');
+
+  const addRect = add.getBoundingClientRect();
+  const selectedRect = selected.getBoundingClientRect();
+  const locationsRect = locations.getBoundingClientRect();
+  check(addRect.height <= 35, 'Desktop Add to CGB should remain subordinate to the main view toggle');
+  check(locationsRect.height >= 39 && selectedRect.height >= 39, 'Locations and Selected should retain the larger joined-toggle treatment');
+  check(addRect.left - selectedRect.right >= 8, 'Desktop Add to CGB should be visually separated from Locations and Selected');
+
+  const selectedVenueId = state()?.selectedVenueId || '';
+  const selectedVenueName = state()?.snapshot?.venues?.find((venue) => venue.venue_id === selectedVenueId)?.name || '';
+  add.click();
+  await waitFor(() => visible('#add-surface'), 'desktop Add to CGB surface');
+  check((element('#add-surface-title')?.textContent || '').trim() === 'Add to Cal Golden Bars', 'Desktop contribution surface should explain the global Add action');
+  check((element('#add-surface > .command-surface__shell > .command-surface__intro')?.textContent || '').trim() === 'Choose an action for the selected location, or search for another location.', 'Desktop selected-state intro should explain both contribution paths');
+  check(visible('#add-surface .add-context'), 'Selected venue context should remain available when opening desktop Add');
+  check(visible('#add-watch-party-button') && visible('#add-cal-bar-button') && visible('#add-report-button'), 'Desktop selected Venue should expose all venue-specific contribution actions');
+  check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Desktop venue-specific actions should remain grouped with selected-place context');
+  if (selectedVenueName) {
+    check((element('#add-context-name')?.textContent || '').trim() === selectedVenueName, 'Desktop Add should preserve the selected venue context');
+  }
+  check(!(element('#add-context-copy')?.textContent || '').includes('Available actions'), 'Desktop selected-place context should avoid explanatory repetition');
+  check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Add somewhere else', 'Desktop selected-state new-location section should read as an alternate path');
+  check((element('#add-new-location-button strong')?.textContent || '').trim() === 'Search for another location', 'Desktop selected-state should retain the alternate location-search path');
+  check(state()?.searchMode === 'existing', 'Desktop Add to CGB should open the shared contribution surface rather than forcing Add-location search');
 }
 
 async function runDesktop() {
@@ -198,8 +249,12 @@ async function runDesktop() {
   check(visible('#map-view') && visible('#map'), 'Desktop map surface should render');
   check(visible('#tray-list'), 'Desktop venue list should render');
   await validateDesktopSearchHelper();
+  await validateDesktopContributionWithoutSelection();
   await selectFirstVenue();
-  await validateDesktopAddLocationEntry();
+  await validateDesktopContributionEntry();
+  element('#add-surface [data-command-close]')?.click();
+  await waitFor(() => !visible('#add-surface'), 'desktop contribution surface close after selected venue');
+  await validateDesktopMapDeselect();
   finish('CGB_SMOKE_DESKTOP');
 }
 

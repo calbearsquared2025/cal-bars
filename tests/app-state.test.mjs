@@ -100,6 +100,24 @@ test('clearing the map selection preserves game location and Fan Intent', () => 
   assert.equal(clearSelectedMapVenue(), false);
 });
 
+test('desktop map deselection can explicitly leave detail mode', () => {
+  resetAppStateForTests();
+  appState.selectedVenueId = 'ven_1';
+  appState.trayState = 'selected';
+  appState.locationFocusVenueId = 'ven_1';
+  appState.detailMode = true;
+
+  assert.equal(clearSelectedMapVenue(), false);
+  assert.equal(appState.selectedVenueId, 'ven_1');
+  assert.equal(appState.detailMode, true);
+
+  assert.equal(clearSelectedMapVenue({ allowDetailMode: true }), true);
+  assert.equal(appState.selectedVenueId, null);
+  assert.equal(appState.trayState, 'peek');
+  assert.equal(appState.locationFocusVenueId, null);
+  assert.equal(appState.detailMode, false);
+});
+
 test('remembered Nearby coordinates belong to canonical app state and reset with it', () => {
   resetAppStateForTests();
   appState.nearbyOrigin = { lat: 37.8, lon: -122.3, label: 'your location' };

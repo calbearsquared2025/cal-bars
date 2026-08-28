@@ -172,11 +172,21 @@ function contributionUrl(intent, venueId, state = appState()) {
   return '';
 }
 
+function syncContributionStructure() {
+  if (!dom?.addContext || !dom.addContextActions) return;
+  if (dom.addContextActions.parentElement !== dom.addContext) {
+    dom.addContext.append(dom.addContextActions);
+  }
+}
+
 function updateResponsiveCommandLabels() {
   const mobile = isMobileLayout();
+  const venue = selectedVenue();
   const labels = mobile
     ? { map: 'Map', search: 'Search', add: 'Add', list: 'List', about: 'About' }
-    : { map: 'Selected', search: 'Search', add: 'Add', list: 'Locations', about: 'About' };
+    : { map: 'Selected', search: 'Search', add: 'Add to CGB', list: 'Locations', about: 'About' };
+
+  syncContributionStructure();
 
   dom.commandButtons.forEach((button) => {
     const label = button.querySelector('span:last-child');
@@ -184,9 +194,50 @@ function updateResponsiveCommandLabels() {
     if (label && labels[command]) label.textContent = labels[command];
   });
 
+  const addButton = dom.commandButtons.find((button) => button.dataset.command === 'add');
+  if (addButton) {
+    addButton.setAttribute('aria-label', mobile ? 'Add' : 'Add to Cal Golden Bars');
+  }
+  const addTitle = document.querySelector('#add-surface-title');
+  const addIntro = document.querySelector('#add-surface > .command-surface__shell > .command-surface__intro');
+  if (addTitle) addTitle.textContent = mobile ? 'Add to the map' : 'Add to Cal Golden Bars';
+  if (addIntro) {
+    addIntro.textContent = mobile
+      ? 'Choose what you would like to add or correct.'
+      : venue
+        ? 'Choose an action for the selected location, or search for another location.'
+        : 'If the location is already listed in CGB, select it first to add a Watch Party or other content. If it isn’t listed yet, search below to add it.';
+  }
+
+  if (dom.addCalBarTitle) {
+    dom.addCalBarTitle.textContent = mobile ? 'Tell us about this location' : 'Tell us about a location';
+  }
+  if (dom.addSomewhereElseTitle) {
+    dom.addSomewhereElseTitle.textContent = mobile
+      ? 'Add somewhere else'
+      : venue ? 'Add somewhere else' : 'New location';
+  }
+  if (dom.addSomewhereElseIntro) {
+    dom.addSomewhereElseIntro.hidden = !mobile;
+    dom.addSomewhereElseIntro.textContent = 'Search for a place that isn’t listed in Cal Golden Bars yet.';
+  }
+  if (dom.addNewLocationTitle) {
+    dom.addNewLocationTitle.textContent = mobile ? 'Search for another location' : 'Search for another location';
+  }
+  if (dom.addNewLocationDetail) {
+    dom.addNewLocationDetail.textContent = mobile
+      ? 'Find a place that isn’t listed yet.'
+      : 'Find a place that isn’t listed in CGB yet.';
+  }
+  if (dom.missingLocationLink) {
+    dom.missingLocationLink.textContent = mobile
+      ? 'Can’t find the location? Suggest it here.'
+      : 'Can’t find it? Suggest a missing location.';
+  }
+
   const selectedButton = dom.commandButtons.find((button) => button.dataset.command === 'map');
   if (selectedButton) {
-    selectedButton.disabled = !mobile && !selectedVenue();
+    selectedButton.disabled = !mobile && !venue;
     selectedButton.setAttribute('aria-disabled', String(selectedButton.disabled));
   }
 }
@@ -294,9 +345,10 @@ function showList() {
 }
 
 function updateSearchIntent() {
+  const calBarTitle = isMobileLayout() ? 'Tell us about this location' : 'Tell us about a location';
   const messages = {
     [CONTRIBUTION_INTENTS.watchParty]: '<strong>Add a Watch Party</strong><span>Search for the venue. Existing CGB locations open the prefilled form; external places offer “Add a Watch Party” after selection.</span>',
-    [CONTRIBUTION_INTENTS.calBar]: '<strong>Tell us about this location</strong><span>Search for an existing CGB location. Unlisted places must first be added to Cal Golden Bars.</span>',
+    [CONTRIBUTION_INTENTS.calBar]: `<strong>${calBarTitle}</strong><span>Search for an existing CGB location. Unlisted places must first be added to Cal Golden Bars.</span>`,
     [CONTRIBUTION_INTENTS.report]: '<strong>Report a problem</strong><span>Search for the existing CGB listing you need to correct.</span>'
   };
   const message = messages[contributionIntent] || '';
@@ -327,7 +379,9 @@ function updateAddContext() {
   }
   const place = [venue.city, venue.region].filter(Boolean).join(', ');
   dom.addContextName.textContent = venue.name;
-  dom.addContextCopy.textContent = `${place ? `${place} is` : 'This place is'} selected. Available actions will use this place when possible.`;
+  dom.addContextCopy.textContent = isMobileLayout()
+    ? `${place ? `${place} is` : 'This place is'} selected. Available actions will use this place when possible.`
+    : place || 'Selected location';
   dom.reportPartyButton.hidden = !watchPartyIssueUrl(venue.venue_id);
 }
 
@@ -352,8 +406,18 @@ function showAddLocationSearch() {
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('add-location');
-  setSurface('search', { focus: true });
   configureMissingLocationLink();
+
+  if (isMobileLayout()) {
+    setSurface('search', { focus: true });
+    return;
+  }
+
+  setSurface('map');
+  requestAnimationFrame(() => {
+    dom.searchInput?.focus({ preventScroll: true });
+    dom.searchInput?.select?.();
+  });
 }
 
 function beginContribution(intent, {
@@ -531,6 +595,8 @@ function configureMissingLocationLink() {
 
 function cacheDom() {
   const commandButtons = Array.from(document.querySelectorAll('.mobile-command'));
+  const addNewLocationButton = document.querySelector('#add-new-location-button');
+  const addCalBarButton = document.querySelector('#add-cal-bar-button');
   dom = {
     app: document.querySelector('#app'),
     detailView: document.querySelector('#detail-view'),
@@ -547,8 +613,17 @@ function cacheDom() {
     addSurface: document.querySelector('#add-surface'),
     aboutSurface: document.querySelector('#about-surface'),
     addContext: document.querySelector('#add-surface .add-context:not(.add-game-context)'),
+    addContextActions: document.querySelector('#add-surface .add-context:not(.add-game-context) > .add-actions'),
     addContextName: document.querySelector('#add-context-name'),
     addContextCopy: document.querySelector('#add-context-copy'),
+    addSomewhereElse: document.querySelector('#add-surface .add-somewhere-else'),
+    addSomewhereElseTitle: document.querySelector('#add-somewhere-else-title'),
+    addSomewhereElseIntro: document.querySelector('#add-surface .add-somewhere-else > .command-surface__intro'),
+    addNewLocationButton,
+    addNewLocationTitle: addNewLocationButton?.querySelector('strong'),
+    addNewLocationDetail: addNewLocationButton?.querySelector('small'),
+    addCalBarButton,
+    addCalBarTitle: addCalBarButton?.querySelector('strong'),
     missingLocationLink: document.querySelector('#add-missing-location-link'),
     reportButton: document.querySelector('#add-report-button'),
     reportOptions: document.querySelector('#add-report-options'),

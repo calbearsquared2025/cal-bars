@@ -1,3 +1,4 @@
+import { clearSelectedMapVenue } from './app-state.mjs';
 import { rankVenues } from './core.mjs';
 import {
   applyDesktopReviewPreview,
@@ -8,8 +9,6 @@ import {
 const desktopReviewPreviewActive = applyDesktopReviewPreview();
 const MOBILE_QUERY = '(max-width: 899px)';
 let desktopSearchEngaged = false;
-let desktopListAddButton = null;
-let desktopListActions = null;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -58,46 +57,68 @@ function placeAddLocationAction() {
   return button;
 }
 
-function ensureDesktopListAddButton() {
-  if (desktopListAddButton) return desktopListAddButton;
-  const button = document.createElement('button');
-  button.id = 'list-add-location-button';
-  button.className = 'secondary-button list-add-location-button';
-  button.type = 'button';
-  button.textContent = '+ Add location';
-  button.setAttribute('aria-label', 'Add a location');
-  button.addEventListener('click', () => {
-    document.querySelector('#search-add-location-button')?.click();
-  });
-  desktopListAddButton = button;
-  return button;
-}
-
-function syncDesktopListAddButton() {
-  const header = document.querySelector('#tray-list .tray-list__header');
-  const toggle = document.querySelector('#list-location-toggle');
-  if (!header || !toggle) return;
+function syncDesktopContributionEntry() {
+  const bar = document.querySelector('.mobile-command-bar');
+  const button = document.querySelector('#mobile-add-button');
+  const mark = button?.querySelector('.mobile-command__add-mark');
+  if (!bar || !button || !mark) return;
 
   if (isMobile()) {
-    if (desktopListActions?.parentElement === header) {
-      header.insertBefore(toggle, desktopListActions);
-      desktopListActions.remove();
-    }
+    bar.style.removeProperty('grid-template-columns');
+    [
+      'display', 'grid-row', 'grid-column', 'width', 'height', 'min-height', 'min-width',
+      'align-items', 'justify-content', 'gap', 'margin', 'padding', 'color', 'background',
+      'border', 'border-radius', 'box-shadow', 'font-size', 'font-weight', 'letter-spacing',
+      'line-height', 'white-space'
+    ].forEach((property) => button.style.removeProperty(property));
+    [
+      'width', 'height', 'display', 'place-items', 'margin', 'padding', 'color', 'background',
+      'border', 'border-radius', 'box-shadow', 'font-size', 'font-weight', 'line-height'
+    ].forEach((property) => mark.style.removeProperty(property));
     return;
   }
 
-  if (!desktopListActions) {
-    const actions = document.createElement('div');
-    actions.className = 'tray-list__actions';
-    actions.dataset.desktopListActions = 'true';
-    desktopListActions = actions;
-  }
-
-  if (desktopListActions.parentElement !== header) toggle.after(desktopListActions);
-  if (toggle.parentElement !== desktopListActions) desktopListActions.append(toggle);
-
-  const button = ensureDesktopListAddButton();
-  if (button.parentElement !== desktopListActions) desktopListActions.append(button);
+  bar.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr) 10px auto';
+  Object.assign(button.style, {
+    display: 'flex',
+    gridRow: '1',
+    gridColumn: '4',
+    width: 'auto',
+    height: '34px',
+    minHeight: '34px',
+    minWidth: '0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '4px',
+    margin: '0',
+    padding: '0 9px',
+    color: 'var(--cgb-navy-950, #010133)',
+    background: 'var(--cgb-gold-50, #fff7dc)',
+    border: '1px solid var(--cgb-gold-500, #e6a411)',
+    borderRadius: '8px',
+    boxShadow: 'none',
+    fontSize: '.66rem',
+    fontWeight: '850',
+    letterSpacing: '.01em',
+    lineHeight: '1',
+    whiteSpace: 'nowrap'
+  });
+  Object.assign(mark.style, {
+    width: '14px',
+    height: '14px',
+    display: 'grid',
+    placeItems: 'center',
+    margin: '0',
+    padding: '0',
+    color: 'inherit',
+    background: 'transparent',
+    border: '0',
+    borderRadius: '0',
+    boxShadow: 'none',
+    fontSize: '.9rem',
+    fontWeight: '700',
+    lineHeight: '1'
+  });
 }
 
 function desktopMatchCount(query, state = appState()) {
@@ -107,7 +128,7 @@ function desktopMatchCount(query, state = appState()) {
 
 function syncDesktopSearchUi() {
   preserveDesktopReviewPreviewUrl();
-  syncDesktopListAddButton();
+  syncDesktopContributionEntry();
   if (isMobile()) {
     placeAddLocationAction();
     return;
@@ -142,6 +163,15 @@ function syncDesktopSearchUi() {
   if (listEyebrow) listEyebrow.textContent = listQuery ? 'Search results' : 'Browse';
 }
 
+function handleDesktopMapDeselect(event) {
+  if (isMobile() || document.body.dataset.commandSurface !== 'map') return;
+  const map = event.target.closest?.('#map');
+  if (!map) return;
+  if (event.target.closest?.('.cgb-marker, .maplibregl-control-container, .maplibregl-ctrl')) return;
+  if (!clearSelectedMapVenue({ allowDetailMode: true })) return;
+  window.CGBApp?.showLocations?.();
+}
+
 function initialize() {
   const form = document.querySelector('#location-search');
   const searchInput = document.querySelector('#location-query');
@@ -165,6 +195,7 @@ function initialize() {
   document.querySelector('#add-new-location-button')?.addEventListener('click', () => {
     document.querySelector('#search-add-location-button')?.click();
   });
+  document.addEventListener('click', handleDesktopMapDeselect);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
     desktopSearchEngaged = false;
     syncDesktopSearchUi();
