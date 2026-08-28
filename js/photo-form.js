@@ -28,6 +28,7 @@ function createPhotoFormLink(documentObject, { href, label, entryPoint, classNam
   const link = documentObject.createElement('a');
   link.className = className;
   link.dataset.photoFormEntry = entryPoint;
+  link.dataset.googleFormExternal = 'true';
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
