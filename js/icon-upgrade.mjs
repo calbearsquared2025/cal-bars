@@ -212,8 +212,14 @@ function syncDesktopProfileAttendance(state) {
     number.textContent = String(count);
     const label = document.createElement('span');
     label.className = 'detail-attendance-compact__label';
-    label.textContent = count === 1 ? 'Bear attending' : 'Bears attending';
-    compact.append(number, label);
+    label.textContent = count === 1 ? 'BEAR' : 'BEARS';
+    const attending = document.createElement('span');
+    attending.className = 'detail-attendance-compact__attending';
+    attending.textContent = 'ATTENDING';
+    const context = document.createElement('span');
+    context.className = 'detail-attendance-compact__context';
+    context.textContent = 'ON CGB';
+    compact.append(number, label, attending, context);
     compact.setAttribute('aria-label', `${count} ${count === 1 ? 'Bear' : 'Bears'} attending on CGB`);
   }
 
