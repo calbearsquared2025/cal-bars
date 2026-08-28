@@ -20,6 +20,32 @@
   display: none;
 }
 
+.intent-button[aria-pressed="true"] {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.intent-button__main,
+.intent-button__undo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intent-button__main {
+  gap: 6px;
+}
+
+.intent-button__undo {
+  flex: 0 0 auto;
+  margin-left: 7px;
+  padding-left: 7px;
+  border-left: 1px solid rgba(1, 1, 51, .24);
+  font-size: .7rem;
+  line-height: 1;
+  opacity: .72;
+}
+
 /* Positive fan attendance is one compact CGB-community unit. */
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) {
   width: 100% !important;
