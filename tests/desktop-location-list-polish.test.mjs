@@ -34,9 +34,16 @@ test('desktop restores breathing room below the location-range control without r
 });
 
 test('desktop Watch Party and Cal Bar badges stay distinct while final event styling is warmer', () => {
-  assert.match(watchPartyDisplayCss, /#tray-list \.location-card \.badge--party \{[\s\S]*background: #f3c24f !important;/);
+  assert.match(watchPartyDisplayCss, /#tray-list \.location-card \.badge--party,[\s\S]*background: #f3c24f !important;/);
   assert.match(refinementSource, /\.badge--cal \{[\s\S]*background: var\(--cgb-navy-700/);
   assert.doesNotMatch(refinementSource, /\.badge--fan-added \{/);
+});
+
+test('desktop selected surfaces reuse the compact Locations badge treatment', () => {
+  assert.match(watchPartyDisplayCss, /#venue-tray \.selected-card \.venue-badge,[\s\S]*min-height: 19px !important;[\s\S]*padding: 2px 7px !important;[\s\S]*font-size: \.54rem !important;/);
+  assert.match(watchPartyDisplayCss, /#tray-selected > #venue-detail\.venue-detail \.venue-badge/);
+  assert.match(watchPartyDisplayCss, /body\[data-view="detail"\] #venue-detail\.venue-detail \.venue-badge/);
+  assert.match(watchPartyDisplayCss, /#venue-tray \.selected-card \.badge--cal,[\s\S]*background: var\(--cgb-navy-700/);
 });
 
 test('desktop Watch Party host line has deliberate separation from venue metadata', () => {
