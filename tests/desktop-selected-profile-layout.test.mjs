@@ -22,7 +22,7 @@ test('wide desktop leads with venue identity and compact attendance', async () =
   ]);
 
   assert.match(css, /grid-template-columns:\s*repeat\(12, minmax\(0, 1fr\)\)/);
-  assert.match(css, /:has\(> \.activity-card--desktop-attendance\) > \.detail-hero[\s\S]*?grid-column:\s*1 \/ 10\s*!important;/);
+  assert.match(css, /:has\(> \.activity-card--desktop-attendance\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 10\s*!important;/);
   assert.match(css, /> \.activity-card--desktop-attendance\s*\{[\s\S]*?grid-column:\s*10 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
   assert.match(source, /function syncDesktopProfileAttendance\(state\)/);
   assert.match(source, /getFanCount\(state\.snapshot, state\.gameId, venue\.venue_id\)/);
