@@ -83,6 +83,22 @@
   white-space: nowrap;
 }
 
+.about-contact-line a,
+.about-support .text-button {
+  color: var(--cgb-navy-900, var(--cal-blue));
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.about-contact-line a:hover,
+.about-contact-line a:focus-visible,
+.about-support .text-button:hover,
+.about-support .text-button:focus-visible {
+  color: var(--cgb-navy-950, #010133);
+}
+
 .about-support .secondary-button {
   width: 100%;
 }
