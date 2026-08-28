@@ -550,3 +550,134 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     left: 22px !important;
   }
 }
+
+/* Wide desktop selected profile: use the added width to expose venue character,
+   not to preserve the narrow/mobile stacking pattern. */
+@media (min-width: 1100px) {
+  html body[data-view="map"] #map-view > #venue-tray.venue-tray.tray--selected {
+    width: clamp(500px, 36vw, 520px) !important;
+  }
+
+  html body[data-view="map"] .map-view:has(> #venue-tray.venue-tray.tray--selected) .maplibregl-ctrl-top-right {
+    right: calc(clamp(500px, 36vw, 520px) + 26px) !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    background: var(--cgb-white);
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > * {
+    grid-column: 1 / -1;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--has-photo,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--no-photo {
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-columns: 180px minmax(0, 1fr) !important;
+    align-items: start !important;
+    column-gap: 16px !important;
+    padding: 14px 18px 16px !important;
+    overflow: visible !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-photo,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-local-map {
+    grid-column: 1 !important;
+    grid-row: 1 / span 6 !important;
+    width: 180px !important;
+    margin: 0 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-local-map {
+    height: 135px !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .venue-badges,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > h1,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address-actions {
+    grid-column: 2 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .venue-badges {
+    margin: 0 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > h1 {
+    margin: 5px 0 0 !important;
+    font-size: clamp(1.42rem, 1.8vw, 1.72rem) !important;
+    line-height: 1.02 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address {
+    margin-top: 7px !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, .92fr) !important;
+    column-gap: 18px !important;
+    row-gap: 3px !important;
+    margin: 12px 18px 0 !important;
+    padding: 11px 13px !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__title,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-meta,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__note,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__event,
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__report {
+    grid-column: 1 / -1 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__title {
+    grid-row: 1;
+    margin-bottom: 4px !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-game-context {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    margin: 0 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__time {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    margin: 0 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__host {
+    grid-column: 2 !important;
+    grid-row: 2 / span 2 !important;
+    align-self: start !important;
+    margin: 0 !important;
+    line-height: 1.3 !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__host strong {
+    display: block;
+    margin-top: 2px;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-meta {
+    margin: 5px 0 1px !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial {
+    grid-column: 1 !important;
+    margin-top: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-right: 1px solid var(--cgb-neutral-200) !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-fan-experiences {
+    grid-column: 2 !important;
+    margin-top: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+  }
+}
