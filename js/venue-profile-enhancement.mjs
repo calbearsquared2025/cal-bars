@@ -179,7 +179,7 @@ function arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documen
 
   if (!wideDesktop) {
     if (address.dataset.desktopIdentity !== 'true') return false;
-    const directions = address.querySelector(':scope > .detail-directions-inline');
+    const directions = address.querySelector('.detail-directions-inline');
     if (!directions) return false;
     directions.classList.remove('detail-directions-inline--desktop');
     directions.replaceChildren(
@@ -192,20 +192,46 @@ function arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documen
   }
 
   if (address.dataset.desktopIdentity === 'true') return true;
-  const directions = address.querySelector(':scope > .detail-directions-inline');
+  const directions = address.querySelector('.detail-directions-inline');
   if (!directions) return false;
 
   const location = documentObject.createElement('span');
   location.className = 'detail-address__location';
   const street = [venue?.address_line_1, venue?.address_line_2].filter(Boolean).join(', ');
   const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
-  if (street) location.append(documentObject.createTextNode(street));
-  if (street && locality) location.append(documentObject.createElement('br'));
-  if (locality) location.append(documentObject.createTextNode(locality));
 
+  if (street) {
+    const streetLine = documentObject.createElement('span');
+    streetLine.className = 'detail-address__street';
+    streetLine.textContent = street;
+    location.append(streetLine);
+  }
+
+  const localityRow = documentObject.createElement('span');
+  localityRow.className = 'detail-address__locality-row';
+  if (locality) {
+    const localityText = documentObject.createElement('span');
+    localityText.className = 'detail-address__locality';
+    localityText.textContent = locality;
+    localityRow.append(localityText);
+  }
+
+  const directionsGroup = documentObject.createElement('span');
+  directionsGroup.className = 'detail-address__directions-group';
+  if (locality) {
+    const separator = documentObject.createElement('span');
+    separator.className = 'detail-address__separator';
+    separator.setAttribute('aria-hidden', 'true');
+    separator.textContent = '·';
+    directionsGroup.append(separator);
+  }
   directions.classList.add('detail-directions-inline--desktop');
   directions.replaceChildren(documentObject.createTextNode('Directions'));
-  address.replaceChildren(location, directions);
+  directionsGroup.append(directions);
+  localityRow.append(directionsGroup);
+  location.append(localityRow);
+
+  address.replaceChildren(location);
   address.dataset.desktopIdentity = 'true';
   return true;
 }
