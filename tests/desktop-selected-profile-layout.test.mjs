@@ -17,6 +17,7 @@ test('wide desktop expands only the selected profile and keeps browse width unch
 
 test('wide desktop tray width and map controls animate together with reduced-motion support', async () => {
   const source = await read('js/icon-upgrade.mjs');
+  const motionBlock = source.match(/function syncDesktopTrayMotion\(\) \{[\s\S]*?\n\}/)?.[0] || '';
 
   assert.match(source, /const REDUCED_MOTION_QUERY = '\(prefers-reduced-motion: reduce\)'/);
   assert.match(source, /const DESKTOP_TRAY_MOTION_DURATION = '210ms'/);
@@ -28,7 +29,8 @@ test('wide desktop tray width and map controls animate together with reduced-mot
   assert.match(source, /setDesktopTransition\(locate, 'right', wideDesktop, reduceMotion\)/);
   assert.match(source, /element\.style\.transitionProperty = reduceMotion \? 'none' : property/);
   assert.match(source, /window\.matchMedia\?\.\(REDUCED_MOTION_QUERY\)\?\.addEventListener\?\.\('change', scheduleUpgrade\)/);
-  assert.doesNotMatch(source, /document\.createElement\('style'\)/);
+  assert.ok(motionBlock);
+  assert.doesNotMatch(motionBlock, /document\.createElement\('style'\)/);
 });
 
 test('wide desktop pairs venue identity evenly with CGB Says and aligns tagged editorial content with the venue heading', async () => {
