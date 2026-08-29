@@ -321,7 +321,7 @@ export function syncDesktopFooter({
 
   const disclaimer = documentObject.createElement('span');
   disclaimer.className = 'site-footer__disclaimer';
-  disclaimer.textContent = 'Not Affiliated';
+  disclaimer.textContent = 'Not affiliated with Cal Athletics or the California Alumni Association';
 
   footer.replaceChildren(
     brand,
