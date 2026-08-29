@@ -1,6 +1,7 @@
 const DESKTOP_QUERY = '(min-width: 900px)';
 const STYLE_ID = 'cgb-desktop-visual-cohesion';
 const FOOTER_READY = 'desktopCohesionReady';
+let gameDropdownWired = false;
 
 function isDesktop(windowObject = globalThis.window) {
   return windowObject?.matchMedia?.(DESKTOP_QUERY)?.matches === true;
@@ -29,6 +30,94 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         right: auto !important;
         bottom: 16px !important;
         left: 90px !important;
+      }
+
+      .mobile-command-bar #mobile-add-button {
+        width: fit-content !important;
+        min-width: 104px !important;
+        justify-self: center !important;
+        padding-inline: 10px !important;
+        background: var(--cgb-white, #fff) !important;
+        border: 1px solid var(--cgb-neutral-300, #cbd0d6) !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+      }
+
+      .mobile-command-bar #mobile-add-button:hover,
+      .mobile-command-bar #mobile-add-button:focus-visible {
+        background: var(--cgb-gold-50, #fff8e6) !important;
+        border-color: var(--cgb-gold-400, #fdb515) !important;
+        text-decoration: none !important;
+      }
+
+      #tray-selected #venue-detail .detail-local-map {
+        position: relative !important;
+      }
+
+      #tray-selected #venue-detail .detail-local-map__photo-action {
+        position: absolute !important;
+        z-index: 8 !important;
+        top: 12px !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: 12px !important;
+        min-height: 30px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 6px 9px !important;
+        color: var(--cgb-navy-950, #010133) !important;
+        background: rgba(255, 255, 255, .94) !important;
+        border: 1px solid var(--cgb-gold-400, #fdb515) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 2px 8px rgba(1, 1, 51, .12) !important;
+        font-family: var(--font-condensed, sans-serif) !important;
+        font-size: .64rem !important;
+        font-weight: 850 !important;
+        letter-spacing: .08em !important;
+        line-height: 1 !important;
+        text-decoration: none !important;
+        text-transform: uppercase !important;
+      }
+
+      #tray-selected #venue-detail .detail-local-map__photo-action:hover,
+      #tray-selected #venue-detail .detail-local-map__photo-action:focus-visible {
+        background: var(--cgb-gold-50, #fff8e6) !important;
+      }
+
+      .game-dialog.game-dialog--dropdown {
+        position: fixed;
+        z-index: 3000;
+        inset: auto;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        color: var(--cgb-ink-900);
+        background: var(--cgb-white, #fff);
+        border: 1px solid rgba(1, 1, 51, .14);
+        border-radius: 12px;
+        box-shadow: 0 16px 34px rgba(1, 1, 51, .18);
+      }
+
+      .game-dialog.game-dialog--dropdown .dialog-shell {
+        max-height: inherit;
+        padding: 0;
+        overflow: hidden;
+        background: var(--cgb-white, #fff);
+      }
+
+      .game-dialog.game-dialog--dropdown .dialog-header {
+        display: none;
+      }
+
+      .game-dialog.game-dialog--dropdown .game-list {
+        max-height: inherit;
+        overflow-y: auto;
+        border-top: 0;
+      }
+
+      .game-dialog.game-dialog--dropdown .game-option:last-child {
+        border-bottom: 0;
       }
 
       #add-surface .add-context {
@@ -69,7 +158,7 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 18px;
         padding: 0 18px;
         color: var(--cgb-ink-500, #687280);
         background: var(--cgb-warm-50, #f7f6f2);
@@ -112,10 +201,6 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         text-underline-offset: 2px;
       }
 
-      .site-footer--desktop-cohesion .site-footer__separator {
-        color: var(--cgb-neutral-300, #cbd0d6);
-      }
-
       .site-footer--desktop-cohesion .site-footer__disclaimer {
         color: var(--cgb-ink-500, #687280);
         font-weight: 500;
@@ -126,12 +211,91 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
   return true;
 }
 
-function separator(documentObject) {
-  const span = documentObject.createElement('span');
-  span.className = 'site-footer__separator';
-  span.setAttribute('aria-hidden', 'true');
-  span.textContent = '·';
-  return span;
+function closeDesktopGameDropdown({ documentObject = globalThis.document } = {}) {
+  const dialog = documentObject?.querySelector?.('#game-dialog');
+  const button = documentObject?.querySelector?.('#game-button');
+  if (!dialog?.open) return false;
+  dialog.close();
+  button?.setAttribute('aria-expanded', 'false');
+  return true;
+}
+
+function positionDesktopGameDropdown({
+  documentObject = globalThis.document,
+  windowObject = globalThis.window
+} = {}) {
+  const dialog = documentObject?.querySelector?.('#game-dialog');
+  const button = documentObject?.querySelector?.('#game-button');
+  if (!dialog?.open || !button || !isDesktop(windowObject)) return false;
+  const rect = button.getBoundingClientRect();
+  const maxHeight = Math.max(180, windowObject.innerHeight - rect.bottom - 18);
+  dialog.style.top = `${Math.round(rect.bottom + 6)}px`;
+  dialog.style.left = `${Math.round(rect.left)}px`;
+  dialog.style.width = `${Math.round(rect.width)}px`;
+  dialog.style.maxHeight = `${Math.round(maxHeight)}px`;
+  return true;
+}
+
+function openDesktopGameDropdown({
+  documentObject = globalThis.document,
+  windowObject = globalThis.window
+} = {}) {
+  const dialog = documentObject?.querySelector?.('#game-dialog');
+  const button = documentObject?.querySelector?.('#game-button');
+  if (!dialog || !button || !isDesktop(windowObject) || typeof dialog.show !== 'function') return false;
+  if (dialog.open) return closeDesktopGameDropdown({ documentObject });
+  dialog.classList.add('game-dialog--dropdown');
+  dialog.show();
+  button.setAttribute('aria-expanded', 'true');
+  positionDesktopGameDropdown({ documentObject, windowObject });
+  return true;
+}
+
+function wireDesktopGameDropdown({
+  documentObject = globalThis.document,
+  windowObject = globalThis.window
+} = {}) {
+  if (gameDropdownWired || !documentObject || !windowObject) return false;
+  const button = documentObject.querySelector('#game-button');
+  const dialog = documentObject.querySelector('#game-dialog');
+  if (!button || !dialog) return false;
+  gameDropdownWired = true;
+  button.setAttribute('aria-expanded', 'false');
+
+  button.addEventListener('click', (event) => {
+    if (!isDesktop(windowObject)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openDesktopGameDropdown({ documentObject, windowObject });
+  }, { capture: true });
+
+  documentObject.addEventListener('click', (event) => {
+    if (!isDesktop(windowObject) || !dialog.open) return;
+    if (event.target.closest?.('#game-button, #game-dialog')) return;
+    closeDesktopGameDropdown({ documentObject });
+  });
+
+  documentObject.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || !isDesktop(windowObject) || !dialog.open) return;
+    event.preventDefault();
+    closeDesktopGameDropdown({ documentObject });
+    button.focus();
+  });
+
+  dialog.addEventListener('close', () => {
+    button.setAttribute('aria-expanded', 'false');
+  });
+
+  windowObject.addEventListener('resize', () => {
+    if (!dialog.open) return;
+    if (!isDesktop(windowObject)) {
+      closeDesktopGameDropdown({ documentObject });
+      dialog.classList.remove('game-dialog--dropdown');
+      return;
+    }
+    positionDesktopGameDropdown({ documentObject, windowObject });
+  });
+  return true;
 }
 
 export function syncDesktopFooter({
@@ -151,31 +315,18 @@ export function syncDesktopFooter({
   brand.href = './';
   brand.textContent = 'CAL GOLDEN BARS';
 
-  const addButton = documentObject.createElement('button');
-  addButton.type = 'button';
-  addButton.className = 'text-button site-footer__link site-footer__add';
-  addButton.textContent = 'Add to CGB';
-  addButton.addEventListener('click', () => {
-    documentObject.querySelector('#mobile-add-button')?.click();
-  });
-
   aboutButton.classList.add('site-footer__link');
   socialLink.classList.add('site-footer__link');
   socialLink.textContent = '@calbearsquared';
 
   const disclaimer = documentObject.createElement('span');
   disclaimer.className = 'site-footer__disclaimer';
-  disclaimer.textContent = 'Not affiliated with Cal Athletics or the California Alumni Association';
+  disclaimer.textContent = 'Not Affiliated';
 
   footer.replaceChildren(
     brand,
-    separator(documentObject),
-    addButton,
-    separator(documentObject),
     aboutButton,
-    separator(documentObject),
     socialLink,
-    separator(documentObject),
     disclaimer
   );
   footer.classList.add('site-footer--desktop-cohesion');
@@ -210,6 +361,7 @@ function initializeDesktopVisualCohesion({
 
   const start = () => {
     sync();
+    wireDesktopGameDropdown({ documentObject, windowObject });
     const addSurface = documentObject.querySelector('#add-surface');
     if (addSurface && typeof MutationObserver === 'function') {
       const observer = new MutationObserver(() => windowObject.requestAnimationFrame(sync));
