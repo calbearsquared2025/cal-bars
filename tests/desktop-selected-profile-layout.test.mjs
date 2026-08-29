@@ -29,7 +29,7 @@ test('wide desktop tray width and map controls animate together with reduced-mot
   assert.doesNotMatch(source, /document\.createElement\('style'\)/);
 });
 
-test('wide desktop pairs venue identity with CGB Says instead of a separate attendance column', async () => {
+test('wide desktop pairs venue identity evenly with CGB Says and keeps the editorial accent content-height', async () => {
   const [css, iconSource, profileSource] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/icon-upgrade.mjs'),
@@ -37,14 +37,29 @@ test('wide desktop pairs venue identity with CGB Says instead of a separate atte
   ]);
 
   assert.match(css, /grid-template-columns:\s*repeat\(12, minmax\(0, 1fr\)\)/);
-  assert.match(css, /:has\(> \.detail-editorial\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 8\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
-  assert.match(css, /> \.detail-editorial\s*\{[\s\S]*?grid-column:\s*8 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(css, /:has\(> \.detail-editorial\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 7\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(css, /> \.detail-editorial\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*start;[\s\S]*?border-left:\s*0\s*!important;/);
+  assert.match(css, /> \.detail-editorial::before\s*\{[\s\S]*?top:\s*12px;[\s\S]*?bottom:\s*12px;/);
   assert.match(profileSource, /function arrangeDesktopVenueIdentity/);
-  assert.match(profileSource, /detail-address__location/);
-  assert.match(profileSource, /directions\.replaceChildren\(documentObject\.createTextNode\('Directions'\)\)/);
   assert.doesNotMatch(iconSource, /syncDesktopProfileAttendance/);
   assert.doesNotMatch(iconSource, /detail-attendance-compact/);
   assert.doesNotMatch(css, /activity-card--desktop-attendance/);
+});
+
+test('wide desktop address keeps Directions with locality and allows the row to wrap', async () => {
+  const [css, source] = await Promise.all([
+    read('css/venue-profile.css'),
+    read('js/venue-profile-enhancement.mjs')
+  ]);
+
+  assert.match(source, /detail-address__street/);
+  assert.match(source, /detail-address__locality-row/);
+  assert.match(source, /detail-address__directions-group/);
+  assert.match(source, /separator\.textContent = '·'/);
+  assert.match(source, /directionsGroup\.append\(directions\)/);
+  assert.match(source, /address\.replaceChildren\(location\)/);
+  assert.match(css, /\.detail-address__locality-row\s*\{[\s\S]*?display:\s*flex;[\s\S]*?flex-wrap:\s*wrap;/);
+  assert.match(css, /\.detail-address__directions-group\s*\{[\s\S]*?white-space:\s*nowrap;/);
 });
 
 test('wide desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
