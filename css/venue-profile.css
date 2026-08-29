@@ -577,10 +577,14 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--has-photo,
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--no-photo {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 4;
     min-height: 0 !important;
     display: block !important;
     padding: 12px 18px !important;
     color: var(--cgb-ink-900) !important;
+    background: var(--cgb-white) !important;
     overflow: visible !important;
   }
 
@@ -612,7 +616,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__location {
     display: grid;
-    gap: 2px;
+    gap: 0;
     color: var(--cgb-ink-500);
     font-family: var(--font-ui);
     font-size: .82rem;
@@ -626,9 +630,10 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     flex-wrap: wrap;
     align-items: baseline;
     column-gap: .35em;
-    row-gap: 2px;
+    row-gap: 0;
   }
 
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__distance-group,
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__directions-group {
     display: inline-flex;
     align-items: baseline;
@@ -652,10 +657,14 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 4;
     grid-column: 7 / 13 !important;
     grid-row: 1 !important;
     align-self: start;
     padding: 12px 18px 12px 40px !important;
+    background: var(--cgb-white) !important;
     border-top: 0 !important;
     border-left: 0 !important;
   }
@@ -757,7 +766,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
     padding: 11px 18px !important;
-    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-top: 0 !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong {
@@ -774,7 +783,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-fan-experiences {
     margin-top: 0 !important;
-    border-top: 1px solid var(--cgb-neutral-200) !important;
+    border-top: 0 !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-profile-media--desktop {
