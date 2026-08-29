@@ -47,10 +47,10 @@ test('desktop Add surface uses warm cream with white action cards and a gold sel
   assert.match(source, /title\.textContent = 'Add somewhere else'/);
 });
 
-test('desktop footer contains only the requested compact utility content', () => {
+test('desktop footer keeps the compact utility content with the full affiliation disclaimer', () => {
   assert.match(source, /brand\.textContent = 'CAL GOLDEN BARS'/);
   assert.match(source, /socialLink\.textContent = '@calbearsquared'/);
-  assert.match(source, /disclaimer\.textContent = 'Not Affiliated'/);
+  assert.match(source, /disclaimer\.textContent = 'Not affiliated with Cal Athletics or the California Alumni Association'/);
   assert.match(source, /footer\.replaceChildren\(\s*brand,\s*aboutButton,\s*socialLink,\s*disclaimer\s*\)/);
   assert.doesNotMatch(source, /addButton\.textContent = 'Add to CGB'/);
   assert.doesNotMatch(source, /CrowdMapped/i);
