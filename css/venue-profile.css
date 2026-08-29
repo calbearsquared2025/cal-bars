@@ -551,7 +551,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   }
 }
 
-/* Wide desktop: venue identity and CGB editorial share the opening row. The selected
+/* Wide desktop: venue identity and CGB editorial share an even opening row. The selected
    game follows, then a compact horizontal attendance status, community voices, and media. */
 @media (min-width: 1100px) {
   html body[data-view="map"] #map-view > #venue-tray.venue-tray.tray--selected {
@@ -579,14 +579,14 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--no-photo {
     min-height: 0 !important;
     display: block !important;
-    padding: 14px 18px 16px !important;
+    padding: 12px 18px !important;
     color: var(--cgb-ink-900) !important;
     overflow: visible !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial) > .detail-hero.detail-hero--has-photo,
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial) > .detail-hero.detail-hero--no-photo {
-    grid-column: 1 / 8 !important;
+    grid-column: 1 / 7 !important;
     grid-row: 1 !important;
     padding-right: 14px !important;
   }
@@ -606,13 +606,13 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address[data-desktop-identity="true"] {
-    display: grid !important;
-    justify-items: start;
-    gap: 7px;
-    margin: 10px 0 0 !important;
+    display: block !important;
+    margin: 8px 0 0 !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__location {
+    display: grid;
+    gap: 2px;
     color: var(--cgb-ink-500);
     font-family: var(--font-ui);
     font-size: .82rem;
@@ -620,29 +620,49 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     line-height: 1.24;
   }
 
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__locality-row {
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: .35em;
+    row-gap: 2px;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__directions-group {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .35em;
+    white-space: nowrap;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-address__separator {
+    color: var(--cgb-ink-400);
+  }
+
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-directions-inline--desktop {
     color: var(--cgb-navy-900) !important;
     font-family: var(--font-ui);
-    font-size: .82rem;
+    font-size: inherit;
     font-weight: 800;
-    line-height: 1.2;
+    line-height: inherit;
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial {
-    grid-column: 8 / 13 !important;
+    grid-column: 7 / 13 !important;
     grid-row: 1 !important;
-    align-self: stretch;
-    padding: 18px 18px 16px 40px !important;
+    align-self: start;
+    padding: 12px 18px 12px 40px !important;
     border-top: 0 !important;
-    border-left: 1px solid var(--cgb-neutral-200) !important;
+    border-left: 0 !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial::before {
-    top: 14px;
-    bottom: 14px;
+    top: 12px;
+    bottom: 12px;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module {
