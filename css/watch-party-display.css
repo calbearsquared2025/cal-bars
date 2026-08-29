@@ -141,6 +141,10 @@
     overscroll-behavior: auto;
   }
 
+  #tray-selected > #venue-detail > .party-module.party-module--multiple .party-module__title {
+    position: static;
+  }
+
   #tray-selected > #venue-detail > .party-module .party-module__report {
     font-size: .65rem;
   }
