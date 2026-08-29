@@ -30,3 +30,7 @@ test('desktop footer contains only the requested compact utility content', () =>
   assert.doesNotMatch(source, /CrowdMapped/i);
   assert.match(source, /background: var\(--cgb-warm-50, #f7f6f2\)/);
 });
+
+test('desktop footer is flush with square corners', () => {
+  assert.match(source, /\.site-footer\.site-footer--desktop-cohesion[\s\S]*?border-radius: 0 !important;[\s\S]*?clip-path: none !important;/);
+});
