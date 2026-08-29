@@ -1,5 +1,5 @@
 import './desktop-visual-cohesion.mjs';
-import { getWatchParty } from './core.mjs';
+import { getWatchParty, haversineMiles } from './core.mjs';
 import { createIcon } from './icons.mjs';
 
 const MOBILE_PLAN_PARTY_ALIGNMENT_STYLE_ID = 'cgb-mobile-plan-party-alignment';
@@ -206,7 +206,24 @@ function addressLabel(venue) {
     : [venue?.city, venue?.region].filter(Boolean).join(', ')) || clean(venue?.name);
 }
 
-function arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documentObject }) {
+function desktopDistanceCopy(state, venue) {
+  const origin = state?.origin;
+  if (origin?.label !== 'your location') return '';
+  const distance = haversineMiles(origin.lat, origin.lon, venue?.latitude, venue?.longitude);
+  if (!Number.isFinite(distance)) return '';
+  if (distance < 0.1) return 'Nearby';
+  return `${distance.toFixed(distance < 10 ? 1 : 0)} mi away`;
+}
+
+function createAddressSeparator(documentObject) {
+  const separator = documentObject.createElement('span');
+  separator.className = 'detail-address__separator';
+  separator.setAttribute('aria-hidden', 'true');
+  separator.textContent = '·';
+  return separator;
+}
+
+function arrangeDesktopVenueIdentity({ detail, hero, venue, state, wideDesktop, documentObject }) {
   const address = hero.querySelector(':scope > .detail-address');
   if (!address) return false;
 
@@ -221,10 +238,12 @@ function arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documen
     );
     address.replaceChildren(directions);
     delete address.dataset.desktopIdentity;
+    delete address.dataset.desktopDistance;
     return false;
   }
 
-  if (address.dataset.desktopIdentity === 'true') return true;
+  const distanceCopy = desktopDistanceCopy(state, venue);
+  if (address.dataset.desktopIdentity === 'true' && address.dataset.desktopDistance === distanceCopy) return true;
   const directions = address.querySelector('.detail-directions-inline');
   if (!directions) return false;
 
@@ -249,15 +268,20 @@ function arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documen
     localityRow.append(localityText);
   }
 
+  if (distanceCopy) {
+    const distanceGroup = documentObject.createElement('span');
+    distanceGroup.className = 'detail-address__distance-group';
+    if (locality) distanceGroup.append(createAddressSeparator(documentObject));
+    const distanceText = documentObject.createElement('span');
+    distanceText.className = 'detail-address__distance';
+    distanceText.textContent = distanceCopy;
+    distanceGroup.append(distanceText);
+    localityRow.append(distanceGroup);
+  }
+
   const directionsGroup = documentObject.createElement('span');
   directionsGroup.className = 'detail-address__directions-group';
-  if (locality) {
-    const separator = documentObject.createElement('span');
-    separator.className = 'detail-address__separator';
-    separator.setAttribute('aria-hidden', 'true');
-    separator.textContent = '·';
-    directionsGroup.append(separator);
-  }
+  if (locality || distanceCopy) directionsGroup.append(createAddressSeparator(documentObject));
   directions.classList.add('detail-directions-inline--desktop');
   directions.replaceChildren(documentObject.createTextNode('Directions'));
   directionsGroup.append(directions);
@@ -266,6 +290,7 @@ function arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documen
 
   address.replaceChildren(location);
   address.dataset.desktopIdentity = 'true';
+  address.dataset.desktopDistance = distanceCopy;
   return true;
 }
 
@@ -286,7 +311,7 @@ export function arrangeDesktopVenueMedia({
   const fanExperiences = detail.querySelector(':scope > .detail-fan-experiences');
   const parties = [...detail.querySelectorAll(':scope > .party-module')];
   const wideDesktop = windowObject?.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
-  arrangeDesktopVenueIdentity({ detail, hero, venue, wideDesktop, documentObject });
+  arrangeDesktopVenueIdentity({ detail, hero, venue, state, wideDesktop, documentObject });
 
   if (!wideDesktop) {
     detail.removeAttribute('data-desktop-profile-arrangement');
