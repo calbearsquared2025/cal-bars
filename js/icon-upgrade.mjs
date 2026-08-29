@@ -23,6 +23,9 @@ const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
 const MOBILE_QUERY = '(max-width: 899px)';
 const WIDE_DESKTOP_QUERY = '(min-width: 1100px)';
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+const DESKTOP_TRAY_MOTION_DURATION = '210ms';
+const DESKTOP_TRAY_MOTION_EASING = 'cubic-bezier(.16, 1, .3, 1)';
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
@@ -58,6 +61,33 @@ function mobileDirectMapProfile(state) {
     document.body?.dataset.view === 'map' &&
     window.matchMedia?.(MOBILE_QUERY)?.matches === true
   );
+}
+
+function setDesktopTransition(element, property, enabled, reduceMotion) {
+  if (!element) return;
+  if (!enabled) {
+    element.style.removeProperty('transition-property');
+    element.style.removeProperty('transition-duration');
+    element.style.removeProperty('transition-timing-function');
+    return;
+  }
+  element.style.transitionProperty = reduceMotion ? 'none' : property;
+  if (reduceMotion) {
+    element.style.removeProperty('transition-duration');
+    element.style.removeProperty('transition-timing-function');
+    return;
+  }
+  element.style.transitionDuration = DESKTOP_TRAY_MOTION_DURATION;
+  element.style.transitionTimingFunction = DESKTOP_TRAY_MOTION_EASING;
+}
+
+function syncDesktopTrayMotion() {
+  const wideDesktop = window.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
+  const reduceMotion = window.matchMedia?.(REDUCED_MOTION_QUERY)?.matches === true;
+  const tray = document.querySelector('#map-view > #venue-tray');
+  const controls = document.querySelector('#map-view .maplibregl-ctrl-top-right');
+  setDesktopTransition(tray, 'width', wideDesktop, reduceMotion);
+  setDesktopTransition(controls, 'right', wideDesktop, reduceMotion);
 }
 
 function createDetailLocalMarker(venue, state) {
@@ -193,6 +223,7 @@ export function upgradeRenderedIcons(root = document) {
 function runRefinements() {
   const state = window.CGBApp?.getState?.();
   const directMobileProfile = mobileDirectMapProfile(state);
+  syncDesktopTrayMotion();
   if (!directMobileProfile) {
     enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
     renderFanExperiences({ app: window.CGBApp, documentObject: document });
@@ -242,6 +273,7 @@ function connectApp() {
 function initialize() {
   runRefinements();
   window.matchMedia?.(WIDE_DESKTOP_QUERY)?.addEventListener?.('change', scheduleUpgrade);
+  window.matchMedia?.(REDUCED_MOTION_QUERY)?.addEventListener?.('change', scheduleUpgrade);
   connectApp();
 }
 
