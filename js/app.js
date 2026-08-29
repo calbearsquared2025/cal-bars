@@ -1076,7 +1076,7 @@ function showAllLocations() {
   return savedLocation;
 }
 
-function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
+function showNearbyLocations({ trayState = 'full', focus = true, preserveSelectedProfile = false } = {}) {
   const remembered = normalizedUserLocation(state.nearbyOrigin);
   if (!remembered) return false;
   state.nearbyOrigin = remembered;
@@ -1084,7 +1084,7 @@ function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
   state.listQuery = '';
   dom.searchInput.value = '';
   dom.searchDropdown.hidden = true;
-  state.detailMode = false;
+  if (!preserveSelectedProfile) state.detailMode = false;
   setTrayState(trayState);
   updateRouteForGame();
   const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
@@ -1098,9 +1098,14 @@ function showNearbyLocations({ trayState = 'full', focus = true } = {}) {
 
 function locateOnMap() {
   const mobile = isMobileLayout();
-  const preserveSelectedProfile = mobile && Boolean(state.selectedVenueId) && state.trayState === 'selected';
+  const preserveSelectedProfile = Boolean(state.selectedVenueId) &&
+    (mobile ? state.trayState === 'selected' : state.detailMode);
   const nextTrayState = preserveSelectedProfile ? 'selected' : mobile ? 'peek' : 'full';
-  if (!normalizedUserLocation(state.origin) && showNearbyLocations({ trayState: nextTrayState, focus: true })) return;
+  if (!normalizedUserLocation(state.origin) && showNearbyLocations({
+    trayState: nextTrayState,
+    focus: true,
+    preserveSelectedProfile
+  })) return;
   if (!navigator.geolocation) return showStatus('Location is not available in this browser');
 
   dom.nearMe.disabled = true;
@@ -1109,7 +1114,7 @@ function locateOnMap() {
     state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
     rememberNearbyOrigin();
     state.listQuery = '';
-    state.detailMode = false;
+    if (!preserveSelectedProfile) state.detailMode = false;
     dom.searchInput.value = '';
     dom.searchDropdown.hidden = true;
     setTrayState(nextTrayState);
