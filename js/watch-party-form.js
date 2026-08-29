@@ -47,21 +47,18 @@ function syncDetailContributionVisibility(detail) {
   if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
 }
 
-function createWatchPartySection(documentObject, { existingParty, href, onActivate }) {
+function createWatchPartySection(documentObject, { href, onActivate }) {
   const section = documentObject.createElement('section');
   section.className = 'detail-watch-party-cta';
-  section.classList.toggle('detail-watch-party-cta--additional', Boolean(existingParty));
   section.dataset.watchPartyFormSection = 'true';
 
   const title = documentObject.createElement('strong');
   title.className = 'detail-watch-party-cta__title';
-  title.textContent = existingParty ? 'Another watch party?' : 'Watch Party';
+  title.textContent = 'Watch Party';
 
   const prompt = documentObject.createElement('p');
   prompt.className = 'detail-watch-party-cta__prompt';
-  prompt.textContent = existingParty
-    ? 'Hosting another gathering here? Add another watch party for this game.'
-    : 'No Watch Party listed for this game. Organizing one or know of one? Add it so other Bears can find it.';
+  prompt.textContent = 'No Watch Party listed for this game. Organizing one or know of one? Add it so other Bears can find it.';
 
   const link = documentObject.createElement('a');
   link.className = 'detail-watch-party-cta__action';
@@ -70,13 +67,24 @@ function createWatchPartySection(documentObject, { existingParty, href, onActiva
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = existingParty
-    ? 'Add another watch party'
-    : 'Add a Watch Party';
+  link.textContent = 'Add a Watch Party';
   link.addEventListener('click', onActivate);
 
   section.append(title, prompt, link);
   return section;
+}
+
+function createAdditionalWatchPartyAction(documentObject, { href, onActivate }) {
+  const link = documentObject.createElement('a');
+  link.className = 'detail-contribution__action';
+  link.dataset.watchPartyFormEntryPoint = 'true';
+  link.dataset.cgbFormTitle = 'Add a Watch Party';
+  link.href = href;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = 'Add another Watch Party';
+  link.addEventListener('click', onActivate);
+  return link;
 }
 
 async function launchWatchPartyForm({
@@ -151,15 +159,23 @@ export function renderWatchPartyFormEntryPoint({
   const maintenance = detail.querySelector(':scope > .detail-contribution');
   if (!maintenance) return '';
 
-  const section = createWatchPartySection(documentObject, {
-    existingParty,
-    href,
-    onActivate(event) {
-      event.preventDefault();
-      launchWatchPartyForm({ app, context, href, documentObject, windowObject });
-    }
-  });
-  maintenance.before(section);
+  const onActivate = (event) => {
+    event.preventDefault();
+    launchWatchPartyForm({ app, context, href, documentObject, windowObject });
+  };
+
+  if (existingParty) {
+    const actions = maintenance.querySelector(':scope > .detail-contribution__actions');
+    if (!actions) return '';
+    const link = createAdditionalWatchPartyAction(documentObject, { href, onActivate });
+    const secondAction = actions.children[1] || null;
+    actions.insertBefore(link, secondAction);
+    maintenance.hidden = false;
+  } else {
+    const section = createWatchPartySection(documentObject, { href, onActivate });
+    maintenance.before(section);
+  }
+
   syncDetailContributionVisibility(detail);
   return href;
 }
