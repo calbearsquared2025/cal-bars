@@ -1,3 +1,4 @@
+import './postgame-experience.js';
 import { trackCgbEvent } from './analytics.mjs';
 import {
   beginIntentTransaction,
