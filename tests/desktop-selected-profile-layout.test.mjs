@@ -15,6 +15,20 @@ test('wide desktop expands only the selected profile and keeps browse width unch
   assert.match(profileCss, /\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) \.maplibregl-ctrl-top-right\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 36vw, 520px\) \+ 26px\)\s*!important;/);
 });
 
+test('wide desktop tray width and map controls animate together with reduced-motion support', async () => {
+  const source = await read('js/icon-upgrade.mjs');
+
+  assert.match(source, /const REDUCED_MOTION_QUERY = '\(prefers-reduced-motion: reduce\)'/);
+  assert.match(source, /const DESKTOP_TRAY_MOTION_DURATION = '210ms'/);
+  assert.match(source, /const DESKTOP_TRAY_MOTION_EASING = 'cubic-bezier\(\.16, 1, \.3, 1\)'/);
+  assert.match(source, /function syncDesktopTrayMotion\(\)/);
+  assert.match(source, /setDesktopTransition\(tray, 'width', wideDesktop, reduceMotion\)/);
+  assert.match(source, /setDesktopTransition\(controls, 'right', wideDesktop, reduceMotion\)/);
+  assert.match(source, /element\.style\.transitionProperty = reduceMotion \? 'none' : property/);
+  assert.match(source, /window\.matchMedia\?\.\(REDUCED_MOTION_QUERY\)\?\.addEventListener\?\.\('change', scheduleUpgrade\)/);
+  assert.doesNotMatch(source, /document\.createElement\('style'\)/);
+});
+
 test('wide desktop pairs venue identity with CGB Says instead of a separate attendance column', async () => {
   const [css, iconSource, profileSource] = await Promise.all([
     read('css/venue-profile.css'),
