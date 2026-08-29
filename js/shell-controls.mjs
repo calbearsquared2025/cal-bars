@@ -379,9 +379,15 @@ function updateAddContext() {
   }
   const place = [venue.city, venue.region].filter(Boolean).join(', ');
   dom.addContextName.textContent = venue.name;
-  dom.addContextCopy.textContent = isMobileLayout()
-    ? `${place ? `${place} is` : 'This place is'} selected. Available actions will use this place when possible.`
-    : place || 'Selected location';
+  if (isMobileLayout()) {
+    dom.addContextCopy.replaceChildren();
+    if (place) {
+      dom.addContextCopy.append(document.createTextNode(place), document.createElement('br'));
+    }
+    dom.addContextCopy.append(document.createTextNode('Available actions will use this place when possible.'));
+  } else {
+    dom.addContextCopy.textContent = place || 'Selected location';
+  }
   dom.reportPartyButton.hidden = !watchPartyIssueUrl(venue.venue_id);
 }
 

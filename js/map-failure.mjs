@@ -4,6 +4,7 @@ const observedMaps = new WeakSet();
 const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
 const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
+const LOADING_FADE_MS = 240;
 
 function element(documentObject, selector) {
   return documentObject?.querySelector?.(selector) || null;
@@ -16,7 +17,8 @@ function ensureFallbackStyles(documentObject) {
   const style = documentObject.createElement('style');
   style.id = FALLBACK_STYLE_ID;
   style.textContent = `
-    .map--fallback {
+    .map--fallback,
+    .map--loading {
       background: #06152f;
     }
 
@@ -36,6 +38,15 @@ function ensureFallbackStyles(documentObject) {
       text-align: center;
     }
 
+    .map-fallback--loading {
+      opacity: 1;
+      transition: opacity ${LOADING_FADE_MS}ms ease;
+    }
+
+    .map-fallback--loading.map-fallback--leaving {
+      opacity: 0;
+    }
+
     .map-fallback__card {
       display: block;
       width: min(92%, 960px);
@@ -45,6 +56,10 @@ function ensureFallbackStyles(documentObject) {
       object-fit: contain;
       opacity: 0;
       transition: opacity 120ms ease;
+    }
+
+    .map-fallback--loading .map-fallback__card {
+      max-height: 100%;
     }
 
     .map-fallback__card--loaded {
@@ -67,6 +82,13 @@ function ensureFallbackStyles(documentObject) {
       font-size: clamp(.85rem, 1.5vw, 1rem);
       line-height: 1.4;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .map-fallback--loading,
+      .map-fallback__card {
+        transition: none;
+      }
+    }
   `;
   documentObject.head.append(style);
 }
@@ -81,14 +103,31 @@ function markCardLoaded(image, loaded) {
     : 'map-fallback__card';
 }
 
-function ensureFallbackContent({ fallback, state, documentObject }) {
+function setFallbackMode(fallback, mode) {
+  fallback?.classList?.remove?.('map-fallback--loading', 'map-fallback--failure', 'map-fallback--leaving');
+  if (mode) fallback?.classList?.add?.(`map-fallback--${mode}`);
+}
+
+function createFailureMessage(documentObject) {
+  const message = documentObject.createElement('div');
+  message.className = 'map-fallback__message';
+
+  const heading = documentObject.createElement('strong');
+  heading.textContent = FALLBACK_HEADING;
+
+  const copy = documentObject.createElement('span');
+  copy.textContent = FALLBACK_COPY;
+
+  message.append(heading, copy);
+  return message;
+}
+
+function ensureFallbackContent({ fallback, state, documentObject, includeMessage }) {
   if (!fallback || !documentObject?.createElement) return;
   ensureFallbackStyles(documentObject);
 
   let image = fallback.querySelector?.('#map-fallback-card') || null;
-  let message = fallback.querySelector?.('.map-fallback__message') || null;
-
-  if (!image || !message) {
+  if (!image) {
     image = documentObject.createElement('img');
     image.id = 'map-fallback-card';
     image.className = 'map-fallback__card';
@@ -96,18 +135,16 @@ function ensureFallbackContent({ fallback, state, documentObject }) {
     image.decoding = 'async';
     image.width = 1200;
     image.height = 630;
+    fallback.replaceChildren(image);
+  }
 
-    message = documentObject.createElement('div');
-    message.className = 'map-fallback__message';
-
-    const heading = documentObject.createElement('strong');
-    heading.textContent = FALLBACK_HEADING;
-
-    const copy = documentObject.createElement('span');
-    copy.textContent = FALLBACK_COPY;
-
-    message.append(heading, copy);
-    fallback.replaceChildren(image, message);
+  let message = fallback.querySelector?.('.map-fallback__message') || null;
+  if (includeMessage && !message) {
+    message = createFailureMessage(documentObject);
+    fallback.append(message);
+  } else if (!includeMessage && message) {
+    if (typeof message.remove === 'function') message.remove();
+    else fallback.replaceChildren(image);
   }
 
   const game = selectedGame(state);
@@ -128,6 +165,49 @@ function ensureFallbackContent({ fallback, state, documentObject }) {
   } else if (image.complete && image.naturalWidth > 0) {
     markCardLoaded(image, true);
   }
+}
+
+export function showMapLoading({
+  app = globalThis.window?.CGBApp,
+  documentObject = globalThis.document
+} = {}) {
+  const mapContainer = element(documentObject, '#map');
+  const fallback = element(documentObject, '#map-fallback');
+  if (!mapContainer || !fallback) return false;
+
+  const state = app?.getState?.();
+  ensureFallbackContent({ fallback, state, documentObject, includeMessage: false });
+  setFallbackMode(fallback, 'loading');
+  fallback.hidden = false;
+  mapContainer.classList?.remove?.('map--fallback');
+  mapContainer.classList?.add?.('map--loading');
+  return true;
+}
+
+export function hideMapLoading({
+  documentObject = globalThis.document,
+  windowObject = globalThis.window
+} = {}) {
+  const mapContainer = element(documentObject, '#map');
+  const fallback = element(documentObject, '#map-fallback');
+  if (!mapContainer || !fallback?.classList?.contains?.('map-fallback--loading')) return false;
+
+  mapContainer.classList?.remove?.('map--loading');
+
+  const finish = () => {
+    if (fallback.classList?.contains?.('map-fallback--failure')) return;
+    fallback.hidden = true;
+    setFallbackMode(fallback, null);
+  };
+
+  if (windowObject?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+    finish();
+    return true;
+  }
+
+  fallback.classList?.add?.('map-fallback--leaving');
+  windowObject?.setTimeout?.(finish, LOADING_FADE_MS);
+  return true;
 }
 
 export function showMapUnavailable({
@@ -154,8 +234,10 @@ export function showMapUnavailable({
     state.userMarker = null;
   }
 
-  ensureFallbackContent({ fallback, state, documentObject });
+  ensureFallbackContent({ fallback, state, documentObject, includeMessage: true });
+  setFallbackMode(fallback, 'failure');
   fallback.hidden = false;
+  mapContainer.classList?.remove?.('map--loading');
   mapContainer.classList?.add?.('map--fallback');
   return true;
 }
@@ -163,7 +245,8 @@ export function showMapUnavailable({
 export function attachMapFailureFallback({
   app = globalThis.window?.CGBApp,
   documentObject = globalThis.document,
-  consoleObject = globalThis.console
+  consoleObject = globalThis.console,
+  windowObject = globalThis.window
 } = {}) {
   const state = app?.getState?.();
   const map = state?.map;
@@ -180,7 +263,12 @@ export function attachMapFailureFallback({
   observedMaps.add(map);
 
   let loaded = Boolean(map.loaded?.());
-  map.on('load', () => { loaded = true; });
+  if (!loaded) showMapLoading({ app, documentObject });
+
+  map.on('load', () => {
+    loaded = true;
+    hideMapLoading({ documentObject, windowObject });
+  });
   map.on('error', (event) => {
     const error = event?.error || event;
     if (loaded) {
@@ -195,10 +283,11 @@ export function attachMapFailureFallback({
 export function initializeMapFailureFallback({
   app = globalThis.window?.CGBApp,
   documentObject = globalThis.document,
-  consoleObject = globalThis.console
+  consoleObject = globalThis.console,
+  windowObject = globalThis.window
 } = {}) {
   if (!app?.subscribe) return false;
-  const attach = () => attachMapFailureFallback({ app, documentObject, consoleObject });
+  const attach = () => attachMapFailureFallback({ app, documentObject, consoleObject, windowObject });
   app.subscribe('rendered', attach);
   app.subscribe('ready', attach);
   attach();
