@@ -20,8 +20,8 @@ test('desktop map licensing controls do not overlap', () => {
   assert.match(source, /\.maplibregl-ctrl-bottom-right\s*\{[\s\S]*?bottom:\s*16px !important;[\s\S]*?left:\s*90px !important;/);
 });
 
-test('desktop Add to CGB reads as an outlined button without moving its grid destination', () => {
-  assert.match(source, /\.mobile-command-bar #mobile-add-button\s*\{[\s\S]*?width:\s*fit-content !important;[\s\S]*?justify-self:\s*center !important;[\s\S]*?border:\s*1px solid var\(--cgb-neutral-300, #cbd0d6\) !important;[\s\S]*?border-radius:\s*8px !important;/);
+test('desktop Add to CGB reads as an outlined button while preserving its equal-width nav column', () => {
+  assert.match(source, /\.mobile-command-bar #mobile-add-button\s*\{[\s\S]*?width:\s*100% !important;[\s\S]*?justify-self:\s*stretch !important;[\s\S]*?border:\s*1px solid var\(--cgb-neutral-300, #cbd0d6\) !important;[\s\S]*?border-radius:\s*8px !important;/);
   assert.doesNotMatch(source, /grid-column:\s*3/);
 });
 
