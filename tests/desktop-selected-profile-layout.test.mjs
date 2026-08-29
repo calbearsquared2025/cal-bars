@@ -22,14 +22,16 @@ test('wide desktop tray width and map controls animate together with reduced-mot
   assert.match(source, /const DESKTOP_TRAY_MOTION_DURATION = '210ms'/);
   assert.match(source, /const DESKTOP_TRAY_MOTION_EASING = 'cubic-bezier\(\.16, 1, \.3, 1\)'/);
   assert.match(source, /function syncDesktopTrayMotion\(\)/);
+  assert.match(source, /const locate = document\.querySelector\('#map-view > \.map-actions'\)/);
   assert.match(source, /setDesktopTransition\(tray, 'width', wideDesktop, reduceMotion\)/);
   assert.match(source, /setDesktopTransition\(controls, 'right', wideDesktop, reduceMotion\)/);
+  assert.match(source, /setDesktopTransition\(locate, 'right', wideDesktop, reduceMotion\)/);
   assert.match(source, /element\.style\.transitionProperty = reduceMotion \? 'none' : property/);
   assert.match(source, /window\.matchMedia\?\.\(REDUCED_MOTION_QUERY\)\?\.addEventListener\?\.\('change', scheduleUpgrade\)/);
   assert.doesNotMatch(source, /document\.createElement\('style'\)/);
 });
 
-test('wide desktop pairs venue identity evenly with CGB Says and keeps the editorial accent content-height', async () => {
+test('wide desktop pairs venue identity evenly with CGB Says and aligns tagged editorial content with the venue heading', async () => {
   const [css, iconSource, profileSource] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/icon-upgrade.mjs'),
@@ -40,6 +42,8 @@ test('wide desktop pairs venue identity evenly with CGB Says and keeps the edito
   assert.match(css, /:has\(> \.detail-editorial\) > \.detail-hero\.detail-hero--has-photo,[\s\S]*?grid-column:\s*1 \/ 7\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
   assert.match(css, /> \.detail-editorial\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*start;[\s\S]*?border-left:\s*0\s*!important;/);
   assert.match(css, /> \.detail-editorial::before\s*\{[\s\S]*?top:\s*12px;[\s\S]*?bottom:\s*12px;/);
+  assert.match(css, /:has\(> \.detail-hero > \.venue-badges > \*\) > \.detail-editorial\s*\{[\s\S]*?padding-top:\s*34px\s*!important;/);
+  assert.match(css, /:has\(> \.detail-hero > \.venue-badges > \*\) > \.detail-editorial::before\s*\{[\s\S]*?top:\s*34px;/);
   assert.match(profileSource, /function arrangeDesktopVenueIdentity/);
   assert.doesNotMatch(iconSource, /syncDesktopProfileAttendance/);
   assert.doesNotMatch(iconSource, /detail-attendance-compact/);
@@ -60,6 +64,19 @@ test('wide desktop address keeps Directions with locality and allows the row to 
   assert.match(source, /address\.replaceChildren\(location\)/);
   assert.match(css, /\.detail-address__locality-row\s*\{[\s\S]*?display:\s*flex;[\s\S]*?flex-wrap:\s*wrap;/);
   assert.match(css, /\.detail-address__directions-group\s*\{[\s\S]*?white-space:\s*nowrap;/);
+});
+
+test('desktop Locations remains navy when Selected is active without changing tab behavior', async () => {
+  const css = await read('css/mobile-polish.css');
+
+  assert.match(css, /@media \(min-width: 900px\)[\s\S]*?#mobile-list-button\s*\{[\s\S]*?color:\s*var\(--cgb-navy-950\)\s*!important;/);
+  assert.doesNotMatch(css, /#mobile-list-button\s*\{[\s\S]*?pointer-events:\s*none/);
+});
+
+test('wide desktop keeps Locate me beside the expanded tray', async () => {
+  const css = await read('css/mobile-polish.css');
+
+  assert.match(css, /@media \(min-width: 1100px\)[\s\S]*?\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) > \.map-actions\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 36vw, 520px\) \+ 36px\);/);
 });
 
 test('wide desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
