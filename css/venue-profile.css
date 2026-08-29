@@ -665,6 +665,14 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     bottom: 12px;
   }
 
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-hero > .venue-badges > *) > .detail-editorial {
+    padding-top: 34px !important;
+  }
+
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-hero > .venue-badges > *) > .detail-editorial::before {
+    top: 34px;
+  }
+
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module {
     display: grid !important;
     grid-template-columns: minmax(0, 1.08fr) minmax(150px, .82fr) !important;
