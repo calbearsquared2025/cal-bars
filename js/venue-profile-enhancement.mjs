@@ -1,4 +1,33 @@
+import './desktop-visual-cohesion.mjs';
+import { getWatchParty } from './core.mjs';
 import { createIcon } from './icons.mjs';
+
+const MOBILE_PLAN_PARTY_ALIGNMENT_STYLE_ID = 'cgb-mobile-plan-party-alignment';
+
+export function installMobilePlanPartyAlignmentStyles(documentObject = globalThis.document) {
+  if (!documentObject?.head || documentObject.getElementById?.(MOBILE_PLAN_PARTY_ALIGNMENT_STYLE_ID)) return false;
+  const style = documentObject.createElement('style');
+  style.id = MOBILE_PLAN_PARTY_ALIGNMENT_STYLE_ID;
+  style.textContent = `
+    @media (max-width: 899px) {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
+        justify-items: stretch !important;
+        text-align: left !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party-status,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party-action {
+        width: 100% !important;
+        justify-self: stretch !important;
+        text-align: left !important;
+      }
+    }
+  `;
+  documentObject.head.append(style);
+  return true;
+}
+
+installMobilePlanPartyAlignmentStyles();
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -36,6 +65,10 @@ export function venuePhotoPresentation(venue = {}) {
     creditUrl: safeHttpUrl(venue.photo_credit_url),
     alt: venuePhotoAltText(venue)
   });
+}
+
+export function detailShareLabel({ snapshot, gameId, venueId } = {}) {
+  return getWatchParty(snapshot, gameId, venueId) ? 'Share Watch Party' : 'Share';
 }
 
 function photoKey(venue, photoUrl) {
@@ -294,6 +327,19 @@ export function arrangeDesktopVenueMedia({
   return true;
 }
 
+function syncDetailShareLabel(detail, state, venue) {
+  const share = detail.querySelector('.detail-primary-actions .detail-share');
+  if (!share) return false;
+  const label = detailShareLabel({
+    snapshot: state.snapshot,
+    gameId: state.gameId,
+    venueId: venue.venue_id
+  });
+  share.textContent = label;
+  share.setAttribute('aria-label', label);
+  return true;
+}
+
 export function enhanceVenueProfile({
   state = globalThis.window?.CGBApp?.getState?.(),
   documentObject = globalThis.document,
@@ -331,5 +377,6 @@ export function enhanceVenueProfile({
   }
 
   moveEditorialDescription(detail, hero, documentObject);
+  syncDetailShareLabel(detail, state, venue);
   return true;
 }
