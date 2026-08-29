@@ -4,6 +4,18 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
+test('selected desktop venue camera is resolved before the map load animation can become visible', async () => {
+  const coordination = await read('js/map-zoom-coordination.mjs');
+
+  assert.match(coordination, /const INITIAL_SELECTED_ZOOM = 11;/);
+  assert.match(coordination, /function applyInitialSelectedCamera\(\)/);
+  assert.match(coordination, /const map = state\?\.map;/);
+  assert.match(coordination, /if \(!map \|\| initialSelectedCameraMaps\.has\(map\) \|\| !state\.selectedVenueId\) return false;/);
+  assert.match(coordination, /map\.jumpTo\(\{[\s\S]*?center,[\s\S]*?zoom: Math\.max\([\s\S]*?INITIAL_SELECTED_ZOOM\)/);
+  assert.match(coordination, /app\.subscribe\('rendered', applyInitialSelectedCamera\)/);
+  assert.match(coordination, /app\.subscribe\('ready', applyInitialSelectedCamera\)/);
+});
+
 test('mobile selected venue camera uses city focus when isolated and regional bounds when nearby venues exist', async () => {
   const refinement = await read('js/map-mobile-refinement.mjs');
 
