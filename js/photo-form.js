@@ -63,14 +63,14 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
   if (localMap) {
     localMap.append(createPhotoFormLink(documentObject, {
       href,
-      label: 'Add a Photo!',
+      label: 'Add a photo!',
       entryPoint: 'map-overlay',
       className: 'detail-local-map__photo-action'
     }));
   } else {
     actions.append(createPhotoFormLink(documentObject, {
       href,
-      label: 'Add a New Photo',
+      label: 'Add a new photo',
       entryPoint: 'contribution',
       className: 'detail-contribution__action'
     }));
