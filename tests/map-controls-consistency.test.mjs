@@ -52,7 +52,7 @@ test('map attendance badges explain Bear counts while the marker retains its ful
   assert.match(app, /badge\.setAttribute\('aria-hidden', 'true'\);/);
 });
 
-test('Locate me preserves a selected mobile profile with a CSS fallback and live tray-edge placement', async () => {
+test('Locate me preserves a selected profile while retaining mobile tray-edge placement', async () => {
   const [app, mobilePolish, mobileRefinement, firstPaint] = await Promise.all([
     read('js/app.js'),
     read('js/mobile-polish.mjs'),
@@ -61,9 +61,9 @@ test('Locate me preserves a selected mobile profile with a CSS fallback and live
   ]);
   assert.doesNotMatch(app, /function locateOnMap\(\) \{\s*if \(!isMobileLayout\(\)\) return;/);
   assert.match(app, /const mobile = isMobileLayout\(\);/);
-  assert.match(app, /const preserveSelectedProfile = mobile && Boolean\(state\.selectedVenueId\) && state\.trayState === 'selected';/);
+  assert.match(app, /const preserveSelectedProfile = Boolean\(state\.selectedVenueId\) &&[\s\S]*?\(mobile \? state\.trayState === 'selected' : state\.detailMode\);/);
   assert.match(app, /const nextTrayState = preserveSelectedProfile \? 'selected' : mobile \? 'peek' : 'full';/);
-  assert.match(app, /showNearbyLocations\(\{ trayState: nextTrayState, focus: true \}\)/);
+  assert.match(app, /showNearbyLocations\(\{[\s\S]*?trayState: nextTrayState,[\s\S]*?focus: true,[\s\S]*?preserveSelectedProfile[\s\S]*?\}\)/);
   assert.match(app, /setTrayState\(nextTrayState\);/);
   assert.doesNotMatch(mobilePolish, /--map-action-top/);
   assert.match(mobileRefinement, /function syncLocateControlPosition\(\)[\s\S]*?const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);

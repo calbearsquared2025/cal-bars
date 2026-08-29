@@ -240,9 +240,15 @@ async function validateDesktopContributionEntry() {
   const addRect = add.getBoundingClientRect();
   const selectedRect = selected.getBoundingClientRect();
   const locationsRect = locations.getBoundingClientRect();
-  check(addRect.height <= 35, 'Desktop Add to CGB should remain subordinate to the main view toggle');
-  check(locationsRect.height >= 39 && selectedRect.height >= 39, 'Locations and Selected should retain the larger joined-toggle treatment');
-  check(addRect.left - selectedRect.right >= 8, 'Desktop Add to CGB should be visually separated from Locations and Selected');
+  const widths = [locationsRect.width, selectedRect.width, addRect.width];
+  const centers = [
+    locationsRect.left + locationsRect.width / 2,
+    selectedRect.left + selectedRect.width / 2,
+    addRect.left + addRect.width / 2
+  ];
+  check([locationsRect.height, selectedRect.height, addRect.height].every((height) => height >= 39), 'Desktop tray destinations should share the same primary navigation height');
+  check(Math.max(...widths) - Math.min(...widths) <= 1.5, 'Desktop Locations, Selected, and Add to CGB should occupy equal-width columns');
+  check(Math.abs((centers[1] - centers[0]) - (centers[2] - centers[1])) <= 1.5, 'Desktop tray destinations should be evenly centered across the tray');
 
   const selectedVenueId = state()?.selectedVenueId || '';
   const selectedVenueName = state()?.snapshot?.venues?.find((venue) => venue.venue_id === selectedVenueId)?.name || '';

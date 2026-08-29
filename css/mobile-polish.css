@@ -196,7 +196,6 @@
     width: 100%;
     padding-right: 44px;
   }
-
   .site-header > .site-header__brand-row > #header-about-button {
     position: absolute !important;
     top: calc(env(safe-area-inset-top, 0px) + 8px) !important;
@@ -499,6 +498,10 @@
     pointer-events: auto;
   }
 
+  #mobile-list-button {
+    color: var(--cgb-navy-950) !important;
+  }
+
   .map-actions #near-me-button {
     width: 44px;
     min-width: 44px;
@@ -534,6 +537,12 @@
 
   .map-actions #near-me-button:active {
     background: var(--cgb-neutral-100);
+  }
+}
+
+@media (min-width: 1100px) {
+  body[data-view="map"][data-command-surface="map"] .map-view:has(> #venue-tray.venue-tray.tray--selected) > .map-actions {
+    right: calc(clamp(500px, 36vw, 520px) + 36px);
   }
 }
 

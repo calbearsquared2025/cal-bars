@@ -63,12 +63,17 @@ function placeAddLocationAction() {
 
 function syncDesktopContributionEntry() {
   const bar = document.querySelector('.mobile-command-bar');
+  const locations = document.querySelector('#mobile-list-button');
+  const selected = document.querySelector('#mobile-map-button');
   const button = document.querySelector('#mobile-add-button');
   const mark = button?.querySelector('.mobile-command__add-mark');
-  if (!bar || !button || !mark) return;
+  if (!bar || !locations || !selected || !button || !mark) return;
 
   if (isMobile()) {
     bar.style.removeProperty('grid-template-columns');
+    [locations, selected].forEach((item) => {
+      ['grid-row', 'grid-column', 'width', 'justify-content'].forEach((property) => item.style.removeProperty(property));
+    });
     [
       'display', 'grid-row', 'grid-column', 'width', 'height', 'min-height', 'min-width',
       'align-items', 'justify-content', 'gap', 'margin', 'padding', 'color', 'background',
@@ -82,26 +87,38 @@ function syncDesktopContributionEntry() {
     return;
   }
 
-  bar.style.gridTemplateColumns = 'minmax(0, 1fr) minmax(0, 1fr) 12px auto';
+  bar.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+  Object.assign(locations.style, {
+    gridRow: '1',
+    gridColumn: '1',
+    width: '100%',
+    justifyContent: 'center'
+  });
+  Object.assign(selected.style, {
+    gridRow: '1',
+    gridColumn: '2',
+    width: '100%',
+    justifyContent: 'center'
+  });
   Object.assign(button.style, {
     display: 'flex',
     gridRow: '1',
-    gridColumn: '4',
-    width: 'auto',
-    height: '34px',
-    minHeight: '34px',
+    gridColumn: '3',
+    width: '100%',
+    height: '40px',
+    minHeight: '40px',
     minWidth: '0',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '4px',
     margin: '0',
-    padding: '0 4px',
+    padding: '0',
     color: 'var(--cgb-navy-800, #0b2856)',
     background: 'transparent',
     border: '0',
     borderRadius: '0',
     boxShadow: 'none',
-    fontSize: '.64rem',
+    fontSize: '.7rem',
     fontWeight: '800',
     letterSpacing: '.01em',
     lineHeight: '1',

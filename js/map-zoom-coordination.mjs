@@ -1,6 +1,8 @@
 const ZOOM_CONTROL_DURATION_MS = 220;
 const ZOOM_VISIBILITY_SETTLE_MS = 180;
 const ZOOM_MATCH_EPSILON = 0.05;
+const INITIAL_SELECTED_ZOOM = 11;
+const APP_CONNECT_MAX_ATTEMPTS = 1200;
 
 let pendingTargetMap = null;
 let pendingTargetZoom = null;
@@ -11,6 +13,9 @@ let patchedEaseTo = null;
 let suppressionVenueId = '';
 let suppressionExpiresAt = 0;
 let suppressionRestoreTimer = 0;
+let appConnected = false;
+let appConnectAttempts = 0;
+const initialSelectedCameraMaps = new WeakSet();
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
@@ -31,6 +36,23 @@ function selectedVenueCoordinates(state = appState()) {
   const latitude = Number(venue?.latitude);
   if (![longitude, latitude].every(Number.isFinite)) return null;
   return [longitude, latitude];
+}
+
+function applyInitialSelectedCamera() {
+  const state = appState();
+  const map = state?.map;
+  if (!map || initialSelectedCameraMaps.has(map) || !state.selectedVenueId) return false;
+
+  const center = selectedVenueCoordinates(state);
+  if (!center || typeof map.jumpTo !== 'function') return false;
+
+  const currentZoom = Number(map.getZoom?.());
+  map.jumpTo({
+    center,
+    zoom: Math.max(Number.isFinite(currentZoom) ? currentZoom : 0, INITIAL_SELECTED_ZOOM)
+  });
+  initialSelectedCameraMaps.add(map);
+  return true;
 }
 
 function centerCoordinates(center) {
@@ -161,8 +183,24 @@ function handleZoomControlClick(event) {
   coordinatedZoom(map, state, delta);
 }
 
+function connectApp() {
+  if (appConnected) return;
+  const app = window.CGBApp;
+  if (!app?.subscribe) {
+    appConnectAttempts += 1;
+    if (appConnectAttempts <= APP_CONNECT_MAX_ATTEMPTS) window.setTimeout(connectApp, 25);
+    return;
+  }
+
+  appConnected = true;
+  app.subscribe('rendered', applyInitialSelectedCamera);
+  app.subscribe('ready', applyInitialSelectedCamera);
+  applyInitialSelectedCamera();
+}
+
 function initialize() {
   document.addEventListener('click', handleZoomControlClick, { capture: true });
+  connectApp();
 }
 
 if (document.readyState === 'loading') {

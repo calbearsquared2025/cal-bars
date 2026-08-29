@@ -57,11 +57,13 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
   if (!actions) return '';
 
-  const localMap = detail.querySelector(':scope > .detail-hero > .detail-local-map');
+  const localMap = detail.querySelector(
+    ':scope > .detail-hero > .detail-local-map, :scope > .detail-local-map'
+  );
   if (localMap) {
     localMap.append(createPhotoFormLink(documentObject, {
       href,
-      label: 'Add a photo!',
+      label: 'ADD A PHOTO',
       entryPoint: 'map-overlay',
       className: 'detail-local-map__photo-action'
     }));

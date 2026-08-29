@@ -14,3 +14,12 @@ test('photo upload links bypass the embedded Google Form host', () => {
     /trigger\.dataset\.googleFormExternal === 'true'/
   );
 });
+
+test('photo overlay follows the local map when desktop profile layout moves it out of the hero', () => {
+  assert.match(
+    photoFormSource,
+    /:scope > \.detail-hero > \.detail-local-map, :scope > \.detail-local-map/
+  );
+  assert.match(photoFormSource, /entryPoint: 'map-overlay'/);
+  assert.match(photoFormSource, /className: 'detail-local-map__photo-action'/);
+});

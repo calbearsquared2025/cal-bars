@@ -4,6 +4,18 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
+test('selected desktop venue camera is resolved before the map load animation can become visible', async () => {
+  const coordination = await read('js/map-zoom-coordination.mjs');
+
+  assert.match(coordination, /const INITIAL_SELECTED_ZOOM = 11;/);
+  assert.match(coordination, /function applyInitialSelectedCamera\(\)/);
+  assert.match(coordination, /const map = state\?\.map;/);
+  assert.match(coordination, /if \(!map \|\| initialSelectedCameraMaps\.has\(map\) \|\| !state\.selectedVenueId\) return false;/);
+  assert.match(coordination, /map\.jumpTo\(\{[\s\S]*?center,[\s\S]*?zoom: Math\.max\([\s\S]*?INITIAL_SELECTED_ZOOM\)/);
+  assert.match(coordination, /app\.subscribe\('rendered', applyInitialSelectedCamera\)/);
+  assert.match(coordination, /app\.subscribe\('ready', applyInitialSelectedCamera\)/);
+});
+
 test('mobile selected venue camera uses city focus when isolated and regional bounds when nearby venues exist', async () => {
   const refinement = await read('js/map-mobile-refinement.mjs');
 
@@ -30,4 +42,13 @@ test('mobile Locate me control follows the live selected tray edge', async () =>
   assert.match(refinement, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
   assert.match(refinement, /new ResizeObserver\(scheduleLocateControlPosition\)/);
   assert.match(refinement, /window\.visualViewport\?\.addEventListener\?\.\('resize', scheduleLocateControlPosition\)/);
+});
+
+test('desktop Locate me preserves a selected Venue Profile so distance can render in its address', async () => {
+  const app = await read('js/app.js');
+
+  assert.match(app, /function showNearbyLocations\(\{ trayState = 'full', focus = true, preserveSelectedProfile = false \} = \{\}\)/);
+  assert.match(app, /const preserveSelectedProfile = Boolean\(state\.selectedVenueId\) &&[\s\S]*?\(mobile \? state\.trayState === 'selected' : state\.detailMode\)/);
+  assert.match(app, /showNearbyLocations\(\{[\s\S]*?trayState: nextTrayState,[\s\S]*?focus: true,[\s\S]*?preserveSelectedProfile[\s\S]*?\}\)/);
+  assert.match(app, /if \(!preserveSelectedProfile\) state\.detailMode = false;/);
 });

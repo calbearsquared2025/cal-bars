@@ -20,6 +20,26 @@ test('desktop map licensing controls do not overlap', () => {
   assert.match(source, /\.maplibregl-ctrl-bottom-right\s*\{[\s\S]*?bottom:\s*16px !important;[\s\S]*?left:\s*90px !important;/);
 });
 
+test('desktop Add to CGB reads as an outlined button while preserving its equal-width nav column', () => {
+  assert.match(source, /\.mobile-command-bar #mobile-add-button\s*\{[\s\S]*?width:\s*100% !important;[\s\S]*?justify-self:\s*stretch !important;[\s\S]*?border:\s*1px solid var\(--cgb-neutral-300, #cbd0d6\) !important;[\s\S]*?border-radius:\s*8px !important;/);
+  assert.doesNotMatch(source, /grid-column:\s*3/);
+});
+
+test('desktop local map photo prompt is a compact upper-left overlay', () => {
+  assert.match(source, /\.detail-local-map__photo-action\s*\{[\s\S]*?top:\s*12px !important;[\s\S]*?right:\s*auto !important;[\s\S]*?bottom:\s*auto !important;[\s\S]*?left:\s*12px !important;/);
+  assert.match(source, /\.detail-local-map__photo-action\s*\{[\s\S]*?text-transform:\s*uppercase !important;/);
+});
+
+test('desktop game selector opens as a nonmodal dropdown anchored to the selector', () => {
+  assert.match(source, /function openDesktopGameDropdown/);
+  assert.match(source, /dialog\.show\(\)/);
+  assert.doesNotMatch(source, /dialog\.showModal\(\)/);
+  assert.match(source, /const rect = button\.getBoundingClientRect\(\)/);
+  assert.match(source, /dialog\.style\.top = `\$\{Math\.round\(rect\.bottom \+ 6\)\}px`/);
+  assert.match(source, /button\.addEventListener\('click',[\s\S]*?event\.stopImmediatePropagation\(\)[\s\S]*?openDesktopGameDropdown/);
+  assert.match(source, /\.game-dialog\.game-dialog--dropdown \.dialog-header\s*\{[\s\S]*?display:\s*none;/);
+});
+
 test('desktop Add surface uses warm cream with white action cards and a gold selected-place accent', () => {
   assert.match(source, /#add-surface > \.command-surface__shell[\s\S]*?background: var\(--cgb-warm-50, #f7f6f2\)/);
   assert.match(source, /#add-surface \.add-context[\s\S]*?background: #fbfaf5[\s\S]*?border-left: 4px solid var\(--cgb-gold-400, #fdb515\)/);
@@ -27,11 +47,12 @@ test('desktop Add surface uses warm cream with white action cards and a gold sel
   assert.match(source, /title\.textContent = 'Add somewhere else'/);
 });
 
-test('desktop footer contains only the requested compact utility content', () => {
+test('desktop footer keeps the compact utility content with the full affiliation disclaimer', () => {
   assert.match(source, /brand\.textContent = 'CAL GOLDEN BARS'/);
-  assert.match(source, /addButton\.textContent = 'Add to CGB'/);
   assert.match(source, /socialLink\.textContent = '@calbearsquared'/);
   assert.match(source, /disclaimer\.textContent = 'Not affiliated with Cal Athletics or the California Alumni Association'/);
+  assert.match(source, /footer\.replaceChildren\(\s*brand,\s*aboutButton,\s*socialLink,\s*disclaimer\s*\)/);
+  assert.doesNotMatch(source, /addButton\.textContent = 'Add to CGB'/);
   assert.doesNotMatch(source, /CrowdMapped/i);
   assert.match(source, /background: var\(--cgb-warm-50, #f7f6f2\)/);
 });

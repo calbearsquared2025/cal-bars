@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import {
+  bearCountCopy,
   buildGameUrl,
   buildVenueUrl,
   findExactVenueMatch,
@@ -99,6 +100,12 @@ test('selected-game activity and venue type drive result priority', () => {
 test('public aggregate counts resolve by game and venue', () => {
   assert.equal(getFanCount(snapshot, UCLA_GAME_ID, 'ven_000001'), 3);
   assert.equal(getHistoryCount(snapshot, 'ven_000001'), 5);
+});
+
+test('attendance copy uses the full Cal Golden Bars name', () => {
+  assert.equal(bearCountCopy(1), '1 Bear attending on Cal Golden Bars');
+  assert.equal(bearCountCopy(2), '2 Bears attending on Cal Golden Bars');
+  assert.equal(bearCountCopy(0), 'No Bears on Cal Golden Bars yet.');
 });
 
 test('venue search distinguishes exact venue selection from city or ZIP filtering', () => {
