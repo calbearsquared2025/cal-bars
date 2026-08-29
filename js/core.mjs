@@ -123,9 +123,9 @@ export function getHistoryCount(snapshot, venueId) {
 
 export function bearCountCopy(count) {
   const total = Number(count);
-  if (total === 1) return '1 Bear attending on CGB';
-  if (total > 1) return `${total} Bears attending on CGB`;
-  return 'No Bears on CGB yet.';
+  if (total === 1) return '1 Bear attending on Cal Golden Bars';
+  if (total > 1) return `${total} Bears attending on Cal Golden Bars`;
+  return 'No Bears on Cal Golden Bars yet.';
 }
 
 export function historyCountCopy(count) {
