@@ -10,11 +10,11 @@ import {
 } from './postgame-experience-prompt.mjs';
 
 function storageGet(key) {
-  try { return window.localStorage.getItem(key); } catch (_) { return null; }
+  try { return globalThis.window?.localStorage?.getItem(key) ?? null; } catch (_) { return null; }
 }
 
 function storageSet(key, value) {
-  try { window.localStorage.setItem(key, value); } catch (_) {}
+  try { globalThis.window?.localStorage?.setItem(key, value); } catch (_) {}
 }
 
 // Capture the persisted selection before fan-intent startup prunes completed games.
@@ -54,6 +54,8 @@ async function bootPostgameExperience() {
   });
 }
 
-bootPostgameExperience().catch((error) => {
-  console.error('Postgame experience prompt initialization failed.', error);
-});
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  bootPostgameExperience().catch((error) => {
+    console.error('Postgame experience prompt initialization failed.', error);
+  });
+}
