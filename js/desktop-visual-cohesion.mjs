@@ -20,6 +20,17 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         background: var(--cgb-white, #fff) !important;
       }
 
+      .maptiler-logo {
+        left: 24px !important;
+        bottom: 16px !important;
+      }
+
+      .maplibregl-ctrl-bottom-right {
+        right: auto !important;
+        bottom: 16px !important;
+        left: 90px !important;
+      }
+
       #add-surface .add-context {
         color: var(--cgb-navy-950, #010133) !important;
         background: #fbfaf5 !important;
