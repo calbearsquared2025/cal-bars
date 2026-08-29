@@ -15,6 +15,11 @@ test('desktop map search uses a white field surface', () => {
   assert.match(source, /\.map-toolbar \.search-field[\s\S]*?background: var\(--cgb-white, #fff\) !important;/);
 });
 
+test('desktop map licensing controls do not overlap', () => {
+  assert.match(source, /\.maptiler-logo\s*\{[\s\S]*?left:\s*24px !important;[\s\S]*?bottom:\s*16px !important;/);
+  assert.match(source, /\.maplibregl-ctrl-bottom-right\s*\{[\s\S]*?bottom:\s*16px !important;[\s\S]*?left:\s*90px !important;/);
+});
+
 test('desktop Add surface uses warm cream with white action cards and a gold selected-place accent', () => {
   assert.match(source, /#add-surface > \.command-surface__shell[\s\S]*?background: var\(--cgb-warm-50, #f7f6f2\)/);
   assert.match(source, /#add-surface \.add-context[\s\S]*?background: #fbfaf5[\s\S]*?border-left: 4px solid var\(--cgb-gold-400, #fdb515\)/);
