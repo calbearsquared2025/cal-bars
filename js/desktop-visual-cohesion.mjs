@@ -33,9 +33,9 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
       }
 
       .mobile-command-bar #mobile-add-button {
-        width: fit-content !important;
-        min-width: 104px !important;
-        justify-self: center !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        justify-self: stretch !important;
         padding-inline: 10px !important;
         background: var(--cgb-white, #fff) !important;
         border: 1px solid var(--cgb-neutral-300, #cbd0d6) !important;
