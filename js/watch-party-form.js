@@ -184,13 +184,16 @@ function initializeWatchPartyFormEntryPoint() {
   const app = window.CGBApp;
   if (!app?.subscribe) return;
 
+  // Let the other maintenance-action owners render first so an existing-party action can
+  // deterministically occupy the requested second row on every app render.
+  initializeCalBarNominationEntry({ app, documentObject: document });
+  initializePhotoFormEntry({ app, documentObject: document });
+  initializeListingUpdateEntry({ app, documentObject: document });
+
   const render = () => renderWatchPartyFormEntryPoint({ app, documentObject: document, windowObject: window });
   app.subscribe('rendered', render);
   app.subscribe('ready', render);
   render();
-  initializeCalBarNominationEntry({ app, documentObject: document });
-  initializePhotoFormEntry({ app, documentObject: document });
-  initializeListingUpdateEntry({ app, documentObject: document });
 }
 
 initializeWatchPartyFormEntryPoint();
