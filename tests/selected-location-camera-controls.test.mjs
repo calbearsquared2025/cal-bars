@@ -43,3 +43,12 @@ test('mobile Locate me control follows the live selected tray edge', async () =>
   assert.match(refinement, /new ResizeObserver\(scheduleLocateControlPosition\)/);
   assert.match(refinement, /window\.visualViewport\?\.addEventListener\?\.\('resize', scheduleLocateControlPosition\)/);
 });
+
+test('desktop Locate me preserves a selected Venue Profile so distance can render in its address', async () => {
+  const app = await read('js/app.js');
+
+  assert.match(app, /function showNearbyLocations\(\{ trayState = 'full', focus = true, preserveSelectedProfile = false \} = \{\}\)/);
+  assert.match(app, /const preserveSelectedProfile = Boolean\(state\.selectedVenueId\) &&[\s\S]*?\(mobile \? state\.trayState === 'selected' : state\.detailMode\)/);
+  assert.match(app, /showNearbyLocations\(\{[\s\S]*?trayState: nextTrayState,[\s\S]*?focus: true,[\s\S]*?preserveSelectedProfile[\s\S]*?\}\)/);
+  assert.match(app, /if \(!preserveSelectedProfile\) state\.detailMode = false;/);
+});
