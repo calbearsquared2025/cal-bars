@@ -24,7 +24,7 @@ const CGB_TABS = Object.freeze({
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'external_source', 'external_place_id',
     'short_description', 'publication_status', 'source_submission_id', 'created_at',
-    'updated_at', 'venue_tags'
+    'updated_at'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
@@ -34,7 +34,7 @@ const CGB_TABS = Object.freeze({
     'watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type',
     'official_event_url', 'source_type', 'event_start_at', 'age_policy', 'sound_status',
     'restrictions_note', 'game_day_note', 'event_status', 'publication_status',
-    'source_submission_id', 'created_at', 'updated_at', 'feature_tags'
+    'source_submission_id', 'created_at', 'updated_at'
   ],
   Fan_Intent: [
     'fan_intent_id', 'browser_id', 'game_id', 'venue_id', 'status',
@@ -302,7 +302,7 @@ function buildVenueHistoryCounts_(rows, venueIds, gameIds) {
     gamesByVenue[row.venue_id].add(row.game_id);
   });
   return Array.from(venueIds).sort().map(function(venueId) {
-    const games = gamesByVenue[venueId];
+    const games = gamesByVenue[row.venue_id];
     return { venue_id: venueId, past_game_count: games ? games.size : 0 };
   });
 }
