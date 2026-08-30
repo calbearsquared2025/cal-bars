@@ -24,7 +24,8 @@ const viewports = [
   { label: '1024', width: 1024, height: 800 },
   { label: '1280', width: 1280, height: 900 },
   { label: '1440', width: 1440, height: 1000 },
-  { label: 'mobile-390', width: 390, height: 844 }
+  { label: 'mobile-390', width: 390, height: 844 },
+  { label: 'mobile-390-bears-say', width: 390, height: 844, reviewMode: 'bears-say' }
 ];
 
 mkdirSync(outputDir, { recursive: true });
@@ -84,6 +85,16 @@ function reviewPage(root, response) {
         const first = document.querySelector('#location-list .location-card[data-venue-id]');
         first?.click();
         await waitFor(() => visible(document.querySelector('#tray-selected')) && (document.querySelector('#tray-selected')?.textContent || '').trim().length > 0);
+        const reviewMode = new URLSearchParams(location.search).get('reviewMode');
+        if (mobile && reviewMode === 'bears-say') {
+          await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));
+          const selected = document.querySelector('#tray-selected');
+          if (selected) {
+            selected.scrollTop = selected.scrollHeight;
+            selected.dispatchEvent(new Event('scroll'));
+          }
+          await sleep(180);
+        }
         document.body.dataset.reviewReady = 'true';
       })();
     })();
@@ -126,13 +137,14 @@ async function serveAndCapture(root, label) {
     for (const viewport of viewports) {
       const output = join(outputDir, `${label}-${viewport.label}.png`);
       const profile = join(outputDir, `.chrome-${label}-${viewport.label}`);
+      const query = viewport.reviewMode ? `?reviewMode=${encodeURIComponent(viewport.reviewMode)}` : '';
       const args = [
         '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
         '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
         '--disable-sync', '--hide-scrollbars', '--metrics-recording-only', '--no-first-run',
         `--user-data-dir=${profile}`, `--window-size=${viewport.width},${viewport.height}`,
         '--virtual-time-budget=5500', `--screenshot=${output}`,
-        `http://127.0.0.1:${port}/__cgb_review__`
+        `http://127.0.0.1:${port}/__cgb_review__${query}`
       ];
       const child = spawn(browser, args, { stdio: ['ignore', 'pipe', 'pipe'] });
       let stderr = '';
