@@ -5,7 +5,6 @@ import {
   withStoredSelection
 } from './fan-intent-core.mjs';
 import {
-  buildMapTilerFinalSearchQueries,
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
@@ -27,10 +26,11 @@ import {
 } from './new-location-contribution-prompt.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
-const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_DEBOUNCE_MS = 600;
 const SEARCH_TIMEOUT_MS = 8000;
 const WRITE_TIMEOUT_MS = 12000;
-const MINIMUM_QUERY_LENGTH = 3;
+const MINIMUM_QUERY_LENGTH = 4;
+const MINIMUM_ADDRESS_LENGTH = 3;
 const MANUAL_ADD_COPY = 'Can’t find it? Add this place';
 const USER_LOCATION_OPTIONS = Object.freeze({
   enableHighAccuracy: true,
@@ -43,6 +43,9 @@ let searchSequence = 0;
 let searchController = null;
 let addLocationProximityAttempted = false;
 let addLocationProximityPending = false;
+let proximityRefreshQueryKey = '';
+let lastCompletedSearch = null;
+const externalSearchCache = new Map();
 let dom = null;
 
 function storageGet(key) {
@@ -88,6 +91,50 @@ function currentUserProximity() {
   return active;
 }
 
+function normalizedSearchQuery(query) {
+  return String(query ?? '')
+    .normalize('NFKC')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function proximityKey(proximity) {
+  if (!proximity) return 'none';
+  const latitude = Number(proximity.lat ?? proximity.latitude);
+  const longitude = Number(proximity.lon ?? proximity.longitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return 'none';
+  return `${longitude.toFixed(5)},${latitude.toFixed(5)}`;
+}
+
+function externalCacheKey(query, proximity) {
+  return `${normalizedSearchQuery(query)}|${proximityKey(proximity)}`;
+}
+
+function reusableCachedSearch(query, proximity, finalized) {
+  const cached = externalSearchCache.get(externalCacheKey(query, proximity));
+  if (!cached) return null;
+  if (!finalized || cached.finalized || cached.strong) return cached;
+  return null;
+}
+
+function rememberCompletedSearch(query, proximity, results, finalized) {
+  const record = Object.freeze({
+    queryKey: normalizedSearchQuery(query),
+    proximityKey: proximityKey(proximity),
+    results,
+    finalized: Boolean(finalized),
+    strong: hasStrongMapTilerVenueMatch(results, query)
+  });
+  externalSearchCache.set(externalCacheKey(query, proximity), record);
+  lastCompletedSearch = record;
+  return record;
+}
+
+function currentCompletedSearchIsStrong(query) {
+  return lastCompletedSearch?.queryKey === normalizedSearchQuery(query) && lastCompletedSearch.strong;
+}
+
 function requestAddLocationProximity() {
   if (appState.searchMode !== 'add-location') return;
   if (currentUserProximity() || addLocationProximityAttempted || addLocationProximityPending) return;
@@ -108,9 +155,14 @@ function requestAddLocationProximity() {
     appState.nearbyOrigin = { ...location, label: 'your location' };
 
     const query = dom?.searchInput?.value?.trim() || '';
-    if (appState.searchMode === 'add-location' && query.length >= MINIMUM_QUERY_LENGTH) {
-      scheduleExternalSearch({ immediate: true });
+    if (appState.searchMode !== 'add-location' || query.length < MINIMUM_QUERY_LENGTH) return;
+    if (searchTimer !== null) return;
+    if (searchController) {
+      proximityRefreshQueryKey = normalizedSearchQuery(query);
+      return;
     }
+    if (currentCompletedSearchIsStrong(query)) return;
+    scheduleExternalSearch({ immediate: true });
   }, () => {
     addLocationProximityPending = false;
   }, USER_LOCATION_OPTIONS);
@@ -242,6 +294,16 @@ function searchIsCurrent(query, sequence) {
   return sequence === searchSequence && dom.searchInput.value.trim() === query;
 }
 
+function maybeRefreshWeakSearchForNewProximity(query, sequence, usedProximity) {
+  const queryKey = normalizedSearchQuery(query);
+  if (proximityRefreshQueryKey !== queryKey) return;
+  proximityRefreshQueryKey = '';
+  if (!searchIsCurrent(query, sequence) || lastCompletedSearch?.strong) return;
+  const latestProximity = currentUserProximity();
+  if (proximityKey(latestProximity) === proximityKey(usedProximity)) return;
+  scheduleExternalSearch({ immediate: true });
+}
+
 async function searchExternalPlaces(query, sequence, { finalized = false } = {}) {
   const key = configuredMapTilerKey();
   if (!key) {
@@ -249,45 +311,45 @@ async function searchExternalPlaces(query, sequence, { finalized = false } = {})
     return;
   }
 
+  const proximity = currentUserProximity();
+  const cached = reusableCachedSearch(query, proximity, finalized);
+  if (cached) {
+    if (!searchIsCurrent(query, sequence)) return;
+    lastCompletedSearch = cached;
+    showExternalResults(cached.results);
+    return;
+  }
+
   searchController?.abort();
-  searchController = new AbortController();
-  const timeout = window.setTimeout(() => searchController.abort(), SEARCH_TIMEOUT_MS);
+  const controller = new AbortController();
+  searchController = controller;
+  const timeout = window.setTimeout(() => controller.abort(), SEARCH_TIMEOUT_MS);
   try {
-    const searchQueries = finalized ? buildMapTilerFinalSearchQueries(query) : [query];
-    const payloads = [];
-    const proximity = currentUserProximity();
+    const url = buildMapTilerSearchUrl(query, key, {
+      limit: finalized ? 10 : 6,
+      autocomplete: !finalized,
+      fuzzyMatch: true,
+      proximity
+    });
+    const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+    if (!response.ok) throw new Error(`external_search_http_${response.status}`);
+    const payload = await response.json();
+    if (!searchIsCurrent(query, sequence)) return;
 
-    for (let index = 0; index < searchQueries.length; index += 1) {
-      const searchQuery = searchQueries[index];
-      const url = buildMapTilerSearchUrl(searchQuery, key, {
-        limit: finalized ? 10 : 6,
-        autocomplete: !finalized,
-        fuzzyMatch: true,
-        proximity
-      });
-      const response = await fetch(url, { signal: searchController.signal, cache: 'no-store' });
-      if (!response.ok) throw new Error(`external_search_http_${response.status}`);
-      payloads.push(await response.json());
-      if (!searchIsCurrent(query, sequence)) return;
-
-      const results = rankMapTilerResults(payloads, query, {
-        maximum: 6,
-        filterWeak: finalized
-      });
-      const lastQuery = index === searchQueries.length - 1;
-      if (!finalized || hasStrongMapTilerVenueMatch(results, query) || lastQuery) {
-        showExternalResults(results);
-        return;
-      }
-    }
-
-    showExternalResults([]);
+    const results = rankMapTilerResults(payload, query, {
+      maximum: 6,
+      filterWeak: finalized
+    });
+    rememberCompletedSearch(query, proximity, results, finalized);
+    showExternalResults(results);
   } catch (error) {
     if (!searchIsCurrent(query, sequence) && error?.name === 'AbortError') return;
     if (sequence !== searchSequence) return;
     showExternalFailure(error);
   } finally {
     window.clearTimeout(timeout);
+    if (searchController === controller) searchController = null;
+    maybeRefreshWeakSearchForNewProximity(query, sequence, proximity);
   }
 }
 
@@ -295,20 +357,32 @@ function invalidateExternalSearch() {
   const state = ensureExternalState();
   searchSequence += 1;
   window.clearTimeout(searchTimer);
+  searchTimer = null;
   searchController?.abort();
   searchController = null;
+  proximityRefreshQueryKey = '';
   state.results = [];
   state.error = null;
   dom?.suggestions?.querySelector(':scope > .search-result-group--external')?.remove();
 }
 
 function handleSearchSubmit(event) {
-  invalidateExternalSearch();
   const query = dom.searchInput.value.trim();
   if (!query || appState.searchMode !== 'add-location') return;
 
   event.preventDefault();
   event.stopImmediatePropagation();
+  if (currentCompletedSearchIsStrong(query)) {
+    searchSequence += 1;
+    window.clearTimeout(searchTimer);
+    searchTimer = null;
+    searchController?.abort();
+    searchController = null;
+    const state = ensureExternalState();
+    state.query = query;
+    showExternalResults(lastCompletedSearch.results);
+    return;
+  }
   scheduleExternalSearch({ immediate: true, finalized: true });
 }
 
@@ -324,7 +398,9 @@ function scheduleExternalSearch({ immediate = false, finalized = false } = {}) {
   searchSequence += 1;
   const sequence = searchSequence;
   window.clearTimeout(searchTimer);
+  searchTimer = null;
   searchController?.abort();
+  searchController = null;
   decorateExistingResults();
 
   if (!externalSearchAllowed() || query.length < MINIMUM_QUERY_LENGTH) {
@@ -333,6 +409,7 @@ function scheduleExternalSearch({ immediate = false, finalized = false } = {}) {
   }
 
   const run = () => {
+    searchTimer = null;
     showExternalLoading();
     searchExternalPlaces(query, sequence, { finalized });
   };
@@ -541,7 +618,7 @@ async function resolveManualAddress(event) {
   const name = manualVenueNameOrError();
   if (!name) return;
   const address = String(dom.manualAddress.value || '').trim();
-  if (address.length < MINIMUM_QUERY_LENGTH) {
+  if (address.length < MINIMUM_ADDRESS_LENGTH) {
     manual.error = 'Enter the street address.';
     manual.status = '';
     renderManualPanel();
