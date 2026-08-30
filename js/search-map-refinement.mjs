@@ -346,7 +346,6 @@ function ensureDesktopAddSearchStyle() {
 
       #add-surface .desktop-add-search-slot .search-add-location-action,
       #add-surface #add-new-location-button,
-      #add-surface #add-missing-location-link,
       #add-surface .add-somewhere-else > .add-actions {
         display: none !important;
       }
@@ -397,16 +396,6 @@ function syncDesktopAddCopy() {
       ? 'Search for a venue or address that isn’t listed in CGB yet.'
       : 'Search for the venue or address below.';
   }
-}
-
-function syncDesktopMissingLocationFallback() {
-  if (!desktopAddSurfaceVisible()) return;
-  const suggestions = document.querySelector('#search-suggestions');
-  if (!suggestions) return;
-  const hasResult = Boolean(suggestions.querySelector('button[data-venue-id], button[data-external-place-id]'));
-  suggestions.querySelectorAll('.missing-location-link').forEach((link) => {
-    link.style.display = hasResult ? 'none' : '';
-  });
 }
 
 function syncDesktopLocationListPresentation() {
@@ -472,7 +461,6 @@ function activateDesktopAddSearch({ preserveQuery = true, refresh = true } = {})
   if (helper) helper.hidden = true;
   if (form.parentElement !== slot) slot.append(form);
   syncDesktopAddCopy();
-  syncDesktopMissingLocationFallback();
 
   if (refresh) {
     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -517,7 +505,6 @@ function observeDesktopAddSearch() {
     if (desktopAddSurfaceVisible()) {
       requestAnimationFrame(() => activateDesktopAddSearch({ preserveQuery: true, refresh: false }));
     }
-    syncDesktopMissingLocationFallback();
   });
   desktopAddObserver.observe(addSurface, { attributes: true, attributeFilter: ['hidden'] });
   desktopAddObserver.observe(suggestions, { childList: true, subtree: true });
