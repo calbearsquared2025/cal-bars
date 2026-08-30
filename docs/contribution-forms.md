@@ -16,7 +16,7 @@ For the structured contribution Forms below:
 - Google Forms owns the original response columns; Apps Script appends only private processing status/error/timestamp plus `review_status` and `manual_review_reason` fields.
 - Processors resolve fields by question-title aliases rather than brittle column positions so legacy responses remain auditable.
 - Unchecked structured options mean **unknown / not asserted**, not false.
-- Freeform answers never create public tags and never auto-publish into **BEARS SAY** or **CGB SAYS**.
+- Freeform answers never create public tags and never auto-publish into **YOU SAY** or **CGB SAYS**.
 - Names and email addresses never enter the public snapshot.
 - Safe additive structured changes may auto-publish after canonical-ID validation and a script lock.
 - Closure, relocation, cancellation/move, Venue identity/name/address changes, organizer replacement, and material event-link replacement remain private for review. The raw row is durably marked `review_status = pending` with a machine-readable `manual_review_reason`; safe structured additions in the same response may still apply.
@@ -41,7 +41,7 @@ Contributor-facing labels normalize to canonical values:
 | `LARGE CROWD — typically 10+ Cal fans` | `large_crowd` | `LARGE CROWD` |
 | `CAL MEMORABILIA — Cal flags, signs, memorabilia, or similar` | `cal_memorabilia` | `CAL MEMORABILIA` |
 
-Persistent Venue tags render at the top of the existing **BEARS SAY** area, before quotes. They are community-contributed observations, not CGB editorial statements. Do not create a standalone Venue-tags section or place them under **CGB SAYS**.
+On the mobile continuous Venue Profile, persistent Venue tags render in the compact **WHAT TO KNOW** block before the Watch Party module. The block uses the existing prefilled **Tell us about this location** Form through a quiet **Add info →** header link and does not duplicate the tags later under **YOU SAY**. Wider layouts retain their existing tag placement unless separately changed. These values remain community-contributed observations, not CGB editorial statements; **CGB SAYS** remains editorial only.
 
 ### Watch Party-only values
 
@@ -50,7 +50,7 @@ Persistent Venue tags render at the top of the existing **BEARS SAY** area, befo
 | `RSVP REQUESTED` | `rsvp_requested` | `RSVP REQUESTED` |
 | `CAL SPECIALS — special food, drink, or pricing for the Cal group` | `cal_specials` | `CAL SPECIALS` |
 
-These stay with the specific Watch Party. Event-level legacy 21+/audio values remain supported, but the UI suppresses a redundant event tag when the same persistent Venue context is already visible in BEARS SAY.
+These stay with the specific Watch Party. Event-level legacy 21+/audio values remain supported, but the UI suppresses a redundant event tag when the same persistent Venue context is already visible.
 
 Rejected concepts are not part of the current public tag model: `ALL AGES`, `RSVP REQUIRED`, `CAL AREA`, `DEDICATED CAL AREA`, `OUTDOOR`, `ARRIVE EARLY`, `ALUMNI OWNED`, and `ALUMNI GROUP`.
 
@@ -190,7 +190,7 @@ Photo intake remains manually reviewed. Google Forms file upload may require sig
 
 ### Share your Cal Game Experience
 
-This remains the primary workflow for public **BEARS SAY** prose. Its focused Apps Script moderation/publication path remains separate from the four structured contribution Forms. Structured Venue tags can appear in BEARS SAY alongside these experiences, but freeform answers from Venue/listing Forms do not become BEARS SAY quotes automatically.
+This remains the primary workflow for public **YOU SAY** prose. Its focused Apps Script moderation/publication path remains separate from the four structured contribution Forms. Structured Venue tags can appear alongside these experiences according to the profile presentation rules above, but freeform answers from Venue/listing Forms do not become **YOU SAY** quotes automatically.
 
 ### Suggest a Missing Location
 
