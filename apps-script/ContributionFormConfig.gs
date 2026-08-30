@@ -421,10 +421,15 @@ function syncOneContributionForm_(form, contract, workbook) {
 function configureContributionQuestion_(item, question, workbook) {
   if (!item) throw new Error('Missing contribution question: ' + question.key);
   let typed;
-  if (question.kind === 'paragraph') typed = item.asParagraphTextItem();
-  else if (question.kind === 'checkbox') typed = item.asCheckboxItem();
-  else if (question.kind === 'multiple_choice') typed = item.asMultipleChoiceItem();
-  else typed = item.asTextItem();
+  if (question.kind === 'paragraph') {
+    typed = typeof item.asParagraphTextItem === 'function' ? item.asParagraphTextItem() : item;
+  } else if (question.kind === 'checkbox') {
+    typed = typeof item.asCheckboxItem === 'function' ? item.asCheckboxItem() : item;
+  } else if (question.kind === 'multiple_choice') {
+    typed = typeof item.asMultipleChoiceItem === 'function' ? item.asMultipleChoiceItem() : item;
+  } else {
+    typed = typeof item.asTextItem === 'function' ? item.asTextItem() : item;
+  }
 
   typed.setTitle(question.title);
   typed.setRequired(Boolean(question.required));
