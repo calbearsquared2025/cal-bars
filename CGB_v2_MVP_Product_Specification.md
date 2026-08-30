@@ -227,7 +227,9 @@ Recommended Watch Party module:
 - Current Bear count
 - **I’ll be here**
 
-Persistent community-contributed Venue observations appear at the top of the existing **BEARS SAY** area, before individual quotes. Render only known positive tags: **21+**, **AUDIO ON**, **FOOD**, **CAL BEER**, **LARGE CROWD**, and **CAL MEMORABILIA**. Do not create a separate Venue-tags section and do not place these community observations under **CGB SAYS**, which remains reserved for CGB editorial content.
+On the mobile continuous Venue Profile, persistent community-contributed Venue observations appear in a compact **WHAT TO KNOW** block immediately after the venue identity/address and before the Watch Party module. The header includes a quiet **Add info →** link to the existing prefilled **Tell us about this location** Form without adding a separate CTA row. Render only known positive tags: **21+**, **AUDIO ON**, **FOOD**, **CAL BEER**, **LARGE CROWD**, and **CAL MEMORABILIA**. When none are known, keep the block compact with a subtle empty state. Do not duplicate these tags later under community quotes.
+
+The community experience section is labeled **YOU SAY** and contains fan experiences plus the existing experience-contribution prompt. **CGB SAYS** remains reserved for CGB editorial content. On mobile, when an approved venue photo exists, it appears after **YOU SAY** so venue facts, selected-game activity, attendance actions, editorial context, and community context come before supporting media. Wider layouts may retain their existing spatial hierarchy and tag placement unless separately changed.
 
 Optional authorized venue photos appear below core decision information. The photo section disappears when no approved photo is available.
 
@@ -235,7 +237,7 @@ Optional authorized venue photos appear below core decision information. The pho
 
 Every Venue may link to a short prefilled **Tell us about this location** Form containing the canonical Venue name and Venue ID. The contributor may provide relationship/frequency context, optional freeform context, and any known positive structured Venue details.
 
-The structured Venue details are intentionally additive. A single valid submission may seed a previously absent persistent Venue tag without corroboration. Unchecked options mean unknown/not asserted, not false. Freeform text remains private source material and does not automatically become **BEARS SAY** or **CGB SAYS** copy.
+The structured Venue details are intentionally additive. A single valid submission may seed a previously absent persistent Venue tag without corroboration. Unchecked options mean unknown/not asserted, not false. Freeform text remains private source material and does not automatically become **YOU SAY** or **CGB SAYS** copy.
 
 A separate **Add or update location details** Form handles missing information and corrections. Safe additive structured Venue tags may publish automatically. Closure, relocation, Venue identity/name/address changes, and other destructive or materially conflicting changes remain private for manual review.
 
