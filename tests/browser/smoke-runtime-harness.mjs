@@ -120,6 +120,7 @@ async function runMobile() {
   check((element('#add-surface-title')?.textContent || '').trim() === 'Add to the map', 'Mobile Add surface title should remain unchanged');
   check((element('#add-somewhere-else-title')?.textContent || '').trim() === 'Add somewhere else', 'Mobile new-location section copy should remain unchanged');
   check(element('#add-watch-party-button')?.closest('.add-context') === element('#add-surface .add-context'), 'Mobile contribution actions should remain nested in selected-place context');
+  check(!element('#add-missing-location-link'), 'Obsolete Missing Location Form link should not exist on mobile');
 
   element('#mobile-list-button')?.click();
   await waitFor(() => visible('#tray-list'), 'mobile location list');
@@ -205,7 +206,7 @@ async function validateDesktopContributionWithoutSelection() {
   check(visible('#add-surface .add-somewhere-else > .command-surface__intro'), 'Desktop inline search helper copy should be visible');
   check(Boolean(element('#add-surface .desktop-add-search-slot #location-search')), 'Desktop should move the shared search form into the Add modal');
   check(!visible('#add-new-location-button'), 'Desktop should remove the intermediate Search for another location card');
-  check(!visible('#add-missing-location-link'), 'Desktop should not show the missing-location fallback before search fails');
+  check(!element('#add-missing-location-link'), 'Obsolete Missing Location Form link should not exist on desktop');
   check(state()?.searchMode === 'add-location', 'Desktop Add to CGB should enter canonical add-location search mode inside the modal');
 
   element('#add-surface [data-command-close]')?.click();
@@ -273,7 +274,7 @@ async function validateDesktopContributionEntry() {
   check((element('#add-surface .add-somewhere-else > .command-surface__intro')?.textContent || '').trim() === 'Search for a venue or address that isn’t listed in CGB yet.', 'Desktop selected-state search should explain the different-location path');
   check(Boolean(element('#add-surface .desktop-add-search-slot #location-search')), 'Desktop selected-state should keep the shared search form in the modal');
   check(!visible('#add-new-location-button'), 'Desktop selected-state should not require an intermediate search card');
-  check(!visible('#add-missing-location-link'), 'Desktop selected-state should not show missing-location fallback before search fails');
+  check(!element('#add-missing-location-link'), 'Obsolete Missing Location Form link should remain absent with a selected venue');
   check(state()?.searchMode === 'add-location', 'Desktop selected-state should keep the inline search in canonical add-location mode');
 }
 
