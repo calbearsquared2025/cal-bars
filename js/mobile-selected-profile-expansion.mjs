@@ -91,8 +91,28 @@ function installStyles(documentObject = document) {
         touch-action: none;
       }
 
+      body[data-view="map"][data-command-surface="map"] .site-header > .opening-stat {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+        transform-origin: top center;
+        clip-path: inset(0 0 0 0);
+        transition:
+          opacity 160ms ease,
+          transform 160ms ease,
+          clip-path 160ms ease !important;
+      }
+
       body.${RAISED_BODY_CLASS}[data-view="map"][data-command-surface="map"] .site-header > .opening-stat {
-        display: none !important;
+        opacity: 0 !important;
+        transform: translateY(-6px) scaleY(.92);
+        clip-path: inset(0 0 100% 0);
+        pointer-events: none !important;
+      }
+    }
+
+    @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+      body[data-view="map"][data-command-surface="map"] .site-header > .opening-stat {
+        transition: none !important;
       }
     }
   `;
@@ -106,9 +126,10 @@ function inlineSelectedHeight(tray) {
 }
 
 function mapContextBottom(documentObject = document) {
+  const raised = documentObject.body?.classList?.contains?.(RAISED_BODY_CLASS) === true;
   const candidates = [
     documentObject.querySelector('.site-header'),
-    documentObject.querySelector('.opening-stat')
+    raised ? null : documentObject.querySelector('.opening-stat')
   ];
   return candidates.reduce((bottom, element) => {
     if (!element) return bottom;
