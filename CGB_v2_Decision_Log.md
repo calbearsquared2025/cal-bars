@@ -122,11 +122,21 @@ Routine Fan Intent and external venue addition do not use forms.
 
 ### Locked
 
-- Persistent structured Venue observations are community-contributed context and render at the top of **BEARS SAY**, before individual quotes.
+- On the mobile continuous Venue Profile, persistent structured Venue observations render in a compact **WHAT TO KNOW** block immediately after venue identity/address and before the Watch Party module.
+- **WHAT TO KNOW** includes a quiet header-level **Add info →** link to the existing prefilled **Tell us about this location** Form; it does not add a separate CTA row.
+- If no structured Venue observations are known, keep **WHAT TO KNOW** present with a subtle compact empty state.
+- Do not duplicate persistent Venue tags later in the mobile community-experience section.
+- The community-experience section is labeled **YOU SAY**.
 - **CGB SAYS** remains reserved for CGB editorial content.
-- Do not create a separate Venue-tags section.
+- On mobile, an approved Venue photo follows **YOU SAY** so core decision information appears first.
+- Wider layouts retain the existing tag placement and spatial hierarchy unless separately changed.
 - Watch Party-only tags remain on the specific Watch Party.
 - Avoid a redundant second stack of 21+/audio tags when the same persistent Venue context is already visible.
+
+### Superseded
+
+- Persistent structured Venue observations must render at the top of **BEARS SAY** on mobile.
+- A separate mobile **WHAT TO KNOW** block is prohibited.
 
 ## 7. Photos
 
