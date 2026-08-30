@@ -12,8 +12,8 @@ test('Venue Profile contribution actions use sentence case while the map photo o
   ]);
 
   assert.match(calBarSource, /'Tell us about this location'/);
-  assert.match(listingUpdateSource, /'Suggest an update or report an issue'/);
-  assert.doesNotMatch(listingUpdateSource, /'Suggest an Update or Report an Issue'/);
+  assert.match(listingUpdateSource, /'Add or update location details'/);
+  assert.doesNotMatch(listingUpdateSource, /'Add or Update Location Details'/);
   assert.match(photoFormSource, /label: 'Add a new photo'/);
   assert.match(photoFormSource, /label: 'ADD A PHOTO'/);
   assert.doesNotMatch(photoFormSource, /label: 'Add a New Photo'/);
