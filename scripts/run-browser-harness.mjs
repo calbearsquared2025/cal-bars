@@ -23,22 +23,86 @@ function safePath(requestUrl) {
   return candidate.startsWith(root) ? candidate : null;
 }
 
-function smokePage(response) {
+function smokePage(response, requestUrl) {
+  const smokeMode = new URL(requestUrl || '/', 'http://127.0.0.1').searchParams.get('__cgb_smoke') || 'mobile';
   const prelude = `<script>
     (() => {
       const snapshot = ${snapshotJson};
+      const addressFeature = {
+        id: 'address.12345',
+        place_type: ['address'],
+        center: [-118.1258, 33.7765],
+        address: '2123',
+        text: 'N Bellflower Blvd',
+        place_name: '2123 N Bellflower Blvd, Long Beach, California 90815, United States',
+        context: [
+          { id: 'municipality.1', place_type: ['municipality'], text: 'Long Beach', place_designation: 'city' },
+          { id: 'region.1', place_type: ['region'], text: 'California' },
+          { id: 'postal_code.1', place_type: ['postal_code'], text: '90815' },
+          { id: 'country.1', place_type: ['country'], text: 'United States', short_code: 'us' }
+        ]
+      };
       localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
       const nativeFetch = window.fetch.bind(window);
       const json = (payload) => new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
       window.fetch = async (input, init = {}) => {
         const url = new URL(typeof input === 'string' ? input : input.url, location.href);
-        if (url.pathname === '/__cgb_mock_api__' || url.pathname.endsWith('/data/fallback-v2.json')) return json(snapshot);
-        if (url.hostname === 'api.maptiler.com') return json({ features: [] });
+        if (url.pathname === '/__cgb_mock_api__' || url.pathname.endsWith('/data/fallback-v2.json')) {
+          if (String(init.method || 'GET').toUpperCase() === 'POST') {
+            const request = JSON.parse(init.body || '{}');
+            const venueId = 'venue_manual_browser_test';
+            const fanCounts = (snapshot.fanCounts || []).filter((row) => !(row.game_id === request.gameId && row.venue_id === venueId));
+            fanCounts.push({ game_id: request.gameId, venue_id: venueId, count: 1 });
+            return json({
+              ok: true,
+              action: 'joinExternalVenue',
+              schemaVersion: '2.0',
+              venue: {
+                venue_id: venueId,
+                slug: 'district-4-pizza-long-beach',
+                name: request.externalPlace?.name || 'District 4 Pizza',
+                address_line_1: '2123 N Bellflower Blvd',
+                address_line_2: '',
+                city: 'Long Beach',
+                region: 'CA',
+                postal_code: '90815',
+                country_code: 'US',
+                latitude: 33.7765,
+                longitude: -118.1258,
+                website_url: '',
+                venue_type: 'community_location',
+                verification_status: 'user_added',
+                alumni_owned: 'unknown',
+                short_description: '',
+                photo_url: '',
+                photo_caption: '',
+                photo_credit: '',
+                photo_credit_url: '',
+                updated_at: '2026-08-30T09:00:00Z'
+              },
+              selection: { game_id: request.gameId, venue_id: venueId, status: 'attending' },
+              fanCounts,
+              venueHistoryCounts: snapshot.venueHistoryCounts || [],
+              generatedAt: '2026-08-30T09:00:00Z'
+            });
+          }
+          return json(snapshot);
+        }
+        if (url.hostname === 'api.maptiler.com') {
+          const query = decodeURIComponent(url.pathname);
+          if (url.searchParams.get('types') === 'address' && !query.toLowerCase().includes('no such address')) {
+            return json({ features: [addressFeature] });
+          }
+          return json({ features: [] });
+        }
         return nativeFetch(input, init);
       };
     })();
   </script>`;
-  const driver = `<output id="cgb-smoke-result">CGB_SMOKE_RUNNING</output><script type="module" src="/tests/browser/smoke-runtime-harness.mjs"></script>`;
+  const harness = smokeMode.startsWith('manual-')
+    ? '/tests/browser/manual-place-runtime-harness.mjs'
+    : '/tests/browser/smoke-runtime-harness.mjs';
+  const driver = `<output id="cgb-smoke-result">CGB_SMOKE_RUNNING</output><script type="module" src="${harness}"></script>`;
   const html = productionIndex
     .replace('<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
     .replace('</head>', `${prelude}\n</head>`)
@@ -49,7 +113,7 @@ function smokePage(response) {
 
 const server = createServer((request, response) => {
   const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
-  if (pathname === '/__cgb_smoke__') return smokePage(response);
+  if (pathname === '/__cgb_smoke__') return smokePage(response, request.url);
   const filePath = safePath(request.url || '/');
   try {
     if (!filePath || !statSync(filePath).isFile()) throw new Error('not_found');
@@ -101,7 +165,11 @@ try {
   const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile' });
   const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile' });
   const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000', label: 'desktop' });
-  if (!mobile || !smallMobile || !desktop) process.exitCode = 1;
+  const manualHere = await run({ mode: 'manual-mobile-here', marker: 'CGB_MANUAL_MOBILE_HERE_PASS', windowSize: '390,844', label: 'manual known-location mobile' });
+  const manualAddress = await run({ mode: 'manual-mobile-address', marker: 'CGB_MANUAL_MOBILE_ADDRESS_PASS', windowSize: '390,844', label: 'manual address mobile' });
+  const manualDenied = await run({ mode: 'manual-mobile-denied', marker: 'CGB_MANUAL_MOBILE_DENIED_PASS', windowSize: '390,844', label: 'manual denied-location mobile' });
+  const manualDesktop = await run({ mode: 'manual-desktop-address', marker: 'CGB_MANUAL_DESKTOP_ADDRESS_PASS', windowSize: '1440,1000', label: 'manual address desktop' });
+  if (!mobile || !smallMobile || !desktop || !manualHere || !manualAddress || !manualDenied || !manualDesktop) process.exitCode = 1;
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
