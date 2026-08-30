@@ -9,7 +9,7 @@
     "test:unit": "node --test tests/*.test.mjs",
     "test:migration": "node --test tests/venue-migration.test.mjs tests/venue-load-validation.test.mjs",
     "test:browser": "node scripts/run-browser-harness.mjs",
-    "validate:data": "node scripts/validate-v2-data.mjs data/fallback-v2.json",
+    "validate:data": "node scripts/validate-v2-data.mjs data/fallback-v2.json && node scripts/validate-contribution-tags.mjs data/fallback-v2.json",
     "validate:venue-load": "node scripts/validate-venue-load.mjs",
     "migration:dry-run": "node scripts/migrate-v1-venues.mjs"
   }
