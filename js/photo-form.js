@@ -11,14 +11,6 @@ function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
 
-export function readPhotoFormConfig(documentObject = document) {
-  return {
-    formUrl: meta('cgb-photo-form-url', documentObject) || PHOTO_FORM_CONFIG.formUrl,
-    venueIdEntry: meta('cgb-photo-form-venue-id-entry', documentObject) || PHOTO_FORM_CONFIG.venueIdEntry,
-    venueNameEntry: meta('cgb-photo-form-venue-name-entry', documentObject) || PHOTO_FORM_CONFIG.venueNameEntry
-  };
-}
-
 function syncContributionVisibility(detail) {
   const section = detail?.querySelector(':scope > .detail-contribution');
   if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
@@ -57,24 +49,12 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');
   if (!actions) return '';
 
-  const localMap = detail.querySelector(
-    ':scope > .detail-hero > .detail-local-map, :scope > .detail-local-map'
-  );
-  if (localMap) {
-    localMap.append(createPhotoFormLink(documentObject, {
-      href,
-      label: 'ADD A PHOTO',
-      entryPoint: 'map-overlay',
-      className: 'detail-local-map__photo-action'
-    }));
-  } else {
-    actions.append(createPhotoFormLink(documentObject, {
-      href,
-      label: 'Add a new photo',
-      entryPoint: 'contribution',
-      className: 'detail-contribution__action'
-    }));
-  }
+  actions.append(createPhotoFormLink(documentObject, {
+    href,
+    label: 'Add a new photo',
+    entryPoint: 'contribution',
+    className: 'detail-contribution__action'
+  }));
   syncContributionVisibility(detail);
   return href;
 }
