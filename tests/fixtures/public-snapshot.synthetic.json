@@ -187,13 +187,6 @@
       "past_game_count": 0
     }
   ],
-  "fanExperiences": [
-    {
-      "venue_id": "ven_000001",
-      "text": "Synthetic fan perspective shown beneath the structured community tags.",
-      "display_name": "Anonymous",
-      "year": 2026
-    }
-  ],
+  "fanExperiences": [],
   "generatedAt": "2026-07-31T16:31:00Z"
 }
