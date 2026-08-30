@@ -5,6 +5,11 @@ import {
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
 
+const WATCH_PARTY_FEATURE_LABELS = Object.freeze({
+  rsvp_requested: 'RSVP REQUESTED',
+  cal_specials: 'CAL SPECIALS'
+});
+
 function meta(name, documentObject) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
@@ -38,6 +43,31 @@ function appendTags(module, labels, documentObject) {
     tags.append(tag);
   });
   module.append(tags);
+}
+
+function controlledTagValues(value) {
+  if (Array.isArray(value)) return value.map((item) => String(item ?? '').trim()).filter(Boolean);
+  const raw = String(value ?? '').trim();
+  if (!raw) return [];
+  if (raw.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map((item) => String(item ?? '').trim()).filter(Boolean);
+    } catch (_) {}
+  }
+  return raw.split(/[|;,\n]+/).map((item) => item.trim()).filter(Boolean);
+}
+
+export function watchPartyTagLabels(party = {}, venue = {}) {
+  const venueTags = new Set(controlledTagValues(venue.venue_tags).map((tag) => tag.toLowerCase()));
+  const eventTags = new Set(controlledTagValues(party.feature_tags).map((tag) => tag.toLowerCase()));
+  const labels = [];
+
+  if (party.age_policy === '21_plus' && !venueTags.has('21_plus')) labels.push('21+');
+  if (party.sound_status === 'confirmed_on' && !venueTags.has('audio_on')) labels.push('AUDIO ON');
+  if (eventTags.has('rsvp_requested')) labels.push(WATCH_PARTY_FEATURE_LABELS.rsvp_requested);
+  if (eventTags.has('cal_specials')) labels.push(WATCH_PARTY_FEATURE_LABELS.cal_specials);
+  return labels;
 }
 
 function formatLocalTime(value) {
@@ -74,6 +104,7 @@ export function createWatchPartyModule({
   module.dataset.watchPartyId = party.watch_party_id;
 
   const game = snapshot?.games?.find((item) => item.game_id === party.game_id);
+  const venue = snapshot?.venues?.find((item) => item.venue_id === party.venue_id) || {};
   const title = documentObject.createElement('div');
   title.className = 'party-module__title';
   const star = documentObject.createElement('span');
@@ -103,12 +134,7 @@ export function createWatchPartyModule({
   hosted.append(host);
   module.append(hosted);
 
-  const details = [];
-  if (party.age_policy === '21_plus') details.push('21+');
-  if (party.age_policy === 'all_ages') details.push('ALL AGES');
-  if (party.sound_status === 'confirmed_on') details.push('AUDIO ON');
-  if (party.sound_status === 'confirmed_off') details.push('AUDIO OFF');
-  appendTags(module, details, documentObject);
+  appendTags(module, watchPartyTagLabels(party, venue), documentObject);
   appendText(module, party.restrictions_note, 'party-module__note', documentObject);
   appendText(module, party.game_day_note, 'party-module__note', documentObject);
 

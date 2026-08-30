@@ -11,6 +11,12 @@ const CGB_SCHEMA_VERSION = '2.0';
 const CGB_WORKBOOK_PROPERTY = 'CGB_WORKBOOK_ID';
 const CGB_PUBLIC_CACHE_KEY = 'cgb_v2_public_snapshot';
 const CGB_PUBLIC_CACHE_SECONDS = 300;
+const CGB_PUBLIC_VENUE_TAGS = Object.freeze([
+  '21_plus', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
+]);
+const CGB_PUBLIC_WATCH_PARTY_TAGS = Object.freeze([
+  'rsvp_requested', 'cal_specials'
+]);
 
 const CGB_TABS = Object.freeze({
   Venues: [
@@ -68,7 +74,7 @@ const CGB_PUBLIC_FIELDS = Object.freeze({
     'venue_id', 'slug', 'name', 'address_line_1', 'address_line_2', 'city', 'region',
     'postal_code', 'country_code', 'latitude', 'longitude', 'website_url', 'venue_type',
     'verification_status', 'alumni_owned', 'short_description', 'photo_url',
-    'photo_caption', 'photo_credit', 'photo_credit_url', 'updated_at'
+    'photo_caption', 'photo_credit', 'photo_credit_url', 'venue_tags', 'updated_at'
   ],
   Games: [
     'game_id', 'season', 'schedule_order', 'opponent_name', 'home_away',
@@ -77,7 +83,7 @@ const CGB_PUBLIC_FIELDS = Object.freeze({
   Watch_Parties: [
     'watch_party_id', 'venue_id', 'game_id', 'organizer_name', 'organizer_type',
     'official_event_url', 'source_type', 'event_start_at', 'age_policy', 'sound_status',
-    'restrictions_note', 'game_day_note', 'event_status', 'updated_at'
+    'restrictions_note', 'game_day_note', 'feature_tags', 'event_status', 'updated_at'
   ]
 });
 
@@ -157,7 +163,11 @@ function buildPublicSnapshot_() {
     .filter(function(row) {
       return row.publication_status === 'published' && hasValidVenueCoordinates_(row);
     })
-    .map(function(row) { return whitelist_(row, CGB_PUBLIC_FIELDS.Venues); });
+    .map(function(row) {
+      const output = whitelist_(row, CGB_PUBLIC_FIELDS.Venues);
+      output.venue_tags = normalizePublicControlledTags_(row.venue_tags, CGB_PUBLIC_VENUE_TAGS);
+      return output;
+    });
 
   const games = gamesRaw.map(function(row) {
     return whitelist_(row, CGB_PUBLIC_FIELDS.Games);
@@ -173,7 +183,11 @@ function buildPublicSnapshot_() {
         publishedVenueIds.has(row.venue_id) &&
         gameIds.has(row.game_id);
     })
-    .map(function(row) { return whitelist_(row, CGB_PUBLIC_FIELDS.Watch_Parties); });
+    .map(function(row) {
+      const output = whitelist_(row, CGB_PUBLIC_FIELDS.Watch_Parties);
+      output.feature_tags = normalizePublicControlledTags_(row.feature_tags, CGB_PUBLIC_WATCH_PARTY_TAGS);
+      return output;
+    });
 
   return {
     schemaVersion: CGB_SCHEMA_VERSION,
@@ -186,6 +200,28 @@ function buildPublicSnapshot_() {
     fanExperiences: buildPublishedFanExperiences_(fanExperiencesRaw, publishedVenueIds),
     generatedAt: new Date().toISOString()
   };
+}
+
+function normalizePublicControlledTags_(value, allowed) {
+  if (!Array.isArray(allowed)) return [];
+  let candidates = [];
+  if (Array.isArray(value)) {
+    candidates = value;
+  } else {
+    const raw = String(value === null || value === undefined ? '' : value).trim();
+    if (!raw) return [];
+    if (raw.charAt(0) === '[') {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) candidates = parsed;
+      } catch (_) {}
+    }
+    if (!candidates.length) candidates = raw.split(/[|;,\n]+/);
+  }
+  const selected = new Set(candidates.map(function(item) {
+    return String(item === null || item === undefined ? '' : item).trim().toLowerCase();
+  }).filter(Boolean));
+  return allowed.filter(function(tag) { return selected.has(tag); });
 }
 
 function mergePublishedVenuePhotos_(venues, photoRows) {
@@ -372,22 +408,31 @@ function getWorkbook_() {
 }
 
 function ensureHeaderRow_(sheet, expectedHeaders) {
-  const lastColumn = Math.max(sheet.getLastColumn(), expectedHeaders.length);
-  const existing = lastColumn > 0
-    ? sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0]
-    : [];
-  const hasExistingHeaders = existing.some(function(value) { return String(value).trim() !== ''; });
+  const lastColumn = Math.max(sheet.getLastColumn(), 1);
+  const existing = sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0]
+    .map(function(value) { return String(value).trim(); });
+  while (existing.length && !existing[existing.length - 1]) existing.pop();
 
-  if (!hasExistingHeaders) {
+  if (!existing.length) {
     sheet.getRange(1, 1, 1, expectedHeaders.length).setValues([expectedHeaders]);
     sheet.setFrozenRows(1);
     return;
   }
 
-  const normalized = existing.slice(0, expectedHeaders.length).map(String);
-  if (JSON.stringify(normalized) !== JSON.stringify(expectedHeaders)) {
-    throw new Error('Header mismatch in tab ' + sheet.getName() + '. Resolve manually before continuing.');
+  const duplicates = existing.filter(function(header, index) {
+    return header && existing.indexOf(header) !== index;
+  });
+  if (duplicates.length) {
+    throw new Error('Duplicate headers in tab ' + sheet.getName() + ': ' + duplicates.join(', '));
   }
+
+  const missing = expectedHeaders.filter(function(header) {
+    return existing.indexOf(header) < 0;
+  });
+  if (missing.length) {
+    sheet.getRange(1, existing.length + 1, 1, missing.length).setValues([missing]);
+  }
+  sheet.setFrozenRows(1);
 }
 
 function readSheetObjects_(workbook, tabName) {
@@ -432,6 +477,7 @@ function hasValidVenueCoordinates_(row) {
 function whitelist_(row, fields) {
   const output = {};
   fields.forEach(function(field) {
+    if (field === 'venue_tags' || field === 'feature_tags') return;
     output[field] = Object.prototype.hasOwnProperty.call(row, field) ? row[field] : '';
   });
   return output;

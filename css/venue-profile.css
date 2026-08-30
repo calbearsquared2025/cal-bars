@@ -178,6 +178,28 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
   box-shadow: none;
 }
 
+.venue-detail .detail-fan-experiences__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  margin: 0 0 12px;
+}
+
+.venue-detail .detail-fan-experiences__tag {
+  min-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  color: var(--cgb-navy-900);
+  background: var(--cgb-gold-50);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-ui);
+  font-size: .64rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
 .venue-detail .detail-editorial::before,
 .venue-detail .detail-fan-experiences::before {
   content: '';

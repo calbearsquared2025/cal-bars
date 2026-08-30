@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   screenshots:
-    if: github.head_ref == 'feature/desktop-consistency-pass'
+    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
