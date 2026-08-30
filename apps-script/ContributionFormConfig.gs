@@ -380,23 +380,27 @@ function createContributionFormQuestion_(form, question) {
 
 function ensureContributionFormSubmitTrigger_(workbook) {
   const triggers = ScriptApp.getProjectTriggers();
-  const contribution = triggers.filter(function(trigger) {
+  let contribution = triggers.filter(function(trigger) {
     return trigger.getHandlerFunction() === 'onContributionFormSubmit';
   });
   const obsolete = triggers.filter(function(trigger) {
     return trigger.getHandlerFunction() === 'onWatchPartyFormSubmit';
   });
 
-  obsolete.forEach(function(trigger) { ScriptApp.deleteTrigger(trigger); });
-  contribution.slice(1).forEach(function(trigger) { ScriptApp.deleteTrigger(trigger); });
+  // Establish the unified trigger before removing the old Watch Party trigger so
+  // a trigger-creation failure cannot leave live submissions without a handler.
   let created = false;
   if (!contribution.length) {
-    ScriptApp.newTrigger('onContributionFormSubmit')
+    const createdTrigger = ScriptApp.newTrigger('onContributionFormSubmit')
       .forSpreadsheet(workbook)
       .onFormSubmit()
       .create();
+    contribution = [createdTrigger];
     created = true;
   }
+
+  contribution.slice(1).forEach(function(trigger) { ScriptApp.deleteTrigger(trigger); });
+  obsolete.forEach(function(trigger) { ScriptApp.deleteTrigger(trigger); });
 
   return {
     handler: 'onContributionFormSubmit',
