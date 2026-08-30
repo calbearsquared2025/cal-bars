@@ -56,6 +56,7 @@ function parseJoinExternalVenuePayload_(payload) {
 
   const source = cleanExternalText_(place.source, 40).toLowerCase();
   const placeId = cleanExternalText_(place.placeId, 200);
+  const name = cleanExternalText_(place.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
 
   if (!CGB_BROWSER_ID_PATTERN.test(browserId)) throw fanIntentError_('invalid_browser_id');
   if (!isSafeCanonicalId_(gameId)) throw fanIntentError_('invalid_game_id');
@@ -68,7 +69,8 @@ function parseJoinExternalVenuePayload_(payload) {
     gameId: gameId,
     externalPlace: {
       source: source,
-      placeId: placeId
+      placeId: placeId,
+      name: name
     }
   };
 }
@@ -98,6 +100,7 @@ function processJoinExternalVenueRequest_(request) {
       verifiedPlace = verifyExternalPlaceWithMapTiler_(request.externalPlace);
       venueRecord = findCanonicalExternalVenue_(venueTable.rows, verifiedPlace);
       if (!venueRecord) {
+        verifiedPlace = applyRequestedExternalVenueName_(verifiedPlace, request.externalPlace);
         const venue = buildExternalVenueRecord_(venueTable.rows, verifiedPlace, now);
         createdVenueRowNumber = appendSheetObject_(venueSheet, venueTable.headers, venue);
         venueRecord = {
@@ -384,6 +387,14 @@ function normalizeMapTilerFeatureForPublication_(feature) {
     longitude: longitude,
     normalizedAddress: normalizedAddress
   };
+}
+
+function applyRequestedExternalVenueName_(verifiedPlace, clientPlace) {
+  if (!verifiedPlace || !clientPlace) return verifiedPlace;
+  const requestedName = cleanExternalText_(clientPlace.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
+  const placeId = cleanExternalText_(verifiedPlace.placeId, 200).toLowerCase();
+  if (!requestedName || placeId.indexOf('address.') !== 0) return verifiedPlace;
+  return Object.assign({}, verifiedPlace, { name: requestedName });
 }
 
 function findCanonicalExternalVenue_(rows, place) {
