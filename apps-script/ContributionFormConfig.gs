@@ -412,10 +412,25 @@ function syncOneContributionForm_(form, contract, workbook) {
   }
 
   contract.questions.forEach(function(question, index) {
-    form.moveItem(itemByKey[question.key], index);
+    moveContributionQuestionToIndex_(form, itemByKey[question.key], index, question.key);
   });
 
   return { removedQuestions: removed, addedQuestions: added, totalQuestions: contract.questions.length };
+}
+
+function moveContributionQuestionToIndex_(form, item, toIndex, questionKey) {
+  if (!item || typeof item.getId !== 'function') {
+    throw new Error('Missing contribution question for reorder: ' + questionKey);
+  }
+  const desiredId = item.getId();
+  const currentItems = form.getItems();
+  const fromIndex = currentItems.findIndex(function(currentItem) {
+    return currentItem.getId() === desiredId;
+  });
+  if (fromIndex < 0) {
+    throw new Error('Unable to reorder missing contribution question: ' + questionKey);
+  }
+  if (fromIndex !== toIndex) form.moveItem(fromIndex, toIndex);
 }
 
 function configureContributionQuestion_(item, question, workbook) {
