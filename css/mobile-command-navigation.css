@@ -471,16 +471,6 @@
     border-color: var(--cgb-gold-400);
   }
 
-  .add-missing-location {
-    display: inline-flex;
-    margin-top: 18px;
-    color: var(--cgb-navy-900);
-    font-size: .8rem;
-    font-weight: 700;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
-  }
-
   .mobile-command-bar {
     grid-template-columns: repeat(5, minmax(0, 1fr));
     padding-top: 4px;
@@ -1001,10 +991,5 @@
 
   .add-action small {
     color: var(--cgb-ink-500, #657083);
-  }
-
-  .add-missing-location:not([hidden]) {
-    display: inline-flex;
-    margin-top: 16px;
   }
 }
