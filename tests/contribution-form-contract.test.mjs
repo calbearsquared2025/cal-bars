@@ -5,11 +5,17 @@ import { readFile } from 'node:fs/promises';
 
 const source = await readFile(new URL('../apps-script/ContributionFormConfig.gs', import.meta.url), 'utf8');
 const context = vm.createContext({ JSON, Object, Array, String, Set, Error, console: { log() {} } });
-vm.runInContext(`${source}\nglobalThis.__contracts = getContributionFormContractsForReview();`, context);
+vm.runInContext(`${source}\nglobalThis.__contracts = getContributionFormContractsForReview();\nglobalThis.__plan = planContributionFormQuestionsForReview;`, context);
 const contracts = JSON.parse(JSON.stringify(context.__contracts));
 
 function question(contract, key) {
   return contract.questions.find((item) => item.key === key);
+}
+
+function nonPrefillQuestions(contract) {
+  return contract.questions
+    .filter((item) => !item.prefill)
+    .map((item, index) => ({ id: `existing-${index}`, title: item.title, kind: item.kind }));
 }
 
 const venueTags = [
@@ -96,4 +102,34 @@ test('repository public Form URLs and prefill IDs stay locked to the existing li
   assert.equal(contracts.watch_party_update.prefill.find((item) => item.key === 'watch_party_id').expectedEntry, 'entry.703629381');
   assert.match(contracts.venue_details.publicUrl, /docs\.google\.com\/forms/);
   assert.match(contracts.watch_party_update.publicUrl, /docs\.google\.com\/forms/);
+});
+
+test('a successfully synchronized Form plans zero question additions or removals on the next run', () => {
+  for (const key of Object.keys(contracts)) {
+    const plan = JSON.parse(JSON.stringify(context.__plan(nonPrefillQuestions(contracts[key]), key)));
+    assert.deepEqual(plan.added, [], key);
+    assert.deepEqual(plan.removed, [], key);
+    assert.equal(plan.retained.length, nonPrefillQuestions(contracts[key]).length, key);
+  }
+});
+
+test('known legacy headings are retained when their item type matches the approved question', () => {
+  const existing = nonPrefillQuestions(contracts.watch_party_submission);
+  const structured = existing.find((item) => item.title === 'Which of these details apply?');
+  structured.title = 'What should Bears know about this Watch Party?';
+  const plan = JSON.parse(JSON.stringify(context.__plan(existing, 'watch_party_submission')));
+  assert.deepEqual(plan.added, []);
+  assert.deepEqual(plan.removed, []);
+  assert.equal(plan.retained.some((item) => item.key === 'structured_tags' && item.id === structured.id), true);
+});
+
+test('wrong-type or unapproved questions are replaced or removed instead of creating duplicate approved headings', () => {
+  const existing = nonPrefillQuestions(contracts.venue_update);
+  existing.push({ id: 'obsolete', title: 'Old venue question', kind: 'text' });
+  const structured = existing.find((item) => item.title === 'Which of these describe this location?');
+  structured.kind = 'text';
+  const plan = JSON.parse(JSON.stringify(context.__plan(existing, 'venue_update')));
+  assert.deepEqual(plan.added, ['structured_tags']);
+  assert.equal(plan.removed.includes(structured.id), true);
+  assert.equal(plan.removed.includes('obsolete'), true);
 });
