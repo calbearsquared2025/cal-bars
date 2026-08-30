@@ -59,12 +59,12 @@ test('rejected negative tags are not reintroduced by legacy age/audio values', (
   );
 });
 
-test('Apps Script public whitelist exposes only the intended structured fields and strips unknown tag values', () => {
+test('Apps Script public whitelist exposes intended structured fields while canonical tag columns remain additive', () => {
   const api = codeHarness();
   assert.ok(Array.from(api.CGB_PUBLIC_FIELDS.Venues).includes('venue_tags'));
   assert.ok(Array.from(api.CGB_PUBLIC_FIELDS.Watch_Parties).includes('feature_tags'));
-  assert.ok(Array.from(api.CGB_TABS.Venues).includes('venue_tags'));
-  assert.ok(Array.from(api.CGB_TABS.Watch_Parties).includes('feature_tags'));
+  assert.equal(Array.from(api.CGB_TABS.Venues).includes('venue_tags'), false);
+  assert.equal(Array.from(api.CGB_TABS.Watch_Parties).includes('feature_tags'), false);
   assert.deepEqual(
     Array.from(api.normalizePublicControlledTags_('food|malicious|21_plus|food', ['21_plus', 'food'])),
     ['21_plus', 'food']
