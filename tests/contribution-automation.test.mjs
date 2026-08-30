@@ -10,6 +10,7 @@ const OTHER_VENUE_ID = 'venue_bbbbbbbbbbbbbbbbbbbbbbbb';
 const GAME_ID = 'game_cccccccccccccccccccccccc';
 const WP_ID = 'wp_dddddddddddddddddddddddd';
 const OTHER_WP_ID = 'wp_eeeeeeeeeeeeeeeeeeeeeeee';
+const UNKNOWN_WP_ID = 'wp_ffffffffffffffffffffffff';
 
 class RangeMock {
   constructor(sheet, row, column, rows, columns) {
@@ -70,7 +71,19 @@ function namedValues(row) {
   return Object.fromEntries(Object.entries(row).map(([key, value]) => [key, [value]]));
 }
 
-function harness({ rawSheetName = 'Venue Details', rawRow = null, agePolicy = 'unknown', soundStatus = 'unknown' } = {}) {
+function setRawField(sheet, header, value) {
+  const index = sheet.values[0].indexOf(header);
+  assert.notEqual(index, -1, `missing raw header ${header}`);
+  sheet.values[1][index] = value;
+}
+
+function harness({
+  rawSheetName = 'Venue Details',
+  rawRow = null,
+  agePolicy = 'unknown',
+  soundStatus = 'unknown',
+  baseProcessor = null
+} = {}) {
   const venueHeaders = ['venue_id', 'name', 'publication_status', 'venue_tags', 'updated_at'];
   const venues = new SheetMock('Venues', venueHeaders, [
     { venue_id: VENUE_ID, name: 'Test Venue', publication_status: 'published', venue_tags: '', updated_at: '2026-08-01T00:00:00Z' },
@@ -108,12 +121,18 @@ function harness({ rawSheetName = 'Venue Details', rawRow = null, agePolicy = 'u
   const raw = new SheetMock(rawSheetName, Object.keys(defaultRow), [defaultRow]);
   const workbook = new WorkbookMock([venues, games, parties, raw]);
   const cacheClears = [];
+  let baseCalls = 0;
 
   const context = vm.createContext({
     console: { log() {}, warn() {}, error() {} },
     Date, JSON, Math, Number, Object, Array, String, Set, Map, RegExp, Error, Intl,
     CGB_MINIMAL_WATCH_PARTY_RAW_TAB: 'Watch_Party_Submissions_Raw',
-    processMinimalWatchPartyFormSubmission_: () => ({ ok: true, created_watch_party_ids: [WP_ID] }),
+    processMinimalWatchPartyFormSubmission_: () => {
+      baseCalls += 1;
+      return baseProcessor
+        ? baseProcessor(baseCalls)
+        : { ok: true, processing_status: 'processed', created_watch_party_ids: [WP_ID] };
+    },
     getWorkbook_: () => workbook,
     clearPublicSnapshotCache_: () => cacheClears.push('clear'),
     normalizeCellValue_: (value) => value,
@@ -147,6 +166,8 @@ test('one structured venue tag seeds the persistent Venue and keeps freeform/con
   const privateRow = objectsFromSheet(raw)[0];
   assert.equal(privateRow['Your email (optional, kept private)'], 'private@example.com');
   assert.equal(privateRow['Anything else we should know about this venue?'], 'Private freeform context');
+  assert.equal(privateRow.review_status, 'not_required');
+  assert.equal(privateRow.manual_review_reason, '');
 });
 
 test('multiple venue tags merge deterministically and unchecked options mean no change', () => {
@@ -158,24 +179,28 @@ test('multiple venue tags merge deterministically and unchecked options mean no 
   assert.equal(unchanged.changed, false);
 });
 
-test('destructive venue correction remains private and does not alter venue identity', () => {
+test('destructive venue correction remains pending review while safe structured additions still apply', () => {
   const rawRow = {
     'Venue ID': VENUE_ID,
     'What are you sharing?': 'Location closed or moved',
-    'Which of these describe this location?': '',
+    'Which of these describe this location?': 'FOOD AVAILABLE',
     'Anything else we should add or change?': 'Move this venue to a different address',
     'Name (optional)': 'Private Person',
     'Email (optional)': 'private@example.com'
   };
-  const { api, event, venues } = harness({ rawSheetName: 'Venue Problem Submission', rawRow });
+  const { api, event, venues, raw } = harness({ rawSheetName: 'Venue Problem Submission', rawRow });
   const before = objectsFromSheet(venues)[0];
   const result = api.processVenueStructuredContribution_(event, 'venue_update');
   const after = objectsFromSheet(venues)[0];
+  const privateRow = objectsFromSheet(raw)[0];
   assert.equal(result.ok, true);
-  assert.equal(result.changed, false);
+  assert.equal(result.review_status, 'pending');
   assert.equal(after.name, before.name);
   assert.equal(after.publication_status, 'published');
-  assert.equal(after.venue_tags, '');
+  assert.equal(after.venue_tags, 'food');
+  assert.equal(privateRow.processing_status, 'processed');
+  assert.equal(privateRow.review_status, 'pending');
+  assert.equal(privateRow.manual_review_reason, 'location_closed_or_moved');
 });
 
 test('Watch Party update targets the exact ID, seeds Venue tags, keeps event-only tags on the event, and maps zoned start time', () => {
@@ -190,34 +215,40 @@ test('Watch Party update targets the exact ID, seeds Venue tags, keeps event-onl
     'Name (optional)': 'Private Person',
     'Email (optional)': 'private@example.com'
   };
-  const { api, event, venues, parties } = harness({ rawSheetName: 'Watch Party Problem Submission', rawRow });
+  const { api, event, venues, parties, raw } = harness({ rawSheetName: 'Watch Party Problem Submission', rawRow });
   const result = api.processWatchPartyStructuredUpdate_(event);
   assert.equal(result.ok, true);
+  assert.equal(result.review_status, 'not_required');
   const [party, otherParty] = objectsFromSheet(parties);
   assert.equal(party.sound_status, 'confirmed_on');
   assert.equal(party.feature_tags, 'rsvp_requested|cal_specials');
   assert.equal(party.event_start_at, '2026-09-05T23:30:00.000Z');
   assert.equal(otherParty.feature_tags, '');
   assert.equal(objectsFromSheet(venues)[0].venue_tags, 'audio_on|food');
+  assert.equal(objectsFromSheet(raw)[0].review_status, 'not_required');
 });
 
-test('Watch Party cancellation, organizer, and link corrections are never auto-applied', () => {
+test('Watch Party cancellation stays pending while safe event tags may still auto-apply', () => {
   const rawRow = {
     'Watch Party ID': WP_ID,
     'What are you sharing?': 'Event canceled or moved',
-    'Which of these details apply?': '',
+    'Which of these details apply?': 'RSVP REQUESTED',
     'Anything else we should add or change?': 'Cancel it and replace the organizer/link',
     'Organizer or host name': 'Unreviewed Replacement',
     'Official event or RSVP link': 'https://example.com/replacement'
   };
-  const { api, event, parties } = harness({ rawSheetName: 'Watch Party Problem Submission', rawRow });
+  const { api, event, parties, raw } = harness({ rawSheetName: 'Watch Party Problem Submission', rawRow });
   const result = api.processWatchPartyStructuredUpdate_(event);
   const party = objectsFromSheet(parties)[0];
+  const privateRow = objectsFromSheet(raw)[0];
   assert.equal(result.ok, true);
-  assert.equal(result.changed, false);
+  assert.equal(result.review_status, 'pending');
   assert.equal(party.event_status, 'active');
   assert.equal(party.organizer_name, 'Original Organizer');
   assert.equal(party.official_event_url, 'https://example.com/original');
+  assert.equal(party.feature_tags, 'rsvp_requested');
+  assert.equal(privateRow.review_status, 'pending');
+  assert.equal(privateRow.manual_review_reason, 'event_canceled_or_moved');
 });
 
 test('conflicting positive age/audio updates stay manual instead of overwriting existing event facts', () => {
@@ -226,7 +257,7 @@ test('conflicting positive age/audio updates stay manual instead of overwriting 
     'What are you sharing?': 'Correct existing information',
     'Which of these details apply?': '21+, AUDIO ON — game sound is expected/on'
   };
-  const { api, event, venues, parties } = harness({
+  const { api, event, venues, parties, raw } = harness({
     rawSheetName: 'Watch Party Problem Submission',
     rawRow,
     agePolicy: 'all_ages',
@@ -236,17 +267,26 @@ test('conflicting positive age/audio updates stay manual instead of overwriting 
   assert.equal(objectsFromSheet(parties)[0].age_policy, 'all_ages');
   assert.equal(objectsFromSheet(parties)[0].sound_status, 'confirmed_off');
   assert.equal(objectsFromSheet(venues)[0].venue_tags, '');
-  assert.deepEqual(Array.from(result.manual_review_reasons), ['age_policy_conflict', 'sound_status_conflict']);
+  assert.deepEqual(Array.from(result.manual_review_reasons), ['watch_party_correction', 'age_policy_conflict', 'sound_status_conflict']);
+  assert.equal(objectsFromSheet(raw)[0].review_status, 'pending');
+  assert.equal(objectsFromSheet(raw)[0].manual_review_reason, 'watch_party_correction|age_policy_conflict|sound_status_conflict');
 });
 
-test('raw trigger redelivery is idempotent', () => {
-  const { api, event, venues, raw } = harness();
-  const first = api.processVenueStructuredContribution_(event, 'venue_details');
-  const second = api.processVenueStructuredContribution_(event, 'venue_details');
+test('raw trigger redelivery is idempotent and preserves review state', () => {
+  const rawRow = {
+    'Venue ID': VENUE_ID,
+    'What are you sharing?': 'Location closed or moved',
+    'Which of these describe this location?': 'FOOD AVAILABLE'
+  };
+  const { api, event, venues, raw } = harness({ rawSheetName: 'Venue Problem Submission', rawRow });
+  const first = api.processVenueStructuredContribution_(event, 'venue_update');
+  const second = api.processVenueStructuredContribution_(event, 'venue_update');
   assert.equal(first.ok, true);
   assert.equal(second.redelivery, true);
+  assert.equal(second.review_status, 'pending');
   assert.equal(objectsFromSheet(venues)[0].venue_tags, 'food');
   assert.equal(objectsFromSheet(raw)[0].processing_status, 'processed');
+  assert.equal(objectsFromSheet(raw)[0].manual_review_reason, 'location_closed_or_moved');
 });
 
 test('current live Watch Party checkbox title is recognized by the generic trigger', () => {
@@ -260,6 +300,45 @@ test('current live Watch Party checkbox title is recognized by the generic trigg
   assert.equal(result.ok, true);
   assert.equal(objectsFromSheet(venues)[0].venue_tags, 'food');
   assert.equal(objectsFromSheet(parties)[0].feature_tags, 'rsvp_requested');
+});
+
+test('Watch Party enhancement failure is durable and a later redelivery can recover without duplicating canonical rows', () => {
+  const rawRow = {
+    'Venue ID (existing)': VENUE_ID,
+    'What should Bears know about this Watch Party?': 'FOOD AVAILABLE, RSVP REQUESTED',
+    'Start or arrival time': ''
+  };
+  const { api, event, raw, parties } = harness({
+    rawSheetName: 'Watch_Party_Submissions_Raw',
+    rawRow,
+    baseProcessor: (call) => ({
+      ok: true,
+      processing_status: 'processed',
+      created_watch_party_ids: [call === 1 ? UNKNOWN_WP_ID : WP_ID]
+    })
+  });
+
+  const beforeCount = objectsFromSheet(parties).length;
+  const first = api.onContributionFormSubmit(event);
+  const failedRaw = objectsFromSheet(raw)[0];
+  assert.equal(first.processing_status, 'enhancement_error');
+  assert.equal(first.contribution_enhancement_error, 'unknown_watch_party_id');
+  assert.equal(failedRaw.processing_status, 'enhancement_error');
+  assert.equal(failedRaw.processing_error, 'contribution_enhancement_unknown_watch_party_id');
+  assert.equal(failedRaw.review_status, 'pending');
+  assert.equal(failedRaw.manual_review_reason, 'contribution_enhancement_failed:unknown_watch_party_id');
+  assert.equal(objectsFromSheet(parties).length, beforeCount);
+
+  // Mimic the base processor's idempotent redelivery recovery before enhancement reruns.
+  setRawField(raw, 'processing_status', 'processed');
+  setRawField(raw, 'processing_error', '');
+  const second = api.onContributionFormSubmit(event);
+  assert.equal(second.ok, true);
+  assert.equal(second.contribution_enhancement_error, undefined);
+  assert.equal(objectsFromSheet(parties).length, beforeCount);
+  assert.equal(objectsFromSheet(parties)[0].feature_tags, 'rsvp_requested');
+  assert.equal(objectsFromSheet(raw)[0].review_status, 'not_required');
+  assert.equal(objectsFromSheet(raw)[0].manual_review_reason, '');
 });
 
 test('event start auto-publication requires an unambiguous time zone', () => {
