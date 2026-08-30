@@ -28,6 +28,12 @@ function smokePage(response, requestUrl) {
   const prelude = `<script>
     (() => {
       const snapshot = ${snapshotJson};
+      const hierarchy = [
+        { id: 'municipality.1', place_type: ['municipality'], text: 'Long Beach', place_designation: 'city' },
+        { id: 'region.1', place_type: ['region'], text: 'California' },
+        { id: 'postal_code.1', place_type: ['postal_code'], text: '90815' },
+        { id: 'country.1', place_type: ['country'], text: 'United States', short_code: 'us' }
+      ];
       const addressFeature = {
         id: 'address.12345',
         place_type: ['address'],
@@ -35,14 +41,24 @@ function smokePage(response, requestUrl) {
         address: '2123',
         text: 'N Bellflower Blvd',
         place_name: '2123 N Bellflower Blvd, Long Beach, California 90815, United States',
-        context: [
-          { id: 'municipality.1', place_type: ['municipality'], text: 'Long Beach', place_designation: 'city' },
-          { id: 'region.1', place_type: ['region'], text: 'California' },
-          { id: 'postal_code.1', place_type: ['postal_code'], text: '90815' },
-          { id: 'country.1', place_type: ['country'], text: 'United States', short_code: 'us' }
-        ]
+        context: hierarchy
       };
+      const poiFeature = (name, id, city = 'Long Beach') => ({
+        id,
+        place_type: ['poi'],
+        center: [-118.1258, 33.7765],
+        text: name,
+        place_name: name + ', 2123 N Bellflower Blvd, ' + city + ', California 90815, United States',
+        relevance: 1,
+        context: city === 'Long Beach' ? hierarchy : [
+          { id: 'municipality.2', place_type: ['municipality'], text: city, place_designation: 'city' },
+          { id: 'region.2', place_type: ['region'], text: 'California' },
+          { id: 'postal_code.2', place_type: ['postal_code'], text: '94607' },
+          { id: 'country.2', place_type: ['country'], text: 'United States', short_code: 'us' }
+        ]
+      });
       localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
+      window.__cgbMapTilerRequests = [];
       const nativeFetch = window.fetch.bind(window);
       const json = (payload) => new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
       window.fetch = async (input, init = {}) => {
@@ -89,19 +105,32 @@ function smokePage(response, requestUrl) {
           return json(snapshot);
         }
         if (url.hostname === 'api.maptiler.com') {
-          const query = decodeURIComponent(url.pathname);
+          const query = decodeURIComponent(url.pathname.replace(/^\/geocoding\//, '').replace(/\.json$/, ''));
+          window.__cgbMapTilerRequests.push({
+            query,
+            types: url.searchParams.get('types'),
+            autocomplete: url.searchParams.get('autocomplete'),
+            proximity: url.searchParams.get('proximity')
+          });
           if (url.searchParams.get('types') === 'address' && !query.toLowerCase().includes('no such address')) {
             return json({ features: [addressFeature] });
           }
+          const normalized = query.toLowerCase().replace(/\s+/g, ' ').trim();
+          if (normalized === 'district 4 pizza') return json({ features: [poiFeature('District 4 Pizza', 'poi.district4')] });
+          if (normalized === 'cache test venue') return json({ features: [poiFeature('Cache Test Venue', 'poi.cache')] });
+          if (normalized === 'geo strong venue') return json({ features: [poiFeature('Geo Strong Venue', 'poi.geo')] });
+          if (normalized === 'weak venue long beach') return json({ features: [poiFeature('Pizza Hut', 'poi.weak', 'Oakland')] });
           return json({ features: [] });
         }
         return nativeFetch(input, init);
       };
     })();
   </script>`;
-  const harness = smokeMode.startsWith('manual-')
-    ? '/tests/browser/manual-place-runtime-harness.mjs'
-    : '/tests/browser/smoke-runtime-harness.mjs';
+  const harness = smokeMode === 'external-search-efficiency'
+    ? '/tests/browser/external-search-efficiency-runtime-harness.mjs'
+    : smokeMode.startsWith('manual-')
+      ? '/tests/browser/manual-place-runtime-harness.mjs'
+      : '/tests/browser/smoke-runtime-harness.mjs';
   const driver = `<output id="cgb-smoke-result">CGB_SMOKE_RUNNING</output><script type="module" src="${harness}"></script>`;
   const html = productionIndex
     .replace('<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
@@ -133,14 +162,14 @@ await new Promise((resolve, reject) => {
 const browser = findBrowser();
 const address = server.address();
 
-async function run({ mode, marker, windowSize, label = mode }) {
+async function run({ mode, marker, windowSize, label = mode, virtualTimeBudget = 3000 }) {
   const profile = mkdtempSync(join(tmpdir(), 'cgb-smoke-'));
   const url = `http://127.0.0.1:${address.port}/__cgb_smoke__?__cgb_smoke=${mode}`;
   const child = spawn(browser, [
     '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
     '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
     '--disable-sync', '--metrics-recording-only', '--no-first-run', `--user-data-dir=${profile}`,
-    `--window-size=${windowSize}`, '--virtual-time-budget=3000', '--dump-dom', url
+    `--window-size=${windowSize}`, `--virtual-time-budget=${virtualTimeBudget}`, '--dump-dom', url
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';
   let stderr = '';
@@ -169,7 +198,14 @@ try {
   const manualAddress = await run({ mode: 'manual-mobile-address', marker: 'CGB_MANUAL_MOBILE_ADDRESS_PASS', windowSize: '390,844', label: 'manual address mobile' });
   const manualDenied = await run({ mode: 'manual-mobile-denied', marker: 'CGB_MANUAL_MOBILE_DENIED_PASS', windowSize: '390,844', label: 'manual denied-location mobile' });
   const manualDesktop = await run({ mode: 'manual-desktop-address', marker: 'CGB_MANUAL_DESKTOP_ADDRESS_PASS', windowSize: '1440,1000', label: 'manual address desktop' });
-  if (!mobile || !smallMobile || !desktop || !manualHere || !manualAddress || !manualDenied || !manualDesktop) process.exitCode = 1;
+  const externalSearchEfficiency = await run({
+    mode: 'external-search-efficiency',
+    marker: 'CGB_EXTERNAL_SEARCH_EFFICIENCY_PASS',
+    windowSize: '390,844',
+    label: 'external search efficiency',
+    virtualTimeBudget: 8000
+  });
+  if (!mobile || !smallMobile || !desktop || !manualHere || !manualAddress || !manualDenied || !manualDesktop || !externalSearchEfficiency) process.exitCode = 1;
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
