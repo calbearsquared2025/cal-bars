@@ -10,7 +10,6 @@ import {
   buildListingUpdatePrefillUrl,
   resolveListingUpdateVenue
 } from './listing-update-core.mjs';
-import { buildMissingLocationFormUrl } from './missing-location-core.mjs';
 import { getWatchParty } from './core.mjs';
 import {
   buildWatchPartyIssueUrl,
@@ -156,15 +155,6 @@ function watchPartyIssueUrl(venueId, state = appState()) {
   }, context);
 }
 
-function missingLocationUrl() {
-  return buildMissingLocationFormUrl({
-    formUrl: meta('cgb-missing-location-form-url'),
-    placeNameEntry: meta('cgb-missing-location-form-place-name-entry')
-  }, {
-    searchText: dom?.searchInput?.value?.trim() || ''
-  });
-}
-
 function contributionUrl(intent, venueId, state = appState()) {
   if (intent === CONTRIBUTION_INTENTS.watchParty) return watchPartyUrl(venueId, state);
   if (intent === CONTRIBUTION_INTENTS.calBar) return calBarNominationUrl(venueId, state);
@@ -228,11 +218,6 @@ function updateResponsiveCommandLabels() {
     dom.addNewLocationDetail.textContent = mobile
       ? 'Find a place that isn’t listed yet.'
       : 'Find a place that isn’t listed in CGB yet.';
-  }
-  if (dom.missingLocationLink) {
-    dom.missingLocationLink.textContent = mobile
-      ? 'Can’t find the location? Suggest it here.'
-      : 'Can’t find it? Suggest a missing location.';
   }
 
   const selectedButton = dom.commandButtons.find((button) => button.dataset.command === 'map');
@@ -412,7 +397,6 @@ function showAddLocationSearch() {
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('add-location');
-  configureMissingLocationLink();
 
   if (isMobileLayout()) {
     setSurface('search', { focus: true });
@@ -593,12 +577,6 @@ function syncViewState() {
   }
 }
 
-function configureMissingLocationLink() {
-  const href = missingLocationUrl();
-  dom.missingLocationLink.hidden = !href;
-  if (href) dom.missingLocationLink.href = href;
-}
-
 function cacheDom() {
   const commandButtons = Array.from(document.querySelectorAll('.mobile-command'));
   const addNewLocationButton = document.querySelector('#add-new-location-button');
@@ -630,7 +608,6 @@ function cacheDom() {
     addNewLocationDetail: addNewLocationButton?.querySelector('small'),
     addCalBarButton,
     addCalBarTitle: addCalBarButton?.querySelector('strong'),
-    missingLocationLink: document.querySelector('#add-missing-location-link'),
     reportButton: document.querySelector('#add-report-button'),
     reportOptions: document.querySelector('#add-report-options'),
     reportListingButton: document.querySelector('#add-report-listing-button'),
@@ -654,7 +631,6 @@ function cacheDom() {
 
 function initializeShellControls() {
   if (!cacheDom()) return;
-  configureMissingLocationLink();
   setSearchMode('existing', { refresh: false });
   setSurface('map');
 
@@ -695,7 +671,6 @@ function initializeShellControls() {
   }, { capture: true });
   dom.searchInput.addEventListener('input', () => {
     searchSubmissionPending = false;
-    configureMissingLocationLink();
   });
   document.addEventListener('click', (event) => {
     if (isMobileLayout()) return;
