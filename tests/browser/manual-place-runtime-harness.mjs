@@ -38,6 +38,17 @@ async function waitFor(predicate, label, timeout = 3000) {
   return false;
 }
 
+async function waitUntil(predicate, timeout = 1200) {
+  const deadline = performance.now() + timeout;
+  while (performance.now() < deadline) {
+    try {
+      if (predicate()) return true;
+    } catch (_) {}
+    await sleep();
+  }
+  return false;
+}
+
 function finish(marker) {
   if (!result) return;
   result.textContent = failures.length
@@ -72,6 +83,11 @@ function installGeolocation(getCurrentPosition) {
   }
 }
 
+function fallbackButton() {
+  const button = element('.search-result-group--external .missing-location-link');
+  return visible(button) && button.textContent.trim() === 'Can’t find it? Add this place' ? button : null;
+}
+
 async function openManualFallback() {
   const input = element('#location-query');
   const current = state();
@@ -90,12 +106,15 @@ async function openManualFallback() {
   input.value = 'District 4 Pizza';
   window.CGBExternalVenueSearch.searchCurrentQuery({ immediate: true, finalized: true });
 
-  await waitFor(() => {
-    const button = element('.search-result-group--external .missing-location-link');
-    return visible(button) && button.textContent.trim() === 'Can’t find it? Add this place';
-  }, 'in-app Add this place fallback');
+  let fallback = await waitUntil(() => fallbackButton());
+  if (!fallback) {
+    current.searchMode = 'add-location';
+    document.body.dataset.searchMode = 'add-location';
+    window.CGBExternalVenueSearch.searchCurrentQuery({ immediate: true, finalized: true });
+    fallback = await waitUntil(() => fallbackButton(), 1800);
+  }
+  if (!fallback) failures.push('Timed out waiting for in-app Add this place fallback');
 
-  const fallback = element('.search-result-group--external .missing-location-link');
   check(Boolean(fallback), 'Missing external venue should expose Add this place');
   fallback?.click();
   await waitFor(() => element('#external-venue-dialog')?.open && visible('.external-venue-manual'), 'manual add-place dialog');
