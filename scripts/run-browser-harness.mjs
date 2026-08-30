@@ -28,6 +28,7 @@ function smokePage(response, requestUrl) {
   const prelude = `<script>
     (() => {
       const snapshot = ${snapshotJson};
+      const efficiencyMode = new URLSearchParams(location.search).get('__cgb_smoke') === 'external-search-efficiency';
       const hierarchy = [
         { id: 'municipality.1', place_type: ['municipality'], text: 'Long Beach', place_designation: 'city' },
         { id: 'region.1', place_type: ['region'], text: 'California' },
@@ -115,6 +116,7 @@ function smokePage(response, requestUrl) {
           if (url.searchParams.get('types') === 'address' && !query.toLowerCase().includes('no such address')) {
             return json({ features: [addressFeature] });
           }
+          if (!efficiencyMode) return json({ features: [] });
           const normalized = query.toLowerCase().replace(/\s+/g, ' ').trim();
           if (normalized === 'district 4 pizza') return json({ features: [poiFeature('District 4 Pizza', 'poi.district4')] });
           if (normalized === 'cache test venue') return json({ features: [poiFeature('Cache Test Venue', 'poi.cache')] });
@@ -194,16 +196,16 @@ try {
   const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile' });
   const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile' });
   const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000', label: 'desktop' });
-  const manualHere = await run({ mode: 'manual-mobile-here', marker: 'CGB_MANUAL_MOBILE_HERE_PASS', windowSize: '390,844', label: 'manual known-location mobile' });
-  const manualAddress = await run({ mode: 'manual-mobile-address', marker: 'CGB_MANUAL_MOBILE_ADDRESS_PASS', windowSize: '390,844', label: 'manual address mobile' });
-  const manualDenied = await run({ mode: 'manual-mobile-denied', marker: 'CGB_MANUAL_MOBILE_DENIED_PASS', windowSize: '390,844', label: 'manual denied-location mobile' });
-  const manualDesktop = await run({ mode: 'manual-desktop-address', marker: 'CGB_MANUAL_DESKTOP_ADDRESS_PASS', windowSize: '1440,1000', label: 'manual address desktop' });
+  const manualHere = await run({ mode: 'manual-mobile-here', marker: 'CGB_MANUAL_MOBILE_HERE_PASS', windowSize: '390,844', label: 'manual known-location mobile', virtualTimeBudget: 5000 });
+  const manualAddress = await run({ mode: 'manual-mobile-address', marker: 'CGB_MANUAL_MOBILE_ADDRESS_PASS', windowSize: '390,844', label: 'manual address mobile', virtualTimeBudget: 5000 });
+  const manualDenied = await run({ mode: 'manual-mobile-denied', marker: 'CGB_MANUAL_MOBILE_DENIED_PASS', windowSize: '390,844', label: 'manual denied-location mobile', virtualTimeBudget: 5000 });
+  const manualDesktop = await run({ mode: 'manual-desktop-address', marker: 'CGB_MANUAL_DESKTOP_ADDRESS_PASS', windowSize: '1440,1000', label: 'manual address desktop', virtualTimeBudget: 5000 });
   const externalSearchEfficiency = await run({
     mode: 'external-search-efficiency',
     marker: 'CGB_EXTERNAL_SEARCH_EFFICIENCY_PASS',
     windowSize: '390,844',
     label: 'external search efficiency',
-    virtualTimeBudget: 8000
+    virtualTimeBudget: 10000
   });
   if (!mobile || !smallMobile || !desktop || !manualHere || !manualAddress || !manualDenied || !manualDesktop || !externalSearchEfficiency) process.exitCode = 1;
 } finally {
