@@ -13,15 +13,16 @@ For the structured contribution Forms below:
 - Do not collect a verified Google email automatically.
 - Do not limit to one response, enable public results, or create contributor accounts.
 - Prefilled entity questions remain in place whenever possible so existing `entry.*` IDs stay stable.
-- Google Forms owns the original response columns; Apps Script appends only private processing status/error/timestamp fields.
+- Google Forms owns the original response columns; Apps Script appends only private processing status/error/timestamp plus `review_status` and `manual_review_reason` fields.
 - Processors resolve fields by question-title aliases rather than brittle column positions so legacy responses remain auditable.
 - Unchecked structured options mean **unknown / not asserted**, not false.
 - Freeform answers never create public tags and never auto-publish into **BEARS SAY** or **CGB SAYS**.
 - Names and email addresses never enter the public snapshot.
 - Safe additive structured changes may auto-publish after canonical-ID validation and a script lock.
-- Closure, relocation, cancellation/move, Venue identity/name/address changes, organizer replacement, and material event-link replacement remain private for review.
+- Closure, relocation, cancellation/move, Venue identity/name/address changes, organizer replacement, and material event-link replacement remain private for review. The raw row is durably marked `review_status = pending` with a machine-readable `manual_review_reason`; safe structured additions in the same response may still apply.
+- If a Watch Party base submission publishes successfully but its structured enhancement fails afterward, the raw row is marked retryable `processing_status = enhancement_error`, retains the canonical Watch Party relationship created by the idempotent base processor, and remains `review_status = pending` until enhancement succeeds or is reviewed.
 
-The owner-only Apps Script entry point is `syncContributionForms()`. It resolves the four existing Forms through their linked response sheets, preflights current prefill IDs, appends the two canonical tag columns when absent, synchronizes non-prefill questions, installs one deduplicated spreadsheet-bound `onContributionFormSubmit` trigger, and returns/logs a concise report. Running it again is safe.
+The owner-only Apps Script entry point is `syncContributionForms()`. It resolves the four existing Forms through their linked response sheets, preflights current prefill IDs, appends the two canonical tag columns when absent, synchronizes non-prefill questions, installs one deduplicated spreadsheet-bound `onContributionFormSubmit` trigger, and returns/logs a concise report. Running it again is safe. The unified trigger is established before any obsolete Watch Party submit trigger is removed, so trigger migration failure cannot intentionally leave the live Forms without a handler.
 
 ## Controlled structured vocabulary
 
@@ -101,7 +102,7 @@ Approved questions:
 6. `Email (optional)` — optional/private.
 7. `Venue ID` — required, prefilled.
 
-This Form is Venue-only. Safe additive structured tags auto-publish. Closure/move and identity corrections remain raw/manual-review items. The application-facing action is **Add or update location details**.
+This Form is Venue-only. Safe additive structured tags auto-publish. Closure/move and identity corrections remain raw/manual-review items and are durably marked pending in the private response row. The application-facing action is **Add or update location details**.
 
 ## 3. Add a Watch Party
 
@@ -137,6 +138,8 @@ Venue-capable selected values may seed absent persistent Venue tags. `21+` and `
 
 A timezone-qualified start/arrival time may populate `event_start_at`; an ambiguous time remains private for review rather than being guessed.
 
+If base Watch Party publication succeeds but a later structured enhancement fails, the canonical base row remains published and is not recreated on redelivery. The private raw row records `enhancement_error` plus the enhancement reason so the structured portion can be retried/recovered without losing the original response.
+
 The live raw tab currently contains a checkbox heading `What should Bears know about this Watch Party?`; the processor explicitly accepts that historical/live heading so responses created before the Form sync are not lost.
 
 ## 4. Add or update Watch Party details
@@ -165,7 +168,7 @@ Approved questions:
 8. `Email (optional)` — optional/private.
 9. `Watch Party ID` — required, prefilled stable relationship key.
 
-Safe additive structured changes update the exact canonical Watch Party automatically. Venue-capable values may also seed the Venue. Cancellation/move, organizer changes, and material event-link replacement remain private/manual-review items.
+Safe additive structured changes update the exact canonical Watch Party automatically. Venue-capable values may also seed the Venue. Cancellation/move, organizer changes, and material event-link replacement remain private/manual-review items and are durably marked pending even when safe structured additions from the same response are applied.
 
 ## Routing contract
 
