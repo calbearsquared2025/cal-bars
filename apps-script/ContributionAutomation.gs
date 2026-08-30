@@ -15,7 +15,9 @@ const CGB_CONTRIBUTION_LOCK_WAIT_MS = 30000;
 const CGB_CONTRIBUTION_ADMIN_HEADERS = Object.freeze([
   'processing_status',
   'processing_error',
-  'processed_at'
+  'processed_at',
+  'review_status',
+  'manual_review_reason'
 ]);
 
 const CGB_CONTRIBUTION_VENUE_TAGS = Object.freeze([
@@ -159,13 +161,17 @@ function processVenueStructuredContribution_(event, source) {
       return CGB_CONTRIBUTION_VENUE_TAGS.indexOf(tag) >= 0;
     });
     const result = mergeVenueContributionTags_(context.workbook, venueId, venueTags);
+    const manualReviewReasons = source === 'venue_update'
+      ? contributionUpdateCategoryReviewReasons_('venue', context.namedValues)
+      : [];
 
     return {
       ok: true,
       source: source,
       venue_id: venueId,
       added_venue_tags: result.added,
-      changed: result.changed
+      changed: result.changed,
+      manual_review_reasons: manualReviewReasons
     };
   });
 }
@@ -193,6 +199,10 @@ function processWatchPartyStructuredUpdate_(event) {
       selected,
       startValue
     );
+    const manualReviewReasons = uniqueContributionValues_(
+      contributionUpdateCategoryReviewReasons_('watch_party', context.namedValues)
+        .concat(result.manualReviewReasons)
+    );
 
     return {
       ok: true,
@@ -201,16 +211,18 @@ function processWatchPartyStructuredUpdate_(event) {
       added_venue_tags: result.addedVenueTags,
       added_watch_party_tags: result.addedWatchPartyTags,
       event_start_at: result.eventStartAt,
-      manual_review_reasons: result.manualReviewReasons
+      manual_review_reasons: manualReviewReasons
     };
   });
 }
 
 function enhanceWatchPartySubmissionContribution_(event, baseResult) {
   let lock = null;
+  let context = null;
   try {
+    context = parseContributionEvent_(event);
     lock = acquireContributionLock_();
-    const workbook = getWorkbook_();
+    const workbook = context.workbook;
     const selected = parseContributionStructuredTags_(
       readContributionFormField_(event && event.namedValues, 'structured_tags')
     );
@@ -244,17 +256,43 @@ function enhanceWatchPartySubmissionContribution_(event, baseResult) {
       aggregate.manualReviewReasons = aggregate.manualReviewReasons.concat(result.manualReviewReasons);
     });
 
+    const manualReviewReasons = uniqueContributionValues_(aggregate.manualReviewReasons);
+    const headers = ensureContributionAdminHeaders_(context.sheet);
+    updateContributionRawFields_(context.sheet, context.rowNumber, headers, contributionReviewStateUpdates_(manualReviewReasons));
     if (aggregate.changed) clearPublicSnapshotCache_();
     return Object.assign({}, baseResult, {
       added_venue_tags: uniqueContributionValues_(aggregate.addedVenueTags),
       added_watch_party_tags: uniqueContributionValues_(aggregate.addedWatchPartyTags),
       event_start_at: uniqueContributionValues_(aggregate.eventStartAt),
-      manual_review_reasons: uniqueContributionValues_(aggregate.manualReviewReasons)
+      manual_review_reasons: manualReviewReasons
     });
   } catch (error) {
+    const code = contributionErrorCode_(error);
     console.error(error && error.stack ? error.stack : error);
+    // Base Watch Party publication may already have succeeded and one enhancement
+    // may have partially written before a later enhancement failed. Conservatively
+    // invalidate the public cache and make the private raw state retryable.
+    try { clearPublicSnapshotCache_(); } catch (_) {}
+    if (!context) {
+      try { context = parseContributionEvent_(event); } catch (_) {}
+    }
+    if (context) {
+      try {
+        const headers = ensureContributionAdminHeaders_(context.sheet);
+        updateContributionRawFields_(context.sheet, context.rowNumber, headers, {
+          processing_status: 'enhancement_error',
+          processing_error: 'contribution_enhancement_' + code,
+          processed_at: new Date().toISOString(),
+          review_status: 'pending',
+          manual_review_reason: 'contribution_enhancement_failed:' + code
+        });
+      } catch (rawError) {
+        console.error(rawError && rawError.stack ? rawError.stack : rawError);
+      }
+    }
     return Object.assign({}, baseResult, {
-      contribution_enhancement_error: contributionErrorCode_(error)
+      processing_status: 'enhancement_error',
+      contribution_enhancement_error: code
     });
   } finally {
     releaseContributionLock_(lock);
@@ -386,17 +424,27 @@ function processContributionRawEvent_(event, processor) {
       'processing_status'
     );
     if (currentStatus === 'processed') {
-      return { ok: true, processing_status: 'processed', redelivery: true };
+      return {
+        ok: true,
+        processing_status: 'processed',
+        review_status: readContributionRawField_(context.sheet, context.rowNumber, headers, 'review_status'),
+        manual_review_reason: readContributionRawField_(context.sheet, context.rowNumber, headers, 'manual_review_reason'),
+        redelivery: true
+      };
     }
 
     const result = processor(context) || { ok: true, changed: false };
-    updateContributionRawFields_(context.sheet, context.rowNumber, headers, {
+    const manualReviewReasons = uniqueContributionValues_(result.manual_review_reasons || []);
+    updateContributionRawFields_(context.sheet, context.rowNumber, headers, Object.assign({
       processing_status: 'processed',
       processing_error: '',
       processed_at: new Date().toISOString()
-    });
+    }, contributionReviewStateUpdates_(manualReviewReasons)));
     if (result.changed) clearPublicSnapshotCache_();
-    return Object.assign({ processing_status: 'processed' }, result);
+    return Object.assign({
+      processing_status: 'processed',
+      review_status: manualReviewReasons.length ? 'pending' : 'not_required'
+    }, result);
   } catch (error) {
     const code = contributionErrorCode_(error);
     console.error(error && error.stack ? error.stack : error);
@@ -406,13 +454,15 @@ function processContributionRawEvent_(event, processor) {
         updateContributionRawFields_(context.sheet, context.rowNumber, headers, {
           processing_status: 'error',
           processing_error: code,
-          processed_at: new Date().toISOString()
+          processed_at: new Date().toISOString(),
+          review_status: 'pending',
+          manual_review_reason: 'processing_error:' + code
         });
       } catch (rawError) {
         console.error(rawError && rawError.stack ? rawError.stack : rawError);
       }
     }
-    return { ok: false, processing_status: 'error', error: code };
+    return { ok: false, processing_status: 'error', review_status: 'pending', error: code };
   } finally {
     releaseContributionLock_(lock);
   }
@@ -519,6 +569,39 @@ function normalizeContributionLabel_(value) {
     .replace(/[‘’]/g, "'")
     .replace(/\s+/g, ' ')
     .toLowerCase();
+}
+
+function contributionUpdateCategoryReviewReasons_(entityType, namedValues) {
+  const category = normalizeContributionLabel_(
+    readContributionFormField_(namedValues, 'update_category')
+  );
+  if (!category || category === 'add missing information') return [];
+
+  if (entityType === 'venue') {
+    if (category === 'location closed or moved') return ['location_closed_or_moved'];
+    if (category === 'correct existing information') return ['venue_correction'];
+    if (category === 'other') return ['venue_other_review'];
+    return ['venue_update_review'];
+  }
+
+  if (entityType === 'watch_party') {
+    if (category === 'event canceled or moved') return ['event_canceled_or_moved'];
+    if (category === 'organizer / event link update' || category === 'organizer/event link update') {
+      return ['organizer_or_event_link_update'];
+    }
+    if (category === 'correct existing information') return ['watch_party_correction'];
+    if (category === 'other') return ['watch_party_other_review'];
+    return ['watch_party_update_review'];
+  }
+  return [];
+}
+
+function contributionReviewStateUpdates_(manualReviewReasons) {
+  const reasons = uniqueContributionValues_(manualReviewReasons || []);
+  return {
+    review_status: reasons.length ? 'pending' : 'not_required',
+    manual_review_reason: reasons.join('|')
+  };
 }
 
 function parseContributionStructuredTags_(value) {
