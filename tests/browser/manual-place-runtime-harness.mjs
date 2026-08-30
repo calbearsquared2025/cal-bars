@@ -106,15 +106,16 @@ async function openManualFallback() {
   input.value = 'District 4 Pizza';
   window.CGBExternalVenueSearch.searchCurrentQuery({ immediate: true, finalized: true });
 
-  let fallback = await waitUntil(() => fallbackButton());
-  if (!fallback) {
+  let foundFallback = await waitUntil(() => Boolean(fallbackButton()));
+  if (!foundFallback) {
     current.searchMode = 'add-location';
     document.body.dataset.searchMode = 'add-location';
     window.CGBExternalVenueSearch.searchCurrentQuery({ immediate: true, finalized: true });
-    fallback = await waitUntil(() => fallbackButton(), 1800);
+    foundFallback = await waitUntil(() => Boolean(fallbackButton()), 1800);
   }
-  if (!fallback) failures.push('Timed out waiting for in-app Add this place fallback');
+  if (!foundFallback) failures.push('Timed out waiting for in-app Add this place fallback');
 
+  const fallback = fallbackButton();
   check(Boolean(fallback), 'Missing external venue should expose Add this place');
   fallback?.click();
   await waitFor(() => element('#external-venue-dialog')?.open && visible('.external-venue-manual'), 'manual add-place dialog');
