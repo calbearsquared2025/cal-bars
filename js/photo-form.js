@@ -11,6 +11,14 @@ function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
 
+export function readPhotoFormConfig(documentObject = document) {
+  return {
+    formUrl: meta('cgb-photo-form-url', documentObject) || PHOTO_FORM_CONFIG.formUrl,
+    venueIdEntry: meta('cgb-photo-form-venue-id-entry', documentObject) || PHOTO_FORM_CONFIG.venueIdEntry,
+    venueNameEntry: meta('cgb-photo-form-venue-name-entry', documentObject) || PHOTO_FORM_CONFIG.venueNameEntry
+  };
+}
+
 function syncContributionVisibility(detail) {
   const section = detail?.querySelector(':scope > .detail-contribution');
   if (section) section.hidden = !section.querySelector('.detail-contribution__actions > a[href]');
