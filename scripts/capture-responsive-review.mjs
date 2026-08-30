@@ -88,12 +88,8 @@ function reviewPage(root, response) {
         const reviewMode = new URLSearchParams(location.search).get('reviewMode');
         if (mobile && reviewMode === 'bears-say') {
           await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));
-          const selected = document.querySelector('#tray-selected');
-          if (selected) {
-            selected.scrollTop = selected.scrollHeight;
-            selected.dispatchEvent(new Event('scroll'));
-          }
-          await sleep(180);
+          document.querySelector('.detail-fan-experiences')?.scrollIntoView({ block: 'start', inline: 'nearest' });
+          await sleep(220);
         }
         document.body.dataset.reviewReady = 'true';
       })();
