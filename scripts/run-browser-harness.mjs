@@ -106,7 +106,9 @@ function smokePage(response, requestUrl) {
           return json(snapshot);
         }
         if (url.hostname === 'api.maptiler.com') {
-          const query = decodeURIComponent(url.pathname.replace(/^\/geocoding\//, '').replace(/\.json$/, ''));
+          const query = decodeURIComponent(url.pathname)
+            .replace('/geocoding/', '')
+            .replace('.json', '');
           window.__cgbMapTilerRequests.push({
             query,
             types: url.searchParams.get('types'),
@@ -117,7 +119,7 @@ function smokePage(response, requestUrl) {
             return json({ features: [addressFeature] });
           }
           if (!efficiencyMode) return json({ features: [] });
-          const normalized = query.toLowerCase().replace(/\s+/g, ' ').trim();
+          const normalized = query.toLowerCase().trim().split(' ').filter(Boolean).join(' ');
           if (normalized === 'district 4 pizza') return json({ features: [poiFeature('District 4 Pizza', 'poi.district4')] });
           if (normalized === 'cache test venue') return json({ features: [poiFeature('Cache Test Venue', 'poi.cache')] });
           if (normalized === 'geo strong venue') return json({ features: [poiFeature('Geo Strong Venue', 'poi.geo')] });
