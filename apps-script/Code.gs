@@ -477,6 +477,7 @@ function hasValidVenueCoordinates_(row) {
 function whitelist_(row, fields) {
   const output = {};
   fields.forEach(function(field) {
+    if (field === 'venue_tags' || field === 'feature_tags') return;
     output[field] = Object.prototype.hasOwnProperty.call(row, field) ? row[field] : '';
   });
   return output;
