@@ -65,7 +65,7 @@ test('mobile selected profile puts compact What to know context before the Watch
   assert.match(source, /buildCalBarNominationPrefillUrl/);
   assert.match(source, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.match(source, /heading\.textContent = 'YOU SAY'/);
-  assert.doesNotMatch(source, /createVenueTagList/);
+  assert.match(source, /if \(!mobileContinuation\) \{[\s\S]*?createVenueTagList\(documentObject, venueTags\)/);
 });
 
 test('mobile selected profile defers an approved photo until after You Say while leaving no-photo map fallback behavior intact', async () => {
