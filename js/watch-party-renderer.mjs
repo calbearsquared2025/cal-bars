@@ -91,6 +91,16 @@ function arrivalLabel(party) {
   return time ? `Arrive ${time}` : '';
 }
 
+export function refreshWatchPartyProfileOnReturn(link, windowObject = globalThis.window) {
+  if (!link || typeof link.addEventListener !== 'function' || !windowObject?.addEventListener) return false;
+  link.addEventListener('click', () => {
+    windowObject.addEventListener('focus', () => {
+      windowObject.CGBSnapshotRefresh?.refresh?.();
+    }, { once: true });
+  });
+  return true;
+}
+
 export function createWatchPartyModule({
   party,
   index = 0,
@@ -153,6 +163,7 @@ export function createWatchPartyModule({
     const report = documentObject.createElement('a');
     report.className = 'party-module__report';
     report.dataset.watchPartyIssueEntry = party.watch_party_id;
+    report.dataset.googleFormExternal = 'true';
     report.href = issueUrl;
     report.target = '_blank';
     report.rel = 'noopener noreferrer';
@@ -163,6 +174,7 @@ export function createWatchPartyModule({
     action.className = 'party-module__report-action';
     action.textContent = 'Tell us →';
     report.append(prompt, documentObject.createTextNode(' '), action);
+    refreshWatchPartyProfileOnReturn(report);
     module.append(report);
   }
   return module;

@@ -55,18 +55,35 @@ test('selected cards do not render the superseded detail gateway', async () => {
   assert.doesNotMatch(source, /detailHref/);
 });
 
-test('continuous profile places photo or fallback map before the editorial sections', async () => {
-  const source = await readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8');
-  const heroPlacement = source.indexOf('cachedVenueDetail.append(hero);');
-  const editorialPlacement = source.indexOf('if (editorial) cachedVenueDetail.append(editorial);');
-  assert.ok(heroPlacement >= 0);
-  assert.ok(editorialPlacement > heroPlacement);
-  assert.doesNotMatch(source, /if \(fanSection\) hero\.after\(fanSection\)/);
+test('mobile selected profile puts compact What to know context before the Watch Party without duplicating tags under You Say', async () => {
+  const source = await readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8');
+  assert.match(source, /title\.textContent = 'WHAT TO KNOW'/);
+  assert.match(source, /link\.textContent = 'Add info →'/);
+  assert.match(source, /empty\.textContent = 'Nothing shared yet\.'/);
+  assert.match(source, /header\.after\(section\)/);
+  assert.match(source, /venueTagsForVenue\(venue\)/);
+  assert.match(source, /buildCalBarNominationPrefillUrl/);
+  assert.match(source, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
+  assert.match(source, /heading\.textContent = 'YOU SAY'/);
+  assert.match(source, /if \(!mobileContinuation\) \{[\s\S]*?createVenueTagList\(documentObject, venueTags\)/);
 });
 
-test('no-photo profile uses the contextual map photo action without duplicating it in maintenance rows', async () => {
+test('mobile selected profile defers an approved photo until after You Say while leaving no-photo map fallback behavior intact', async () => {
+  const [fanSource, continuationSource] = await Promise.all([
+    readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8')
+  ]);
+  assert.match(fanSource, /communitySection\.after\(photo\)/);
+  assert.match(fanSource, /detail-photo--mobile-deferred/);
+  assert.match(fanSource, /detail-hero--deferred-photo-empty/);
+  assert.match(continuationSource, /if \(!venue\.photo_url\) \{[\s\S]*?createLocalMapElement/);
+});
+
+test('no-photo profile keeps the photo contribution in the normal maintenance flow', async () => {
   const source = await readFile(new URL('../js/photo-form.js', import.meta.url), 'utf8');
-  assert.match(source, /if \(localMap\) \{[\s\S]*entryPoint: 'map-overlay'[\s\S]*\} else \{[\s\S]*entryPoint: 'contribution'/);
-  assert.equal((source.match(/entryPoint: 'map-overlay'/g) || []).length, 1);
+  assert.match(source, /entryPoint: 'contribution'/);
+  assert.match(source, /className: 'detail-contribution__action'/);
+  assert.doesNotMatch(source, /entryPoint: 'map-overlay'/);
+  assert.doesNotMatch(source, /detail-local-map__photo-action/);
   assert.equal((source.match(/entryPoint: 'contribution'/g) || []).length, 1);
 });

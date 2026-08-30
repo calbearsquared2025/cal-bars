@@ -3,8 +3,13 @@ import {
   buildFanExperienceFormPrefillUrl,
   resolveFanExperienceVenue
 } from './fan-experience-form-core.mjs';
+import {
+  buildCalBarNominationPrefillUrl,
+  resolveCalBarNominationVenue
+} from './cal-bar-nomination-core.mjs';
 
 const SECTION_SELECTOR = '[data-fan-experiences]';
+const MOBILE_WHAT_TO_KNOW_STYLE_ID = 'cgb-mobile-what-to-know';
 const VENUE_TAG_ORDER = Object.freeze([
   '21_plus', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
 ]);
@@ -58,6 +63,14 @@ export function readFanExperienceFormConfig(documentObject = document) {
   };
 }
 
+function readVenueContributionConfig(documentObject) {
+  return {
+    formUrl: meta('cgb-cal-bar-nomination-form-url', documentObject),
+    venueIdEntry: meta('cgb-cal-bar-nomination-venue-id-entry', documentObject),
+    venueNameEntry: meta('cgb-cal-bar-nomination-venue-name-entry', documentObject)
+  };
+}
+
 export function fanExperiencesForVenue(snapshot, venueId) {
   const resolvedVenueId = clean(venueId);
   const rows = Array.isArray(snapshot?.fanExperiences) ? snapshot.fanExperiences : [];
@@ -102,6 +115,176 @@ function createVenueTagList(documentObject, tags) {
     list.append(tag);
   });
   return list;
+}
+
+function installMobileWhatToKnowStyles(documentObject) {
+  if (!documentObject?.head || documentObject.getElementById?.(MOBILE_WHAT_TO_KNOW_STYLE_ID)) return;
+  const style = documentObject.createElement('style');
+  style.id = MOBILE_WHAT_TO_KNOW_STYLE_ID;
+  style.textContent = `
+    @media (max-width: 899px) {
+      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .selected-card__what-to-know {
+        margin: 2px 0 12px;
+        padding: 0;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+        margin: 0;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-title {
+        margin: 0;
+        color: var(--cgb-ink-500);
+        font-family: var(--font-ui);
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .055em;
+        line-height: 1.15;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-link {
+        flex: 0 0 auto;
+        padding: 0;
+        color: var(--cgb-ink-500);
+        font-family: var(--font-ui);
+        font-size: .62rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-decoration: none;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-tags {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+        margin: 6px 0 0;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-tag {
+        min-height: 22px;
+        display: inline-flex;
+        align-items: center;
+        padding: 2px 7px;
+        color: var(--cgb-navy-900);
+        background: var(--cgb-gold-50);
+        border-radius: var(--radius-pill);
+        font-family: var(--font-ui);
+        font-size: .64rem;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-empty {
+        margin: 4px 0 0;
+        color: var(--cgb-ink-500);
+        font-size: .66rem;
+        line-height: 1.25;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero.detail-hero--deferred-photo-empty {
+        min-height: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation > .detail-photo.detail-photo--mobile-deferred {
+        width: calc(100% - 32px) !important;
+        margin: 0 16px 16px !important;
+      }
+    }
+  `;
+  documentObject.head.append(style);
+}
+
+function refreshProfileOnReturn(link, documentObject) {
+  const windowObject = documentObject?.defaultView || globalThis.window;
+  if (!link || !windowObject?.addEventListener) return;
+  link.addEventListener('click', () => {
+    windowObject.addEventListener('focus', () => {
+      windowObject.CGBSnapshotRefresh?.refresh?.();
+    }, { once: true });
+  });
+}
+
+function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
+  const existing = documentObject.querySelector('[data-mobile-what-to-know]');
+  existing?.remove();
+  if (!detail?.classList?.contains('venue-detail--selected-continuation')) return null;
+
+  const card = documentObject.querySelector('#tray-selected > .selected-card');
+  const header = card?.querySelector(':scope > .selected-card__header');
+  if (!card || !header) return null;
+
+  installMobileWhatToKnowStyles(documentObject);
+  const section = documentObject.createElement('section');
+  section.className = 'selected-card__what-to-know';
+  section.dataset.mobileWhatToKnow = 'true';
+
+  const heading = documentObject.createElement('div');
+  heading.className = 'selected-card__what-to-know-header';
+  const title = documentObject.createElement('h3');
+  title.className = 'selected-card__what-to-know-title';
+  title.textContent = 'WHAT TO KNOW';
+  heading.append(title);
+
+  const venueContext = resolveCalBarNominationVenue(state.snapshot, state.selectedVenueId);
+  const href = buildCalBarNominationPrefillUrl(readVenueContributionConfig(documentObject), venueContext);
+  if (href) {
+    const link = documentObject.createElement('a');
+    link.className = 'selected-card__what-to-know-link';
+    link.href = href;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Add info →';
+    refreshProfileOnReturn(link, documentObject);
+    heading.append(link);
+  }
+  section.append(heading);
+
+  const tags = venueTagsForVenue(venue);
+  if (tags.length) {
+    const list = documentObject.createElement('div');
+    list.className = 'selected-card__what-to-know-tags';
+    list.setAttribute('aria-label', 'Community venue details');
+    tags.forEach((item) => {
+      const tag = documentObject.createElement('span');
+      tag.className = 'selected-card__what-to-know-tag';
+      tag.dataset.venueTag = item.value;
+      tag.textContent = item.label;
+      list.append(tag);
+    });
+    section.append(list);
+  } else {
+    const empty = documentObject.createElement('p');
+    empty.className = 'selected-card__what-to-know-empty';
+    empty.textContent = 'Nothing shared yet.';
+    section.append(empty);
+  }
+
+  header.after(section);
+  return section;
+}
+
+function placeMobileDeferredPhoto(detail, communitySection) {
+  if (!detail?.classList?.contains('venue-detail--selected-continuation')) return false;
+  const hero = detail.querySelector(':scope > .detail-hero');
+  const photo = detail.querySelector('.detail-photo');
+  if (!hero || !photo || !communitySection) {
+    hero?.classList?.remove('detail-hero--deferred-photo-empty');
+    return false;
+  }
+  photo.classList.add('detail-photo--mobile-deferred');
+  communitySection.after(photo);
+  if (!hero.children.length) hero.classList.add('detail-hero--deferred-photo-empty');
+  return true;
 }
 
 function createQuote(documentObject, item) {
@@ -155,6 +338,11 @@ function placeSection(detail, section) {
   else detail.prepend(section);
 }
 
+function finalizeMobileCommunityPresentation({ detail, section, state, venue, documentObject }) {
+  syncMobileWhatToKnow({ detail, state, venue, documentObject });
+  placeMobileDeferredPhoto(detail, section);
+}
+
 export function renderFanExperiences({ app = window.CGBApp, documentObject = document } = {}) {
   documentObject.querySelectorAll(SECTION_SELECTOR).forEach((section) => section.remove());
   const detail = documentObject.querySelector('#venue-detail');
@@ -174,11 +362,14 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
   section.dataset.venueTagCount = String(venueTags.length);
 
   const heading = documentObject.createElement('h2');
-  heading.textContent = 'BEARS SAY';
+  heading.textContent = 'YOU SAY';
   section.append(heading);
 
-  const tagList = createVenueTagList(documentObject, venueTags);
-  if (tagList) section.append(tagList);
+  const mobileContinuation = detail.classList?.contains('venue-detail--selected-continuation') === true;
+  if (!mobileContinuation) {
+    const tagList = createVenueTagList(documentObject, venueTags);
+    if (tagList) section.append(tagList);
+  }
 
   if (!experiences.length) {
     const prompt = documentObject.createElement('p');
@@ -191,6 +382,7 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
     const share = createShareLink(documentObject, href);
     if (share) section.append(share);
     placeSection(detail, section);
+    finalizeMobileCommunityPresentation({ detail, section, state, venue, documentObject });
     return section;
   }
 
@@ -223,5 +415,6 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
   const share = createShareLink(documentObject, href);
   if (share) section.append(share);
   placeSection(detail, section);
+  finalizeMobileCommunityPresentation({ detail, section, state, venue, documentObject });
   return section;
 }
