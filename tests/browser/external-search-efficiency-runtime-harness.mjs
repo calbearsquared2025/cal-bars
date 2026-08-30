@@ -68,7 +68,8 @@ async function ready() {
     document.readyState === 'complete' &&
     element('#app')?.getAttribute('aria-busy') === 'false' &&
     Boolean(state()?.snapshot) &&
-    Boolean(window.CGBExternalVenueSearch),
+    Boolean(window.CGBExternalVenueSearch) &&
+    Boolean(element('#manual-venue-name')),
   'application and external venue search');
 }
 
