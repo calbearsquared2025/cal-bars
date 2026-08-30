@@ -93,32 +93,12 @@ function createVenueTagList(documentObject, tags) {
   list.className = 'detail-fan-experiences__tags';
   list.dataset.venueTags = 'true';
   list.setAttribute('aria-label', 'Community venue details');
-  Object.assign(list.style, {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: '5px',
-    margin: '0 0 12px'
-  });
 
   tags.forEach((item) => {
     const tag = documentObject.createElement('span');
     tag.className = 'detail-fan-experiences__tag';
     tag.dataset.venueTag = item.value;
     tag.textContent = item.label;
-    Object.assign(tag.style, {
-      minHeight: '22px',
-      display: 'inline-flex',
-      alignItems: 'center',
-      padding: '2px 7px',
-      color: 'var(--cgb-navy-900)',
-      background: 'var(--cgb-gold-50)',
-      borderRadius: 'var(--radius-pill)',
-      fontFamily: 'var(--font-ui)',
-      fontSize: '.64rem',
-      fontWeight: '700',
-      lineHeight: '1.1'
-    });
     list.append(tag);
   });
   return list;
