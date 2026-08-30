@@ -152,5 +152,5 @@ test('existing Watch Party contribution becomes the second Help improve action',
   assert.doesNotMatch(watchPartySource, /detail-watch-party-cta--additional/);
   assert.doesNotMatch(watchPartySource, /Another watch party\?/);
   assert.doesNotMatch(watchPartyCss, /detail-watch-party-cta--additional/);
-  assert.match(listingSource, /'Suggest an update or report an issue'/);
+  assert.match(listingSource, /'Add or update location details'/);
 });
