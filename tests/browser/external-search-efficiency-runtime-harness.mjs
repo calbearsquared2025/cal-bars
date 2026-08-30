@@ -71,6 +71,10 @@ function scheduleQuery(value, options) {
   window.CGBExternalVenueSearch.searchCurrentQuery(options);
 }
 
+function externalStatusText() {
+  return (element('.search-result-group--external .external-search-status')?.textContent || '').trim();
+}
+
 async function ready() {
   await waitFor(() =>
     document.readyState === 'complete' &&
@@ -107,6 +111,7 @@ if (current && form) {
   await sleep(100);
   scheduleQuery('District 4 Pizza');
   await waitFor(() => mapTilerRequests().length === 1, 'one paused autocomplete request');
+  await waitFor(() => state()?.externalSearch?.results?.[0]?.name === 'District 4 Pizza', 'strong autocomplete completion');
   check(mapTilerRequests().length === 1, 'A normal paused autocomplete search should make one MapTiler request');
   check(mapTilerRequests()[0]?.autocomplete === 'true', 'Paused external search should use autocomplete');
 
@@ -117,9 +122,11 @@ if (current && form) {
   const beforeWeakAutocomplete = mapTilerRequests().length;
   scheduleQuery('Weak Venue Long Beach');
   await waitFor(() => mapTilerRequests().length === beforeWeakAutocomplete + 1, 'weak autocomplete request');
+  await waitFor(() => state()?.externalSearch?.results?.[0]?.name === 'Pizza Hut', 'weak autocomplete completion');
   const beforeFinalized = mapTilerRequests().length;
   form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   await waitFor(() => mapTilerRequests().length === beforeFinalized + 1, 'one finalized request');
+  await waitFor(() => externalStatusText() === 'No concrete external places found.', 'finalized weak-result completion');
   const afterFinalized = mapTilerRequests().length;
   check(afterFinalized - beforeFinalized === 1, 'A submit that needs finalized search should make exactly one request');
   const finalizedRequest = mapTilerRequests()[afterFinalized - 1];
@@ -129,9 +136,11 @@ if (current && form) {
   const beforeCachePrime = mapTilerRequests().length;
   scheduleQuery('Cache Test Venue');
   await waitFor(() => mapTilerRequests().length === beforeCachePrime + 1, 'cache-prime autocomplete request');
+  await waitFor(() => state()?.externalSearch?.results?.[0]?.name === 'Cache Test Venue', 'cache-prime completion');
   const beforeCacheReuse = mapTilerRequests().length;
   scheduleQuery('  CACHE   TEST VENUE  ');
-  await sleep(750);
+  await waitFor(() => state()?.externalSearch?.results?.[0]?.name === 'Cache Test Venue', 'cached result reuse');
+  await sleep(100);
   check(mapTilerRequests().length === beforeCacheReuse, 'Normalized repeated searches should reuse the in-memory session cache');
 
   const beforeGeoSearch = mapTilerRequests().length;
