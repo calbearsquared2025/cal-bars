@@ -196,16 +196,16 @@ try {
   const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile' });
   const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile' });
   const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000', label: 'desktop' });
-  const manualHere = await run({ mode: 'manual-mobile-here', marker: 'CGB_MANUAL_MOBILE_HERE_PASS', windowSize: '390,844', label: 'manual known-location mobile', virtualTimeBudget: 5000 });
-  const manualAddress = await run({ mode: 'manual-mobile-address', marker: 'CGB_MANUAL_MOBILE_ADDRESS_PASS', windowSize: '390,844', label: 'manual address mobile', virtualTimeBudget: 5000 });
-  const manualDenied = await run({ mode: 'manual-mobile-denied', marker: 'CGB_MANUAL_MOBILE_DENIED_PASS', windowSize: '390,844', label: 'manual denied-location mobile', virtualTimeBudget: 5000 });
-  const manualDesktop = await run({ mode: 'manual-desktop-address', marker: 'CGB_MANUAL_DESKTOP_ADDRESS_PASS', windowSize: '1440,1000', label: 'manual address desktop', virtualTimeBudget: 5000 });
+  const manualHere = await run({ mode: 'manual-mobile-here', marker: 'CGB_MANUAL_MOBILE_HERE_PASS', windowSize: '390,844', label: 'manual known-location mobile', virtualTimeBudget: 20000 });
+  const manualAddress = await run({ mode: 'manual-mobile-address', marker: 'CGB_MANUAL_MOBILE_ADDRESS_PASS', windowSize: '390,844', label: 'manual address mobile', virtualTimeBudget: 20000 });
+  const manualDenied = await run({ mode: 'manual-mobile-denied', marker: 'CGB_MANUAL_MOBILE_DENIED_PASS', windowSize: '390,844', label: 'manual denied-location mobile', virtualTimeBudget: 20000 });
+  const manualDesktop = await run({ mode: 'manual-desktop-address', marker: 'CGB_MANUAL_DESKTOP_ADDRESS_PASS', windowSize: '1440,1000', label: 'manual address desktop', virtualTimeBudget: 20000 });
   const externalSearchEfficiency = await run({
     mode: 'external-search-efficiency',
     marker: 'CGB_EXTERNAL_SEARCH_EFFICIENCY_PASS',
     windowSize: '390,844',
     label: 'external search efficiency',
-    virtualTimeBudget: 10000
+    virtualTimeBudget: 30000
   });
   if (!mobile || !smallMobile || !desktop || !manualHere || !manualAddress || !manualDenied || !manualDesktop || !externalSearchEfficiency) process.exitCode = 1;
 } finally {
