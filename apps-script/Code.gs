@@ -302,7 +302,7 @@ function buildVenueHistoryCounts_(rows, venueIds, gameIds) {
     gamesByVenue[row.venue_id].add(row.game_id);
   });
   return Array.from(venueIds).sort().map(function(venueId) {
-    const games = gamesByVenue[row.venue_id];
+    const games = gamesByVenue[venueId];
     return { venue_id: venueId, past_game_count: games ? games.size : 0 };
   });
 }
