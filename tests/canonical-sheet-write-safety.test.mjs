@@ -159,7 +159,8 @@ test('Watch Party canonical writes protect every prefix and preserve other value
   ]);
 });
 
-test('Apps Script manifest includes the minimum Google Forms scope used by FormApp tooling', () => {
+test('Apps Script manifest omits the Google Forms scope when no FormApp tooling is shipped', () => {
   assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/spreadsheets'));
-  assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/forms'));
+  assert.ok(manifest.oauthScopes.includes('https://www.googleapis.com/auth/script.external_request'));
+  assert.equal(manifest.oauthScopes.includes('https://www.googleapis.com/auth/forms'), false);
 });

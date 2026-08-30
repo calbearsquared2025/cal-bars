@@ -22,7 +22,9 @@ For the structured contribution Forms below:
 - Closure, relocation, cancellation/move, Venue identity/name/address changes, organizer replacement, and material event-link replacement remain private for review. The raw row is durably marked `review_status = pending` with a machine-readable `manual_review_reason`; safe structured additions in the same response may still apply.
 - If a Watch Party base submission publishes successfully but its structured enhancement fails afterward, the raw row is marked retryable `processing_status = enhancement_error`, retains the canonical Watch Party relationship created by the idempotent base processor, and remains `review_status = pending` until enhancement succeeds or is reviewed.
 
-The owner-only Apps Script entry point is `syncContributionForms()`. It resolves the four existing Forms through their linked response sheets, preflights current prefill IDs, appends the two canonical tag columns when absent, synchronizes non-prefill questions, installs one deduplicated spreadsheet-bound `onContributionFormSubmit` trigger, and returns/logs a concise report. Running it again is safe. The unified trigger is established before any obsolete Watch Party submit trigger is removed, so trigger migration failure cannot intentionally leave the live Forms without a handler.
+For launch, the four existing Google Forms are maintained manually. The repository intentionally does not include Apps Script that creates, deletes, reorders, or edits Form questions. Do not run or recreate `syncContributionForms()` as part of owner setup. Preserve each existing public Form URL, linked response destination, prefill question, and `entry.*` ID, and maintain the approved questions below directly in Google Forms.
+
+The structured contribution processor remains `ContributionAutomation.gs`. Install exactly one spreadsheet-bound `onContributionFormSubmit` trigger manually in Apps Script using **From spreadsheet → On form submit**. Establish that trigger before removing any obsolete `onWatchPartyFormSubmit` trigger. Leave unrelated project triggers alone. The canonical workbook must contain `Venues.venue_tags` and `Watch_Parties.feature_tags` before structured contributions are enabled.
 
 ## Controlled structured vocabulary
 
@@ -63,7 +65,7 @@ Existing application prefill fields:
 - Venue Name: `entry.2017964730`
 - Venue ID: `entry.272269917`
 
-The live response tab is currently `Venue Details`. Historical headings remain in that private tab after synchronization.
+The live response tab is currently `Venue Details`. Historical headings remain in that private tab; do not delete legacy response columns solely to make the current Form look cleaner.
 
 Approved questions:
 
@@ -121,7 +123,7 @@ Response tab: `Watch_Party_Submissions_Raw`.
 Approved structure:
 
 1. `Venue Name` — required, prefilled.
-2. `Which game or games will have a Watch Party here?` — required checkbox; selected game is prefilled and choices synchronize to upcoming canonical Games.
+2. `Which game or games will have a Watch Party here?` — required checkbox; selected game is prefilled. Keep the checkbox choices aligned manually with upcoming canonical Games.
 3. `Organizer or host name` — required.
 4. `Who is organizing or hosting this Watch Party?` — required organizer type.
 5. `Official event or RSVP link` — optional.
@@ -132,7 +134,7 @@ Approved structure:
 10. `Contact Email` — optional/private.
 11. `Venue ID (existing)` — required, prefilled.
 
-Routine valid Watch Party submissions continue to auto-publish one canonical Watch Party per selected game. The combined structured checkbox replaces the older separate age/audio questions in the synchronized Form. Processors remain tolerant of those historical raw columns.
+Routine valid Watch Party submissions continue to auto-publish one canonical Watch Party per selected game. The combined structured checkbox replaces the older separate age/audio questions in the manually maintained Form. Processors remain tolerant of those historical raw columns.
 
 Venue-capable selected values may seed absent persistent Venue tags. `21+` and `AUDIO ON` also populate the existing Watch Party `age_policy`/`sound_status` compatibility fields when non-conflicting. `RSVP REQUESTED` and `CAL SPECIALS` populate only `Watch_Parties.feature_tags`.
 
@@ -140,7 +142,7 @@ A timezone-qualified start/arrival time may populate `event_start_at`; an ambigu
 
 If base Watch Party publication succeeds but a later structured enhancement fails, the canonical base row remains published and is not recreated on redelivery. The private raw row records `enhancement_error` plus the enhancement reason so the structured portion can be retried/recovered without losing the original response.
 
-The live raw tab currently contains a checkbox heading `What should Bears know about this Watch Party?`; the processor explicitly accepts that historical/live heading so responses created before the Form sync are not lost.
+The live raw tab currently contains a checkbox heading `What should Bears know about this Watch Party?`; the processor explicitly accepts that historical/live heading so responses created under that heading are not lost.
 
 ## 4. Add or update Watch Party details
 
