@@ -55,7 +55,12 @@ export function resolvedManualPlace(payload, venueName) {
   const address = normalizeMapTilerResults(payload, 10)
     .find((place) => place.placeType === 'address');
   if (!address) return null;
-  return Object.freeze({ ...address, name, placeType: 'address' });
+  return Object.freeze({
+    ...address,
+    name,
+    placeType: 'address',
+    preserveUserSuppliedName: true
+  });
 }
 
 export function manualPlaceName(value) {
