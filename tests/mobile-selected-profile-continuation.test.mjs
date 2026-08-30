@@ -64,9 +64,11 @@ test('continuous profile places photo or fallback map before the editorial secti
   assert.doesNotMatch(source, /if \(fanSection\) hero\.after\(fanSection\)/);
 });
 
-test('no-photo profile uses the contextual map photo action without duplicating it in maintenance rows', async () => {
+test('no-photo profile keeps the photo contribution in the normal maintenance flow', async () => {
   const source = await readFile(new URL('../js/photo-form.js', import.meta.url), 'utf8');
-  assert.match(source, /if \(localMap\) \{[\s\S]*entryPoint: 'map-overlay'[\s\S]*\} else \{[\s\S]*entryPoint: 'contribution'/);
-  assert.equal((source.match(/entryPoint: 'map-overlay'/g) || []).length, 1);
+  assert.match(source, /entryPoint: 'contribution'/);
+  assert.match(source, /className: 'detail-contribution__action'/);
+  assert.doesNotMatch(source, /entryPoint: 'map-overlay'/);
+  assert.doesNotMatch(source, /detail-local-map__photo-action/);
   assert.equal((source.match(/entryPoint: 'contribution'/g) || []).length, 1);
 });
