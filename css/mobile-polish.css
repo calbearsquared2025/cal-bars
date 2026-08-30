@@ -317,10 +317,6 @@
     line-height: 1.28;
   }
 
-  .command-surface--add .add-missing-location {
-    display: none !important;
-  }
-
   /* Map has a compact preview; the full list is a distinct List destination. */
   .tray--peek {
     height: 116px;

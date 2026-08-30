@@ -35,7 +35,6 @@ test('desktop Add keeps the shared search form inside the contribution modal', (
   assert.match(refinementSource, /state\.searchMode = 'add-location'/);
   assert.match(refinementSource, /input\.placeholder = 'Venue or address'/);
   assert.match(refinementSource, /#add-surface #add-new-location-button/);
-  assert.match(refinementSource, /#add-surface #add-missing-location-link/);
   assert.match(refinementSource, /#add-surface \.add-somewhere-else > \.add-actions/);
 });
 
@@ -57,11 +56,12 @@ test('normal desktop Search still uses the contextual helper only after typing',
   assert.match(refinementSource, /#search-add-location-button/);
 });
 
-test('desktop inline Add search suppresses missing-location fallback while valid results exist', () => {
-  assert.match(refinementSource, /function syncDesktopMissingLocationFallback\(\)/);
-  assert.match(refinementSource, /button\[data-venue-id\], button\[data-external-place-id\]/);
-  assert.match(refinementSource, /link\.style\.display = hasResult \? 'none' : ''/);
-  assert.match(refinementSource, /MutationObserver/);
+test('desktop no longer contains the obsolete missing-location Form fallback controller', () => {
+  assert.doesNotMatch(refinementSource, /syncDesktopMissingLocationFallback/);
+  assert.doesNotMatch(refinementSource, /#add-missing-location-link/);
+  assert.doesNotMatch(shellSource, /missingLocationLink/);
+  assert.doesNotMatch(shellSource, /configureMissingLocationLink/);
+  assert.doesNotMatch(shellSource, /buildMissingLocationFormUrl/);
 });
 
 test('desktop no longer creates a list-specific Add location control', () => {

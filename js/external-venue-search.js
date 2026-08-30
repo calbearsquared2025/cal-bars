@@ -5,7 +5,6 @@ import {
   withStoredSelection
 } from './fan-intent-core.mjs';
 import {
-  buildMapTilerFinalSearchQueries,
   buildMapTilerSearchUrl,
   externalCreationFailureCopy,
   externalSearchFailureCopy,
@@ -16,20 +15,23 @@ import {
   validateJoinExternalVenueResponse
 } from './external-venue-core.mjs';
 import {
-  buildMissingLocationFormUrl,
-  shouldShowMissingLocationFallback
-} from './missing-location-core.mjs';
+  buildMapTilerAddressSearchUrl,
+  buildMapTilerReverseGeocodeUrl,
+  manualPlaceName,
+  resolvedManualPlace
+} from './manual-place-core.mjs';
 import {
   canonicalVenueWasKnown,
   showNewLocationContributionPrompt
 } from './new-location-contribution-prompt.mjs';
 
 const DATA_URL_KEY = 'cgb_v2_public_data_url';
-const SEARCH_DEBOUNCE_MS = 300;
+const SEARCH_DEBOUNCE_MS = 600;
 const SEARCH_TIMEOUT_MS = 8000;
 const WRITE_TIMEOUT_MS = 12000;
-const MINIMUM_QUERY_LENGTH = 3;
-const MISSING_LOCATION_COPY = 'Can’t find the location? Suggest it here.';
+const MINIMUM_QUERY_LENGTH = 4;
+const MINIMUM_ADDRESS_LENGTH = 3;
+const MANUAL_ADD_COPY = 'Can’t find it? Add this place';
 const USER_LOCATION_OPTIONS = Object.freeze({
   enableHighAccuracy: true,
   timeout: 10000,
@@ -41,6 +43,9 @@ let searchSequence = 0;
 let searchController = null;
 let addLocationProximityAttempted = false;
 let addLocationProximityPending = false;
+let proximityRefreshQueryKey = '';
+let lastCompletedSearch = null;
+const externalSearchCache = new Map();
 let dom = null;
 
 function storageGet(key) {
@@ -56,13 +61,6 @@ function configuredEndpoint() {
     document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
 }
 
-function configuredMissingLocationForm() {
-  return {
-    formUrl: document.querySelector('meta[name="cgb-missing-location-form-url"]')?.content.trim() || '',
-    placeNameEntry: document.querySelector('meta[name="cgb-missing-location-form-place-name-entry"]')?.content.trim() || ''
-  };
-}
-
 function ensureExternalState() {
   if (!appState.externalSearch) {
     appState.externalSearch = {
@@ -71,8 +69,11 @@ function ensureExternalState() {
       selected: null,
       pending: false,
       retry: null,
-      error: null
+      error: null,
+      manual: null
     };
+  } else if (!Object.prototype.hasOwnProperty.call(appState.externalSearch, 'manual')) {
+    appState.externalSearch.manual = null;
   }
   return appState.externalSearch;
 }
@@ -88,6 +89,50 @@ function currentUserProximity() {
   if (!active) return null;
   appState.nearbyOrigin = { ...active, label: 'your location' };
   return active;
+}
+
+function normalizedSearchQuery(query) {
+  return String(query ?? '')
+    .normalize('NFKC')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function proximityKey(proximity) {
+  if (!proximity) return 'none';
+  const latitude = Number(proximity.lat ?? proximity.latitude);
+  const longitude = Number(proximity.lon ?? proximity.longitude);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return 'none';
+  return `${longitude.toFixed(5)},${latitude.toFixed(5)}`;
+}
+
+function externalCacheKey(query, proximity) {
+  return `${normalizedSearchQuery(query)}|${proximityKey(proximity)}`;
+}
+
+function reusableCachedSearch(query, proximity, finalized) {
+  const cached = externalSearchCache.get(externalCacheKey(query, proximity));
+  if (!cached) return null;
+  if (!finalized || cached.finalized || cached.strong) return cached;
+  return null;
+}
+
+function rememberCompletedSearch(query, proximity, results, finalized) {
+  const record = Object.freeze({
+    queryKey: normalizedSearchQuery(query),
+    proximityKey: proximityKey(proximity),
+    results,
+    finalized: Boolean(finalized),
+    strong: hasStrongMapTilerVenueMatch(results, query)
+  });
+  externalSearchCache.set(externalCacheKey(query, proximity), record);
+  lastCompletedSearch = record;
+  return record;
+}
+
+function currentCompletedSearchIsStrong(query) {
+  return lastCompletedSearch?.queryKey === normalizedSearchQuery(query) && lastCompletedSearch.strong;
 }
 
 function requestAddLocationProximity() {
@@ -110,9 +155,14 @@ function requestAddLocationProximity() {
     appState.nearbyOrigin = { ...location, label: 'your location' };
 
     const query = dom?.searchInput?.value?.trim() || '';
-    if (appState.searchMode === 'add-location' && query.length >= MINIMUM_QUERY_LENGTH) {
-      scheduleExternalSearch({ immediate: true });
+    if (appState.searchMode !== 'add-location' || query.length < MINIMUM_QUERY_LENGTH) return;
+    if (searchTimer !== null) return;
+    if (searchController) {
+      proximityRefreshQueryKey = normalizedSearchQuery(query);
+      return;
     }
+    if (currentCompletedSearchIsStrong(query)) return;
+    scheduleExternalSearch({ immediate: true });
   }, () => {
     addLocationProximityPending = false;
   }, USER_LOCATION_OPTIONS);
@@ -155,18 +205,16 @@ function decorateExistingResults() {
   container.prepend(group);
 }
 
-function missingLocationLink() {
-  const url = buildMissingLocationFormUrl(configuredMissingLocationForm(), {
-    searchText: ensureExternalState().query
-  });
-  if (!url) return null;
-  const link = document.createElement('a');
-  link.className = 'missing-location-link';
-  link.href = url;
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.textContent = MISSING_LOCATION_COPY;
-  return link;
+function manualAddButton() {
+  if (appState.searchMode !== 'add-location') return null;
+  const state = ensureExternalState();
+  if (state.query.trim().length < MINIMUM_QUERY_LENGTH) return null;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'missing-location-link text-button';
+  button.textContent = MANUAL_ADD_COPY;
+  button.addEventListener('click', openManualAddFlow);
+  return button;
 }
 
 function replaceExternalGroup(contentBuilder) {
@@ -202,11 +250,6 @@ function showExternalFailure(error) {
     status.setAttribute('role', 'status');
     status.textContent = state.error;
     group.append(status);
-    const existingResultCount = dom.suggestions.querySelectorAll('.search-result-group--existing button[data-venue-id]').length;
-    if (shouldShowMissingLocationFallback({ existingResultCount, normalSearchFinished: true })) {
-      const fallback = missingLocationLink();
-      if (fallback) group.append(fallback);
-    }
   });
 }
 
@@ -221,11 +264,8 @@ function showExternalResults(results) {
       status.className = 'external-search-status';
       status.textContent = 'No concrete external places found.';
       group.append(status);
-      const existingResultCount = dom.suggestions.querySelectorAll('.search-result-group--existing button[data-venue-id]').length;
-      if (shouldShowMissingLocationFallback({ existingResultCount, normalSearchFinished: true })) {
-        const fallback = missingLocationLink();
-        if (fallback) group.append(fallback);
-      }
+      const fallback = manualAddButton();
+      if (fallback) group.append(fallback);
       return;
     }
 
@@ -245,13 +285,23 @@ function showExternalResults(results) {
       button.addEventListener('click', () => selectExternalPlace(place));
       group.append(button);
     });
-    const fallback = missingLocationLink();
+    const fallback = manualAddButton();
     if (fallback) group.append(fallback);
   });
 }
 
 function searchIsCurrent(query, sequence) {
   return sequence === searchSequence && dom.searchInput.value.trim() === query;
+}
+
+function maybeRefreshWeakSearchForNewProximity(query, sequence, usedProximity) {
+  const queryKey = normalizedSearchQuery(query);
+  if (proximityRefreshQueryKey !== queryKey) return;
+  proximityRefreshQueryKey = '';
+  if (!searchIsCurrent(query, sequence) || lastCompletedSearch?.strong) return;
+  const latestProximity = currentUserProximity();
+  if (proximityKey(latestProximity) === proximityKey(usedProximity)) return;
+  scheduleExternalSearch({ immediate: true });
 }
 
 async function searchExternalPlaces(query, sequence, { finalized = false } = {}) {
@@ -261,45 +311,45 @@ async function searchExternalPlaces(query, sequence, { finalized = false } = {})
     return;
   }
 
+  const proximity = currentUserProximity();
+  const cached = reusableCachedSearch(query, proximity, finalized);
+  if (cached) {
+    if (!searchIsCurrent(query, sequence)) return;
+    lastCompletedSearch = cached;
+    showExternalResults(cached.results);
+    return;
+  }
+
   searchController?.abort();
-  searchController = new AbortController();
-  const timeout = window.setTimeout(() => searchController.abort(), SEARCH_TIMEOUT_MS);
+  const controller = new AbortController();
+  searchController = controller;
+  const timeout = window.setTimeout(() => controller.abort(), SEARCH_TIMEOUT_MS);
   try {
-    const searchQueries = finalized ? buildMapTilerFinalSearchQueries(query) : [query];
-    const payloads = [];
-    const proximity = currentUserProximity();
+    const url = buildMapTilerSearchUrl(query, key, {
+      limit: finalized ? 10 : 6,
+      autocomplete: !finalized,
+      fuzzyMatch: true,
+      proximity
+    });
+    const response = await fetch(url, { signal: controller.signal, cache: 'no-store' });
+    if (!response.ok) throw new Error(`external_search_http_${response.status}`);
+    const payload = await response.json();
+    if (!searchIsCurrent(query, sequence)) return;
 
-    for (let index = 0; index < searchQueries.length; index += 1) {
-      const searchQuery = searchQueries[index];
-      const url = buildMapTilerSearchUrl(searchQuery, key, {
-        limit: finalized ? 10 : 6,
-        autocomplete: !finalized,
-        fuzzyMatch: true,
-        proximity
-      });
-      const response = await fetch(url, { signal: searchController.signal, cache: 'no-store' });
-      if (!response.ok) throw new Error(`external_search_http_${response.status}`);
-      payloads.push(await response.json());
-      if (!searchIsCurrent(query, sequence)) return;
-
-      const results = rankMapTilerResults(payloads, query, {
-        maximum: 6,
-        filterWeak: finalized
-      });
-      const lastQuery = index === searchQueries.length - 1;
-      if (!finalized || hasStrongMapTilerVenueMatch(results, query) || lastQuery) {
-        showExternalResults(results);
-        return;
-      }
-    }
-
-    showExternalResults([]);
+    const results = rankMapTilerResults(payload, query, {
+      maximum: 6,
+      filterWeak: finalized
+    });
+    rememberCompletedSearch(query, proximity, results, finalized);
+    showExternalResults(results);
   } catch (error) {
     if (!searchIsCurrent(query, sequence) && error?.name === 'AbortError') return;
     if (sequence !== searchSequence) return;
     showExternalFailure(error);
   } finally {
     window.clearTimeout(timeout);
+    if (searchController === controller) searchController = null;
+    maybeRefreshWeakSearchForNewProximity(query, sequence, proximity);
   }
 }
 
@@ -307,20 +357,32 @@ function invalidateExternalSearch() {
   const state = ensureExternalState();
   searchSequence += 1;
   window.clearTimeout(searchTimer);
+  searchTimer = null;
   searchController?.abort();
   searchController = null;
+  proximityRefreshQueryKey = '';
   state.results = [];
   state.error = null;
   dom?.suggestions?.querySelector(':scope > .search-result-group--external')?.remove();
 }
 
 function handleSearchSubmit(event) {
-  invalidateExternalSearch();
   const query = dom.searchInput.value.trim();
   if (!query || appState.searchMode !== 'add-location') return;
 
   event.preventDefault();
   event.stopImmediatePropagation();
+  if (currentCompletedSearchIsStrong(query)) {
+    searchSequence += 1;
+    window.clearTimeout(searchTimer);
+    searchTimer = null;
+    searchController?.abort();
+    searchController = null;
+    const state = ensureExternalState();
+    state.query = query;
+    showExternalResults(lastCompletedSearch.results);
+    return;
+  }
   scheduleExternalSearch({ immediate: true, finalized: true });
 }
 
@@ -336,7 +398,9 @@ function scheduleExternalSearch({ immediate = false, finalized = false } = {}) {
   searchSequence += 1;
   const sequence = searchSequence;
   window.clearTimeout(searchTimer);
+  searchTimer = null;
   searchController?.abort();
+  searchController = null;
   decorateExistingResults();
 
   if (!externalSearchAllowed() || query.length < MINIMUM_QUERY_LENGTH) {
@@ -345,6 +409,7 @@ function scheduleExternalSearch({ immediate = false, finalized = false } = {}) {
   }
 
   const run = () => {
+    searchTimer = null;
     showExternalLoading();
     searchExternalPlaces(query, sequence, { finalized });
   };
@@ -352,10 +417,19 @@ function scheduleExternalSearch({ immediate = false, finalized = false } = {}) {
   else searchTimer = window.setTimeout(run, SEARCH_DEBOUNCE_MS);
 }
 
+function setStandardConfirmationVisible(visible) {
+  dom.externalHeader.hidden = !visible;
+  dom.externalDisclosure.hidden = !visible;
+  dom.externalActions.hidden = !visible;
+  dom.manualPanel.hidden = visible;
+  if (!visible) dom.externalError.hidden = true;
+}
+
 function renderConfirmation() {
   const state = ensureExternalState();
   const selected = state.selected;
   if (!selected) return;
+  setStandardConfirmationVisible(true);
   dom.externalName.textContent = selected.name;
   dom.externalAddress.textContent = selected.address;
   dom.externalContext.textContent = selected.locationContext;
@@ -372,6 +446,7 @@ function renderConfirmation() {
 
 function selectExternalPlace(place) {
   const state = ensureExternalState();
+  state.manual = null;
   state.selected = { ...place, gameId: appState.gameId };
   state.retry = null;
   state.error = null;
@@ -381,10 +456,307 @@ function selectExternalPlace(place) {
   window.gtag?.('event', 'external_place_result_selected', { place_type: place.placeType });
 }
 
+function manualErrorCopy(error, method) {
+  const code = String(error?.code ?? error?.message ?? '');
+  if (method === 'location' && (Number(error?.code) === 1 || code.includes('permission'))) {
+    return 'Location access was denied. Enter the address instead.';
+  }
+  if (method === 'location' && code.includes('geolocation_unavailable')) {
+    return 'Your location is not available in this browser. Enter the address instead.';
+  }
+  if (code.includes('maptiler_not_configured')) return 'Address lookup is not configured.';
+  if (code.includes('AbortError') || code.includes('timeout')) return 'Address lookup timed out. Try again.';
+  return method === 'location'
+    ? 'Couldn’t resolve your current location to an address. Enter the address instead.'
+    : 'Couldn’t resolve that address. Check it and try again.';
+}
+
+function renderManualPanel() {
+  const state = ensureExternalState();
+  const manual = state.manual;
+  if (!manual) return;
+  setStandardConfirmationVisible(false);
+  dom.manualAddressForm.hidden = manual.mode !== 'address';
+  dom.manualStatus.hidden = !manual.status;
+  dom.manualStatus.textContent = manual.status || '';
+  dom.manualError.hidden = !manual.error;
+  dom.manualError.textContent = manual.error || '';
+  dom.manualName.disabled = manual.pending;
+  dom.manualHere.disabled = manual.pending;
+  dom.manualAddressChoice.disabled = manual.pending;
+  dom.manualAddress.disabled = manual.pending;
+  dom.manualAddressSubmit.disabled = manual.pending;
+  dom.manualCancel.disabled = manual.pending;
+  dom.manualHere.textContent = manual.pending && manual.method === 'location'
+    ? 'Finding address…'
+    : 'I’m here now';
+  dom.manualAddressSubmit.textContent = manual.pending && manual.method === 'address'
+    ? 'Finding address…'
+    : 'Use this address';
+}
+
+function openManualAddFlow() {
+  if (appState.searchMode !== 'add-location') return;
+  const state = ensureExternalState();
+  const name = manualPlaceName(state.query || dom.searchInput.value);
+  if (!name) return;
+  state.selected = null;
+  state.retry = null;
+  state.error = null;
+  state.manual = {
+    gameId: appState.gameId,
+    mode: 'choice',
+    method: '',
+    pending: false,
+    status: '',
+    error: ''
+  };
+  dom.manualName.value = name;
+  dom.manualAddress.value = '';
+  dom.searchDropdown.hidden = true;
+  renderManualPanel();
+  if (!dom.externalDialog.open) dom.externalDialog.showModal();
+  window.gtag?.('event', 'manual_place_add_started');
+}
+
+function manualVenueNameOrError() {
+  const name = manualPlaceName(dom.manualName.value);
+  if (name) {
+    dom.manualName.value = name;
+    return name;
+  }
+  const state = ensureExternalState();
+  if (state.manual) {
+    state.manual.error = 'Enter the venue name first.';
+    state.manual.status = '';
+    renderManualPanel();
+  }
+  return '';
+}
+
+function requestManualUserLocation() {
+  const known = currentUserProximity();
+  if (known) return Promise.resolve(known);
+  const geolocation = window.navigator?.geolocation;
+  if (!geolocation?.getCurrentPosition) {
+    const error = new Error('geolocation_unavailable');
+    error.code = 'geolocation_unavailable';
+    return Promise.reject(error);
+  }
+
+  return new Promise((resolve, reject) => {
+    geolocation.getCurrentPosition((position) => {
+      const location = normalizeUserLocationProximity({
+        lat: position?.coords?.latitude,
+        lon: position?.coords?.longitude,
+        label: 'your location'
+      });
+      if (!location) {
+        const error = new Error('invalid_user_location');
+        error.code = 'invalid_user_location';
+        reject(error);
+        return;
+      }
+      appState.nearbyOrigin = { ...location, label: 'your location' };
+      resolve(location);
+    }, reject, USER_LOCATION_OPTIONS);
+  });
+}
+
+async function resolveManualHereNow() {
+  const state = ensureExternalState();
+  const manual = state.manual;
+  if (!manual || manual.pending) return;
+  const name = manualVenueNameOrError();
+  if (!name) return;
+
+  manual.pending = true;
+  manual.method = 'location';
+  manual.status = 'Using your location to find the street address…';
+  manual.error = '';
+  renderManualPanel();
+
+  try {
+    const location = await requestManualUserLocation();
+    const url = buildMapTilerReverseGeocodeUrl(location, configuredMapTilerKey());
+    const payload = await fetchJson(url);
+    const place = resolvedManualPlace(payload, name);
+    if (!place) throw new Error('unresolved_address');
+    window.gtag?.('event', 'manual_place_resolved', { method: 'location' });
+    selectExternalPlace(place);
+  } catch (error) {
+    manual.pending = false;
+    manual.mode = 'address';
+    manual.method = '';
+    manual.status = '';
+    manual.error = manualErrorCopy(error, 'location');
+    renderManualPanel();
+    requestAnimationFrame(() => dom.manualAddress?.focus({ preventScroll: true }));
+    return;
+  }
+
+  manual.pending = false;
+}
+
+function showManualAddressEntry() {
+  const state = ensureExternalState();
+  const manual = state.manual;
+  if (!manual || manual.pending) return;
+  manual.mode = 'address';
+  manual.method = '';
+  manual.status = '';
+  manual.error = '';
+  renderManualPanel();
+  requestAnimationFrame(() => dom.manualAddress?.focus({ preventScroll: true }));
+}
+
+async function resolveManualAddress(event) {
+  event?.preventDefault?.();
+  const state = ensureExternalState();
+  const manual = state.manual;
+  if (!manual || manual.pending) return;
+  const name = manualVenueNameOrError();
+  if (!name) return;
+  const address = String(dom.manualAddress.value || '').trim();
+  if (address.length < MINIMUM_ADDRESS_LENGTH) {
+    manual.error = 'Enter the street address.';
+    manual.status = '';
+    renderManualPanel();
+    return;
+  }
+
+  manual.pending = true;
+  manual.method = 'address';
+  manual.status = 'Finding that address…';
+  manual.error = '';
+  renderManualPanel();
+
+  try {
+    const url = buildMapTilerAddressSearchUrl(address, configuredMapTilerKey(), {
+      proximity: currentUserProximity()
+    });
+    const payload = await fetchJson(url);
+    const place = resolvedManualPlace(payload, name);
+    if (!place) throw new Error('unresolved_address');
+    window.gtag?.('event', 'manual_place_resolved', { method: 'address' });
+    selectExternalPlace(place);
+  } catch (error) {
+    manual.pending = false;
+    manual.method = '';
+    manual.status = '';
+    manual.error = manualErrorCopy(error, 'address');
+    renderManualPanel();
+    return;
+  }
+
+  manual.pending = false;
+}
+
+function cancelManualFlow() {
+  const state = ensureExternalState();
+  if (state.manual?.pending) return;
+  state.manual = null;
+  state.error = null;
+  dom.manualPanel.hidden = true;
+  dom.externalHeader.hidden = false;
+  dom.externalDisclosure.hidden = false;
+  dom.externalActions.hidden = false;
+  if (dom.externalDialog.open) dom.externalDialog.close();
+}
+
+function createManualPanel() {
+  const panel = document.createElement('section');
+  panel.className = 'external-venue-header external-venue-manual';
+  panel.hidden = true;
+
+  const eyebrow = document.createElement('span');
+  eyebrow.className = 'eyebrow';
+  eyebrow.textContent = 'Add this place';
+  const title = document.createElement('h2');
+  title.textContent = 'Add this place';
+  const intro = document.createElement('p');
+  intro.className = 'external-venue-context';
+  intro.textContent = 'Keep the venue name, then use your location or enter the street address.';
+
+  const nameLabel = document.createElement('label');
+  nameLabel.htmlFor = 'manual-venue-name';
+  nameLabel.textContent = 'Venue name';
+  const nameField = document.createElement('div');
+  nameField.className = 'search-field';
+  const nameInput = document.createElement('input');
+  nameInput.id = 'manual-venue-name';
+  nameInput.type = 'text';
+  nameInput.autocomplete = 'organization';
+  nameInput.autocapitalize = 'words';
+  nameInput.maxLength = 180;
+  nameField.append(nameInput);
+
+  const choices = document.createElement('div');
+  choices.className = 'external-venue-actions';
+  const hereButton = document.createElement('button');
+  hereButton.type = 'button';
+  hereButton.className = 'primary-button';
+  hereButton.textContent = 'I’m here now';
+  const addressChoice = document.createElement('button');
+  addressChoice.type = 'button';
+  addressChoice.className = 'secondary-button';
+  addressChoice.textContent = 'Enter address';
+  choices.append(hereButton, addressChoice);
+
+  const addressForm = document.createElement('form');
+  addressForm.className = 'external-venue-header';
+  addressForm.hidden = true;
+  const addressLabel = document.createElement('label');
+  addressLabel.htmlFor = 'manual-venue-address';
+  addressLabel.textContent = 'Street address';
+  const addressField = document.createElement('div');
+  addressField.className = 'search-field';
+  const addressInput = document.createElement('input');
+  addressInput.id = 'manual-venue-address';
+  addressInput.type = 'search';
+  addressInput.autocomplete = 'street-address';
+  addressInput.placeholder = 'Street address, city, state';
+  const addressSubmit = document.createElement('button');
+  addressSubmit.type = 'submit';
+  addressSubmit.className = 'search-submit';
+  addressSubmit.textContent = 'Use this address';
+  addressField.append(addressInput, addressSubmit);
+  addressForm.append(addressLabel, addressField);
+
+  const status = document.createElement('p');
+  status.className = 'external-search-status';
+  status.setAttribute('role', 'status');
+  status.hidden = true;
+  const error = document.createElement('p');
+  error.className = 'external-venue-error';
+  error.setAttribute('role', 'alert');
+  error.hidden = true;
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'secondary-button';
+  cancel.textContent = 'Cancel';
+
+  panel.append(eyebrow, title, intro, nameLabel, nameField, choices, addressForm, status, error, cancel);
+  dom.externalShell.append(panel);
+  Object.assign(dom, {
+    manualPanel: panel,
+    manualName: nameInput,
+    manualHere: hereButton,
+    manualAddressChoice: addressChoice,
+    manualAddressForm: addressForm,
+    manualAddress: addressInput,
+    manualAddressSubmit: addressSubmit,
+    manualStatus: status,
+    manualError: error,
+    manualCancel: cancel
+  });
+}
+
 function externalPlacePayload(selected) {
   return {
     source: selected.source,
-    placeId: selected.placeId
+    placeId: selected.placeId,
+    name: selected.name
   };
 }
 
@@ -512,6 +884,7 @@ function cancelConfirmation() {
   state.selected = null;
   state.retry = null;
   state.error = null;
+  state.manual = null;
   dom.externalDialog.close();
 }
 
@@ -522,10 +895,14 @@ function cacheDom() {
     searchDropdown: document.querySelector('#search-dropdown'),
     suggestions: document.querySelector('#search-suggestions'),
     externalDialog: document.querySelector('#external-venue-dialog'),
+    externalShell: document.querySelector('#external-venue-dialog .external-venue-shell'),
+    externalHeader: document.querySelector('#external-venue-dialog .external-venue-header'),
     externalName: document.querySelector('#external-venue-name'),
     externalAddress: document.querySelector('#external-venue-address'),
     externalContext: document.querySelector('#external-venue-context'),
+    externalDisclosure: document.querySelector('#external-venue-dialog .external-venue-disclosure'),
     externalError: document.querySelector('#external-venue-error'),
+    externalActions: document.querySelector('#external-venue-dialog .external-venue-actions'),
     externalConfirm: document.querySelector('#external-venue-confirm'),
     externalCancel: document.querySelector('#external-venue-cancel')
   };
@@ -536,6 +913,7 @@ async function bootExternalVenueSearch() {
   ensureExternalState();
   await waitForApplicationReady();
   if (!cacheDom()) throw new Error('external_search_dom_missing');
+  createManualPanel();
   dom.searchInput.addEventListener('input', () => scheduleExternalSearch());
   dom.searchForm.addEventListener('submit', handleSearchSubmit, { capture: true });
   dom.suggestions.addEventListener('click', (event) => {
@@ -543,8 +921,17 @@ async function bootExternalVenueSearch() {
   }, { capture: true });
   dom.externalConfirm.addEventListener('click', joinSelectedExternalVenue);
   dom.externalCancel.addEventListener('click', cancelConfirmation);
+  dom.manualHere.addEventListener('click', resolveManualHereNow);
+  dom.manualAddressChoice.addEventListener('click', showManualAddressEntry);
+  dom.manualAddressForm.addEventListener('submit', resolveManualAddress);
+  dom.manualCancel.addEventListener('click', cancelManualFlow);
   dom.externalDialog.addEventListener('cancel', (event) => {
-    if (ensureExternalState().pending) event.preventDefault();
+    const state = ensureExternalState();
+    if (state.pending || state.manual?.pending) {
+      event.preventDefault();
+      return;
+    }
+    if (state.manual) cancelManualFlow();
     else cancelConfirmation();
   });
   subscribeAppEvent('rendered', () => {
@@ -554,6 +941,9 @@ async function bootExternalVenueSearch() {
       state.retry = null;
       state.error = null;
       if (dom.externalDialog.open) dom.externalDialog.close();
+    }
+    if (state.manual && state.manual.gameId !== appState.gameId && !state.manual.pending) {
+      cancelManualFlow();
     }
   });
 }
