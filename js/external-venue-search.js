@@ -913,7 +913,6 @@ async function bootExternalVenueSearch() {
   ensureExternalState();
   await waitForApplicationReady();
   if (!cacheDom()) throw new Error('external_search_dom_missing');
-  document.querySelector('#add-missing-location-link')?.remove();
   createManualPanel();
   dom.searchInput.addEventListener('input', () => scheduleExternalSearch());
   dom.searchForm.addEventListener('submit', handleSearchSubmit, { capture: true });
