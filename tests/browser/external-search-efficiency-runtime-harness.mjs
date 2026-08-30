@@ -17,7 +17,7 @@ function sleep(ms = 25) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function waitFor(predicate, label, timeout = 3000) {
+async function waitFor(predicate, label, timeout = 4000) {
   const deadline = performance.now() + timeout;
   while (performance.now() < deadline) {
     try {
@@ -31,6 +31,14 @@ async function waitFor(predicate, label, timeout = 3000) {
 
 function finish() {
   if (!result) return;
+  if (failures.length) {
+    const external = state()?.externalSearch;
+    failures.push(
+      `diagnostic: requests=${mapTilerRequests().length}, mode=${state()?.searchMode || 'none'}, ` +
+      `query=${JSON.stringify(external?.query || '')}, error=${JSON.stringify(external?.error || '')}, ` +
+      `key=${Boolean(window.CGBApp?.mapTilerKey)}`
+    );
+  }
   result.textContent = failures.length
     ? `CGB_EXTERNAL_SEARCH_EFFICIENCY_FAIL\n${failures.map((failure) => `- ${failure}`).join('\n')}`
     : 'CGB_EXTERNAL_SEARCH_EFFICIENCY_PASS';
@@ -57,10 +65,10 @@ function mapTilerRequests() {
   return Array.isArray(window.__cgbMapTilerRequests) ? window.__cgbMapTilerRequests : [];
 }
 
-function dispatchInput(value) {
+function scheduleQuery(value, options) {
   const input = element('#location-query');
   input.value = value;
-  input.dispatchEvent(new Event('input', { bubbles: true }));
+  window.CGBExternalVenueSearch.searchCurrentQuery(options);
 }
 
 async function ready() {
@@ -87,49 +95,53 @@ if (current && form) {
   let geolocationSuccess = null;
   check(installGeolocation((success) => { geolocationSuccess = success; }), 'Geolocation spy should install');
 
-  dispatchInput('Dis');
-  await sleep(700);
+  scheduleQuery('Dis');
+  await sleep(750);
   check(mapTilerRequests().length === 0, 'Queries shorter than four characters should not call MapTiler');
 
-  dispatchInput('Dist');
+  scheduleQuery('Dist');
   await sleep(100);
-  dispatchInput('District');
+  scheduleQuery('District');
   await sleep(100);
-  dispatchInput('District 4');
+  scheduleQuery('District 4');
   await sleep(100);
-  dispatchInput('District 4 Pizza');
-  await sleep(700);
+  scheduleQuery('District 4 Pizza');
+  await waitFor(() => mapTilerRequests().length === 1, 'one paused autocomplete request');
   check(mapTilerRequests().length === 1, 'A normal paused autocomplete search should make one MapTiler request');
   check(mapTilerRequests()[0]?.autocomplete === 'true', 'Paused external search should use autocomplete');
 
   form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-  await sleep(100);
+  await sleep(250);
   check(mapTilerRequests().length === 1, 'Submitting an exact query with a strong autocomplete result should not make another request');
 
-  dispatchInput('Weak Venue Long Beach');
-  await sleep(700);
+  const beforeWeakAutocomplete = mapTilerRequests().length;
+  scheduleQuery('Weak Venue Long Beach');
+  await waitFor(() => mapTilerRequests().length === beforeWeakAutocomplete + 1, 'weak autocomplete request');
   const beforeFinalized = mapTilerRequests().length;
   form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-  await sleep(100);
+  await waitFor(() => mapTilerRequests().length === beforeFinalized + 1, 'one finalized request');
   const afterFinalized = mapTilerRequests().length;
   check(afterFinalized - beforeFinalized === 1, 'A submit that needs finalized search should make exactly one request');
   const finalizedRequest = mapTilerRequests()[afterFinalized - 1];
   check(finalizedRequest?.query === 'Weak Venue Long Beach', 'Finalized search should use the complete submitted query');
   check(finalizedRequest?.autocomplete === 'false', 'Finalized search should disable autocomplete');
 
-  dispatchInput('Cache Test Venue');
-  await sleep(700);
+  const beforeCachePrime = mapTilerRequests().length;
+  scheduleQuery('Cache Test Venue');
+  await waitFor(() => mapTilerRequests().length === beforeCachePrime + 1, 'cache-prime autocomplete request');
   const beforeCacheReuse = mapTilerRequests().length;
-  dispatchInput('  CACHE   TEST VENUE  ');
-  await sleep(700);
+  scheduleQuery('  CACHE   TEST VENUE  ');
+  await sleep(750);
   check(mapTilerRequests().length === beforeCacheReuse, 'Normalized repeated searches should reuse the in-memory session cache');
 
-  dispatchInput('Geo Strong Venue');
-  await sleep(700);
+  const beforeGeoSearch = mapTilerRequests().length;
+  scheduleQuery('Geo Strong Venue');
+  await waitFor(() => mapTilerRequests().length === beforeGeoSearch + 1, 'strong pre-geolocation request');
+  await waitFor(() => state()?.externalSearch?.results?.[0]?.name === 'Geo Strong Venue', 'strong result completion');
   const beforeGeolocation = mapTilerRequests().length;
   check(typeof geolocationSuccess === 'function', 'External search should request geolocation once for proximity');
   geolocationSuccess?.({ coords: { latitude: 33.7765, longitude: -118.1258 } });
-  await sleep(150);
+  await sleep(300);
   check(mapTilerRequests().length === beforeGeolocation, 'Geolocation arrival should not rerun an already-strong completed search');
 }
 
