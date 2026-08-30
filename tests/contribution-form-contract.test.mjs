@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 
 const source = await readFile(new URL('../apps-script/ContributionFormConfig.gs', import.meta.url), 'utf8');
 const context = vm.createContext({ JSON, Object, Array, String, Set, Error, console: { log() {} } });
-vm.runInContext(`${source}\nglobalThis.__contracts = getContributionFormContractsForReview();\nglobalThis.__plan = planContributionFormQuestionsForReview;`, context);
+vm.runInContext(`${source}\nglobalThis.__contracts = getContributionFormContractsForReview();\nglobalThis.__plan = planContributionFormQuestionsForReview;\nglobalThis.__create = createContributionFormQuestion_;`, context);
 const contracts = JSON.parse(JSON.stringify(context.__contracts));
 
 function question(contract, key) {
@@ -16,6 +16,17 @@ function nonPrefillQuestions(contract) {
   return contract.questions
     .filter((item) => !item.prefill)
     .map((item, index) => ({ id: `existing-${index}`, title: item.title, kind: item.kind }));
+}
+
+function makeTypedItem() {
+  const state = {};
+  return {
+    state,
+    setTitle(value) { state.title = value; return this; },
+    setRequired(value) { state.required = value; return this; },
+    setHelpText(value) { state.help = value; return this; },
+    setChoiceValues(value) { state.choices = value; return this; }
+  };
 }
 
 const venueTags = [
@@ -102,6 +113,33 @@ test('repository public Form URLs and prefill IDs stay locked to the existing li
   assert.equal(contracts.watch_party_update.prefill.find((item) => item.key === 'watch_party_id').expectedEntry, 'entry.703629381');
   assert.match(contracts.venue_details.publicUrl, /docs\.google\.com\/forms/);
   assert.match(contracts.watch_party_update.publicUrl, /docs\.google\.com\/forms/);
+});
+
+test('newly created typed Form items configure without generic Item cast methods', () => {
+  const cases = [
+    { kind: 'text', addMethod: 'addTextItem' },
+    { kind: 'paragraph', addMethod: 'addParagraphTextItem' },
+    { kind: 'checkbox', addMethod: 'addCheckboxItem', choices: ['One', 'Two'] },
+    { kind: 'multiple_choice', addMethod: 'addMultipleChoiceItem', choices: ['One', 'Two'] }
+  ];
+
+  for (const itemCase of cases) {
+    const item = makeTypedItem();
+    const form = { [itemCase.addMethod]: () => item };
+    const created = context.__create(form, {
+      key: `new_${itemCase.kind}`,
+      kind: itemCase.kind,
+      title: `New ${itemCase.kind}`,
+      required: true,
+      choices: itemCase.choices
+    });
+
+    assert.equal(created, item, itemCase.kind);
+    assert.equal(item.state.title, `New ${itemCase.kind}`, itemCase.kind);
+    assert.equal(item.state.required, true, itemCase.kind);
+    assert.equal(item.state.help, '', itemCase.kind);
+    if (itemCase.choices) assert.deepEqual(item.state.choices, itemCase.choices, itemCase.kind);
+  }
 });
 
 test('a successfully synchronized Form plans zero question additions or removals on the next run', () => {
