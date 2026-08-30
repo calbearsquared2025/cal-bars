@@ -84,9 +84,10 @@ async function openManualFallback() {
   }
 
   current.searchMode = 'add-location';
+  current.nearbyOrigin = { lat: 33.7765, lon: -118.1258, label: 'your location' };
+  current.origin = null;
   document.body.dataset.searchMode = 'add-location';
   input.value = 'District 4 Pizza';
-  input.dispatchEvent(new Event('input', { bubbles: true }));
   window.CGBExternalVenueSearch.searchCurrentQuery({ immediate: true, finalized: true });
 
   await waitFor(() => {
@@ -118,8 +119,6 @@ async function runKnownLocation() {
   let geolocationCalls = 0;
   const installed = installGeolocation(() => { geolocationCalls += 1; });
   check(installed, 'Browser harness should be able to install a geolocation spy');
-  state().nearbyOrigin = { lat: 33.7765, lon: -118.1258, label: 'your location' };
-  state().origin = null;
 
   element('.external-venue-manual .primary-button')?.click();
   await confirmResolvedAddress();
