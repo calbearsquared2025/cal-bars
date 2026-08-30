@@ -100,6 +100,23 @@ function createShareLink(documentObject, href) {
   return link;
 }
 
+function createVenueTagList(documentObject, tags) {
+  if (!tags.length) return null;
+  const list = documentObject.createElement('div');
+  list.className = 'detail-fan-experiences__tags';
+  list.dataset.venueTags = 'true';
+  list.setAttribute('aria-label', 'Community venue details');
+
+  tags.forEach((item) => {
+    const tag = documentObject.createElement('span');
+    tag.className = 'detail-fan-experiences__tag';
+    tag.dataset.venueTag = item.value;
+    tag.textContent = item.label;
+    list.append(tag);
+  });
+  return list;
+}
+
 function installMobileWhatToKnowStyles(documentObject) {
   if (!documentObject?.head || documentObject.getElementById?.(MOBILE_WHAT_TO_KNOW_STYLE_ID)) return;
   const style = documentObject.createElement('style');
@@ -335,16 +352,24 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
   const venueContext = resolveFanExperienceVenue(state.snapshot, state.selectedVenueId);
   if (!venueContext) return null;
   const venue = state.snapshot?.venues?.find((item) => clean(item?.venue_id) === venueContext.venueId) || {};
+  const venueTags = venueTagsForVenue(venue);
   const experiences = fanExperiencesForVenue(state.snapshot, venueContext.venueId);
   const href = buildFanExperienceFormPrefillUrl(readFanExperienceFormConfig(documentObject), venueContext);
   const section = documentObject.createElement('section');
   section.className = 'detail-fan-experiences';
   section.dataset.fanExperiences = 'true';
   section.dataset.experienceCount = String(experiences.length);
+  section.dataset.venueTagCount = String(venueTags.length);
 
   const heading = documentObject.createElement('h2');
   heading.textContent = 'YOU SAY';
   section.append(heading);
+
+  const mobileContinuation = detail.classList?.contains('venue-detail--selected-continuation') === true;
+  if (!mobileContinuation) {
+    const tagList = createVenueTagList(documentObject, venueTags);
+    if (tagList) section.append(tagList);
+  }
 
   if (!experiences.length) {
     const prompt = documentObject.createElement('p');
