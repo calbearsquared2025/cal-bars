@@ -1,5 +1,6 @@
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-selected-profile-expansion';
+const RAISED_BODY_CLASS = 'cgb-profile-raised';
 const EXPAND_SWIPE_THRESHOLD_PX = 42;
 const DRAG_ACTIVATION_PX = 6;
 const MAP_REVEAL_PX = 72;
@@ -89,6 +90,30 @@ function installStyles(documentObject = document) {
         cursor: ns-resize;
         touch-action: none;
       }
+
+      body[data-view="map"][data-command-surface="map"] .site-header > .opening-stat {
+        opacity: 1;
+        transform: translateY(0) scaleY(1);
+        transform-origin: top center;
+        clip-path: inset(0 0 0 0);
+        transition:
+          opacity 160ms ease,
+          transform 160ms ease,
+          clip-path 160ms ease !important;
+      }
+
+      body.${RAISED_BODY_CLASS}[data-view="map"][data-command-surface="map"] .site-header > .opening-stat {
+        opacity: 0 !important;
+        transform: translateY(-6px) scaleY(.92);
+        clip-path: inset(0 0 100% 0);
+        pointer-events: none !important;
+      }
+    }
+
+    @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+      body[data-view="map"][data-command-surface="map"] .site-header > .opening-stat {
+        transition: none !important;
+      }
     }
   `;
   documentObject.head.append(style);
@@ -101,9 +126,10 @@ function inlineSelectedHeight(tray) {
 }
 
 function mapContextBottom(documentObject = document) {
+  const raised = documentObject.body?.classList?.contains?.(RAISED_BODY_CLASS) === true;
   const candidates = [
     documentObject.querySelector('.site-header'),
-    documentObject.querySelector('.opening-stat')
+    raised ? null : documentObject.querySelector('.opening-stat')
   ];
   return candidates.reduce((bottom, element) => {
     if (!element) return bottom;
@@ -138,6 +164,10 @@ function setHandleLabel(documentObject, expanded) {
     : 'Collapse selected location');
 }
 
+function setRaisedProfileChrome(documentObject, raised) {
+  documentObject.body?.classList?.toggle(RAISED_BODY_CLASS, Boolean(raised));
+}
+
 function markHandleClickSuppressed(windowObject = window) {
   suppressNextHandleClick = true;
   if (suppressHandleClickTimer) windowObject.clearTimeout?.(suppressHandleClickTimer);
@@ -154,11 +184,12 @@ function interceptSuppressedHandleClick(event) {
   event.stopImmediatePropagation?.();
 }
 
-function resetPresentation({ preserveBase = false } = {}) {
+function resetPresentation({ preserveBase = false, documentObject = document } = {}) {
   activeVenueId = preserveBase ? activeVenueId : '';
   expandedVenueId = '';
   if (!preserveBase) baseHeightPx = 0;
   gesture = null;
+  setRaisedProfileChrome(documentObject, false);
 }
 
 function scheduleMapLayout(windowObject = window) {
@@ -171,7 +202,7 @@ function scheduleMapLayout(windowObject = window) {
 function syncExpandedPresentation(documentObject = document, windowObject = window) {
   const { eligible, tray, venueId } = selectedProfileContext(documentObject, windowObject);
   if (!eligible || !tray) {
-    resetPresentation();
+    resetPresentation({ documentObject });
     return false;
   }
 
@@ -179,6 +210,7 @@ function syncExpandedPresentation(documentObject = document, windowObject = wind
     activeVenueId = venueId;
     expandedVenueId = '';
     baseHeightPx = inlineSelectedHeight(tray) || finite(tray.getBoundingClientRect?.().height);
+    setRaisedProfileChrome(documentObject, false);
     setHandleLabel(documentObject, false);
     return false;
   }
@@ -188,6 +220,7 @@ function syncExpandedPresentation(documentObject = document, windowObject = wind
     if (currentInlineHeight > 0 && (!baseHeightPx || currentInlineHeight < baseHeightPx * 1.35)) {
       baseHeightPx = currentInlineHeight;
     }
+    setRaisedProfileChrome(documentObject, true);
     const target = expandedTargetHeight(tray, documentObject);
     applyHeight(tray, target);
     setHandleLabel(documentObject, true);
@@ -196,6 +229,7 @@ function syncExpandedPresentation(documentObject = document, windowObject = wind
   }
 
   if (currentInlineHeight > 0) baseHeightPx = currentInlineHeight;
+  setRaisedProfileChrome(documentObject, false);
   setHandleLabel(documentObject, false);
   return false;
 }
@@ -220,6 +254,7 @@ function beginGesture(event, documentObject = document, windowObject = window) {
     activeVenueId = venueId;
     expandedVenueId = '';
     baseHeightPx = 0;
+    setRaisedProfileChrome(documentObject, false);
   }
 
   const rect = tray.getBoundingClientRect();
@@ -271,7 +306,9 @@ function finishGesture(event, documentObject = document, windowObject = window) 
   if (expand) {
     expandedVenueId = current.venueId;
     baseHeightPx = current.minHeight;
-    applyHeight(tray, current.maxHeight);
+    setRaisedProfileChrome(documentObject, true);
+    const targetHeight = Math.max(current.maxHeight, expandedTargetHeight(tray, documentObject));
+    applyHeight(tray, targetHeight);
     setHandleLabel(documentObject, true);
     scheduleMapLayout(windowObject);
     markHandleClickSuppressed(windowObject);
@@ -282,6 +319,7 @@ function finishGesture(event, documentObject = document, windowObject = window) 
   if (contract) {
     expandedVenueId = '';
     baseHeightPx = current.minHeight;
+    setRaisedProfileChrome(documentObject, false);
     applyHeight(tray, current.minHeight);
     setHandleLabel(documentObject, false);
     scheduleMapLayout(windowObject);

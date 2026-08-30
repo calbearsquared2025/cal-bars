@@ -57,6 +57,21 @@ test('mobile selected profile expansion is presentation-only and keeps canonical
   assert.doesNotMatch(source, /history\.(?:pushState|replaceState)/);
 });
 
+test('raised mobile profile softly collapses the opening stats and legend, then restores them with map-first presentation', async () => {
+  const source = await read('js/mobile-selected-profile-expansion.mjs');
+  assert.match(source, /RAISED_BODY_CLASS = 'cgb-profile-raised'/);
+  assert.match(source, /opacity 160ms ease/);
+  assert.match(source, /clip-path 160ms ease/);
+  assert.match(source, /translateY\(-6px\) scaleY\(\.92\)/);
+  assert.match(source, /clip-path: inset\(0 0 100% 0\)/);
+  assert.match(source, /prefers-reduced-motion: reduce/);
+  assert.match(source, /raised \? null : documentObject\.querySelector\('\.opening-stat'\)/);
+  assert.doesNotMatch(source, /\.opening-stat \{\s*display: none !important;/);
+  assert.match(source, /setRaisedProfileChrome\(documentObject, true\);[\s\S]*?expandedTargetHeight\(tray, documentObject\)/);
+  assert.match(source, /setRaisedProfileChrome\(documentObject, false\);[\s\S]*?applyHeight\(tray, current\.minHeight\)/);
+  assert.match(source, /resetPresentation\(\{ documentObject \}\)/);
+});
+
 test('post-drag handle clicks are suppressed before the existing capture-phase collapse handler', async () => {
   const source = await read('js/mobile-selected-profile-expansion.mjs');
   assert.match(source, /window\.addEventListener\('click', interceptSuppressedHandleClick, \{ capture: true \}\)/);
