@@ -4,7 +4,8 @@
  * The Forms are resolved through their existing response sheets and public URLs.
  * Private edit URLs, response-sheet IDs, and response data are never logged or
  * committed. Prefill questions are retained in place so their entry IDs remain
- * stable; all other questions are rebuilt from the repository contract.
+ * stable; approved non-prefill questions are reused and updated in place when
+ * they clearly match the repository contract.
  */
 
 const CGB_CONTRIBUTION_VENUE_FORM_TAG_CHOICES = Object.freeze([
@@ -26,6 +27,11 @@ const CGB_CONTRIBUTION_WATCH_PARTY_FORM_TAG_CHOICES = Object.freeze([
   'RSVP REQUESTED',
   'CAL SPECIALS — special food, drink, or pricing for the Cal group'
 ]);
+
+const CGB_CONTRIBUTION_QUESTION_ALIASES = Object.freeze({
+  structured_tags: Object.freeze(['What should Bears know about this Watch Party?']),
+  freeform: Object.freeze(['In one or two sentences, what makes this venue feel like a Cal destination?'])
+});
 
 const CGB_CONTRIBUTION_FORM_CONTRACTS = Object.freeze({
   venue_details: Object.freeze({
@@ -119,9 +125,8 @@ const CGB_CONTRIBUTION_FORM_CONTRACTS = Object.freeze({
 
 /**
  * Owner-only entry point. Run once after deploying this Apps Script version.
- * It is safe to run again: prefill questions are retained, non-prefill questions
- * are synchronized to the same contract, schema columns are reused, and the
- * spreadsheet trigger is deduplicated.
+ * It is safe to run again: prefill and approved non-prefill questions are reused,
+ * schema columns are reused, and the spreadsheet trigger is deduplicated.
  */
 function syncContributionForms() {
   const workbook = getWorkbook_();
@@ -171,6 +176,42 @@ function inspectContributionFormsForReview() {
 /** Plain-data contract helper used by repository tests. */
 function getContributionFormContractsForReview() {
   return JSON.parse(JSON.stringify(CGB_CONTRIBUTION_FORM_CONTRACTS));
+}
+
+/** Plain-data reuse planner used by repository tests; it does not call FormApp. */
+function planContributionFormQuestionsForReview(existingQuestions, contractKey) {
+  const contract = CGB_CONTRIBUTION_FORM_CONTRACTS[contractKey];
+  if (!contract) throw new Error('Unknown contribution Form contract: ' + contractKey);
+  const available = (existingQuestions || []).map(function(item, index) {
+    return {
+      id: String(item.id === undefined ? index : item.id),
+      title: String(item.title || ''),
+      kind: String(item.kind || '')
+    };
+  });
+  const used = new Set();
+  const retained = [];
+  const added = [];
+
+  contract.questions.filter(function(question) { return !question.prefill; }).forEach(function(question) {
+    const titles = contributionQuestionMatchTitles_(question);
+    const match = available.find(function(item) {
+      return !used.has(item.id) && item.kind === question.kind &&
+        titles.indexOf(normalizeContributionFormTitle_(item.title)) >= 0;
+    });
+    if (match) {
+      used.add(match.id);
+      retained.push({ key: question.key, id: match.id });
+    } else {
+      added.push(question.key);
+    }
+  });
+
+  return {
+    retained: retained,
+    added: added,
+    removed: available.filter(function(item) { return !used.has(item.id); }).map(function(item) { return item.id; })
+  };
 }
 
 function resolveContributionForms_(workbook) {
@@ -258,6 +299,11 @@ function normalizeContributionFormTitle_(value) {
   return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
+function contributionQuestionMatchTitles_(question) {
+  return [question.title].concat(CGB_CONTRIBUTION_QUESTION_ALIASES[question.key] || [])
+    .map(normalizeContributionFormTitle_);
+}
+
 function buildContributionPrefillEntryReport_(form, contract, itemsByKey, workbook) {
   let response = form.createResponse();
   const samples = {};
@@ -306,16 +352,30 @@ function extractContributionEntryId_(prefilledUrl, expectedValue) {
   return '';
 }
 
+function contributionQuestionItemType_(kind) {
+  if (kind === 'paragraph') return FormApp.ItemType.PARAGRAPH_TEXT;
+  if (kind === 'checkbox') return FormApp.ItemType.CHECKBOX;
+  if (kind === 'multiple_choice') return FormApp.ItemType.MULTIPLE_CHOICE;
+  return FormApp.ItemType.TEXT;
+}
+
+function findReusableContributionQuestion_(items, question, usedIds) {
+  const titles = contributionQuestionMatchTitles_(question);
+  return items.find(function(item) {
+    return !usedIds.has(item.getId()) &&
+      item.getType() === contributionQuestionItemType_(question.kind) &&
+      titles.indexOf(normalizeContributionFormTitle_(item.getTitle())) >= 0;
+  }) || null;
+}
+
 function syncOneContributionForm_(form, contract, workbook) {
-  const retained = findContributionPrefillItems_(form, contract);
-  const retainedIds = new Set(Object.keys(retained).map(function(key) { return retained[key].getId(); }));
+  const retainedPrefill = findContributionPrefillItems_(form, contract);
   const existing = form.getItems();
-  let removed = 0;
-  for (let index = existing.length - 1; index >= 0; index -= 1) {
-    if (retainedIds.has(existing[index].getId())) continue;
-    form.deleteItem(existing[index]);
-    removed += 1;
-  }
+  const usedIds = new Set(Object.keys(retainedPrefill).map(function(key) {
+    return retainedPrefill[key].getId();
+  }));
+  const itemByKey = Object.assign({}, retainedPrefill);
+  let added = 0;
 
   form.setTitle(contract.title);
   form.setDescription(contract.description);
@@ -326,16 +386,30 @@ function syncOneContributionForm_(form, contract, workbook) {
   form.setProgressBar(false);
   form.setShuffleQuestions(false);
 
-  const itemByKey = Object.assign({}, retained);
-  let added = 0;
   contract.questions.forEach(function(question) {
     if (question.prefill) {
-      configureRetainedContributionQuestion_(itemByKey[question.key], question, workbook);
+      configureContributionQuestion_(itemByKey[question.key], question, workbook);
       return;
     }
-    itemByKey[question.key] = createContributionFormQuestion_(form, question);
+    const reusable = findReusableContributionQuestion_(existing, question, usedIds);
+    if (reusable) {
+      itemByKey[question.key] = reusable;
+      usedIds.add(reusable.getId());
+      configureContributionQuestion_(reusable, question, workbook);
+      return;
+    }
+    const created = createContributionFormQuestion_(form, question);
+    itemByKey[question.key] = created;
+    usedIds.add(created.getId());
     added += 1;
   });
+
+  let removed = 0;
+  for (let index = existing.length - 1; index >= 0; index -= 1) {
+    if (usedIds.has(existing[index].getId())) continue;
+    form.deleteItem(existing[index]);
+    removed += 1;
+  }
 
   contract.questions.forEach(function(question, index) {
     form.moveItem(itemByKey[question.key], index);
@@ -344,22 +418,25 @@ function syncOneContributionForm_(form, contract, workbook) {
   return { removedQuestions: removed, addedQuestions: added, totalQuestions: contract.questions.length };
 }
 
-function configureRetainedContributionQuestion_(item, question, workbook) {
-  if (!item) throw new Error('Missing retained prefill question: ' + question.key);
-  if (question.kind === 'checkbox') {
-    const checkbox = item.asCheckboxItem();
-    checkbox.setTitle(question.title);
-    checkbox.setRequired(Boolean(question.required));
-    if (question.help) checkbox.setHelpText(question.help);
+function configureContributionQuestion_(item, question, workbook) {
+  if (!item) throw new Error('Missing contribution question: ' + question.key);
+  let typed;
+  if (question.kind === 'paragraph') typed = item.asParagraphTextItem();
+  else if (question.kind === 'checkbox') typed = item.asCheckboxItem();
+  else if (question.kind === 'multiple_choice') typed = item.asMultipleChoiceItem();
+  else typed = item.asTextItem();
+
+  typed.setTitle(question.title);
+  typed.setRequired(Boolean(question.required));
+  if (typeof typed.setHelpText === 'function') typed.setHelpText(question.help || '');
+
+  if (question.kind === 'checkbox' && question.prefill) {
     const choices = contributionGameChoices_(workbook, item);
     if (!choices.length) throw new Error('No upcoming Games are available for the Watch Party Form.');
-    checkbox.setChoiceValues(choices);
-    return;
+    typed.setChoiceValues(choices);
+  } else if (question.choices && typeof typed.setChoiceValues === 'function') {
+    typed.setChoiceValues(question.choices.slice());
   }
-  const text = item.asTextItem();
-  text.setTitle(question.title);
-  text.setRequired(Boolean(question.required));
-  if (question.help) text.setHelpText(question.help);
 }
 
 function createContributionFormQuestion_(form, question) {
@@ -368,13 +445,7 @@ function createContributionFormQuestion_(form, question) {
   else if (question.kind === 'checkbox') item = form.addCheckboxItem();
   else if (question.kind === 'multiple_choice') item = form.addMultipleChoiceItem();
   else item = form.addTextItem();
-
-  item.setTitle(question.title);
-  item.setRequired(Boolean(question.required));
-  if (question.help) item.setHelpText(question.help);
-  if (question.choices && typeof item.setChoiceValues === 'function') {
-    item.setChoiceValues(question.choices.slice());
-  }
+  configureContributionQuestion_(item, question, null);
   return item;
 }
 
