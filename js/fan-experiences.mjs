@@ -5,6 +5,17 @@ import {
 } from './fan-experience-form-core.mjs';
 
 const SECTION_SELECTOR = '[data-fan-experiences]';
+const VENUE_TAG_ORDER = Object.freeze([
+  '21_plus', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
+]);
+const VENUE_TAG_LABELS = Object.freeze({
+  '21_plus': '21+',
+  audio_on: 'AUDIO ON',
+  food: 'FOOD',
+  cal_beer: 'CAL BEER',
+  large_crowd: 'LARGE CROWD',
+  cal_memorabilia: 'CAL MEMORABILIA'
+});
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -17,6 +28,26 @@ function fanExperienceYear(value) {
 
 function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
+}
+
+function controlledTagValues(value) {
+  if (Array.isArray(value)) return value.map(clean).filter(Boolean);
+  const raw = clean(value);
+  if (!raw) return [];
+  if (raw.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed.map(clean).filter(Boolean);
+    } catch (_) {}
+  }
+  return raw.split(/[|;,\n]+/).map(clean).filter(Boolean);
+}
+
+export function venueTagsForVenue(venue = {}) {
+  const selected = new Set(controlledTagValues(venue.venue_tags).map((tag) => tag.toLowerCase()));
+  return VENUE_TAG_ORDER
+    .filter((tag) => selected.has(tag))
+    .map((tag) => Object.freeze({ value: tag, label: VENUE_TAG_LABELS[tag] }));
 }
 
 export function readFanExperienceFormConfig(documentObject = document) {
@@ -54,6 +85,43 @@ function createShareLink(documentObject, href) {
   link.rel = 'noopener noreferrer';
   link.textContent = 'Add your experience';
   return link;
+}
+
+function createVenueTagList(documentObject, tags) {
+  if (!tags.length) return null;
+  const list = documentObject.createElement('div');
+  list.className = 'detail-fan-experiences__tags';
+  list.dataset.venueTags = 'true';
+  list.setAttribute('aria-label', 'Community venue details');
+  Object.assign(list.style, {
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: '5px',
+    margin: '0 0 12px'
+  });
+
+  tags.forEach((item) => {
+    const tag = documentObject.createElement('span');
+    tag.className = 'detail-fan-experiences__tag';
+    tag.dataset.venueTag = item.value;
+    tag.textContent = item.label;
+    Object.assign(tag.style, {
+      minHeight: '22px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '2px 7px',
+      color: 'var(--cgb-navy-900)',
+      background: 'var(--cgb-gold-50)',
+      borderRadius: 'var(--radius-pill)',
+      fontFamily: 'var(--font-ui)',
+      fontSize: '.64rem',
+      fontWeight: '700',
+      lineHeight: '1.1'
+    });
+    list.append(tag);
+  });
+  return list;
 }
 
 function createQuote(documentObject, item) {
@@ -113,19 +181,24 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
   const state = app?.getState?.();
   if (!detail || !state?.detailMode) return null;
 
-  const venue = resolveFanExperienceVenue(state.snapshot, state.selectedVenueId);
-  if (!venue) return null;
-
-  const experiences = fanExperiencesForVenue(state.snapshot, venue.venueId);
-  const href = buildFanExperienceFormPrefillUrl(readFanExperienceFormConfig(documentObject), venue);
+  const venueContext = resolveFanExperienceVenue(state.snapshot, state.selectedVenueId);
+  if (!venueContext) return null;
+  const venue = state.snapshot?.venues?.find((item) => clean(item?.venue_id) === venueContext.venueId) || {};
+  const venueTags = venueTagsForVenue(venue);
+  const experiences = fanExperiencesForVenue(state.snapshot, venueContext.venueId);
+  const href = buildFanExperienceFormPrefillUrl(readFanExperienceFormConfig(documentObject), venueContext);
   const section = documentObject.createElement('section');
   section.className = 'detail-fan-experiences';
   section.dataset.fanExperiences = 'true';
   section.dataset.experienceCount = String(experiences.length);
+  section.dataset.venueTagCount = String(venueTags.length);
 
   const heading = documentObject.createElement('h2');
   heading.textContent = 'BEARS SAY';
   section.append(heading);
+
+  const tagList = createVenueTagList(documentObject, venueTags);
+  if (tagList) section.append(tagList);
 
   if (!experiences.length) {
     const prompt = documentObject.createElement('p');
