@@ -65,7 +65,7 @@ test('desktop Fan Intent reuses the mobile selected attendance view model and cl
   assert.match(mobileSource, /prompt\.textContent = 'Be the first\.'/);
 });
 
-test('desktop hierarchy is identity and CGB Says, What to know, Watch Party, Fan Intent, You Say, media, then contribution', async () => {
+test('desktop opening places Fan Intent above CGB Says before What to know and Watch Party', async () => {
   const [source, enhancementSource] = await Promise.all([
     read('js/desktop-profile-mobile-hierarchy.mjs'),
     read('js/venue-profile-enhancement.mjs')
@@ -73,14 +73,38 @@ test('desktop hierarchy is identity and CGB Says, What to know, Watch Party, Fan
 
   assert.match(enhancementSource, /syncDesktopProfileMobileHierarchy\(\{ state, documentObject, windowObject \}\)/);
   assert.match(source, /let cursor = hero;/);
+  assert.match(source, /if \(activity\) \{[\s\S]*?cursor\.after\(activity\);[\s\S]*?cursor = activity;/);
   assert.match(source, /if \(editorial\) \{[\s\S]*?cursor\.after\(editorial\);[\s\S]*?cursor = editorial;/);
   assert.match(source, /if \(whatToKnow\) \{[\s\S]*?cursor\.after\(whatToKnow\);[\s\S]*?cursor = whatToKnow;/);
   assert.match(source, /parties\.forEach\(\(party\) => \{[\s\S]*?cursor\.after\(party\);[\s\S]*?cursor = party;/);
-  assert.match(source, /if \(activity\) \{[\s\S]*?cursor\.after\(activity\);[\s\S]*?cursor = activity;/);
   assert.match(source, /if \(community\) \{[\s\S]*?cursor\.after\(community\);[\s\S]*?cursor = community;/);
   assert.match(source, /if \(media\) \{[\s\S]*?cursor\.after\(media\);[\s\S]*?cursor = media;/);
   assert.match(source, /if \(contribution\) cursor\.after\(contribution\)/);
-  assert.match(source, /desktopProfileArrangement = 'identity-editorial-what-to-know-party-attendance-community-media-contribution'/);
+  assert.match(source, /desktopProfileArrangement = 'identity-attendance-editorial-what-to-know-party-community-media-contribution'/);
+});
+
+test('wide desktop uses the opening right column for Fan Intent above CGB Says and releases the sticky profile header', async () => {
+  const source = await read('js/desktop-profile-mobile-hierarchy.mjs');
+
+  assert.match(source, /@media \(min-width: 1100px\)/);
+  assert.match(source, /> \.detail-hero\.detail-hero--has-photo,[\s\S]*?position:\s*static\s*!important;[\s\S]*?grid-column:\s*1 \/ 7\s*!important;[\s\S]*?grid-row:\s*1 \/ 3\s*!important;/);
+  assert.match(source, /> \.activity-card\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(source, /> \.detail-editorial\s*\{[\s\S]*?position:\s*static\s*!important;[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
+});
+
+test('desktop Bear-count spacing keeps BEARS, ATTENDING, and ON CGB aligned beside the numeral', async () => {
+  const source = await read('js/desktop-profile-mobile-hierarchy.mjs');
+
+  assert.match(source, /\.bear-count__number\s*\{[\s\S]*?grid-row:\s*1 \/ 4;/);
+  assert.match(source, /\.bear-count__attending,[\s\S]*?\.bear-count__context\s*\{[\s\S]*?grid-column:\s*2;/);
+  assert.match(source, /\.bear-count__context\s*\{[\s\S]*?grid-row:\s*3;/);
+});
+
+test('desktop command labels render in uppercase without changing mobile labels', async () => {
+  const source = await read('js/desktop-profile-mobile-hierarchy.mjs');
+
+  assert.match(source, /@media \(min-width: 900px\)[\s\S]*?\.mobile-command-bar \.mobile-command > span:last-child\s*\{[\s\S]*?text-transform:\s*uppercase;/);
+  assert.doesNotMatch(source, /@media \(max-width: 899px\)[\s\S]*?text-transform:\s*uppercase/);
 });
 
 test('desktop hierarchy does not widen the existing selected panel', async () => {
