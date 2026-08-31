@@ -106,7 +106,7 @@ function installStyles() {
       }
 
       .selected-card__proximity-row {
-        min-height: 32px !important;
+        min-height: 24px !important;
         display: flex !important;
         flex-wrap: wrap !important;
         align-items: center !important;
@@ -122,11 +122,11 @@ function installStyles() {
       }
 
       .selected-card__directions-inline {
-        min-height: 32px !important;
+        min-height: 24px !important;
         display: inline-flex !important;
         align-items: center !important;
         margin: 0 !important;
-        padding: 6px 0 !important;
+        padding: 2px 0 !important;
         color: var(--cgb-navy-900) !important;
         font-weight: 800 !important;
         text-decoration: underline !important;
