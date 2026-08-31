@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const refinementSource = readFileSync(new URL('../js/search-map-refinement.mjs', import.meta.url), 'utf8');
 const shellSource = readFileSync(new URL('../js/shell-controls.mjs', import.meta.url), 'utf8');
+const supportDialogSource = readFileSync(new URL('../js/support-dialog.mjs', import.meta.url), 'utf8');
 
 test('desktop reuses the shared Add command as a centered global CGB contribution entry', () => {
   assert.match(refinementSource, /function syncDesktopContributionEntry\(\)/);
@@ -62,6 +63,7 @@ test('desktop no longer contains the obsolete missing-location Form fallback con
   assert.doesNotMatch(shellSource, /missingLocationLink/);
   assert.doesNotMatch(shellSource, /configureMissingLocationLink/);
   assert.doesNotMatch(shellSource, /buildMissingLocationFormUrl/);
+  assert.doesNotMatch(supportDialogSource, /missing-location-embed\.mjs/);
 });
 
 test('desktop no longer creates a list-specific Add location control', () => {
