@@ -121,13 +121,13 @@ function installStyles(documentObject) {
         display: grid !important;
         justify-items: start !important;
         gap: 3px !important;
-        padding: 10px 18px 12px !important;
+        padding: 8px 18px 12px 40px !important;
         border-top: 0 !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count:not(.bear-count--empty) {
         width: fit-content;
-        min-height: 58px;
+        min-height: 50px;
         display: grid !important;
         grid-template-columns: auto auto;
         grid-template-rows: auto auto auto;
@@ -148,10 +148,10 @@ function installStyles(documentObject) {
         grid-row: 1 / 4;
         align-self: start;
         justify-self: end;
-        font-size: 2.2rem !important;
+        font-size: 1.95rem !important;
         font-weight: 850 !important;
         letter-spacing: -.05em;
-        line-height: .82 !important;
+        line-height: .84 !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label {
@@ -160,7 +160,7 @@ function installStyles(documentObject) {
         align-self: start;
         justify-self: start;
         padding-top: 1px;
-        font-size: .74rem !important;
+        font-size: .7rem !important;
         font-weight: 850 !important;
         letter-spacing: .03em;
         line-height: 1 !important;
@@ -180,16 +180,16 @@ function installStyles(documentObject) {
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending {
         grid-row: 2;
         margin-top: 2px;
-        font-size: .61rem !important;
+        font-size: .58rem !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
         grid-row: 3;
-        font-size: .59rem !important;
+        font-size: .56rem !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty {
-        min-height: 58px;
+        min-height: 50px;
         display: grid !important;
         place-content: center start;
         justify-items: start;
@@ -199,14 +199,14 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty .bear-count__icon {
-        width: 21px;
-        height: 21px;
+        width: 20px;
+        height: 20px;
         color: var(--cgb-gold-500);
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty .bear-count__prompt {
         color: var(--cgb-navy-950);
-        font-size: .72rem;
+        font-size: .7rem;
         font-weight: 750;
         line-height: 1.16;
       }
@@ -226,7 +226,7 @@ function installStyles(documentObject) {
 
     @media (min-width: 1100px) {
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
-        grid-template-rows: 76px minmax(104px, auto);
+        grid-template-rows: auto auto;
       }
 
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--has-photo,
@@ -238,23 +238,23 @@ function installStyles(documentObject) {
         grid-row: 1 / 3 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
-        grid-column: 7 / 13 !important;
-        grid-row: 1 !important;
-        align-self: start;
-        padding: 12px 18px 5px 16px !important;
-        background: var(--cgb-white) !important;
-        border-top: 0 !important;
-      }
-
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial {
         position: static !important;
         top: auto !important;
         z-index: auto !important;
         grid-column: 7 / 13 !important;
+        grid-row: 1 !important;
+        align-self: start;
+        padding: 12px 18px 6px 16px !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
+        grid-column: 7 / 13 !important;
         grid-row: 2 !important;
         align-self: start;
-        padding: 4px 18px 12px 16px !important;
+        padding: 6px 18px 12px 37px !important;
+        background: var(--cgb-white) !important;
+        border-top: 0 !important;
       }
     }
   `;
@@ -373,13 +373,13 @@ function arrangeHierarchy(detail, whatToKnow) {
   if (!hero) return;
 
   let cursor = hero;
-  if (activity) {
-    cursor.after(activity);
-    cursor = activity;
-  }
   if (editorial) {
     cursor.after(editorial);
     cursor = editorial;
+  }
+  if (activity) {
+    cursor.after(activity);
+    cursor = activity;
   }
   if (whatToKnow) {
     cursor.after(whatToKnow);
@@ -400,7 +400,7 @@ function arrangeHierarchy(detail, whatToKnow) {
   }
   if (contribution) cursor.after(contribution);
 
-  detail.dataset.desktopProfileArrangement = 'identity-attendance-editorial-what-to-know-party-community-media-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
 }
 
 export function syncDesktopProfileMobileHierarchy({
