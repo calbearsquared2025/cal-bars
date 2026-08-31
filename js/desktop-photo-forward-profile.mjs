@@ -283,29 +283,30 @@ function installStyles(documentObject) {
         padding-top: 5px;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial {
         position: relative !important;
         top: auto !important;
         z-index: auto !important;
         align-self: stretch !important;
         display: block !important;
-        padding: 10px 18px 4px 34px !important;
+        margin: 0 !important;
+        padding: 10px 14px 12px 34px !important;
         background: var(--cgb-white) !important;
         border: 0 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial::before {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial::before {
         position: absolute !important;
         top: 10px !important;
         right: auto !important;
-        bottom: 6px !important;
+        bottom: 12px !important;
         left: 18px !important;
         width: 3px !important;
         height: auto !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial > h2,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial > .detail-editorial__copy {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > h2,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {
         display: block !important;
       }
 
@@ -580,14 +581,14 @@ function arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject }) 
     return;
   }
 
-  detail.dataset.desktopProfileArrangement = 'identity-what-to-know__photo-editorial-attendance__party-community-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-what-to-know-editorial__photo-attendance__party-community-contribution';
   setPhotoForwardPresentation(photo);
 
   const { opening, left, right } = createDesktopOpening(documentObject);
   detail.insertBefore(opening, hero);
   left.append(hero, whatToKnow);
+  if (editorial) left.append(editorial);
   right.append(photo);
-  if (editorial) right.append(editorial);
   if (activity) right.append(activity);
 
   let cursor = opening;

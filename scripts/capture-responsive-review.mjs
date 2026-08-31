@@ -56,6 +56,7 @@ function safePath(root, requestUrl) {
 
 function reviewPage(root, response) {
   const snapshot = JSON.parse(readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8'));
+  if (reviewProfile === 'photo-forward-balanced') snapshot.venues[0].website_url = '';
   const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');
   const productionIndex = readFileSync(join(root, 'index.html'), 'utf8');
   const prelude = `<script>

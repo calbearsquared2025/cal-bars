@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('wide desktop with a photo uses independent opening columns so What to know can rise under venue identity', async () => {
+test('wide desktop with a photo balances identity, What to know, and CGB Says against photo and attendance', async () => {
   const [source, enhancement] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/venue-profile-enhancement.mjs')
@@ -14,8 +14,9 @@ test('wide desktop with a photo uses independent opening columns so What to know
   assert.match(enhancement, /syncDesktopPhotoForwardProfile\(\{ state, documentObject, windowObject \}\)/);
   assert.match(source, /const PHOTO_FORWARD_QUERY = '\(min-width: 1180px\)'/);
   assert.match(source, /> \.detail-desktop-opening\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*minmax\(0, \.9fr\) minmax\(0, 1\.1fr\)/);
-  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?right\.append\(photo\);[\s\S]*?right\.append\(editorial\);[\s\S]*?right\.append\(activity\);/);
-  assert.match(source, /desktopProfileArrangement = 'identity-what-to-know__photo-editorial-attendance__party-community-contribution'/);
+  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(editorial\) left\.append\(editorial\);[\s\S]*?right\.append\(photo\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
+  assert.match(source, /desktopProfileArrangement = 'identity-what-to-know-editorial__photo-attendance__party-community-contribution'/);
+  assert.match(source, /detail-desktop-opening__left > \.detail-editorial\s*\{[\s\S]*?padding:\s*10px 14px 12px 34px\s*!important;/);
 });
 
 test('wide desktop photo keeps a fixed 3:2 presentation frame with a sensible crop', async () => {
@@ -63,7 +64,7 @@ test('desktop photo is not duplicated below the opening area', async () => {
   assert.match(arrange, /if \(localMap\) \{[\s\S]*?cursor = placeAfter\(cursor, localMap\);/);
 });
 
-test('desktop What to know stays before Watch Party and keeps persistent tags out of You Say visually', async () => {
+test('desktop What to know and CGB Says stay before Watch Party while persistent tags stay out of You Say visually', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
 
   assert.match(source, /title\.textContent = 'WHAT TO KNOW'/);
@@ -71,7 +72,7 @@ test('desktop What to know stays before Watch Party and keeps persistent tags ou
   assert.match(source, /link\.textContent = 'Add info →'/);
   assert.match(source, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.match(source, /> \.detail-fan-experiences > \[data-venue-tags\]\s*\{[\s\S]*?display:\s*none\s*!important;/);
-  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?let cursor = opening;[\s\S]*?parties\.forEach/);
+  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(editorial\) left\.append\(editorial\);[\s\S]*?let cursor = opening;[\s\S]*?parties\.forEach/);
   assert.match(source, /arrangeStandardHierarchy\([\s\S]*?cursor = placeAfter\(cursor, whatToKnow\);[\s\S]*?parties\.forEach/);
 });
 
