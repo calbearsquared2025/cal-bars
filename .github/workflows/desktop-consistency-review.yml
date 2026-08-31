@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   screenshots:
-    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags'
+    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-profile-mobile-hierarchy'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
