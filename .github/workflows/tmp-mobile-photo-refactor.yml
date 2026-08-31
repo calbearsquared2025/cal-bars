@@ -33,7 +33,7 @@ jobs:
           p = Path('after/scripts/capture-responsive-review.mjs')
           text = p.read_text()
           old = """        if (mobile && reviewMode === 'bears-say') {\n          await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));\n          document.querySelector('.detail-fan-experiences')?.scrollIntoView({ block: 'start', inline: 'nearest' });\n          await sleep(220);\n        }\n        document.body.dataset.reviewReady = 'true';"""
-          new = """        if (mobile && reviewMode === 'bears-say') {\n          await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));\n          document.querySelector('.detail-fan-experiences')?.scrollIntoView({ block: 'start', inline: 'nearest' });\n          await sleep(220);\n        }\n        if (mobile && reviewMode === 'photo') {\n          await waitFor(() => Boolean(document.querySelector('.detail-photo--mobile-deferred')));\n          document.querySelector('.detail-photo--mobile-deferred')?.scrollIntoView({ block: 'center', inline: 'nearest' });\n          await sleep(280);\n        }\n        document.body.dataset.reviewReady = 'true';"""
+          new = """        if (mobile && reviewMode === 'bears-say') {\n          await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));\n          document.querySelector('.detail-fan-experiences')?.scrollIntoView({ block: 'start', inline: 'nearest' });\n          await sleep(220);\n        }\n        if (mobile && reviewMode === 'photo') {\n          await waitFor(() => Boolean(document.querySelector('.detail-photo--mobile-deferred')));\n          const tray = document.querySelector('#tray-selected');\n          const photo = document.querySelector('.detail-photo--mobile-deferred');\n          if (tray && photo) {\n            tray.scrollTop = Math.max(0, photo.offsetTop - 90);\n            await sleep(450);\n            tray.scrollTop = Math.max(0, photo.offsetTop - 90);\n          }\n          await sleep(250);\n        }\n        document.body.dataset.reviewReady = 'true';"""
           if old not in text:
               raise SystemExit('mobile review driver marker missing')
           p.write_text(text.replace(old, new, 1))
@@ -45,7 +45,7 @@ jobs:
       - name: Upload focused review
         uses: actions/upload-artifact@v4
         with:
-          name: mobile-3x2-focused-review
+          name: mobile-3x2-focused-review-v2
           path: responsive-review/*mobile-390-photo.png
           if-no-files-found: error
           retention-days: 14
