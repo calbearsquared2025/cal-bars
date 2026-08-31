@@ -72,7 +72,9 @@
   top: 6px;
   width: 32px;
   height: 32px;
-  display: block;
+  display: grid;
+  place-items: center;
+  color: var(--cgb-white);
   background: var(--cgb-gold-400);
   border: 3px solid var(--cgb-gold-400);
   border-radius: 50% 50% 50% 0;
@@ -83,16 +85,20 @@
 .cgb-marker .marker-star::before {
   content: '';
   position: absolute;
-  left: 8px;
-  top: 8px;
-  width: 10px;
-  height: 10px;
+  inset: 5px;
   background: var(--cgb-navy-950);
   border-radius: 50%;
 }
 
 .cgb-marker .marker-star__icon {
-  display: none;
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  color: var(--cgb-white);
+  fill: currentColor;
+  stroke: currentColor;
+  transform: rotate(45deg);
 }
 
 .cgb-marker:hover .marker-pin,
