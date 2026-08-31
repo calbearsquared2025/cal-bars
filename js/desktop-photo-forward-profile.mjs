@@ -223,7 +223,7 @@ function installStyles(documentObject) {
         right: calc(${PHOTO_FORWARD_PANEL_WIDTH} + 36px) !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] {
         display: block !important;
         background: var(--cgb-white);
       }
@@ -244,8 +244,7 @@ function installStyles(documentObject) {
         align-self: start;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-hero.detail-hero--has-photo,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-hero.detail-hero--no-photo {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-hero.detail-hero--has-photo {
         position: static !important;
         top: auto !important;
         z-index: auto !important;
@@ -316,8 +315,75 @@ function installStyles(documentObject) {
         background: var(--cgb-white) !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] .detail-desktop-opening__right > .detail-editorial {
-        padding-top: 14px !important;
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] {
+        display: grid !important;
+        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
+        grid-auto-rows: auto;
+        column-gap: 0 !important;
+        row-gap: 0 !important;
+        align-content: start;
+        background: var(--cgb-white);
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > * {
+        grid-column: 1 / -1;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-hero.detail-hero--no-photo {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+        grid-column: 1 !important;
+        grid-row: 1 / span 2 !important;
+        align-self: start;
+        min-height: 0 !important;
+        display: block !important;
+        padding: 14px 14px 12px 18px !important;
+        color: var(--cgb-ink-900) !important;
+        background: var(--cgb-white) !important;
+        overflow: visible !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-editorial {
+        position: relative !important;
+        top: auto !important;
+        z-index: auto !important;
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        align-self: start !important;
+        display: block !important;
+        padding: 14px 18px 4px 34px !important;
+        background: var(--cgb-white) !important;
+        border: 0 !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-editorial::before {
+        position: absolute !important;
+        top: 14px !important;
+        right: auto !important;
+        bottom: 6px !important;
+        left: 18px !important;
+        width: 3px !important;
+        height: auto !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-editorial > h2,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-editorial > .detail-editorial__copy {
+        display: block !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .activity-card {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        align-self: start !important;
+        padding: 4px 18px 10px 34px !important;
+        background: var(--cgb-white) !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-what-to-know {
+        grid-column: 1 / -1 !important;
+        grid-row: auto !important;
+        margin-top: 2px !important;
       }
     }
   `;
@@ -471,6 +537,20 @@ function createDesktopOpening(documentObject) {
   return { opening, left, right };
 }
 
+function arrangeStandardHierarchy({ hero, editorial, activity, whatToKnow, parties, community, localMap, contribution }) {
+  let cursor = hero;
+  cursor = placeAfter(cursor, editorial);
+  cursor = placeAfter(cursor, activity);
+  cursor = placeAfter(cursor, whatToKnow);
+  parties.forEach((party) => { cursor = placeAfter(cursor, party); });
+  cursor = placeAfter(cursor, community);
+  if (localMap) {
+    localMap.classList.add('detail-profile-media--desktop');
+    cursor = placeAfter(cursor, localMap);
+  }
+  if (contribution) placeAfter(cursor, contribution);
+}
+
 function arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject }) {
   const hero = detail.querySelector(':scope > .detail-hero');
   const editorial = detail.querySelector(':scope > .detail-editorial');
@@ -485,39 +565,28 @@ function arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject }) 
   if (!hero) return;
 
   detail.dataset.desktopPhotoForward = photoForward ? 'true' : 'false';
-  detail.dataset.desktopBalancedOpening = wideOpening ? 'true' : 'false';
+  detail.dataset.desktopBalancedOpening = photoForward ? 'true' : 'false';
 
-  if (!wideOpening) {
-    detail.dataset.desktopProfileArrangement = 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
-    let cursor = hero;
+  if (!photoForward) {
+    detail.dataset.desktopProfileArrangement = wideOpening
+      ? 'identity-editorial-attendance-what-to-know-party-community-media-contribution'
+      : 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
     if (photo) {
       restoreDefaultPhotoPresentation(photo);
       photo.classList.remove('detail-profile-media--desktop');
       if (photo.parentElement !== hero) hero.prepend(photo);
     }
-    cursor = placeAfter(cursor, editorial);
-    cursor = placeAfter(cursor, activity);
-    cursor = placeAfter(cursor, whatToKnow);
-    parties.forEach((party) => { cursor = placeAfter(cursor, party); });
-    cursor = placeAfter(cursor, community);
-    if (localMap) {
-      localMap.classList.add('detail-profile-media--desktop');
-      cursor = placeAfter(cursor, localMap);
-    }
-    if (contribution) placeAfter(cursor, contribution);
+    arrangeStandardHierarchy({ hero, editorial, activity, whatToKnow, parties, community, localMap, contribution });
     return;
   }
 
-  detail.dataset.desktopProfileArrangement = photoForward
-    ? 'identity-what-to-know__photo-editorial-attendance__party-community-contribution'
-    : 'identity-what-to-know__editorial-attendance__party-community-media-contribution';
-
-  if (photoForward) setPhotoForwardPresentation(photo);
+  detail.dataset.desktopProfileArrangement = 'identity-what-to-know__photo-editorial-attendance__party-community-contribution';
+  setPhotoForwardPresentation(photo);
 
   const { opening, left, right } = createDesktopOpening(documentObject);
   detail.insertBefore(opening, hero);
   left.append(hero, whatToKnow);
-  if (photoForward) right.append(photo);
+  right.append(photo);
   if (editorial) right.append(editorial);
   if (activity) right.append(activity);
 

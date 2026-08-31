@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('wide desktop uses independent opening columns so What to know can rise under venue identity', async () => {
+test('wide desktop with a photo uses independent opening columns so What to know can rise under venue identity', async () => {
   const [source, enhancement] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/venue-profile-enhancement.mjs')
@@ -14,8 +14,8 @@ test('wide desktop uses independent opening columns so What to know can rise und
   assert.match(enhancement, /syncDesktopPhotoForwardProfile\(\{ state, documentObject, windowObject \}\)/);
   assert.match(source, /const PHOTO_FORWARD_QUERY = '\(min-width: 1180px\)'/);
   assert.match(source, /> \.detail-desktop-opening\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*minmax\(0, \.9fr\) minmax\(0, 1\.1fr\)/);
-  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(photoForward\) right\.append\(photo\);[\s\S]*?right\.append\(editorial\);[\s\S]*?right\.append\(activity\);/);
-  assert.match(source, /desktopProfileArrangement = photoForward[\s\S]*?'identity-what-to-know__photo-editorial-attendance__party-community-contribution'/);
+  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?right\.append\(photo\);[\s\S]*?right\.append\(editorial\);[\s\S]*?right\.append\(activity\);/);
+  assert.match(source, /desktopProfileArrangement = 'identity-what-to-know__photo-editorial-attendance__party-community-contribution'/);
 });
 
 test('wide desktop photo keeps a fixed 3:2 presentation frame with a sensible crop', async () => {
@@ -42,13 +42,14 @@ test('narrow desktop and mobile retain the existing photo presentation contract'
   assert.match(mobileSource, /placeMobileDeferredPhoto\(detail, section\)/);
 });
 
-test('wide desktop with no photo keeps the same balanced columns without reserving a photo slot', async () => {
+test('wide desktop with no photo retains the compact grid and reserves no photo slot', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
 
-  assert.match(source, /const wideOpening = windowObject\?\.matchMedia\?\.\(PHOTO_FORWARD_QUERY\)\?\.matches === true;/);
   assert.match(source, /const photoForward = Boolean\(photo && wideOpening\);/);
-  assert.match(source, /detail\.dataset\.desktopPhotoForward = photoForward \? 'true' : 'false'/);
-  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(photoForward\) right\.append\(photo\);[\s\S]*?if \(editorial\) right\.append\(editorial\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
+  assert.match(source, /if \(!photoForward\) \{[\s\S]*?arrangeStandardHierarchy\(/);
+  assert.match(source, /\[data-desktop-photo-forward="false"\]\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:/);
+  assert.match(source, /\[data-desktop-photo-forward="false"\] > \.detail-hero\.detail-hero--no-photo\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?grid-row:\s*1 \/ span 2\s*!important;/);
+  assert.match(source, /\[data-desktop-photo-forward="false"\] > \.detail-what-to-know\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;/);
   assert.doesNotMatch(source, /detail-desktop-opening__right[^\n]*min-height:/);
 });
 
@@ -56,7 +57,7 @@ test('desktop photo is not duplicated below the opening area', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
   const arrange = source.match(/function arrangeHierarchy\([\s\S]*?\n\}/)?.[0] || '';
 
-  assert.match(arrange, /if \(photoForward\) right\.append\(photo\)/);
+  assert.match(arrange, /right\.append\(photo\)/);
   assert.match(arrange, /let cursor = opening;[\s\S]*?parties\.forEach/);
   assert.doesNotMatch(arrange, /let cursor = opening;[\s\S]*?placeAfter\(cursor, photo\)/);
   assert.match(arrange, /if \(localMap\) \{[\s\S]*?cursor = placeAfter\(cursor, localMap\);/);
@@ -71,6 +72,7 @@ test('desktop What to know stays before Watch Party and keeps persistent tags ou
   assert.match(source, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.match(source, /> \.detail-fan-experiences > \[data-venue-tags\]\s*\{[\s\S]*?display:\s*none\s*!important;/);
   assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?let cursor = opening;[\s\S]*?parties\.forEach/);
+  assert.match(source, /arrangeStandardHierarchy\([\s\S]*?cursor = placeAfter\(cursor, whatToKnow\);[\s\S]*?parties\.forEach/);
 });
 
 test('desktop attendance reuses the approved large-number BEAR(S) ATTENDING ON CGB treatment', async () => {
