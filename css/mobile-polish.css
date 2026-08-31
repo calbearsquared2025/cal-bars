@@ -68,37 +68,31 @@
 }
 
 .cgb-marker .marker-star {
-  left: 5px;
-  top: 2px;
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  color: var(--cgb-white);
+  left: 8px;
+  top: 6px;
+  width: 32px;
+  height: 32px;
+  display: block;
   background: var(--cgb-gold-400);
   border: 3px solid var(--cgb-gold-400);
   border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 7px 16px rgba(1,1,51,.3);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
   font-size: 0;
 }
 
 .cgb-marker .marker-star::before {
   content: '';
   position: absolute;
-  inset: 6px;
+  left: 8px;
+  top: 8px;
+  width: 10px;
+  height: 10px;
   background: var(--cgb-navy-950);
   border-radius: 50%;
 }
 
 .cgb-marker .marker-star__icon {
-  position: relative;
-  z-index: 1;
-  width: 17px;
-  height: 17px;
-  color: var(--cgb-white);
-  fill: currentColor;
-  stroke: currentColor;
-  transform: rotate(45deg);
+  display: none;
 }
 
 .cgb-marker:hover .marker-pin,
