@@ -46,6 +46,10 @@ function installStyles(documentObject) {
   style.id = STYLE_ID;
   style.textContent = `
     @media (min-width: 900px) {
+      html body[data-view="map"] .mobile-command-bar .mobile-command > span:last-child {
+        text-transform: uppercase;
+      }
+
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-what-to-know {
         margin: 0 !important;
         padding: 12px 18px 10px !important;
@@ -115,7 +119,7 @@ function installStyles(documentObject) {
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
         display: grid !important;
-        justify-items: center !important;
+        justify-items: start !important;
         gap: 3px !important;
         padding: 10px 18px 12px !important;
         border-top: 0 !important;
@@ -123,68 +127,75 @@ function installStyles(documentObject) {
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count:not(.bear-count--empty) {
         width: fit-content;
-        min-height: 74px;
+        min-height: 58px;
         display: grid !important;
         grid-template-columns: auto auto;
         grid-template-rows: auto auto auto;
-        place-content: center;
-        align-items: baseline;
-        column-gap: 4px;
+        align-content: center;
+        align-items: start;
+        justify-content: start;
+        justify-items: start;
+        column-gap: 5px;
         row-gap: 0;
         margin: 0;
         color: var(--cgb-navy-950);
         font-family: var(--font-ui);
-        text-align: center;
+        text-align: left;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__number {
         grid-column: 1;
-        grid-row: 1 / span 2;
-        align-self: center;
-        font-size: 2.35rem !important;
+        grid-row: 1 / 4;
+        align-self: start;
+        justify-self: end;
+        font-size: 2.2rem !important;
         font-weight: 850 !important;
-        line-height: .86 !important;
+        letter-spacing: -.05em;
+        line-height: .82 !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label {
         grid-column: 2;
         grid-row: 1;
-        align-self: end;
-        font-size: .76rem !important;
+        align-self: start;
+        justify-self: start;
+        padding-top: 1px;
+        font-size: .74rem !important;
         font-weight: 850 !important;
-        letter-spacing: .04em;
+        letter-spacing: .03em;
         line-height: 1 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
         grid-column: 2;
-        grid-row: 2;
-        align-self: start;
-        font-size: .62rem !important;
+        justify-self: start;
         font-weight: 800 !important;
-        letter-spacing: .045em;
+        letter-spacing: .05em;
         line-height: 1.05 !important;
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending {
+        grid-row: 2;
+        margin-top: 2px;
+        font-size: .61rem !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
-        grid-column: 1 / -1;
         grid-row: 3;
-        margin-top: 4px;
-        color: var(--cgb-ink-500);
-        font-size: .6rem !important;
-        font-weight: 700 !important;
-        letter-spacing: .045em;
-        line-height: 1.05 !important;
+        font-size: .59rem !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty {
         min-height: 58px;
         display: grid !important;
-        place-content: center;
-        justify-items: center;
+        place-content: center start;
+        justify-items: start;
         gap: 2px;
         margin: 0;
-        text-align: center;
+        text-align: left;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty .bear-count__icon {
@@ -205,11 +216,41 @@ function installStyles(documentObject) {
         color: var(--cgb-ink-500) !important;
         font-size: .72rem !important;
         line-height: 1.25 !important;
-        text-align: center;
+        text-align: left;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > .activity-card__presence {
         display: none !important;
+      }
+    }
+
+    @media (min-width: 1100px) {
+      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--has-photo,
+      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--no-photo {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+        grid-column: 1 / 7 !important;
+        grid-row: 1 / 3 !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
+        grid-column: 7 / 13 !important;
+        grid-row: 1 !important;
+        align-self: start;
+        padding: 12px 18px 5px 16px !important;
+        background: var(--cgb-white) !important;
+        border-top: 0 !important;
+      }
+
+      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+        grid-column: 7 / 13 !important;
+        grid-row: 2 !important;
+        align-self: start;
+        padding: 4px 18px 12px 16px !important;
       }
     }
   `;
@@ -328,6 +369,10 @@ function arrangeHierarchy(detail, whatToKnow) {
   if (!hero) return;
 
   let cursor = hero;
+  if (activity) {
+    cursor.after(activity);
+    cursor = activity;
+  }
   if (editorial) {
     cursor.after(editorial);
     cursor = editorial;
@@ -340,10 +385,6 @@ function arrangeHierarchy(detail, whatToKnow) {
     cursor.after(party);
     cursor = party;
   });
-  if (activity) {
-    cursor.after(activity);
-    cursor = activity;
-  }
   if (community) {
     cursor.after(community);
     cursor = community;
@@ -355,7 +396,7 @@ function arrangeHierarchy(detail, whatToKnow) {
   }
   if (contribution) cursor.after(contribution);
 
-  detail.dataset.desktopProfileArrangement = 'identity-editorial-what-to-know-party-attendance-community-media-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-attendance-editorial-what-to-know-party-community-media-contribution';
 }
 
 export function syncDesktopProfileMobileHierarchy({
