@@ -225,6 +225,10 @@ function installStyles(documentObject) {
     }
 
     @media (min-width: 1100px) {
+      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
+        grid-template-rows: 76px auto;
+      }
+
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--has-photo,
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--no-photo {
         position: static !important;
