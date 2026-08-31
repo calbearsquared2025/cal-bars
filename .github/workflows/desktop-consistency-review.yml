@@ -27,6 +27,64 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Apply screenshot-only CGB Says left experiment
+        if: github.head_ref == 'experiment/cgb-says-left-no-website'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('after/js/desktop-photo-forward-profile.mjs')
+          source = path.read_text()
+
+          old_order = """  left.append(hero, whatToKnow);
+            right.append(photo);
+            if (editorial) right.append(editorial);
+            if (activity) right.append(activity);"""
+          new_order = """  left.append(hero, whatToKnow);
+            if (editorial) left.append(editorial);
+            right.append(photo);
+            if (activity) right.append(activity);"""
+          if old_order not in source:
+            raise SystemExit('desktop opening order marker not found')
+          source = source.replace(old_order, new_order, 1)
+
+          marker = """      html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-what-to-know {
+                margin-top: 2px !important;
+                padding: 12px 14px 12px 18px !important;
+              }
+          """
+          addition = marker + """
+              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial {
+                position: relative !important;
+                top: auto !important;
+                z-index: auto !important;
+                align-self: stretch !important;
+                display: block !important;
+                padding: 10px 14px 12px 34px !important;
+                background: var(--cgb-white) !important;
+                border: 0 !important;
+              }
+
+              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial::before {
+                position: absolute !important;
+                top: 10px !important;
+                right: auto !important;
+                bottom: 12px !important;
+                left: 18px !important;
+                width: 3px !important;
+                height: auto !important;
+              }
+
+              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial > h2,
+              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {
+                display: block !important;
+              }
+          """
+          if marker not in source:
+            raise SystemExit('left-column style marker not found')
+          source = source.replace(marker, addition, 1)
+          path.write_text(source)
+          PY
       - name: Capture responsive comparison screenshots
         env:
           CGB_REVIEW_PROFILE: ${{ github.head_ref == 'experiment/cgb-says-left-no-website' && 'cgb-says-left-experiment' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns' && 'photo-forward-balanced' || github.head_ref == 'feature/desktop-photo-forward-profile' && 'photo-forward' || '' }}
