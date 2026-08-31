@@ -15,11 +15,10 @@ test('wide desktop with a photo keeps the opening balanced and spans CGB Says ac
   assert.match(enhancement, /syncDesktopPhotoForwardProfile\(\{ state, documentObject, windowObject \}\)/);
   assert.match(source, /const PHOTO_FORWARD_QUERY = '\(min-width: 1180px\)'/);
   assert.match(source, /> \.detail-desktop-opening\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*minmax\(0, \.9fr\) minmax\(0, 1\.1fr\)/);
-  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?right\.append\(photo\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
-  assert.match(balance, /if \(detail\.dataset\.desktopPhotoForward === 'true' && opening\) \{[\s\S]*?moveEditorialAfterOpening\(detail, opening\)/);
-  assert.match(balance, /opening\.after\(editorial\);[\s\S]*?detail\.dataset\.desktopEditorialSpan = 'true'/);
+  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(editorial\) left\.append\(editorial\);[\s\S]*?right\.append\(photo\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
+  assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left,[\s\S]*?\.detail-desktop-opening > \.detail-desktop-opening__right\s*\{[\s\S]*?display:\s*contents\s*!important;/);
+  assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;[\s\S]*?grid-row:\s*3\s*!important;[\s\S]*?width:\s*100%\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__photo-attendance__editorial-party-community-contribution'/);
-  assert.match(balance, /\[data-desktop-editorial-span="true"\] > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;[\s\S]*?width:\s*100%\s*!important;/);
 });
 
 test('wide desktop photo keeps a fixed 3:2 presentation frame with a sensible crop', async () => {
@@ -46,7 +45,7 @@ test('narrow desktop and mobile retain the existing photo presentation contract'
   assert.match(mobileSource, /placeMobileDeferredPhoto\(detail, section\)/);
 });
 
-test('wide desktop with no photo uses the local map as the photo-slot fallback', async () => {
+test('wide desktop with no photo uses the existing local map as the photo-slot fallback without DOM reparenting', async () => {
   const [source, balance] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/desktop-profile-final-balance.mjs')
@@ -54,11 +53,12 @@ test('wide desktop with no photo uses the local map as the photo-slot fallback',
 
   assert.match(source, /const photoForward = Boolean\(photo && wideOpening\);/);
   assert.match(source, /if \(!photoForward\) \{[\s\S]*?arrangeStandardHierarchy\(/);
-  assert.match(balance, /detail\.dataset\.desktopPhotoForward !== 'false'/);
-  assert.match(balance, /const fallback = createFallbackOpening\(documentObject\)/);
-  assert.match(balance, /fallback\.left\.append\(hero\);[\s\S]*?fallback\.left\.append\(whatToKnow\);[\s\S]*?fallback\.right\.append\(localMap\);[\s\S]*?fallback\.right\.append\(activity\)/);
-  assert.match(balance, /detail-local-map\s*\{[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;[\s\S]*?margin:\s*12px 18px 0 8px\s*!important;/);
+  assert.match(balance, /const localMap = detail\.querySelector\(':scope > \.detail-local-map'\)/);
+  assert.match(balance, /detail\.dataset\.desktopFallbackMap = 'true'/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-local-map\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;[\s\S]*?margin:\s*12px 18px 0 8px\s*!important;/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-what-to-know\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__map-attendance__editorial-party-community-contribution'/);
+  assert.doesNotMatch(balance, /append\(hero|append\(localMap|insertBefore\(/);
 });
 
 test('desktop photo is not duplicated below the opening area', async () => {
@@ -82,8 +82,8 @@ test('desktop What to know and full-width CGB Says stay before Watch Party while
   assert.match(source, /link\.textContent = 'Add info →'/);
   assert.match(source, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.match(source, /> \.detail-fan-experiences > \[data-venue-tags\]\s*\{[\s\S]*?display:\s*none\s*!important;/);
-  assert.match(balance, /moveEditorialAfterOpening\(detail, opening\)/);
-  assert.match(balance, /opening\.after\(editorial\)/);
+  assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-editorial\s*\{[\s\S]*?grid-row:\s*3\s*!important;/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;[\s\S]*?grid-row:\s*3\s*!important;/);
   assert.match(source, /arrangeStandardHierarchy\([\s\S]*?cursor = placeAfter\(cursor, whatToKnow\);[\s\S]*?parties\.forEach/);
 });
 
