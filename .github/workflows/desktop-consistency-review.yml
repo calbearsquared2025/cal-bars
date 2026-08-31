@@ -32,58 +32,58 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
-          path = Path('after/js/desktop-photo-forward-profile.mjs')
-          source = path.read_text()
+          source_path = Path('after/js/desktop-photo-forward-profile.mjs')
+          source = source_path.read_text()
+          pattern = re.compile(
+              r"  left\.append\(hero, whatToKnow\);\n"
+              r"  right\.append\(photo\);\n"
+              r"  if \(editorial\) right\.append\(editorial\);\n"
+              r"  if \(activity\) right\.append\(activity\);"
+          )
+          replacement = (
+              "  left.append(hero, whatToKnow);\n"
+              "  if (editorial) left.append(editorial);\n"
+              "  right.append(photo);\n"
+              "  if (activity) right.append(activity);"
+          )
+          source, count = pattern.subn(replacement, source, count=1)
+          if count != 1:
+              raise SystemExit(f'desktop opening order replacement count: {count}')
+          source_path.write_text(source)
 
-          old_order = """  left.append(hero, whatToKnow);
-            right.append(photo);
-            if (editorial) right.append(editorial);
-            if (activity) right.append(activity);"""
-          new_order = """  left.append(hero, whatToKnow);
-            if (editorial) left.append(editorial);
-            right.append(photo);
-            if (activity) right.append(activity);"""
-          if old_order not in source:
-            raise SystemExit('desktop opening order marker not found')
-          source = source.replace(old_order, new_order, 1)
+          css_path = Path('after/css/venue-profile.css')
+          css_path.write_text(css_path.read_text() + r'''
 
-          marker = """      html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-what-to-know {
-                margin-top: 2px !important;
-                padding: 12px 14px 12px 18px !important;
-              }
-          """
-          addition = marker + """
-              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial {
-                position: relative !important;
-                top: auto !important;
-                z-index: auto !important;
-                align-self: stretch !important;
-                display: block !important;
-                padding: 10px 14px 12px 34px !important;
-                background: var(--cgb-white) !important;
-                border: 0 !important;
-              }
-
-              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial::before {
-                position: absolute !important;
-                top: 10px !important;
-                right: auto !important;
-                bottom: 12px !important;
-                left: 18px !important;
-                width: 3px !important;
-                height: auto !important;
-              }
-
-              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial > h2,
-              html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {
-                display: block !important;
-              }
-          """
-          if marker not in source:
-            raise SystemExit('left-column style marker not found')
-          source = source.replace(marker, addition, 1)
-          path.write_text(source)
+          /* Screenshot-only experiment: CGB Says in the left opening column. */
+          @media (min-width: 1180px) {
+            html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial {
+              position: relative !important;
+              top: auto !important;
+              z-index: auto !important;
+              align-self: stretch !important;
+              display: block !important;
+              margin: 0 !important;
+              padding: 10px 14px 12px 34px !important;
+              background: var(--cgb-white) !important;
+              border: 0 !important;
+            }
+            html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial::before {
+              position: absolute !important;
+              top: 10px !important;
+              right: auto !important;
+              bottom: 12px !important;
+              left: 18px !important;
+              width: 3px !important;
+              height: auto !important;
+            }
+            html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > h2,
+            html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {
+              display: block !important;
+            }
+          }
+          ''')
           PY
       - name: Capture responsive comparison screenshots
         env:
