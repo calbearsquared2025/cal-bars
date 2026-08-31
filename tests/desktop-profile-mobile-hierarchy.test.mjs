@@ -94,12 +94,12 @@ test('wide desktop naturally stacks CGB Says and Fan Intent beside venue identit
   assert.match(source, /> \.detail-what-to-know\s*\{[\s\S]*?clear:\s*both;/);
 });
 
-test('desktop Bear-count is a single non-wrapping line with a large numeral and compact wording', async () => {
+test('desktop Bear-count is a single non-wrapping line with a large numeral and uniformly bold wording', async () => {
   const source = await read('js/desktop-profile-mobile-hierarchy.mjs');
 
   assert.match(source, /strong\.bear-count:not\(\.bear-count--empty\)\s*\{[\s\S]*?display:\s*flex\s*!important;[\s\S]*?flex-wrap:\s*nowrap\s*!important;[\s\S]*?white-space:\s*nowrap;/);
   assert.match(source, /\.bear-count__number\s*\{[\s\S]*?font-size:\s*1\.9rem\s*!important;/);
-  assert.match(source, /\.bear-count__label,[\s\S]*?\.bear-count__attending,[\s\S]*?\.bear-count__context\s*\{[\s\S]*?align-self:\s*center;[\s\S]*?white-space:\s*nowrap;/);
+  assert.match(source, /\.bear-count__label,[\s\S]*?\.bear-count__attending,[\s\S]*?\.bear-count__context\s*\{[\s\S]*?align-self:\s*center;[\s\S]*?font-weight:\s*800\s*!important;[\s\S]*?white-space:\s*nowrap;/);
   assert.match(source, /\.bear-count__attending,[\s\S]*?\.bear-count__context\s*\{[\s\S]*?font-size:\s*\.61rem\s*!important;/);
   assert.match(source, /padding:\s*4px 18px 10px 37px\s*!important;/);
 });
