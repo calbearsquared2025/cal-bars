@@ -38,12 +38,17 @@ const balancedPhotoForwardViewports = [
   { label: '1440-photo', width: 1440, height: 1000, reviewMode: 'photo' },
   { label: '1440-no-photo', width: 1440, height: 1000, reviewMode: 'no-photo' }
 ];
+const cgbSaysLeftExperimentViewports = [
+  { label: '1440-photo-cgb-left', width: 1440, height: 1000, reviewMode: 'photo-cgb-left' }
+];
 const reviewProfile = process.env.CGB_REVIEW_PROFILE || '';
-const viewports = reviewProfile === 'photo-forward-balanced'
-  ? balancedPhotoForwardViewports
-  : reviewProfile === 'photo-forward'
-    ? photoForwardViewports
-    : standardViewports;
+const viewports = reviewProfile === 'cgb-says-left-experiment'
+  ? cgbSaysLeftExperimentViewports
+  : reviewProfile === 'photo-forward-balanced'
+    ? balancedPhotoForwardViewports
+    : reviewProfile === 'photo-forward'
+      ? photoForwardViewports
+      : standardViewports;
 
 mkdirSync(outputDir, { recursive: true });
 
@@ -62,10 +67,13 @@ function reviewPage(root, response) {
     (() => {
       const snapshot = ${snapshotJson};
       const reviewMode = new URLSearchParams(location.search).get('reviewMode');
-      if (reviewMode === 'photo') {
+      if (reviewMode === 'photo' || reviewMode === 'photo-cgb-left') {
         snapshot.venues[0].photo_url = location.origin + '/tests/fixtures/venue-photo-synthetic.svg';
         snapshot.venues[0].photo_caption = 'Synthetic responsive-review photo.';
         snapshot.venues[0].photo_credit = 'CGB test fixture';
+      }
+      if (reviewMode === 'photo-cgb-left') {
+        snapshot.venues[0].website_url = '';
       }
       localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
       const nativeFetch = window.fetch.bind(window);
@@ -109,6 +117,47 @@ function reviewPage(root, response) {
         first?.click();
         await waitFor(() => visible(document.querySelector('#tray-selected')) && (document.querySelector('#tray-selected')?.textContent || '').trim().length > 0);
         const reviewMode = new URLSearchParams(location.search).get('reviewMode');
+        if (!mobile && reviewMode === 'photo-cgb-left') {
+          await waitFor(() => Boolean(document.querySelector('.detail-desktop-opening__left') && document.querySelector('.detail-desktop-opening__right > .detail-editorial')));
+          const left = document.querySelector('.detail-desktop-opening__left');
+          const editorial = document.querySelector('.detail-desktop-opening__right > .detail-editorial');
+          const whatToKnow = left?.querySelector(':scope > .detail-what-to-know');
+          if (left && editorial) {
+            (whatToKnow || left.lastElementChild)?.after(editorial);
+            if (!editorial.parentElement) left.append(editorial);
+            const style = document.createElement('style');
+            style.textContent = `
+              @media (min-width: 1180px) {
+                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial {
+                  position: relative !important;
+                  top: auto !important;
+                  z-index: auto !important;
+                  align-self: stretch !important;
+                  display: block !important;
+                  margin: 0 !important;
+                  padding: 10px 14px 12px 34px !important;
+                  background: var(--cgb-white) !important;
+                  border: 0 !important;
+                }
+                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial::before {
+                  position: absolute !important;
+                  top: 10px !important;
+                  right: auto !important;
+                  bottom: 12px !important;
+                  left: 18px !important;
+                  width: 3px !important;
+                  height: auto !important;
+                }
+                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > h2,
+                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {
+                  display: block !important;
+                }
+              }
+            `;
+            document.head.append(style);
+          }
+          await sleep(220);
+        }
         if (mobile && reviewMode === 'bears-say') {
           await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));
           document.querySelector('.detail-fan-experiences')?.scrollIntoView({ block: 'start', inline: 'nearest' });
