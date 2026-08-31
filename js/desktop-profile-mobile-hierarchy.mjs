@@ -226,7 +226,7 @@ function installStyles(documentObject) {
 
     @media (min-width: 1100px) {
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
-        grid-template-rows: auto auto;
+        display: flow-root !important;
       }
 
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--has-photo,
@@ -234,27 +234,34 @@ function installStyles(documentObject) {
         position: static !important;
         top: auto !important;
         z-index: auto !important;
-        grid-column: 1 / 7 !important;
-        grid-row: 1 / 3 !important;
+        float: left;
+        width: 50% !important;
+        box-sizing: border-box;
       }
 
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial {
         position: static !important;
         top: auto !important;
         z-index: auto !important;
-        grid-column: 7 / 13 !important;
-        grid-row: 1 !important;
-        align-self: start;
+        float: right;
+        clear: right;
+        width: 50% !important;
+        box-sizing: border-box;
         padding: 12px 18px 6px 16px !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
-        grid-column: 7 / 13 !important;
-        grid-row: 2 !important;
-        align-self: start;
+        float: right;
+        clear: right;
+        width: 50% !important;
+        box-sizing: border-box;
         padding: 6px 18px 12px 37px !important;
         background: var(--cgb-white) !important;
         border-top: 0 !important;
+      }
+
+      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-what-to-know {
+        clear: both;
       }
     }
   `;
