@@ -65,7 +65,7 @@ test('desktop Fan Intent reuses the mobile selected attendance view model and cl
   assert.match(mobileSource, /prompt\.textContent = 'Be the first\.'/);
 });
 
-test('desktop opening places Fan Intent above CGB Says before What to know and Watch Party', async () => {
+test('desktop opening places CGB Says above Fan Intent before What to know and Watch Party', async () => {
   const [source, enhancementSource] = await Promise.all([
     read('js/desktop-profile-mobile-hierarchy.mjs'),
     read('js/venue-profile-enhancement.mjs')
@@ -73,31 +73,33 @@ test('desktop opening places Fan Intent above CGB Says before What to know and W
 
   assert.match(enhancementSource, /syncDesktopProfileMobileHierarchy\(\{ state, documentObject, windowObject \}\)/);
   assert.match(source, /let cursor = hero;/);
-  assert.match(source, /if \(activity\) \{[\s\S]*?cursor\.after\(activity\);[\s\S]*?cursor = activity;/);
   assert.match(source, /if \(editorial\) \{[\s\S]*?cursor\.after\(editorial\);[\s\S]*?cursor = editorial;/);
+  assert.match(source, /if \(activity\) \{[\s\S]*?cursor\.after\(activity\);[\s\S]*?cursor = activity;/);
   assert.match(source, /if \(whatToKnow\) \{[\s\S]*?cursor\.after\(whatToKnow\);[\s\S]*?cursor = whatToKnow;/);
   assert.match(source, /parties\.forEach\(\(party\) => \{[\s\S]*?cursor\.after\(party\);[\s\S]*?cursor = party;/);
   assert.match(source, /if \(community\) \{[\s\S]*?cursor\.after\(community\);[\s\S]*?cursor = community;/);
   assert.match(source, /if \(media\) \{[\s\S]*?cursor\.after\(media\);[\s\S]*?cursor = media;/);
   assert.match(source, /if \(contribution\) cursor\.after\(contribution\)/);
-  assert.match(source, /desktopProfileArrangement = 'identity-attendance-editorial-what-to-know-party-community-media-contribution'/);
+  assert.match(source, /desktopProfileArrangement = 'identity-editorial-attendance-what-to-know-party-community-media-contribution'/);
 });
 
-test('wide desktop uses the opening right column for Fan Intent above CGB Says and releases the sticky profile header', async () => {
+test('wide desktop stacks CGB Says above Fan Intent in the opening right column and releases the sticky profile header', async () => {
   const source = await read('js/desktop-profile-mobile-hierarchy.mjs');
 
   assert.match(source, /@media \(min-width: 1100px\)/);
+  assert.match(source, /grid-template-rows:\s*auto auto;/);
   assert.match(source, /> \.detail-hero\.detail-hero--has-photo,[\s\S]*?position:\s*static\s*!important;[\s\S]*?grid-column:\s*1 \/ 7\s*!important;[\s\S]*?grid-row:\s*1 \/ 3\s*!important;/);
-  assert.match(source, /> \.activity-card\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
-  assert.match(source, /> \.detail-editorial\s*\{[\s\S]*?position:\s*static\s*!important;[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
+  assert.match(source, /> \.detail-editorial\s*\{[\s\S]*?position:\s*static\s*!important;[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
+  assert.match(source, /> \.activity-card\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
 });
 
-test('desktop Bear-count spacing keeps BEARS, ATTENDING, and ON CGB aligned beside the numeral', async () => {
+test('desktop Bear-count spacing keeps BEARS, ATTENDING, and ON CGB aligned beside a smaller numeral', async () => {
   const source = await read('js/desktop-profile-mobile-hierarchy.mjs');
 
-  assert.match(source, /\.bear-count__number\s*\{[\s\S]*?grid-row:\s*1 \/ 4;/);
+  assert.match(source, /\.bear-count__number\s*\{[\s\S]*?grid-row:\s*1 \/ 4;[\s\S]*?font-size:\s*1\.95rem\s*!important;/);
   assert.match(source, /\.bear-count__attending,[\s\S]*?\.bear-count__context\s*\{[\s\S]*?grid-column:\s*2;/);
   assert.match(source, /\.bear-count__context\s*\{[\s\S]*?grid-row:\s*3;/);
+  assert.match(source, /grid-row:\s*2\s*!important;[\s\S]*?padding:\s*6px 18px 12px 37px\s*!important;/);
 });
 
 test('desktop command labels render in uppercase without changing mobile labels', async () => {
