@@ -128,6 +128,13 @@ async function serveAndCapture(root, label) {
       response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return response.end(snapshot);
     }
+    if (pathname === '/tests/fixtures/venue-photo-synthetic.svg') {
+      // The fixture is introduced by the review branch, so serve the same asset to both
+      // base and head captures to make the visual comparison meaningful.
+      const photoPath = join(afterRoot, 'tests/fixtures/venue-photo-synthetic.svg');
+      response.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' });
+      return createReadStream(photoPath).pipe(response);
+    }
     const filePath = safePath(root, request.url || '/');
     try {
       if (!filePath || !statSync(filePath).isFile()) throw new Error('not_found');
