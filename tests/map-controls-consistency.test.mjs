@@ -31,7 +31,7 @@ test('desktop Locate me and zoom controls share one aligned stack beside the ven
   assert.match(mobilePolish, /\.map-actions #near-me-button[\s\S]*?width:\s*44px;/);
 });
 
-test('marker states keep pre-hierarchy sizing while ranking yellow over blue over white', async () => {
+test('marker states use equal-size category colors while ranking yellow over blue over white', async () => {
   const css = await read('css/mobile-polish.css');
   assert.doesNotMatch(css, /--marker-shape:\s*url\("data:image\/svg\+xml/);
   assert.match(css, /\.maplibregl-marker\.cgb-marker,[\s\S]*?\.cgb-marker\s*\{[\s\S]*?width:\s*48px;[\s\S]*?height:\s*54px;/);
@@ -43,9 +43,9 @@ test('marker states keep pre-hierarchy sizing while ranking yellow over blue ove
   assert.match(css, /\.cgb-marker \.marker-pin::after\s*\{[\s\S]*?left:\s*8px;[\s\S]*?top:\s*8px;[\s\S]*?width:\s*10px;[\s\S]*?height:\s*10px;/);
   assert.match(css, /\.cgb-marker\.marker--cal-bar \.marker-pin\s*\{[\s\S]*?background:\s*var\(--cgb-navy-900\);[\s\S]*?border-color:\s*var\(--cgb-navy-900\);/);
   assert.doesNotMatch(css, /\.cgb-marker\.marker--cal-bar \.marker-pin\s*\{[^}]*\b(?:left|top|width|height|border-width|box-shadow)\s*:/);
-  assert.match(css, /\.cgb-marker \.marker-star\s*\{[\s\S]*?left:\s*5px;[\s\S]*?top:\s*2px;[\s\S]*?width:\s*38px;[\s\S]*?height:\s*38px;[\s\S]*?box-shadow:\s*0 0 0 2px rgba\(255,255,255,\.96\), 0 7px 16px rgba\(1,1,51,\.3\);/);
-  assert.match(css, /\.cgb-marker \.marker-star::before[\s\S]*?inset:\s*6px;[\s\S]*?background:\s*var\(--cgb-navy-950\);/);
-  assert.match(css, /\.cgb-marker \.marker-star__icon[\s\S]*?width:\s*17px;[\s\S]*?height:\s*17px;[\s\S]*?transform:\s*rotate\(45deg\);/);
+  assert.match(css, /\.cgb-marker \.marker-star\s*\{[\s\S]*?left:\s*8px;[\s\S]*?top:\s*6px;[\s\S]*?width:\s*32px;[\s\S]*?height:\s*32px;[\s\S]*?background:\s*var\(--cgb-gold-400\);[\s\S]*?border:\s*3px solid var\(--cgb-gold-400\);[\s\S]*?box-shadow:\s*0 0 0 2px rgba\(255,255,255,\.96\), 0 6px 14px rgba\(1,1,51,\.28\);/);
+  assert.match(css, /\.cgb-marker \.marker-star::before\s*\{[\s\S]*?left:\s*8px;[\s\S]*?top:\s*8px;[\s\S]*?width:\s*10px;[\s\S]*?height:\s*10px;[\s\S]*?background:\s*var\(--cgb-navy-950\);/);
+  assert.match(css, /\.cgb-marker \.marker-star__icon\s*\{[\s\S]*?display:\s*none;/);
   assert.match(css, /\.cgb-marker\.is-selected \.marker-pin,[\s\S]*?scale:\s*1\.1;/);
   assert.match(css, /\.cgb-marker\.is-selected\s*\{[\s\S]*?z-index:\s*40;/);
   assert.match(css, /\.cgb-marker \.marker-count[\s\S]*?top:\s*-6px;[\s\S]*?right:\s*-27px;/);
