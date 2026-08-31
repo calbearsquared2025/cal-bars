@@ -21,25 +21,33 @@ test('wide desktop with a photo keeps the opening balanced and spans CGB Says ac
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__photo-attendance__editorial-party-community-contribution'/);
 });
 
-test('wide desktop photo keeps a fixed 3:2 presentation frame with a sensible crop', async () => {
-  const source = await read('js/desktop-photo-forward-profile.mjs');
+test('wide desktop photo reuses the shared 3:2 cover presentation instead of redefining the crop', async () => {
+  const [source, enhancement] = await Promise.all([
+    read('js/desktop-photo-forward-profile.mjs'),
+    read('js/venue-profile-enhancement.mjs')
+  ]);
 
-  assert.match(source, /detail-photo--desktop-opening \.detail-photo__frame\s*\{[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;/);
-  assert.match(source, /detail-photo--desktop-opening \.detail-photo__image\s*\{[\s\S]*?object-fit:\s*cover\s*!important;[\s\S]*?object-position:\s*center\s*!important;/);
-  assert.match(source, /frame\?\.style\?\.setProperty\('aspect-ratio', '3 \/ 2', 'important'\)/);
-  assert.match(source, /image\?\.style\?\.setProperty\('object-fit', 'cover', 'important'\)/);
+  assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
+  assert.match(enhancement, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
+  assert.match(enhancement, /frame\.style\.setProperty\('aspect-ratio', VENUE_PHOTO_ASPECT_RATIO, 'important'\)/);
+  assert.match(enhancement, /image\.style\.setProperty\('object-fit', VENUE_PHOTO_OBJECT_FIT, 'important'\)/);
+  assert.doesNotMatch(source, /setProperty\('aspect-ratio'/);
+  assert.doesNotMatch(source, /setProperty\('object-fit'/);
 });
 
-test('narrow desktop and mobile retain the existing photo presentation contract', async () => {
-  const [source, mobileSource] = await Promise.all([
+test('narrow desktop and mobile preserve placement while sharing the 3:2 photo crop', async () => {
+  const [source, enhancement, mobileSource] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
+    read('js/venue-profile-enhancement.mjs'),
     read('js/fan-experiences.mjs')
   ]);
 
   assert.match(source, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
   assert.doesNotMatch(source, /@media \(max-width: 899px\)/);
-  assert.match(source, /frame\?\.style\?\.setProperty\('aspect-ratio', '4 \/ 3', 'important'\)/);
-  assert.match(source, /image\?\.style\?\.setProperty\('object-fit', 'contain', 'important'\)/);
+  assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
+  assert.match(enhancement, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
+  assert.doesNotMatch(source, /'4 \/ 3'/);
+  assert.doesNotMatch(source, /'contain'/);
   assert.match(source, /unwrapDesktopOpening\(detail\);[\s\S]*?if \(!isDesktopProfile\(detail, windowObject\)\) return false;/);
   assert.match(mobileSource, /section\.dataset\.mobileWhatToKnow = 'true'/);
   assert.match(mobileSource, /placeMobileDeferredPhoto\(detail, section\)/);

@@ -79,6 +79,17 @@ test('mobile selected profile defers an approved photo until after You Say while
   assert.match(continuationSource, /if \(!venue\.photo_url\) \{[\s\S]*?createLocalMapElement/);
 });
 
+test('mobile approved photos use the shared 3:2 cover crop without a local override', async () => {
+  const [enhancementSource, continuationSource] = await Promise.all([
+    readFile(new URL('../js/venue-profile-enhancement.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8')
+  ]);
+  assert.match(enhancementSource, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
+  assert.match(enhancementSource, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
+  assert.doesNotMatch(continuationSource, /aspect-ratio:\s*4 \/ 3/);
+  assert.doesNotMatch(continuationSource, /object-fit:\s*contain/);
+});
+
 test('mobile no-photo profile keeps the photo contribution in the normal maintenance flow', async () => {
   const [photoFormSource, balanceSource, continuationSource] = await Promise.all([
     readFile(new URL('../js/photo-form.js', import.meta.url), 'utf8'),
