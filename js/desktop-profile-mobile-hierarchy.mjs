@@ -159,20 +159,19 @@ function installStyles(documentObject) {
         align-self: center;
         padding: 0;
         margin: 0;
+        font-weight: 800 !important;
         line-height: 1 !important;
         white-space: nowrap;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label {
         font-size: .68rem !important;
-        font-weight: 850 !important;
         letter-spacing: .025em;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending,
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
         font-size: .61rem !important;
-        font-weight: 700 !important;
         letter-spacing: .035em;
       }
 
