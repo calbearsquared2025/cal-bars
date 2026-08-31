@@ -19,3 +19,10 @@ test('watch party card uses the header right edge for the game date', () => {
   assert.match(styles, /\.party-game-context \{[\s\S]*font-weight: 800;/);
   assert.match(styles, /\.party-module__time \{[\s\S]*font-weight: 600;/);
 });
+
+test('mobile keeps the trailing watch party star beside the title', () => {
+  assert.match(
+    styles,
+    /@media \(max-width: 899px\) \{[\s\S]*\.party-module__date \{[\s\S]*margin-left: 0;/
+  );
+});
