@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   screenshots:
-    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags'
+    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-photo-forward-profile'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -28,6 +28,8 @@ jobs:
         with:
           node-version: 22
       - name: Capture responsive comparison screenshots
+        env:
+          CGB_REVIEW_PROFILE: ${{ github.head_ref == 'feature/desktop-photo-forward-profile' && 'photo-forward' || '' }}
         run: node after/scripts/capture-responsive-review.mjs before after responsive-review
       - name: Upload responsive comparison screenshots
         uses: actions/upload-artifact@v4
