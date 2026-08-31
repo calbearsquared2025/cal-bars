@@ -59,6 +59,7 @@ test('desktop Fan Intent reuses the mobile selected attendance view model and cl
   assert.match(desktopSource, /attending\.textContent = 'ATTENDING'/);
   assert.match(desktopSource, /context\.textContent = 'ON CGB'/);
   assert.match(desktopSource, /prompt\.textContent = 'Be the first\.'/);
+  assert.doesNotMatch(desktopSource, /context\.textContent = 'ATTENDING ON CGB'/);
   assert.match(mobileSource, /label\.textContent = view\.number === 1 \? 'BEAR' : 'BEARS'/);
   assert.match(mobileSource, /attending\.textContent = 'ATTENDING'/);
   assert.match(mobileSource, /context\.textContent = 'ON CGB'/);
