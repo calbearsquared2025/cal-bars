@@ -130,6 +130,14 @@
   text-underline-offset: 2px;
 }
 
+@media (max-width: 899px) {
+  /* The runtime icon pass turns the date span into the trailing Watch Party star.
+     Keep that star beside the label on mobile instead of pushing it to the card edge. */
+  #venue-tray .selected-card > .party-module .party-module__date {
+    margin-left: 0;
+  }
+}
+
 @media (min-width: 900px) {
   .party-module--multiple {
     max-height: 24rem;
