@@ -34,9 +34,16 @@ const photoForwardViewports = [
   { label: '1280-no-photo', width: 1280, height: 900, reviewMode: 'no-photo' },
   { label: 'mobile-390-photo', width: 390, height: 844, reviewMode: 'photo' }
 ];
-const viewports = process.env.CGB_REVIEW_PROFILE === 'photo-forward'
-  ? photoForwardViewports
-  : standardViewports;
+const balancedPhotoForwardViewports = [
+  { label: '1440-photo', width: 1440, height: 1000, reviewMode: 'photo' },
+  { label: '1440-no-photo', width: 1440, height: 1000, reviewMode: 'no-photo' }
+];
+const reviewProfile = process.env.CGB_REVIEW_PROFILE || '';
+const viewports = reviewProfile === 'photo-forward-balanced'
+  ? balancedPhotoForwardViewports
+  : reviewProfile === 'photo-forward'
+    ? photoForwardViewports
+    : standardViewports;
 
 mkdirSync(outputDir, { recursive: true });
 

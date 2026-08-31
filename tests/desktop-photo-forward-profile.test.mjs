@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('wide desktop surfaces the venue photo in the opening area before CGB Says and attendance', async () => {
+test('wide desktop uses independent opening columns so What to know can rise under venue identity', async () => {
   const [source, enhancement] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/venue-profile-enhancement.mjs')
@@ -13,11 +13,12 @@ test('wide desktop surfaces the venue photo in the opening area before CGB Says 
   assert.match(enhancement, /import \{ syncDesktopPhotoForwardProfile \} from '\.\/desktop-photo-forward-profile\.mjs'/);
   assert.match(enhancement, /syncDesktopPhotoForwardProfile\(\{ state, documentObject, windowObject \}\)/);
   assert.match(source, /const PHOTO_FORWARD_QUERY = '\(min-width: 1180px\)'/);
-  assert.match(source, /desktopProfileArrangement = photoForward[\s\S]*?'identity-photo-editorial-attendance-what-to-know-party-community-contribution'/);
-  assert.match(source, /let cursor = hero;[\s\S]*?if \(photoForward\) \{[\s\S]*?cursor = placeAfter\(cursor, photo\);[\s\S]*?cursor = placeAfter\(cursor, editorial\);[\s\S]*?cursor = placeAfter\(cursor, activity\);/);
+  assert.match(source, /> \.detail-desktop-opening\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*minmax\(0, \.9fr\) minmax\(0, 1\.1fr\)/);
+  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(photoForward\) right\.append\(photo\);[\s\S]*?right\.append\(editorial\);[\s\S]*?right\.append\(activity\);/);
+  assert.match(source, /desktopProfileArrangement = photoForward[\s\S]*?'identity-what-to-know__photo-editorial-attendance__party-community-contribution'/);
 });
 
-test('wide desktop photo uses a fixed 3:2 presentation frame with a sensible crop', async () => {
+test('wide desktop photo keeps a fixed 3:2 presentation frame with a sensible crop', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
 
   assert.match(source, /detail-photo--desktop-opening \.detail-photo__frame\s*\{[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;/);
@@ -36,32 +37,32 @@ test('narrow desktop and mobile retain the existing photo presentation contract'
   assert.doesNotMatch(source, /@media \(max-width: 899px\)/);
   assert.match(source, /frame\?\.style\?\.setProperty\('aspect-ratio', '4 \/ 3', 'important'\)/);
   assert.match(source, /image\?\.style\?\.setProperty\('object-fit', 'contain', 'important'\)/);
-  assert.match(source, /if \(!detail \|\| !venue \|\| !isDesktopProfile\(detail, windowObject\)\) return false;/);
+  assert.match(source, /unwrapDesktopOpening\(detail\);[\s\S]*?if \(!isDesktopProfile\(detail, windowObject\)\) return false;/);
   assert.match(mobileSource, /section\.dataset\.mobileWhatToKnow = 'true'/);
   assert.match(mobileSource, /placeMobileDeferredPhoto\(detail, section\)/);
 });
 
-test('desktop with no photo does not reserve a photo slot and uses a compact fallback opening', async () => {
+test('wide desktop with no photo keeps the same balanced columns without reserving a photo slot', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
 
-  assert.match(source, /const photoForward = Boolean\(photo && windowObject\?\.matchMedia\?\.\(PHOTO_FORWARD_QUERY\)\?\.matches === true\)/);
+  assert.match(source, /const wideOpening = windowObject\?\.matchMedia\?\.\(PHOTO_FORWARD_QUERY\)\?\.matches === true;/);
+  assert.match(source, /const photoForward = Boolean\(photo && wideOpening\);/);
   assert.match(source, /detail\.dataset\.desktopPhotoForward = photoForward \? 'true' : 'false'/);
-  assert.match(source, /\[data-desktop-photo-forward="false"\] > \.detail-hero\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?grid-row:\s*1 \/ span 2\s*!important;/);
-  assert.match(source, /\[data-desktop-photo-forward="false"\] > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
-  assert.match(source, /\[data-desktop-photo-forward="false"\] > \.activity-card\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
+  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(photoForward\) right\.append\(photo\);[\s\S]*?if \(editorial\) right\.append\(editorial\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
+  assert.doesNotMatch(source, /detail-desktop-opening__right[^\n]*min-height:/);
 });
 
 test('desktop photo is not duplicated below the opening area', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
   const arrange = source.match(/function arrangeHierarchy\([\s\S]*?\n\}/)?.[0] || '';
 
-  assert.match(arrange, /cursor = placeAfter\(cursor, photo\)/);
-  assert.match(arrange, /cursor = placeAfter\(cursor, community\)/);
-  assert.doesNotMatch(arrange, /cursor = placeAfter\(cursor, photo\)[\s\S]*?cursor = placeAfter\(cursor, community\)[\s\S]*?placeAfter\(cursor, photo\)/);
+  assert.match(arrange, /if \(photoForward\) right\.append\(photo\)/);
+  assert.match(arrange, /let cursor = opening;[\s\S]*?parties\.forEach/);
+  assert.doesNotMatch(arrange, /let cursor = opening;[\s\S]*?placeAfter\(cursor, photo\)/);
   assert.match(arrange, /if \(localMap\) \{[\s\S]*?cursor = placeAfter\(cursor, localMap\);/);
 });
 
-test('desktop What to know precedes Watch Party and keeps persistent tags out of You Say visually', async () => {
+test('desktop What to know stays before Watch Party and keeps persistent tags out of You Say visually', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
 
   assert.match(source, /title\.textContent = 'WHAT TO KNOW'/);
@@ -69,7 +70,7 @@ test('desktop What to know precedes Watch Party and keeps persistent tags out of
   assert.match(source, /link\.textContent = 'Add info →'/);
   assert.match(source, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.match(source, /> \.detail-fan-experiences > \[data-venue-tags\]\s*\{[\s\S]*?display:\s*none\s*!important;/);
-  assert.match(source, /cursor = placeAfter\(cursor, whatToKnow\);[\s\S]*?parties\.forEach/);
+  assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?let cursor = opening;[\s\S]*?parties\.forEach/);
 });
 
 test('desktop attendance reuses the approved large-number BEAR(S) ATTENDING ON CGB treatment', async () => {
@@ -82,7 +83,7 @@ test('desktop attendance reuses the approved large-number BEAR(S) ATTENDING ON C
   assert.match(source, /\.bear-count__number\s*\{[\s\S]*?font-size:\s*1\.9rem\s*!important;/);
 });
 
-test('photo-forward desktop widens only the selected desktop panel and keeps map controls aligned', async () => {
+test('photo-forward desktop keeps the selected panel width and map controls aligned', async () => {
   const source = await read('js/desktop-photo-forward-profile.mjs');
 
   assert.match(source, /const PHOTO_FORWARD_PANEL_WIDTH = 'clamp\(580px, 42vw, 620px\)'/);

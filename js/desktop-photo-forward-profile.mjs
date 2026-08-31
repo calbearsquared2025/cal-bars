@@ -48,7 +48,7 @@ function installStyles(documentObject) {
   style.id = STYLE_ID;
   style.textContent = `
     @media (min-width: 900px) {
-      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-what-to-know {
+      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know {
         margin: 0 !important;
         padding: 12px 18px 10px !important;
         background: var(--cgb-white) !important;
@@ -119,7 +119,7 @@ function installStyles(documentObject) {
         display: none !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card {
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
@@ -128,7 +128,7 @@ function installStyles(documentObject) {
         border-top: 0 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count:not(.bear-count--empty) {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count:not(.bear-count--empty) {
         width: fit-content;
         min-height: 32px;
         display: flex !important;
@@ -144,7 +144,7 @@ function installStyles(documentObject) {
         white-space: nowrap;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__number {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__number {
         flex: 0 0 auto;
         align-self: center;
         margin-right: 1px;
@@ -154,9 +154,9 @@ function installStyles(documentObject) {
         line-height: .84 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__label,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__attending,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__context {
         flex: 0 0 auto;
         align-self: center;
         padding: 0;
@@ -166,18 +166,18 @@ function installStyles(documentObject) {
         white-space: nowrap;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__label {
         font-size: .68rem !important;
         letter-spacing: .025em;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__attending,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__context {
         font-size: .61rem !important;
         letter-spacing: .035em;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty {
         min-height: 32px;
         display: inline-flex !important;
         align-items: center;
@@ -188,20 +188,20 @@ function installStyles(documentObject) {
         white-space: nowrap;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty .bear-count__icon {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty .bear-count__icon {
         width: 20px;
         height: 20px;
         color: var(--cgb-gold-500);
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty .bear-count__prompt {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty .bear-count__prompt {
         color: var(--cgb-navy-950);
         font-size: .7rem;
         font-weight: 750;
         line-height: 1.16;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > p {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > p {
         display: none !important;
       }
     }
@@ -224,73 +224,78 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
-        display: grid !important;
-        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
-        grid-auto-rows: auto;
-        column-gap: 0 !important;
-        row-gap: 0 !important;
-        align-content: start;
+        display: block !important;
         background: var(--cgb-white);
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > * {
-        grid-column: 1 / -1;
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-desktop-opening {
+        display: grid !important;
+        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
+        align-items: start;
+        width: 100%;
+        background: var(--cgb-white);
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--has-photo,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--no-photo {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-self: start;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-hero.detail-hero--has-photo,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-hero.detail-hero--no-photo {
         position: static !important;
         top: auto !important;
         z-index: auto !important;
-        grid-column: 1 !important;
-        grid-row: 1 / span 3 !important;
-        align-self: start;
         min-height: 0 !important;
         display: block !important;
-        padding: 14px 14px 12px 18px !important;
+        padding: 14px 14px 8px 18px !important;
         color: var(--cgb-ink-900) !important;
         background: var(--cgb-white) !important;
         overflow: visible !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-photo--desktop-opening {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        align-self: start;
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-what-to-know {
+        margin-top: 2px !important;
+        padding: 12px 14px 12px 18px !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening {
+        align-self: stretch;
         width: auto !important;
         max-width: none !important;
         margin: 12px 18px 0 8px !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-photo--desktop-opening .detail-photo__frame {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__frame {
         aspect-ratio: 3 / 2 !important;
         background: var(--cgb-neutral-100);
         border-radius: 12px;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-photo--desktop-opening .detail-photo__image {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__image {
         object-fit: cover !important;
         object-position: center !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-photo--desktop-opening .detail-photo__metadata {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__metadata {
         padding-top: 5px;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial {
         position: relative !important;
         top: auto !important;
         z-index: auto !important;
-        grid-column: 2 !important;
-        grid-row: 2 !important;
-        align-self: start !important;
+        align-self: stretch !important;
         display: block !important;
         padding: 10px 18px 4px 34px !important;
         background: var(--cgb-white) !important;
         border: 0 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial::before {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial::before {
         position: absolute !important;
         top: 10px !important;
         right: auto !important;
@@ -300,39 +305,19 @@ function installStyles(documentObject) {
         height: auto !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial > h2,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial > .detail-editorial__copy {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial > h2,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial > .detail-editorial__copy {
         display: block !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
-        grid-column: 2 !important;
-        grid-row: 3 !important;
-        align-self: start !important;
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .activity-card {
+        align-self: stretch !important;
         padding: 4px 18px 10px 34px !important;
         background: var(--cgb-white) !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-what-to-know {
-        grid-column: 1 / -1 !important;
-        grid-row: auto !important;
-        margin-top: 2px !important;
-      }
-
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-hero {
-        grid-column: 1 !important;
-        grid-row: 1 / span 2 !important;
-      }
-
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .detail-editorial {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] .detail-desktop-opening__right > .detail-editorial {
         padding-top: 14px !important;
-      }
-
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"] > .activity-card {
-        grid-column: 2 !important;
-        grid-row: 2 !important;
       }
     }
   `;
@@ -389,7 +374,7 @@ function createWhatToKnow({ state, venue, documentObject }) {
 }
 
 function syncWhatToKnow({ detail, state, venue, documentObject }) {
-  detail.querySelector(':scope > [data-desktop-what-to-know]')?.remove();
+  detail.querySelector('[data-desktop-what-to-know]')?.remove();
   return createWhatToKnow({ state, venue, documentObject });
 }
 
@@ -460,7 +445,33 @@ function placeAfter(cursor, node) {
   return node;
 }
 
-function arrangeHierarchy({ detail, whatToKnow, windowObject }) {
+function unwrapDesktopOpening(detail) {
+  const opening = detail?.querySelector(':scope > [data-desktop-opening]');
+  if (!opening) return false;
+  const left = opening.querySelector(':scope > .detail-desktop-opening__left');
+  const right = opening.querySelector(':scope > .detail-desktop-opening__right');
+  const nodes = [
+    ...(left ? [...left.children] : []),
+    ...(right ? [...right.children] : [])
+  ];
+  opening.replaceWith(...nodes);
+  return true;
+}
+
+function createDesktopOpening(documentObject) {
+  const opening = documentObject.createElement('div');
+  opening.className = 'detail-desktop-opening';
+  opening.dataset.desktopOpening = 'true';
+
+  const left = documentObject.createElement('div');
+  left.className = 'detail-desktop-opening__left';
+  const right = documentObject.createElement('div');
+  right.className = 'detail-desktop-opening__right';
+  opening.append(left, right);
+  return { opening, left, right };
+}
+
+function arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject }) {
   const hero = detail.querySelector(':scope > .detail-hero');
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const parties = [...detail.querySelectorAll(':scope > .party-module')];
@@ -469,30 +480,50 @@ function arrangeHierarchy({ detail, whatToKnow, windowObject }) {
   const photo = detail.querySelector(':scope > .detail-photo') || hero?.querySelector(':scope > .detail-photo');
   const localMap = detail.querySelector(':scope > .detail-local-map') || hero?.querySelector(':scope > .detail-local-map');
   const contribution = detail.querySelector(':scope > .detail-contribution');
-  const photoForward = Boolean(photo && windowObject?.matchMedia?.(PHOTO_FORWARD_QUERY)?.matches === true);
+  const wideOpening = windowObject?.matchMedia?.(PHOTO_FORWARD_QUERY)?.matches === true;
+  const photoForward = Boolean(photo && wideOpening);
   if (!hero) return;
 
   detail.dataset.desktopPhotoForward = photoForward ? 'true' : 'false';
-  detail.dataset.desktopProfileArrangement = photoForward
-    ? 'identity-photo-editorial-attendance-what-to-know-party-community-contribution'
-    : 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
+  detail.dataset.desktopBalancedOpening = wideOpening ? 'true' : 'false';
 
-  let cursor = hero;
-  if (photoForward) {
-    setPhotoForwardPresentation(photo);
-    cursor = placeAfter(cursor, photo);
-  } else if (photo) {
-    restoreDefaultPhotoPresentation(photo);
-    photo.classList.remove('detail-profile-media--desktop');
-    if (photo.parentElement !== hero) hero.prepend(photo);
+  if (!wideOpening) {
+    detail.dataset.desktopProfileArrangement = 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
+    let cursor = hero;
+    if (photo) {
+      restoreDefaultPhotoPresentation(photo);
+      photo.classList.remove('detail-profile-media--desktop');
+      if (photo.parentElement !== hero) hero.prepend(photo);
+    }
+    cursor = placeAfter(cursor, editorial);
+    cursor = placeAfter(cursor, activity);
+    cursor = placeAfter(cursor, whatToKnow);
+    parties.forEach((party) => { cursor = placeAfter(cursor, party); });
+    cursor = placeAfter(cursor, community);
+    if (localMap) {
+      localMap.classList.add('detail-profile-media--desktop');
+      cursor = placeAfter(cursor, localMap);
+    }
+    if (contribution) placeAfter(cursor, contribution);
+    return;
   }
 
-  cursor = placeAfter(cursor, editorial);
-  cursor = placeAfter(cursor, activity);
-  cursor = placeAfter(cursor, whatToKnow);
+  detail.dataset.desktopProfileArrangement = photoForward
+    ? 'identity-what-to-know__photo-editorial-attendance__party-community-contribution'
+    : 'identity-what-to-know__editorial-attendance__party-community-media-contribution';
+
+  if (photoForward) setPhotoForwardPresentation(photo);
+
+  const { opening, left, right } = createDesktopOpening(documentObject);
+  detail.insertBefore(opening, hero);
+  left.append(hero, whatToKnow);
+  if (photoForward) right.append(photo);
+  if (editorial) right.append(editorial);
+  if (activity) right.append(activity);
+
+  let cursor = opening;
   parties.forEach((party) => { cursor = placeAfter(cursor, party); });
   cursor = placeAfter(cursor, community);
-
   if (localMap) {
     localMap.classList.add('detail-profile-media--desktop');
     cursor = placeAfter(cursor, localMap);
@@ -508,11 +539,13 @@ export function syncDesktopPhotoForwardProfile({
   if (!state?.detailMode || !documentObject) return false;
   const detail = documentObject.querySelector('#venue-detail');
   const venue = state.snapshot?.venues?.find((item) => clean(item?.venue_id) === clean(state.selectedVenueId));
-  if (!detail || !venue || !isDesktopProfile(detail, windowObject)) return false;
+  if (!detail || !venue) return false;
+  unwrapDesktopOpening(detail);
+  if (!isDesktopProfile(detail, windowObject)) return false;
 
   installStyles(documentObject);
   const whatToKnow = syncWhatToKnow({ detail, state, venue, documentObject });
   syncAttendance({ detail, state, venue, documentObject });
-  arrangeHierarchy({ detail, whatToKnow, windowObject });
+  arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject });
   return true;
 }
