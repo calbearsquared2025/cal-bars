@@ -1,3 +1,4 @@
+import { syncDesktopProfileFinalBalance } from './desktop-profile-final-balance.mjs';
 import { PHOTO_FORM_CONFIG } from './photo-form-config.mjs';
 import {
   buildPhotoFormPrefillUrl,
@@ -52,6 +53,22 @@ export function renderPhotoFormEntry({ app = window.CGBApp, documentObject = doc
   if (!href) {
     syncContributionVisibility(detail);
     return '';
+  }
+
+  const balance = syncDesktopProfileFinalBalance({
+    detail,
+    documentObject,
+    windowObject: documentObject.defaultView || globalThis.window
+  });
+  if (balance.mode === 'map' && balance.map) {
+    balance.map.append(createPhotoFormLink(documentObject, {
+      href,
+      label: 'Add photo',
+      entryPoint: 'map-overlay',
+      className: 'detail-local-map__photo-action'
+    }));
+    syncContributionVisibility(detail);
+    return href;
   }
 
   const actions = detail.querySelector(':scope > .detail-contribution > .detail-contribution__actions');

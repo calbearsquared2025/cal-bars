@@ -20,13 +20,30 @@ const mimeTypes = new Map([
   ['.mjs', 'text/javascript; charset=utf-8'], ['.png', 'image/png'], ['.svg', 'image/svg+xml'],
   ['.webp', 'image/webp']
 ]);
-const viewports = [
+const standardViewports = [
   { label: '1024', width: 1024, height: 800 },
   { label: '1280', width: 1280, height: 900 },
   { label: '1440', width: 1440, height: 1000 },
   { label: 'mobile-390', width: 390, height: 844 },
   { label: 'mobile-390-bears-say', width: 390, height: 844, reviewMode: 'bears-say' }
 ];
+const photoForwardViewports = [
+  { label: '1024-photo', width: 1024, height: 800, reviewMode: 'photo' },
+  { label: '1280-photo', width: 1280, height: 900, reviewMode: 'photo' },
+  { label: '1440-photo', width: 1440, height: 1000, reviewMode: 'photo' },
+  { label: '1280-no-photo', width: 1280, height: 900, reviewMode: 'no-photo' },
+  { label: 'mobile-390-photo', width: 390, height: 844, reviewMode: 'photo' }
+];
+const balancedPhotoForwardViewports = [
+  { label: '1440-photo', width: 1440, height: 1000, reviewMode: 'photo' },
+  { label: '1440-no-photo', width: 1440, height: 1000, reviewMode: 'no-photo' }
+];
+const reviewProfile = process.env.CGB_REVIEW_PROFILE || '';
+const viewports = reviewProfile === 'photo-forward-balanced'
+  ? balancedPhotoForwardViewports
+  : reviewProfile === 'photo-forward'
+    ? photoForwardViewports
+    : standardViewports;
 
 mkdirSync(outputDir, { recursive: true });
 
@@ -39,11 +56,18 @@ function safePath(root, requestUrl) {
 
 function reviewPage(root, response) {
   const snapshot = JSON.parse(readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8'));
+  if (reviewProfile === 'photo-forward-balanced') snapshot.venues[0].website_url = '';
   const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');
   const productionIndex = readFileSync(join(root, 'index.html'), 'utf8');
   const prelude = `<script>
     (() => {
       const snapshot = ${snapshotJson};
+      const reviewMode = new URLSearchParams(location.search).get('reviewMode');
+      if (reviewMode === 'photo') {
+        snapshot.venues[0].photo_url = location.origin + '/tests/fixtures/venue-photo-synthetic.svg';
+        snapshot.venues[0].photo_caption = 'Synthetic responsive-review photo.';
+        snapshot.venues[0].photo_credit = 'CGB test fixture';
+      }
       localStorage.setItem('cgb_v2_public_data_url', location.origin + '/__cgb_mock_api__');
       const nativeFetch = window.fetch.bind(window);
       const json = (payload) => new Response(JSON.stringify(payload), { headers: { 'Content-Type': 'application/json; charset=utf-8' } });
@@ -111,6 +135,13 @@ async function serveAndCapture(root, label) {
       const snapshot = readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8');
       response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       return response.end(snapshot);
+    }
+    if (pathname === '/tests/fixtures/venue-photo-synthetic.svg') {
+      // The fixture is introduced by the review branch, so serve the same asset to both
+      // base and head captures to make the visual comparison meaningful.
+      const photoPath = join(afterRoot, 'tests/fixtures/venue-photo-synthetic.svg');
+      response.writeHead(200, { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'no-store' });
+      return createReadStream(photoPath).pipe(response);
     }
     const filePath = safePath(root, request.url || '/');
     try {
