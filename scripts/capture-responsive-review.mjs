@@ -123,37 +123,37 @@ function reviewPage(root, response) {
           const editorial = document.querySelector('.detail-desktop-opening__right > .detail-editorial');
           const whatToKnow = left?.querySelector(':scope > .detail-what-to-know');
           if (left && editorial) {
-            (whatToKnow || left.lastElementChild)?.after(editorial);
-            if (!editorial.parentElement) left.append(editorial);
+            if (whatToKnow) whatToKnow.after(editorial);
+            else left.append(editorial);
             const style = document.createElement('style');
-            style.textContent = `
-              @media (min-width: 1180px) {
-                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial {
-                  position: relative !important;
-                  top: auto !important;
-                  z-index: auto !important;
-                  align-self: stretch !important;
-                  display: block !important;
-                  margin: 0 !important;
-                  padding: 10px 14px 12px 34px !important;
-                  background: var(--cgb-white) !important;
-                  border: 0 !important;
-                }
-                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial::before {
-                  position: absolute !important;
-                  top: 10px !important;
-                  right: auto !important;
-                  bottom: 12px !important;
-                  left: 18px !important;
-                  width: 3px !important;
-                  height: auto !important;
-                }
-                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > h2,
-                html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {
-                  display: block !important;
-                }
-              }
-            `;
+            style.textContent = [
+              '@media (min-width: 1180px) {',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial {',
+              '    position: relative !important;',
+              '    top: auto !important;',
+              '    z-index: auto !important;',
+              '    align-self: stretch !important;',
+              '    display: block !important;',
+              '    margin: 0 !important;',
+              '    padding: 10px 14px 12px 34px !important;',
+              '    background: var(--cgb-white) !important;',
+              '    border: 0 !important;',
+              '  }',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial::before {',
+              '    position: absolute !important;',
+              '    top: 10px !important;',
+              '    right: auto !important;',
+              '    bottom: 12px !important;',
+              '    left: 18px !important;',
+              '    width: 3px !important;',
+              '    height: auto !important;',
+              '  }',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > h2,',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {',
+              '    display: block !important;',
+              '  }',
+              '}'
+            ].join('\\n');
             document.head.append(style);
           }
           await sleep(220);
