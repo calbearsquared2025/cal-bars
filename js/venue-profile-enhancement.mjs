@@ -1,5 +1,6 @@
 import './desktop-visual-cohesion.mjs';
 import { getWatchParty, haversineMiles } from './core.mjs';
+import { syncDesktopProfileMobileHierarchy } from './desktop-profile-mobile-hierarchy.mjs';
 import { createIcon } from './icons.mjs';
 
 const MOBILE_PLAN_PARTY_ALIGNMENT_STYLE_ID = 'cgb-mobile-plan-party-alignment';
@@ -324,7 +325,7 @@ export function arrangeDesktopVenueMedia({
       media.classList.remove('detail-profile-media--desktop');
       if (media.parentElement !== hero) hero.prepend(media);
     }
-    return false;
+    return syncDesktopProfileMobileHierarchy({ state, documentObject, windowObject });
   }
 
   detail.dataset.desktopProfileArrangement = 'identity-editorial-party-attendance-community-media';
@@ -346,9 +347,11 @@ export function arrangeDesktopVenueMedia({
     cursor = fanExperiences;
   }
 
-  if (!media) return true;
-  media.classList.add('detail-profile-media--desktop');
-  if (media.previousElementSibling !== cursor) cursor.after(media);
+  if (media) {
+    media.classList.add('detail-profile-media--desktop');
+    if (media.previousElementSibling !== cursor) cursor.after(media);
+  }
+  syncDesktopProfileMobileHierarchy({ state, documentObject, windowObject });
   return true;
 }
 
