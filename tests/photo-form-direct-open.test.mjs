@@ -12,7 +12,8 @@ test('wide desktop no-photo profile promotes the photo form into the map fallbac
   assert.match(photoFormSource, /className: 'detail-local-map__photo-action'/);
   assert.match(photoFormSource, /label: 'Add photo'/);
   assert.match(balanceSource, /desktopFallbackMap = 'true'/);
-  assert.match(balanceSource, /detail-desktop-opening__right > \.detail-local-map/);
+  assert.match(balanceSource, /\[data-desktop-fallback-map="true"\] > \.detail-local-map/);
+  assert.match(balanceSource, /const localMap = detail\.querySelector\(':scope > \.detail-local-map'\)/);
 });
 
 test('photo form keeps the normal contribution entry outside the desktop map fallback', () => {
