@@ -83,14 +83,15 @@ test('desktop opening places CGB Says above Fan Intent before What to know and W
   assert.match(source, /desktopProfileArrangement = 'identity-editorial-attendance-what-to-know-party-community-media-contribution'/);
 });
 
-test('wide desktop stacks CGB Says above Fan Intent in the opening right column and releases the sticky profile header', async () => {
+test('wide desktop naturally stacks CGB Says and Fan Intent beside venue identity and releases the sticky profile header', async () => {
   const source = await read('js/desktop-profile-mobile-hierarchy.mjs');
 
   assert.match(source, /@media \(min-width: 1100px\)/);
-  assert.match(source, /grid-template-rows:\s*auto auto;/);
-  assert.match(source, /> \.detail-hero\.detail-hero--has-photo,[\s\S]*?position:\s*static\s*!important;[\s\S]*?grid-column:\s*1 \/ 7\s*!important;[\s\S]*?grid-row:\s*1 \/ 3\s*!important;/);
-  assert.match(source, /> \.detail-editorial\s*\{[\s\S]*?position:\s*static\s*!important;[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*1\s*!important;/);
-  assert.match(source, /> \.activity-card\s*\{[\s\S]*?grid-column:\s*7 \/ 13\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
+  assert.match(source, /#venue-detail\[data-profile-presentation="desktop"\]\s*\{[\s\S]*?display:\s*flow-root\s*!important;/);
+  assert.match(source, /> \.detail-hero\.detail-hero--has-photo,[\s\S]*?position:\s*static\s*!important;[\s\S]*?float:\s*left;[\s\S]*?width:\s*50%\s*!important;/);
+  assert.match(source, /> \.detail-editorial\s*\{[\s\S]*?position:\s*static\s*!important;[\s\S]*?float:\s*right;[\s\S]*?clear:\s*right;[\s\S]*?width:\s*50%\s*!important;/);
+  assert.match(source, /> \.activity-card\s*\{[\s\S]*?float:\s*right;[\s\S]*?clear:\s*right;[\s\S]*?width:\s*50%\s*!important;/);
+  assert.match(source, /> \.detail-what-to-know\s*\{[\s\S]*?clear:\s*both;/);
 });
 
 test('desktop Bear-count spacing keeps BEARS, ATTENDING, and ON CGB aligned beside a smaller numeral', async () => {
@@ -99,7 +100,7 @@ test('desktop Bear-count spacing keeps BEARS, ATTENDING, and ON CGB aligned besi
   assert.match(source, /\.bear-count__number\s*\{[\s\S]*?grid-row:\s*1 \/ 4;[\s\S]*?font-size:\s*1\.95rem\s*!important;/);
   assert.match(source, /\.bear-count__attending,[\s\S]*?\.bear-count__context\s*\{[\s\S]*?grid-column:\s*2;/);
   assert.match(source, /\.bear-count__context\s*\{[\s\S]*?grid-row:\s*3;/);
-  assert.match(source, /grid-row:\s*2\s*!important;[\s\S]*?padding:\s*6px 18px 12px 37px\s*!important;/);
+  assert.match(source, /padding:\s*6px 18px 12px 37px\s*!important;/);
 });
 
 test('desktop command labels render in uppercase without changing mobile labels', async () => {
