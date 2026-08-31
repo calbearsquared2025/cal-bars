@@ -18,6 +18,15 @@
 
 .cgb-marker.marker--fan-added {
   --cgb-navy-900: var(--cgb-navy-950);
+  z-index: 10;
+}
+
+.cgb-marker.marker--cal-bar {
+  z-index: 20;
+}
+
+.cgb-marker.marker--watch-party {
+  z-index: 30;
 }
 
 .cgb-marker .marker-pin,
@@ -29,54 +38,64 @@
 }
 
 .cgb-marker .marker-pin {
-  left: 8px;
-  top: 6px;
-  width: 32px;
-  height: 32px;
-  border-width: 3px;
+  left: 10px;
+  top: 8px;
+  width: 28px;
+  height: 28px;
+  border-width: 2px;
   border-style: solid;
   border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.88), 0 3px 8px rgba(1,1,51,.18);
 }
 
 .cgb-marker .marker-pin::after {
   content: '';
   position: absolute;
-  left: 8px;
-  top: 8px;
-  width: 10px;
-  height: 10px;
+  left: 7px;
+  top: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
 }
 
 .cgb-marker.marker--cal-bar .marker-pin {
+  left: 7px;
+  top: 5px;
+  width: 34px;
+  height: 34px;
+  border-width: 3px;
   background: var(--cgb-navy-900);
   border-color: var(--cgb-navy-900);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.94), 0 6px 14px rgba(1,1,51,.28);
 }
 
 .cgb-marker.marker--cal-bar .marker-pin::after {
+  left: 9px;
+  top: 9px;
+  width: 10px;
+  height: 10px;
   background: var(--cgb-white);
 }
 
 .cgb-marker .marker-star {
-  left: 5px;
-  top: 2px;
-  width: 38px;
-  height: 38px;
+  left: 3px;
+  top: 0;
+  width: 42px;
+  height: 42px;
   display: grid;
   place-items: center;
   color: var(--cgb-white);
   background: var(--cgb-gold-400);
   border: 3px solid var(--cgb-gold-400);
   border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 7px 16px rgba(1,1,51,.3);
+  box-shadow: 0 0 0 3px rgba(255,255,255,.98), 0 8px 18px rgba(1,1,51,.34);
   font-size: 0;
 }
 
 .cgb-marker .marker-star::before {
   content: '';
   position: absolute;
-  inset: 6px;
+  inset: 7px;
   background: var(--cgb-navy-950);
   border-radius: 50%;
 }
@@ -84,8 +103,8 @@
 .cgb-marker .marker-star__icon {
   position: relative;
   z-index: 1;
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   color: var(--cgb-white);
   fill: currentColor;
   stroke: currentColor;
@@ -102,6 +121,10 @@
 .cgb-marker.is-selected .marker-pin,
 .cgb-marker.is-selected .marker-star {
   filter: drop-shadow(0 0 6px rgba(253,181,21,.9));
+}
+
+.cgb-marker.is-selected {
+  z-index: 40;
 }
 
 .cgb-marker .marker-count {
