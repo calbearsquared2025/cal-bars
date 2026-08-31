@@ -11,11 +11,23 @@ permissions:
 jobs:
   patch:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout base
+        uses: actions/checkout@v4
+        with:
+          ref: f8a5ebb6066bc6da0f02877cfc31b52d75a3914a
+          path: before
+      - name: Checkout review branch
+        uses: actions/checkout@v4
         with:
           ref: feature/mobile-3x2-venue-photos
+          path: after
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Apply focused refactor
+        working-directory: after
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -27,7 +39,6 @@ jobs:
                   raise SystemExit(f'missing expected block in {path}: {old[:80]!r}')
               p.write_text(text.replace(old, new, 1))
 
-          # One canonical crop rule lives with photo creation.
           replace('js/venue-profile-enhancement.mjs',
           "const failedPhotoKeys = new Set();\nconst WIDE_DESKTOP_QUERY = '(min-width: 1100px)';",
           "const failedPhotoKeys = new Set();\nconst WIDE_DESKTOP_QUERY = '(min-width: 1100px)';\nconst VENUE_PHOTO_ASPECT_RATIO = '3 / 2';\nconst VENUE_PHOTO_OBJECT_FIT = 'cover';")
@@ -40,7 +51,6 @@ jobs:
           "  image.style.display = 'block';\n  image.style.setProperty('object-fit', 'contain', 'important');\n  image.style.setProperty('object-position', 'center', 'important');\n",
           "  image.style.display = 'block';\n  image.style.setProperty('object-fit', VENUE_PHOTO_OBJECT_FIT, 'important');\n  image.style.setProperty('object-position', 'center', 'important');\n")
 
-          # Desktop layout owns placement only; it no longer owns a second crop definition.
           replace('js/desktop-photo-forward-profile.mjs',
           "      html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__frame {\n        aspect-ratio: 3 / 2 !important;\n        background: var(--cgb-neutral-100);\n        border-radius: 12px;\n      }\n\n      html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__image {\n        object-fit: cover !important;\n        object-position: center !important;\n      }\n",
           "      html body[data-view=\"map\"] #map-view #tray-selected > #venue-detail[data-profile-presentation=\"desktop\"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__frame {\n        background: var(--cgb-neutral-100);\n        border-radius: 12px;\n      }\n")
@@ -48,24 +58,13 @@ jobs:
           replace('js/desktop-photo-forward-profile.mjs',
           "function restoreDefaultPhotoPresentation(photo) {\n  if (!photo) return;\n  photo.classList.remove('detail-photo--desktop-opening');\n  const frame = photo.querySelector(':scope > .detail-photo__frame');\n  const image = frame?.querySelector(':scope > .detail-photo__image');\n  frame?.style?.setProperty('aspect-ratio', '4 / 3', 'important');\n  image?.style?.setProperty('object-fit', 'contain', 'important');\n  image?.style?.setProperty('object-position', 'center', 'important');\n}\n\nfunction setPhotoForwardPresentation(photo) {\n  if (!photo) return;\n  photo.classList.add('detail-photo--desktop-opening');\n  photo.classList.add('detail-profile-media--desktop');\n  const frame = photo.querySelector(':scope > .detail-photo__frame');\n  const image = frame?.querySelector(':scope > .detail-photo__image');\n  frame?.style?.setProperty('aspect-ratio', '3 / 2', 'important');\n  image?.style?.setProperty('object-fit', 'cover', 'important');\n  image?.style?.setProperty('object-position', 'center', 'important');\n}\n",
           "function clearPhotoForwardPresentation(photo) {\n  photo?.classList?.remove('detail-photo--desktop-opening');\n}\n\nfunction setPhotoForwardPresentation(photo) {\n  if (!photo) return;\n  photo.classList.add('detail-photo--desktop-opening');\n  photo.classList.add('detail-profile-media--desktop');\n}\n")
+          replace('js/desktop-photo-forward-profile.mjs', "      restoreDefaultPhotoPresentation(photo);", "      clearPhotoForwardPresentation(photo);")
 
-          replace('js/desktop-photo-forward-profile.mjs',
-          "      restoreDefaultPhotoPresentation(photo);",
-          "      clearPhotoForwardPresentation(photo);")
-
-          # Mobile continuation keeps sizing/placement, but drops its obsolete crop override.
-          replace('js/mobile-selected-profile-continuation.mjs',
-          "        aspect-ratio: 4 / 3 !important;\n",
-          "")
-          replace('js/mobile-selected-profile-continuation.mjs',
-          "        object-fit: contain !important;\n        object-position: center !important;\n",
-          "")
-
-          # The dormant/static profile stylesheet should not carry a conflicting crop rule either.
+          replace('js/mobile-selected-profile-continuation.mjs', "        aspect-ratio: 4 / 3 !important;\n", "")
+          replace('js/mobile-selected-profile-continuation.mjs', "        object-fit: contain !important;\n        object-position: center !important;\n", "")
           replace('css/venue-profile.css', "  aspect-ratio: 4 / 3;\n", "")
           replace('css/venue-profile.css', "  object-fit: contain;\n  object-position: center;\n", "")
 
-          # Regression coverage: one 3:2/cover owner, no mobile/desktop 4:3 reset.
           replace('tests/desktop-photo-forward-profile.test.mjs',
           "test('wide desktop photo keeps a fixed 3:2 presentation frame with a sensible crop', async () => {\n  const source = await read('js/desktop-photo-forward-profile.mjs');\n\n  assert.match(source, /detail-photo--desktop-opening \\.detail-photo__frame\\s*\\{[\\s\\S]*?aspect-ratio:\\s*3 \\/ 2\\s*!important;/);\n  assert.match(source, /detail-photo--desktop-opening \\.detail-photo__image\\s*\\{[\\s\\S]*?object-fit:\\s*cover\\s*!important;[\\s\\S]*?object-position:\\s*center\\s*!important;/);\n  assert.match(source, /frame\\?\\.style\\?\\.setProperty\\('aspect-ratio', '3 \\/ 2', 'important'\\)/);\n  assert.match(source, /image\\?\\.style\\?\\.setProperty\\('object-fit', 'cover', 'important'\\)/);\n});\n",
           "test('wide desktop photo reuses the shared 3:2 cover presentation instead of redefining the crop', async () => {\n  const [source, enhancement] = await Promise.all([\n    read('js/desktop-photo-forward-profile.mjs'),\n    read('js/venue-profile-enhancement.mjs')\n  ]);\n\n  assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = '3 \\/ 2'/);\n  assert.match(enhancement, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);\n  assert.match(enhancement, /frame\\.style\\.setProperty\\('aspect-ratio', VENUE_PHOTO_ASPECT_RATIO, 'important'\\)/);\n  assert.match(enhancement, /image\\.style\\.setProperty\\('object-fit', VENUE_PHOTO_OBJECT_FIT, 'important'\\)/);\n  assert.doesNotMatch(source, /setProperty\\('aspect-ratio'/);\n  assert.doesNotMatch(source, /setProperty\\('object-fit'/);\n});\n")
@@ -81,29 +80,25 @@ jobs:
           if marker not in text:
               raise SystemExit('missing mobile test insertion marker')
           mobile_test.write_text(text.replace(marker, addition + marker, 1))
-
-          # Visual review: one mobile photo before/after capture for this branch.
-          replace('scripts/capture-responsive-review.mjs',
-          "const balancedPhotoForwardViewports = [\n  { label: '1440-photo', width: 1440, height: 1000, reviewMode: 'photo' },\n  { label: '1440-no-photo', width: 1440, height: 1000, reviewMode: 'no-photo' }\n];\n",
-          "const balancedPhotoForwardViewports = [\n  { label: '1440-photo', width: 1440, height: 1000, reviewMode: 'photo' },\n  { label: '1440-no-photo', width: 1440, height: 1000, reviewMode: 'no-photo' }\n];\nconst mobilePhotoViewports = [\n  { label: 'mobile-390-photo', width: 390, height: 844, reviewMode: 'photo' }\n];\n")
-
-          replace('scripts/capture-responsive-review.mjs',
-          "const viewports = reviewProfile === 'photo-forward-balanced'\n  ? balancedPhotoForwardViewports\n  : reviewProfile === 'photo-forward'\n    ? photoForwardViewports\n    : standardViewports;",
-          "const viewports = reviewProfile === 'mobile-photo-3x2'\n  ? mobilePhotoViewports\n  : reviewProfile === 'photo-forward-balanced'\n    ? balancedPhotoForwardViewports\n    : reviewProfile === 'photo-forward'\n      ? photoForwardViewports\n      : standardViewports;")
-
-          replace('.github/workflows/desktop-consistency-review.yml',
-          "    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-photo-forward-profile' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns'",
-          "    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-photo-forward-profile' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns' || github.head_ref == 'feature/mobile-3x2-venue-photos'")
-
-          replace('.github/workflows/desktop-consistency-review.yml',
-          "          CGB_REVIEW_PROFILE: ${{ github.head_ref == 'feature/desktop-photo-forward-balanced-columns' && 'photo-forward-balanced' || github.head_ref == 'feature/desktop-photo-forward-profile' && 'photo-forward' || '' }}",
-          "          CGB_REVIEW_PROFILE: ${{ github.head_ref == 'feature/mobile-3x2-venue-photos' && 'mobile-photo-3x2' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns' && 'photo-forward-balanced' || github.head_ref == 'feature/desktop-photo-forward-profile' && 'photo-forward' || '' }}")
           PY
+      - name: Test
+        working-directory: after
+        run: npm test
+      - name: Capture responsive review
+        env:
+          CGB_REVIEW_PROFILE: photo-forward
+        run: node after/scripts/capture-responsive-review.mjs before after responsive-review
+      - name: Upload responsive review
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-3x2-review
+          path: responsive-review/*.png
+          retention-days: 14
       - name: Commit focused change
+        working-directory: after
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm .github/workflows/tmp-mobile-photo-refactor.yml
-          git add js/venue-profile-enhancement.mjs js/desktop-photo-forward-profile.mjs js/mobile-selected-profile-continuation.mjs css/venue-profile.css tests/desktop-photo-forward-profile.test.mjs tests/mobile-selected-profile-continuation.test.mjs scripts/capture-responsive-review.mjs .github/workflows/desktop-consistency-review.yml
+          git add js/venue-profile-enhancement.mjs js/desktop-photo-forward-profile.mjs js/mobile-selected-profile-continuation.mjs css/venue-profile.css tests/desktop-photo-forward-profile.test.mjs tests/mobile-selected-profile-continuation.test.mjs
           git commit -m "Use one 3:2 venue photo presentation"
           git push origin HEAD:feature/mobile-3x2-venue-photos
