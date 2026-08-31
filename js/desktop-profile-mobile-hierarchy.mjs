@@ -118,84 +118,73 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
-        display: grid !important;
-        justify-items: start !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
         gap: 3px !important;
-        padding: 8px 18px 12px 40px !important;
+        padding: 5px 18px 9px 40px !important;
         border-top: 0 !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count:not(.bear-count--empty) {
         width: fit-content;
-        min-height: 50px;
-        display: grid !important;
-        grid-template-columns: auto auto;
-        grid-template-rows: auto auto auto;
-        align-content: center;
-        align-items: start;
-        justify-content: start;
-        justify-items: start;
-        column-gap: 5px;
-        row-gap: 0;
+        min-height: 32px;
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 4px;
         margin: 0;
         color: var(--cgb-navy-950);
         font-family: var(--font-ui);
+        line-height: 1;
         text-align: left;
+        white-space: nowrap;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__number {
-        grid-column: 1;
-        grid-row: 1 / 4;
-        align-self: start;
-        justify-self: end;
-        font-size: 1.95rem !important;
+        flex: 0 0 auto;
+        align-self: center;
+        margin-right: 1px;
+        font-size: 1.9rem !important;
         font-weight: 850 !important;
         letter-spacing: -.05em;
         line-height: .84 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label {
-        grid-column: 2;
-        grid-row: 1;
-        align-self: start;
-        justify-self: start;
-        padding-top: 1px;
-        font-size: .7rem !important;
-        font-weight: 850 !important;
-        letter-spacing: .03em;
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
+        flex: 0 0 auto;
+        align-self: center;
+        padding: 0;
+        margin: 0;
         line-height: 1 !important;
+        white-space: nowrap;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__label {
+        font-size: .68rem !important;
+        font-weight: 850 !important;
+        letter-spacing: .025em;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending,
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
-        grid-column: 2;
-        justify-self: start;
-        font-weight: 800 !important;
-        letter-spacing: .05em;
-        line-height: 1.05 !important;
-        text-align: left;
-        white-space: nowrap;
-      }
-
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__attending {
-        grid-row: 2;
-        margin-top: 2px;
-        font-size: .58rem !important;
-      }
-
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count .bear-count__context {
-        grid-row: 3;
-        font-size: .56rem !important;
+        font-size: .61rem !important;
+        font-weight: 700 !important;
+        letter-spacing: .035em;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty {
-        min-height: 50px;
-        display: grid !important;
-        place-content: center start;
-        justify-items: start;
-        gap: 2px;
+        min-height: 32px;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 5px;
         margin: 0;
         text-align: left;
+        white-space: nowrap;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > strong.bear-count.bear-count--empty .bear-count__icon {
@@ -212,11 +201,7 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > p:not(.activity-card__presence) {
-        margin: 0 !important;
-        color: var(--cgb-ink-500) !important;
-        font-size: .72rem !important;
-        line-height: 1.25 !important;
-        text-align: left;
+        display: none !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card > .activity-card__presence {
@@ -255,7 +240,7 @@ function installStyles(documentObject) {
         clear: right;
         width: 50% !important;
         box-sizing: border-box;
-        padding: 6px 18px 12px 37px !important;
+        padding: 4px 18px 10px 37px !important;
         background: var(--cgb-white) !important;
         border-top: 0 !important;
       }
