@@ -121,7 +121,6 @@ function installStyles(documentObject) {
 
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-photo__frame {
         width: 100% !important;
-        aspect-ratio: 4 / 3 !important;
         overflow: hidden !important;
         background: var(--cgb-neutral-100) !important;
         border: 1px solid var(--cgb-neutral-200) !important;
@@ -132,8 +131,6 @@ function installStyles(documentObject) {
         width: 100% !important;
         height: 100% !important;
         display: block !important;
-        object-fit: contain !important;
-        object-position: center !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-photo__metadata {

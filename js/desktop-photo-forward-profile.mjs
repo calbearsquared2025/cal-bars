@@ -269,14 +269,8 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__frame {
-        aspect-ratio: 3 / 2 !important;
         background: var(--cgb-neutral-100);
         border-radius: 12px;
-      }
-
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__image {
-        object-fit: cover !important;
-        object-position: center !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-photo.detail-photo--desktop-opening .detail-photo__metadata {
@@ -485,25 +479,14 @@ function syncAttendance({ detail, state, venue, documentObject }) {
   current.replaceChildren(numeral, label, attending, context);
 }
 
-function restoreDefaultPhotoPresentation(photo) {
-  if (!photo) return;
-  photo.classList.remove('detail-photo--desktop-opening');
-  const frame = photo.querySelector(':scope > .detail-photo__frame');
-  const image = frame?.querySelector(':scope > .detail-photo__image');
-  frame?.style?.setProperty('aspect-ratio', '4 / 3', 'important');
-  image?.style?.setProperty('object-fit', 'contain', 'important');
-  image?.style?.setProperty('object-position', 'center', 'important');
+function clearPhotoForwardPresentation(photo) {
+  photo?.classList?.remove('detail-photo--desktop-opening');
 }
 
 function setPhotoForwardPresentation(photo) {
   if (!photo) return;
   photo.classList.add('detail-photo--desktop-opening');
   photo.classList.add('detail-profile-media--desktop');
-  const frame = photo.querySelector(':scope > .detail-photo__frame');
-  const image = frame?.querySelector(':scope > .detail-photo__image');
-  frame?.style?.setProperty('aspect-ratio', '3 / 2', 'important');
-  image?.style?.setProperty('object-fit', 'cover', 'important');
-  image?.style?.setProperty('object-position', 'center', 'important');
 }
 
 function placeAfter(cursor, node) {
@@ -573,7 +556,7 @@ function arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject }) 
       ? 'identity-editorial-attendance-what-to-know-party-community-media-contribution'
       : 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
     if (photo) {
-      restoreDefaultPhotoPresentation(photo);
+      clearPhotoForwardPresentation(photo);
       photo.classList.remove('detail-profile-media--desktop');
       if (photo.parentElement !== hero) hero.prepend(photo);
     }
