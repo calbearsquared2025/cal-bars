@@ -122,13 +122,18 @@ function reviewPage(root, response) {
           const left = document.querySelector('.detail-desktop-opening__left');
           const editorial = document.querySelector('.detail-desktop-opening__right > .detail-editorial');
           const whatToKnow = left?.querySelector(':scope > .detail-what-to-know');
-          if (left && editorial) {
-            if (whatToKnow) whatToKnow.after(editorial);
-            else left.append(editorial);
+          if (left && editorial && !left.querySelector(':scope > .detail-editorial--experiment-left')) {
+            const clone = editorial.cloneNode(true);
+            clone.classList.add('detail-editorial--experiment-left');
+            if (whatToKnow) whatToKnow.after(clone);
+            else left.append(clone);
             const style = document.createElement('style');
             style.textContent = [
               '@media (min-width: 1180px) {',
-              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial {',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__right > .detail-editorial {',
+              '    display: none !important;',
+              '  }',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial--experiment-left {',
               '    position: relative !important;',
               '    top: auto !important;',
               '    z-index: auto !important;',
@@ -139,7 +144,7 @@ function reviewPage(root, response) {
               '    background: var(--cgb-white) !important;',
               '    border: 0 !important;',
               '  }',
-              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial::before {',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial--experiment-left::before {',
               '    position: absolute !important;',
               '    top: 10px !important;',
               '    right: auto !important;',
@@ -148,8 +153,8 @@ function reviewPage(root, response) {
               '    width: 3px !important;',
               '    height: auto !important;',
               '  }',
-              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > h2,',
-              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial--experiment-left > h2,',
+              '  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-desktop-opening__left > .detail-editorial--experiment-left > .detail-editorial__copy {',
               '    display: block !important;',
               '  }',
               '}'
