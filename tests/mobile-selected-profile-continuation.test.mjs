@@ -79,11 +79,17 @@ test('mobile selected profile defers an approved photo until after You Say while
   assert.match(continuationSource, /if \(!venue\.photo_url\) \{[\s\S]*?createLocalMapElement/);
 });
 
-test('no-photo profile keeps the photo contribution in the normal maintenance flow', async () => {
-  const source = await readFile(new URL('../js/photo-form.js', import.meta.url), 'utf8');
-  assert.match(source, /entryPoint: 'contribution'/);
-  assert.match(source, /className: 'detail-contribution__action'/);
-  assert.doesNotMatch(source, /entryPoint: 'map-overlay'/);
-  assert.doesNotMatch(source, /detail-local-map__photo-action/);
-  assert.equal((source.match(/entryPoint: 'contribution'/g) || []).length, 1);
+test('mobile no-photo profile keeps the photo contribution in the normal maintenance flow', async () => {
+  const [photoFormSource, balanceSource, continuationSource] = await Promise.all([
+    readFile(new URL('../js/photo-form.js', import.meta.url), 'utf8'),
+    readFile(new URL('../js/desktop-profile-final-balance.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8')
+  ]);
+  assert.match(continuationSource, /renderPhotoFormEntry\(\{ app: continuationApp, documentObject \}\)/);
+  assert.match(photoFormSource, /entryPoint: 'contribution'/);
+  assert.match(photoFormSource, /className: 'detail-contribution__action'/);
+  assert.match(photoFormSource, /label: 'Add a new photo'/);
+  assert.equal((photoFormSource.match(/entryPoint: 'contribution'/g) || []).length, 1);
+  assert.match(balanceSource, /const WIDE_DESKTOP_QUERY = '\(min-width: 1180px\)'/);
+  assert.match(balanceSource, /detail\?\.dataset\?\.profilePresentation === 'desktop'/);
 });
