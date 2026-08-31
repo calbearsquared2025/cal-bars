@@ -38,64 +38,54 @@
 }
 
 .cgb-marker .marker-pin {
-  left: 10px;
-  top: 8px;
-  width: 28px;
-  height: 28px;
-  border-width: 2px;
+  left: 8px;
+  top: 6px;
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
   border-style: solid;
   border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.88), 0 3px 8px rgba(1,1,51,.18);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
 }
 
 .cgb-marker .marker-pin::after {
   content: '';
   position: absolute;
-  left: 7px;
-  top: 7px;
-  width: 8px;
-  height: 8px;
+  left: 8px;
+  top: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 
 .cgb-marker.marker--cal-bar .marker-pin {
-  left: 7px;
-  top: 5px;
-  width: 34px;
-  height: 34px;
-  border-width: 3px;
   background: var(--cgb-navy-900);
   border-color: var(--cgb-navy-900);
-  box-shadow: 0 0 0 2px rgba(255,255,255,.94), 0 6px 14px rgba(1,1,51,.28);
 }
 
 .cgb-marker.marker--cal-bar .marker-pin::after {
-  left: 9px;
-  top: 9px;
-  width: 10px;
-  height: 10px;
   background: var(--cgb-white);
 }
 
 .cgb-marker .marker-star {
-  left: 3px;
-  top: 0;
-  width: 42px;
-  height: 42px;
+  left: 5px;
+  top: 2px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
   color: var(--cgb-white);
   background: var(--cgb-gold-400);
   border: 3px solid var(--cgb-gold-400);
   border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 3px rgba(255,255,255,.98), 0 8px 18px rgba(1,1,51,.34);
+  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 7px 16px rgba(1,1,51,.3);
   font-size: 0;
 }
 
 .cgb-marker .marker-star::before {
   content: '';
   position: absolute;
-  inset: 7px;
+  inset: 6px;
   background: var(--cgb-navy-950);
   border-radius: 50%;
 }
@@ -103,8 +93,8 @@
 .cgb-marker .marker-star__icon {
   position: relative;
   z-index: 1;
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   color: var(--cgb-white);
   fill: currentColor;
   stroke: currentColor;
@@ -137,7 +127,6 @@
   :root {
     --cgb-mobile-safe-surface: #eef4fa;
   }
-
   html,
   body,
   body .site-header,
