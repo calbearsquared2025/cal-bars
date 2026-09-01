@@ -51,6 +51,17 @@ function updateStatistics() {
   renderStat(document.querySelector('#location-stat'), 'Locations', 'on the map');
 }
 
+export function shouldHideOpeningStat({ mobile = false, trayState = 'peek' } = {}) {
+  return Boolean(mobile && trayState !== 'peek');
+}
+
+function syncOpeningStatVisibility() {
+  const panel = document.querySelector('.opening-stat');
+  if (!panel) return;
+  const trayState = document.querySelector('#venue-tray')?.dataset.state || 'peek';
+  panel.hidden = shouldHideOpeningStat({ mobile: isMobile(), trayState });
+}
+
 function updateListHeading() {
   if (!isMobile()) return;
   const heading = document.querySelector('#list-heading');
@@ -111,6 +122,7 @@ function scheduleSync() {
 
 function sync() {
   updateStatistics();
+  syncOpeningStatVisibility();
   updateListHeading();
   normalizeSearchLabels();
 }
