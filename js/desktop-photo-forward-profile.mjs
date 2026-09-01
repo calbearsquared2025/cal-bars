@@ -7,9 +7,8 @@ import { createIcon } from './icons.mjs';
 import { selectedAttendanceViewModel } from './selected-profile-renderer.mjs';
 
 const DESKTOP_QUERY = '(min-width: 900px)';
-const PHOTO_FORWARD_QUERY = '(min-width: 1180px)';
 const STYLE_ID = 'cgb-desktop-photo-forward-profile';
-const PHOTO_FORWARD_PANEL_WIDTH = 'clamp(580px, 42vw, 620px)';
+const PHOTO_FORWARD_PANEL_WIDTH = 'clamp(500px, 52vw, 620px)';
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -206,7 +205,7 @@ function installStyles(documentObject) {
       }
     }
 
-    @media (min-width: 1180px) {
+    @media (min-width: 900px) {
       html body[data-view="map"] #map-view > #venue-tray.venue-tray.tray--selected {
         width: ${PHOTO_FORWARD_PANEL_WIDTH} !important;
       }
@@ -535,7 +534,7 @@ function arrangeStandardHierarchy({ hero, editorial, activity, whatToKnow, parti
   if (contribution) placeAfter(cursor, contribution);
 }
 
-function arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject }) {
+function arrangeHierarchy({ detail, whatToKnow, documentObject }) {
   const hero = detail.querySelector(':scope > .detail-hero');
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const parties = [...detail.querySelectorAll(':scope > .party-module')];
@@ -544,22 +543,14 @@ function arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject }) 
   const photo = detail.querySelector(':scope > .detail-photo') || hero?.querySelector(':scope > .detail-photo');
   const localMap = detail.querySelector(':scope > .detail-local-map') || hero?.querySelector(':scope > .detail-local-map');
   const contribution = detail.querySelector(':scope > .detail-contribution');
-  const wideOpening = windowObject?.matchMedia?.(PHOTO_FORWARD_QUERY)?.matches === true;
-  const photoForward = Boolean(photo && wideOpening);
+  const photoForward = Boolean(photo);
   if (!hero) return;
 
   detail.dataset.desktopPhotoForward = photoForward ? 'true' : 'false';
   detail.dataset.desktopBalancedOpening = photoForward ? 'true' : 'false';
 
   if (!photoForward) {
-    detail.dataset.desktopProfileArrangement = wideOpening
-      ? 'identity-editorial-attendance-what-to-know-party-community-media-contribution'
-      : 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
-    if (photo) {
-      clearPhotoForwardPresentation(photo);
-      photo.classList.remove('detail-profile-media--desktop');
-      if (photo.parentElement !== hero) hero.prepend(photo);
-    }
+    detail.dataset.desktopProfileArrangement = 'identity-editorial-attendance-what-to-know-party-community-media-contribution';
     arrangeStandardHierarchy({ hero, editorial, activity, whatToKnow, parties, community, localMap, contribution });
     return;
   }
@@ -599,6 +590,6 @@ export function syncDesktopPhotoForwardProfile({
   installStyles(documentObject);
   const whatToKnow = syncWhatToKnow({ detail, state, venue, documentObject });
   syncAttendance({ detail, state, venue, documentObject });
-  arrangeHierarchy({ detail, whatToKnow, windowObject, documentObject });
+  arrangeHierarchy({ detail, whatToKnow, documentObject });
   return true;
 }
