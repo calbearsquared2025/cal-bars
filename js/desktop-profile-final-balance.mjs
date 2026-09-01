@@ -1,9 +1,9 @@
-const WIDE_DESKTOP_QUERY = '(min-width: 1180px)';
+const DESKTOP_QUERY = '(min-width: 900px)';
 const STYLE_ID = 'cgb-desktop-profile-final-balance';
 
-function isWideDesktopProfile(detail, windowObject) {
+function isDesktopProfile(detail, windowObject) {
   return detail?.dataset?.profilePresentation === 'desktop' &&
-    windowObject?.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
+    windowObject?.matchMedia?.(DESKTOP_QUERY)?.matches === true;
 }
 
 function installStyles(documentObject) {
@@ -11,7 +11,7 @@ function installStyles(documentObject) {
   const style = documentObject.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
-    @media (min-width: 1180px) {
+    @media (min-width: 900px) {
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening {
         display: grid !important;
         grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
@@ -163,7 +163,7 @@ export function syncDesktopProfileFinalBalance({
   documentObject = globalThis.document,
   windowObject = globalThis.window
 } = {}) {
-  if (!detail || !documentObject || !isWideDesktopProfile(detail, windowObject)) {
+  if (!detail || !documentObject || !isDesktopProfile(detail, windowObject)) {
     return { mode: 'none', map: null };
   }
 
