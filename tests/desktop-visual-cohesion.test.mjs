@@ -12,6 +12,10 @@ test('desktop cohesion module is loaded without changing mobile rules', () => {
   assert.doesNotMatch(source, /@media \(max-width: 899px\)/);
 });
 
+test('desktop primary navigation labels use uppercase treatment', () => {
+  assert.match(source, /\.mobile-command-bar \.mobile-command\s*\{[\s\S]*?text-transform:\s*uppercase;/);
+});
+
 test('desktop map search uses a white field surface', () => {
   assert.match(source, /\.map-toolbar \.search-field[\s\S]*?background: var\(--cgb-white, #fff\) !important;/);
 });
