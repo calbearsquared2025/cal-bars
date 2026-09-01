@@ -570,19 +570,19 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
   }
 }
 
-/* Wide desktop: venue identity and CGB editorial share an even opening row. The selected
+/* Desktop: venue identity and CGB editorial share an even opening row. The selected
    game follows, then a compact horizontal attendance status, community voices, and media. */
-@media (min-width: 1100px) {
+@media (min-width: 900px) {
   html body[data-view="map"] #map-view > #venue-tray.venue-tray.tray--selected {
-    width: clamp(500px, 36vw, 520px) !important;
+    width: clamp(500px, 52vw, 620px) !important;
   }
 
   html body[data-view="map"]:has(#map-view > #venue-tray.venue-tray.tray--selected) .mobile-command-bar {
-    width: clamp(500px, 36vw, 520px) !important;
+    width: clamp(500px, 52vw, 620px) !important;
   }
 
   html body[data-view="map"] .map-view:has(> #venue-tray.venue-tray.tray--selected) .maplibregl-ctrl-top-right {
-    right: calc(clamp(500px, 36vw, 520px) + 26px) !important;
+    right: calc(clamp(500px, 52vw, 620px) + 26px) !important;
   }
 
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
