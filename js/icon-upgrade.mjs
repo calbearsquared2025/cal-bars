@@ -16,6 +16,7 @@ import { arrangeDesktopVenueMedia, enhanceVenueProfile } from './venue-profile-e
 let appConnected = false;
 let appConnectAttempts = 0;
 let postRenderUpgradeQueued = false;
+let iconMutationObserver = null;
 let detailLocalMap = null;
 let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
@@ -46,6 +47,36 @@ function installMobileSearchHelperVisibility() {
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
   element.replaceChildren(createIcon(iconName, { className }));
+}
+
+function matchingNodes(root, selector) {
+  const matches = [];
+  if (root?.nodeType === 1 && root.matches?.(selector)) matches.push(root);
+  root?.querySelectorAll?.(selector)?.forEach((node) => matches.push(node));
+  return matches;
+}
+
+function upgradeStarIcons(root = document) {
+  matchingNodes(root, '.marker-star').forEach((star) => {
+    replaceTextWithIcon(star, 'star', 'ui-icon marker-star__icon');
+  });
+
+  matchingNodes(root, '.party-module__title > span').forEach((star) => {
+    replaceTextWithIcon(star, 'star');
+  });
+}
+
+function installAtomicStarIconUpgrade() {
+  if (iconMutationObserver || !window.MutationObserver || !document.documentElement) return;
+  iconMutationObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 || node.nodeType === 11) upgradeStarIcons(node);
+      });
+    });
+  });
+  iconMutationObserver.observe(document.documentElement, { childList: true, subtree: true });
+  upgradeStarIcons(document);
 }
 
 function prependIcon(element, iconName) {
@@ -117,7 +148,7 @@ function createDetailLocalMarker(venue, state) {
   const symbol = document.createElement('span');
   symbol.className = kind === 'watch-party' ? 'marker-star' : 'marker-pin';
   symbol.setAttribute('aria-hidden', 'true');
-  if (kind === 'watch-party') symbol.textContent = '★';
+  if (kind === 'watch-party') symbol.append(createIcon('star', { className: 'ui-icon marker-star__icon' }));
   marker.append(symbol);
   return marker;
 }
@@ -217,14 +248,7 @@ function syncDetailLocalMap(root, venue, state) {
 
 export function upgradeRenderedIcons(root = document) {
   inlineSpriteIcons(root);
-
-  root.querySelectorAll('.marker-star').forEach((star) => {
-    replaceTextWithIcon(star, 'star', 'ui-icon marker-star__icon');
-  });
-
-  root.querySelectorAll('.party-module__title > span').forEach((star) => {
-    replaceTextWithIcon(star, 'star');
-  });
+  upgradeStarIcons(root);
 
   root.querySelectorAll('.selected-card__header > .icon-button').forEach((button) => {
     replaceTextWithIcon(button, 'chevron-down');
@@ -304,6 +328,8 @@ function initialize() {
   window.matchMedia?.(REDUCED_MOTION_QUERY)?.addEventListener?.('change', scheduleUpgrade);
   connectApp();
 }
+
+installAtomicStarIconUpgrade();
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize, { once: true });
