@@ -67,7 +67,7 @@ function installStyles(documentObject) {
 
       html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know__title {
         margin: 0;
-        color: var(--cgb-ink-500);
+        color: var(--cgb-ink-700);
         font-family: var(--font-ui);
         font-size: .68rem;
         font-weight: 800;
