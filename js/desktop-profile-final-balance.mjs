@@ -28,6 +28,7 @@ function installStyles(documentObject) {
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening > .detail-desktop-opening__left > .detail-hero {
         grid-column: 1 !important;
         grid-row: 1 !important;
+        align-self: center !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening > .detail-desktop-opening__right > .detail-photo {
@@ -89,7 +90,7 @@ function installStyles(documentObject) {
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"][data-desktop-fallback-map="true"] > .detail-hero.detail-hero--no-photo {
         grid-column: 1 !important;
         grid-row: 1 !important;
-        align-self: start !important;
+        align-self: center !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"][data-desktop-fallback-map="true"] > .detail-what-to-know {
