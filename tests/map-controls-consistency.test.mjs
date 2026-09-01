@@ -84,6 +84,15 @@ test('mobile tray collapse does not recenter a retained selected venue over an e
   assert.match(app, /if \(delta > 0\) \{[\s\S]*?setTrayState\('peek', \{ animate: true \}\);/);
 });
 
+test('mobile selected venue camera uses one focus path and stops motion when the tray closes', async () => {
+  const source = await read('js/map-mobile-refinement.mjs');
+  assert.match(source, /function preserveMobileCameraOwnership\([\s\S]*?queueMicrotask\(\(\) => cancelBaseSelectedVenueVisibility\(state\)\);/);
+  assert.match(source, /function focusVenue\([\s\S]*?state\.map\.stop\?\.\(\);[\s\S]*?(?:fitBounds|easeTo)/);
+  assert.match(source, /function handleTrayTopTap\([\s\S]*?map\?\.stop\?\.\(\);[\s\S]*?\.click\(\);/);
+  assert.match(source, /function observeSelectedTrayGeometry\([\s\S]*?tray\.dataset\.state !== 'selected'[\s\S]*?map\?\.stop\?\.\(\);/);
+  assert.doesNotMatch(source, /document\.addEventListener\('click', \(event\) => \{[\s\S]*?\.cgb-marker\[data-venue-id\][\s\S]*?focusVenue/);
+});
+
 test('mobile legend has a little more white breathing room below the labels', async () => {
   const css = await read('css/mobile-polish.css');
   assert.match(css, /\.opening-stat\s*\{[\s\S]*?height:\s*82px;[\s\S]*?grid-template-rows:\s*54px 26px;/);
