@@ -130,6 +130,49 @@
   margin: 0;
 }
 
+.external-venue-manual {
+  display: grid;
+  gap: .75rem;
+}
+
+.external-venue-manual-field {
+  display: grid;
+  gap: .4rem;
+}
+
+.external-venue-manual label {
+  color: #4c5568;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.external-venue-manual input {
+  min-height: 48px;
+  min-width: 0;
+  width: 100%;
+  padding: .7rem .8rem;
+  color: #18243c;
+  background: #fff;
+  border: 1px solid rgba(0, 38, 118, .2);
+  border-radius: .75rem;
+  font-size: 16px;
+}
+
+.external-venue-manual input:focus {
+  border-color: #002676;
+}
+
+.external-venue-address-form .primary-button {
+  width: 100%;
+}
+
+.external-venue-status {
+  margin: 0;
+  color: #4c5568;
+  font-size: .78rem;
+  line-height: 1.35;
+}
+
 .external-venue-address,
 .external-venue-context,
 .external-venue-disclosure,
