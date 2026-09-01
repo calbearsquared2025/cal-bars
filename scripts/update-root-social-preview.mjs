@@ -2,7 +2,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { gameRouteParam, selectDefaultGame, validateSnapshotShape } from '../js/core.mjs';
+import { gameRouteParam, selectDefaultGame } from '../js/core.mjs';
+import { fetchSnapshot } from './generate-social-cards.mjs';
 
 const SITE_ORIGIN = 'https://calgoldenbars.com';
 const DESCRIPTION = 'Find your Cal crowd. Join a nearby Watch Party, or plan one of your own.';
@@ -44,21 +45,6 @@ function endpointFromIndex(html) {
     throw new Error(`Refusing unexpected snapshot endpoint: ${url.origin}`);
   }
   return endpoint;
-}
-
-async function fetchSnapshot(endpoint) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20_000);
-  try {
-    const response = await fetch(endpoint, { signal: controller.signal, redirect: 'follow' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const snapshot = await response.json();
-    if (snapshot?.ok === false) throw new Error(String(snapshot.error || 'snapshot unavailable'));
-    if (!validateSnapshotShape(snapshot)) throw new Error('Unexpected public-data shape');
-    return snapshot;
-  } finally {
-    clearTimeout(timeout);
-  }
 }
 
 function socialMetadataBlock(entry) {
