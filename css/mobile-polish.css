@@ -441,7 +441,7 @@
     background: var(--cgb-white) !important;
     border: 0 !important;
     border-radius: 24px 24px 0 0 !important;
-    box-shadow: 0 -16px 38px rgba(1,1,51,.22);
+    box-shadow: 0 -18px 42px rgba(1,1,51,.26);
     overflow: hidden;
   }
 

@@ -132,8 +132,8 @@ function installMobileWhatToKnowStyles(documentObject) {
       body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-header {
         display: flex;
         align-items: baseline;
-        justify-content: space-between;
-        gap: 10px;
+        justify-content: flex-start;
+        gap: 8px;
         margin: 0;
       }
 

@@ -60,22 +60,6 @@ function installStyles() {
         display: none !important;
       }
 
-      #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
-        width: 100% !important;
-        min-height: 40px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 7px 12px !important;
-        color: var(--cgb-navy-950) !important;
-        background: var(--cgb-gold-50) !important;
-        border: 1px solid var(--cgb-gold-500) !important;
-        border-radius: var(--radius-md) !important;
-        font-size: .76rem !important;
-        font-weight: 850 !important;
-        box-shadow: none !important;
-      }
-
       #map-view > #venue-tray.venue-tray.tray--selected .action-row {
         width: 100% !important;
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;

@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   screenshots:
-    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-photo-forward-profile' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns'
+    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-photo-forward-profile' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns' || github.head_ref == 'fix/mobile-tray-presentation-clean'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -29,7 +29,7 @@ jobs:
           node-version: 22
       - name: Capture responsive comparison screenshots
         env:
-          CGB_REVIEW_PROFILE: ${{ github.head_ref == 'feature/desktop-photo-forward-balanced-columns' && 'photo-forward-balanced' || github.head_ref == 'feature/desktop-photo-forward-profile' && 'photo-forward' || '' }}
+          CGB_REVIEW_PROFILE: ${{ github.head_ref == 'feature/desktop-photo-forward-balanced-columns' && 'photo-forward-balanced' || github.head_ref == 'feature/desktop-photo-forward-profile' && 'photo-forward' || github.head_ref == 'fix/mobile-tray-presentation-clean' && 'mobile-tray' || '' }}
         run: node after/scripts/capture-responsive-review.mjs before after responsive-review
       - name: Upload responsive comparison screenshots
         uses: actions/upload-artifact@v4
