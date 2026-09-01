@@ -137,7 +137,7 @@ async function serveAndCapture(root, label) {
         '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
         '--disable-sync', '--hide-scrollbars', '--metrics-recording-only', '--no-first-run',
         '--run-all-compositor-stages-before-draw', `--user-data-dir=${profile}`,
-        `--window-size=${viewport.width},${viewport.height}`, '--virtual-time-budget=10000',
+        `--window-size=${viewport.width},${viewport.height}`, '--virtual-time-budget=30000',
         `--screenshot=${output}`, `http://127.0.0.1:${port}/__cgb_add_place_review__`
       ];
       const child = spawn(browser, args, { stdio: ['ignore', 'pipe', 'pipe'] });
