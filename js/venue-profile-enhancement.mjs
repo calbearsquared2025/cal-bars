@@ -35,7 +35,7 @@ function clean(value) {
 }
 
 const failedPhotoKeys = new Set();
-const WIDE_DESKTOP_QUERY = '(min-width: 1100px)';
+const DESKTOP_QUERY = '(min-width: 900px)';
 const VENUE_PHOTO_ASPECT_RATIO = '3 / 2';
 const VENUE_PHOTO_OBJECT_FIT = 'cover';
 
@@ -225,11 +225,11 @@ function createAddressSeparator(documentObject) {
   return separator;
 }
 
-function arrangeDesktopVenueIdentity({ detail, hero, venue, state, wideDesktop, documentObject }) {
+function arrangeDesktopVenueIdentity({ detail, hero, venue, state, desktop, documentObject }) {
   const address = hero.querySelector(':scope > .detail-address');
   if (!address) return false;
 
-  if (!wideDesktop) {
+  if (!desktop) {
     if (address.dataset.desktopIdentity !== 'true') return false;
     const directions = address.querySelector('.detail-directions-inline');
     if (!directions) return false;
@@ -312,10 +312,10 @@ export function arrangeDesktopVenueMedia({
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const fanExperiences = detail.querySelector(':scope > .detail-fan-experiences');
   const parties = [...detail.querySelectorAll(':scope > .party-module')];
-  const wideDesktop = windowObject?.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
-  arrangeDesktopVenueIdentity({ detail, hero, venue, state, wideDesktop, documentObject });
+  const desktop = windowObject?.matchMedia?.(DESKTOP_QUERY)?.matches === true;
+  arrangeDesktopVenueIdentity({ detail, hero, venue, state, desktop, documentObject });
 
-  if (!wideDesktop) {
+  if (!desktop) {
     detail.removeAttribute('data-desktop-profile-arrangement');
     if (activity) {
       parties.forEach((party) => detail.insertBefore(party, activity));
