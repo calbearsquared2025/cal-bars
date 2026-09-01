@@ -195,8 +195,8 @@ async function run({ mode, marker, windowSize, label = mode, virtualTimeBudget =
 }
 
 try {
-  const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile' });
-  const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile' });
+  const mobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '390,844', label: '390px mobile', virtualTimeBudget: 10000 });
+  const smallMobile = await run({ mode: 'mobile', marker: 'CGB_SMOKE_MOBILE_PASS', windowSize: '320,700', label: '320px mobile', virtualTimeBudget: 10000 });
   const desktop = await run({ mode: 'desktop', marker: 'CGB_SMOKE_DESKTOP_PASS', windowSize: '1440,1000', label: 'desktop' });
   const manualHere = await run({ mode: 'manual-mobile-here', marker: 'CGB_MANUAL_MOBILE_HERE_PASS', windowSize: '390,844', label: 'manual known-location mobile', virtualTimeBudget: 20000 });
   const manualAddress = await run({ mode: 'manual-mobile-address', marker: 'CGB_MANUAL_MOBILE_ADDRESS_PASS', windowSize: '390,844', label: 'manual address mobile', virtualTimeBudget: 20000 });
