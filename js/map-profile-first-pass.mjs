@@ -5,10 +5,6 @@ function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
 }
 
-function appState() {
-  return window.CGBApp?.getState?.() || null;
-}
-
 function installStyles() {
   if (document.getElementById(STYLE_ID)) return;
   const style = document.createElement('style');
@@ -58,22 +54,6 @@ function installStyles() {
 
       #map-view > #venue-tray.venue-tray.tray--selected .venue-description {
         display: none !important;
-      }
-
-      #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
-        width: 100% !important;
-        min-height: 40px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        padding: 7px 12px !important;
-        color: var(--cgb-navy-950) !important;
-        background: var(--cgb-gold-50) !important;
-        border: 1px solid var(--cgb-gold-500) !important;
-        border-radius: var(--radius-md) !important;
-        font-size: .76rem !important;
-        font-weight: 850 !important;
-        box-shadow: none !important;
       }
 
       #map-view > #venue-tray.venue-tray.tray--selected .action-row {
@@ -159,28 +139,6 @@ function installStyles() {
   document.head.append(style);
 }
 
-function setTrayState(next) {
-  const state = appState();
-  const tray = document.querySelector('#venue-tray');
-  if (!state || !tray) return false;
-
-  state.trayState = next;
-  tray.dataset.state = next;
-  tray.className = `venue-tray tray--${next}`;
-
-  const handle = document.querySelector('#tray-handle');
-  const peek = document.querySelector('#tray-peek');
-  const selected = document.querySelector('#tray-selected');
-  const list = document.querySelector('#tray-list');
-
-  handle?.setAttribute('aria-expanded', String(next !== 'peek'));
-  if (peek) peek.hidden = next !== 'peek';
-  if (selected) selected.hidden = next !== 'selected';
-  if (list) list.hidden = next !== 'full';
-  requestAnimationFrame(() => state.map?.resize?.());
-  return true;
-}
-
 function setCommandActive(command) {
   document.body.dataset.commandSurface = command;
   document.querySelectorAll('.mobile-command').forEach((button) => {
@@ -199,7 +157,7 @@ function openListSurface(event) {
 
   document.querySelector('#search-surface')?.setAttribute('hidden', '');
   document.querySelector('#add-surface')?.setAttribute('hidden', '');
-  setTrayState('full');
+  window.CGBApp?.showLocations?.();
   setCommandActive('list');
 }
 
