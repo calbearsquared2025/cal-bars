@@ -21,6 +21,7 @@ test('About and Privacy share one desktop footer popover controller', () => {
   assert.match(privacySource, /connectFooterPopover\(\{[\s\S]*?button: document\.querySelector\('#privacy-button'\)/);
   assert.match(supportSource, /connectFooterPopover\(\{[\s\S]*?button: footerAboutButton/);
   assert.match(popoverSource, /dialog\.classList\.add\('about-dialog--footer-popover'\)/);
+  assert.match(popoverSource, /document\.querySelectorAll\('dialog\.about-dialog--footer-popover\[open\]'\)/);
   assert.match(popoverSource, /dialog\.show\(\)/);
   assert.doesNotMatch(privacySource, /showModal\(/);
   assert.match(supportCss, /\.about-dialog\.about-dialog--footer-popover/);
