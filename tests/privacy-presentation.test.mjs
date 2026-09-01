@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const privacySource = await readFile(new URL('../js/privacy-dialog.mjs', import.meta.url), 'utf8');
+const supportSource = await readFile(new URL('../js/support-dialog.mjs', import.meta.url), 'utf8');
+const popoverSource = await readFile(new URL('../js/footer-popover.mjs', import.meta.url), 'utf8');
 const supportCss = await readFile(new URL('../css/support-dialog.css', import.meta.url), 'utf8');
 
 test('mobile About gets Privacy as an inline section instead of a Privacy button', () => {
@@ -13,10 +15,13 @@ test('mobile About gets Privacy as an inline section instead of a Privacy button
   assert.doesNotMatch(privacySource, /data-privacy-open|dataset\.privacyOpen/);
 });
 
-test('desktop Privacy reuses the existing About footer popover presentation', () => {
-  assert.match(privacySource, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
-  assert.match(privacySource, /dialog\.classList\.add\('about-dialog--footer-popover'\)/);
-  assert.match(privacySource, /dialog\.show\(\)/);
+test('About and Privacy share one desktop footer popover controller', () => {
+  assert.match(privacySource, /import \{ connectFooterPopover \} from '\.\/footer-popover\.mjs'/);
+  assert.match(supportSource, /import \{ connectFooterPopover \} from '\.\/footer-popover\.mjs'/);
+  assert.match(privacySource, /connectFooterPopover\(\{[\s\S]*?button: document\.querySelector\('#privacy-button'\)/);
+  assert.match(supportSource, /connectFooterPopover\(\{[\s\S]*?button: footerAboutButton/);
+  assert.match(popoverSource, /dialog\.classList\.add\('about-dialog--footer-popover'\)/);
+  assert.match(popoverSource, /dialog\.show\(\)/);
   assert.doesNotMatch(privacySource, /showModal\(/);
   assert.match(supportCss, /\.about-dialog\.about-dialog--footer-popover/);
 });
