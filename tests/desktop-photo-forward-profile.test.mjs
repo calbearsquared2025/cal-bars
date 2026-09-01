@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('wide desktop with a photo keeps the opening balanced and spans CGB Says across both columns', async () => {
+test('desktop with a photo keeps the opening balanced and spans CGB Says across both columns', async () => {
   const [source, enhancement, balance] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/venue-profile-enhancement.mjs'),
@@ -13,16 +13,18 @@ test('wide desktop with a photo keeps the opening balanced and spans CGB Says ac
 
   assert.match(enhancement, /import \{ syncDesktopPhotoForwardProfile \} from '\.\/desktop-photo-forward-profile\.mjs'/);
   assert.match(enhancement, /syncDesktopPhotoForwardProfile\(\{ state, documentObject, windowObject \}\)/);
-  assert.match(source, /const PHOTO_FORWARD_QUERY = '\(min-width: 1180px\)'/);
+  assert.match(source, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
+  assert.doesNotMatch(source, /PHOTO_FORWARD_QUERY/);
   assert.match(source, /> \.detail-desktop-opening\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*minmax\(0, \.9fr\) minmax\(0, 1\.1fr\)/);
   assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(editorial\) left\.append\(editorial\);[\s\S]*?right\.append\(photo\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
+  assert.match(balance, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
   assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left,[\s\S]*?\.detail-desktop-opening > \.detail-desktop-opening__right\s*\{[\s\S]*?display:\s*contents\s*!important;/);
   assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-hero\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*center\s*!important;/);
   assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;[\s\S]*?grid-row:\s*3\s*!important;[\s\S]*?width:\s*100%\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__photo-attendance__editorial-party-community-contribution'/);
 });
 
-test('wide desktop photo reuses the shared 3:2 cover presentation instead of redefining the crop', async () => {
+test('desktop photo reuses the shared 3:2 cover presentation instead of redefining the crop', async () => {
   const [source, enhancement] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/venue-profile-enhancement.mjs')
@@ -36,7 +38,7 @@ test('wide desktop photo reuses the shared 3:2 cover presentation instead of red
   assert.doesNotMatch(source, /setProperty\('object-fit'/);
 });
 
-test('narrow desktop and mobile preserve placement while sharing the 3:2 photo crop', async () => {
+test('all desktop widths use the expanded profile while mobile preserves its own placement', async () => {
   const [source, enhancement, mobileSource] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/venue-profile-enhancement.mjs'),
@@ -44,23 +46,27 @@ test('narrow desktop and mobile preserve placement while sharing the 3:2 photo c
   ]);
 
   assert.match(source, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
+  assert.match(enhancement, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
+  assert.doesNotMatch(enhancement, /WIDE_DESKTOP_QUERY/);
+  assert.doesNotMatch(source, /1180px/);
   assert.doesNotMatch(source, /@media \(max-width: 899px\)/);
   assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
   assert.match(enhancement, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
   assert.doesNotMatch(source, /'4 \/ 3'/);
   assert.doesNotMatch(source, /'contain'/);
   assert.match(source, /unwrapDesktopOpening\(detail\);[\s\S]*?if \(!isDesktopProfile\(detail, windowObject\)\) return false;/);
+  assert.match(source, /const photoForward = Boolean\(photo\);/);
   assert.match(mobileSource, /section\.dataset\.mobileWhatToKnow = 'true'/);
   assert.match(mobileSource, /placeMobileDeferredPhoto\(detail, section\)/);
 });
 
-test('wide desktop with no photo uses the existing local map as the photo-slot fallback without DOM reparenting', async () => {
+test('desktop with no photo uses the existing local map as the photo-slot fallback without DOM reparenting', async () => {
   const [source, balance] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/desktop-profile-final-balance.mjs')
   ]);
 
-  assert.match(source, /const photoForward = Boolean\(photo && wideOpening\);/);
+  assert.match(source, /const photoForward = Boolean\(photo\);/);
   assert.match(source, /if \(!photoForward\) \{[\s\S]*?arrangeStandardHierarchy\(/);
   assert.match(balance, /const localMap = detail\.querySelector\(':scope > \.detail-local-map'\)/);
   assert.match(balance, /detail\.dataset\.desktopFallbackMap = 'true'/);
@@ -107,12 +113,20 @@ test('desktop attendance reuses the approved large-number BEAR(S) ATTENDING ON C
   assert.match(source, /\.bear-count__number\s*\{[\s\S]*?font-size:\s*1\.9rem\s*!important;/);
 });
 
-test('photo-forward desktop keeps the selected panel width and map controls aligned', async () => {
-  const source = await read('js/desktop-photo-forward-profile.mjs');
+test('desktop selected panel and map controls share one responsive width from 900px up', async () => {
+  const [source, profileCss, mobilePolish] = await Promise.all([
+    read('js/desktop-photo-forward-profile.mjs'),
+    read('css/venue-profile.css'),
+    read('css/mobile-polish.css')
+  ]);
 
-  assert.match(source, /const PHOTO_FORWARD_PANEL_WIDTH = 'clamp\(580px, 42vw, 620px\)'/);
-  assert.match(source, /@media \(min-width: 1180px\)[\s\S]*?#map-view > #venue-tray\.venue-tray\.tray--selected\s*\{[\s\S]*?width:\s*\$\{PHOTO_FORWARD_PANEL_WIDTH\}\s*!important;/);
+  assert.match(source, /const PHOTO_FORWARD_PANEL_WIDTH = 'clamp\(500px, 52vw, 620px\)'/);
+  assert.match(source, /@media \(min-width: 900px\)[\s\S]*?#map-view > #venue-tray\.venue-tray\.tray--selected\s*\{[\s\S]*?width:\s*\$\{PHOTO_FORWARD_PANEL_WIDTH\}\s*!important;/);
   assert.match(source, /\.mobile-command-bar\s*\{[\s\S]*?width:\s*\$\{PHOTO_FORWARD_PANEL_WIDTH\}\s*!important;/);
   assert.match(source, /\.maplibregl-ctrl-top-right\s*\{[\s\S]*?right:\s*calc\(\$\{PHOTO_FORWARD_PANEL_WIDTH\} \+ 26px\)\s*!important;/);
   assert.match(source, /> \.map-actions\s*\{[\s\S]*?right:\s*calc\(\$\{PHOTO_FORWARD_PANEL_WIDTH\} \+ 36px\)\s*!important;/);
+  assert.match(profileCss, /@media \(min-width: 900px\)[\s\S]*?#map-view > #venue-tray\.venue-tray\.tray--selected\s*\{[\s\S]*?width:\s*clamp\(500px, 52vw, 620px\)\s*!important;/);
+  assert.doesNotMatch(profileCss, /@media \(min-width: 1100px\)/);
+  assert.match(mobilePolish, /@media \(min-width: 900px\)[\s\S]*?\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) > \.map-actions\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 52vw, 620px\) \+ 36px\);/);
+  assert.doesNotMatch(mobilePolish, /@media \(min-width: 1100px\)/);
 });
