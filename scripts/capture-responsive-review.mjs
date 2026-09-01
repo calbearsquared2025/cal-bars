@@ -117,8 +117,15 @@ function reviewPage(root, response) {
         }
 
         if (mobile) {
-          document.querySelector('#mobile-list-button')?.click();
-          await waitFor(() => visible(document.querySelector('#tray-list')));
+          const listButton = document.querySelector('#mobile-list-button');
+          await sleep(250);
+          listButton?.click();
+          let listReady = await waitFor(() => visible(document.querySelector('#tray-list')), 1200);
+          if (!listReady) {
+            listButton?.click();
+            listReady = await waitFor(() => visible(document.querySelector('#tray-list')));
+          }
+          if (!listReady) return;
         } else {
           window.CGBApp?.showLocations?.();
           await waitFor(() => visible(document.querySelector('#tray-list')));
