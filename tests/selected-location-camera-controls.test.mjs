@@ -26,12 +26,13 @@ test('mobile selected venue camera uses city focus when isolated and regional bo
   assert.match(refinement, /state\.map\.easeTo\([\s\S]*?zoom: Math\.max\(currentZoom, FOCUS_ZOOM\)[\s\S]*?offset: \[0, verticalOffset\]/);
 });
 
-test('selected venue camera still focuses only once unless the user explicitly selects a marker again', async () => {
+test('selected venue camera focuses once through the shared mobile refinement path', async () => {
   const refinement = await read('js/map-mobile-refinement.mjs');
 
   assert.match(refinement, /if \(!force && lastAutoFocusedVenueId === venueId\) return;/);
   assert.match(refinement, /lastAutoFocusedVenueId = venueId;/);
-  assert.match(refinement, /lastAutoFocusedVenueId = '';[\s\S]*?focusVenue\(marker\.dataset\.venueId, \{ force: true \}\)/);
+  assert.match(refinement, /focusVenue\(state\.selectedVenueId, \{ force: routeChanged \}\);/);
+  assert.doesNotMatch(refinement, /\.cgb-marker\[data-venue-id\][\s\S]*?focusVenue\(marker\.dataset\.venueId, \{ force: true \}\)/);
 });
 
 test('mobile Locate me control follows the live selected tray edge', async () => {
@@ -40,8 +41,9 @@ test('mobile Locate me control follows the live selected tray edge', async () =>
   assert.match(refinement, /function syncLocateControlPosition\(\)[\s\S]*?state\?\.trayState === 'selected'/);
   assert.match(refinement, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
   assert.match(refinement, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
-  assert.match(refinement, /new ResizeObserver\(scheduleLocateControlPosition\)/);
-  assert.match(refinement, /window\.visualViewport\?\.addEventListener\?\.\('resize', scheduleLocateControlPosition\)/);
+  assert.match(refinement, /selectedTrayResizeObserver = new ResizeObserver\(\(\) => \{[\s\S]*?scheduleLocateControlPosition\(\);[\s\S]*?\}\);/);
+  assert.match(refinement, /window\.visualViewport\?\.addEventListener\?\.\('resize', handleViewportGeometryChange\)/);
+  assert.match(refinement, /function handleViewportGeometryChange\(\) \{[\s\S]*?scheduleLocateControlPosition\(\);/);
 });
 
 test('desktop Locate me preserves a selected Venue Profile so distance can render in its address', async () => {

@@ -35,6 +35,18 @@ function appState() {
   return window.CGBApp?.getState?.() || null;
 }
 
+function cancelBaseSelectedVenueVisibility(state = appState()) {
+  if (!isMobile() || state?.venueVisibilityFrame === null || state?.venueVisibilityFrame === undefined) return false;
+  cancelAnimationFrame(state.venueVisibilityFrame);
+  state.venueVisibilityFrame = null;
+  return true;
+}
+
+function preserveMobileCameraOwnership(state = appState()) {
+  cancelBaseSelectedVenueVisibility(state);
+  queueMicrotask(() => cancelBaseSelectedVenueVisibility(state));
+}
+
 function reducedMotion() {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
@@ -383,6 +395,8 @@ function handleTrayTopTap(event) {
 
   event.preventDefault();
   event.stopImmediatePropagation();
+  preserveMobileCameraOwnership();
+  appState()?.map?.stop?.();
   document.querySelector('#tray-selected .selected-card__header > .icon-button')?.click();
 }
 
@@ -393,9 +407,12 @@ function focusVenue(venueId, { force = false } = {}) {
   if (!state?.map || !venue) return;
   if (!force && lastAutoFocusedVenueId === venueId) return;
   lastAutoFocusedVenueId = venueId;
+  preserveMobileCameraOwnership(state);
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
+      preserveMobileCameraOwnership(state);
+      state.map.stop?.();
       const { verticalOffset, bottomPadding } = selectedTrayCameraMetrics();
       const nearby = nearbyVenuesForSelected(state, venue);
       if (nearby.length > 0) {
@@ -475,7 +492,15 @@ function observeSelectedTrayGeometry() {
   const tray = document.querySelector('#venue-tray');
   if (!tray || typeof ResizeObserver !== 'function') return;
   selectedTrayResizeObserver?.disconnect();
-  selectedTrayResizeObserver = new ResizeObserver(scheduleLocateControlPosition);
+  selectedTrayResizeObserver = new ResizeObserver(() => {
+    const state = appState();
+    preserveMobileCameraOwnership(state);
+    if (tray.dataset.state !== 'selected') {
+      state?.map?.stop?.();
+      lastAutoFocusedVenueId = '';
+    }
+    scheduleLocateControlPosition();
+  });
   selectedTrayResizeObserver.observe(tray);
 }
 
@@ -487,6 +512,7 @@ function sync() {
   scheduleLocateControlPosition();
 
   const state = appState();
+  preserveMobileCameraOwnership(state);
   const tray = document.querySelector('#venue-tray');
   const selectedVenueChosen = isMobile() &&
     document.body.dataset.view === 'map' &&
@@ -519,6 +545,11 @@ function sync() {
   focusVenue(state.selectedVenueId, { force: routeChanged });
 }
 
+function handleViewportGeometryChange() {
+  preserveMobileCameraOwnership();
+  scheduleLocateControlPosition();
+}
+
 function initialize() {
   installStyles();
   observeSelectedTrayGeometry();
@@ -528,16 +559,9 @@ function initialize() {
   document.addEventListener('click', handleTrayTopTap, { capture: true });
   document.addEventListener('click', handleMapDeselect);
 
-  document.addEventListener('click', (event) => {
-    const marker = event.target.closest?.('.cgb-marker[data-venue-id]');
-    if (!marker) return;
-    lastAutoFocusedVenueId = '';
-    requestAnimationFrame(() => focusVenue(marker.dataset.venueId, { force: true }));
-  });
-
   window.addEventListener('pagehide', () => captureMapCamera());
-  window.addEventListener('resize', scheduleLocateControlPosition);
-  window.visualViewport?.addEventListener?.('resize', scheduleLocateControlPosition);
+  window.addEventListener('resize', handleViewportGeometryChange);
+  window.visualViewport?.addEventListener?.('resize', handleViewportGeometryChange);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', sync);
   window.CGBApp?.subscribe?.('rendered', sync);
   window.CGBApp?.subscribe?.('ready', sync);
