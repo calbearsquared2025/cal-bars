@@ -25,7 +25,7 @@
       "slug": "wagner",
       "title": "Cal vs. Wagner",
       "locations_mapped": 37,
-      "watch_parties": 9,
+      "watch_parties": 10,
       "image": "assets/social-cards/wagner.png",
       "page": "share/wagner/index.html"
     },
@@ -97,7 +97,7 @@
       "slug": "stanford",
       "title": "Cal vs. Stanford",
       "locations_mapped": 37,
-      "watch_parties": 4,
+      "watch_parties": 5,
       "image": "assets/social-cards/stanford.png",
       "page": "share/stanford/index.html"
     },
