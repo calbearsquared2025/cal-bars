@@ -101,6 +101,7 @@ test('mobile no-photo profile keeps the photo contribution in the normal mainten
   assert.match(photoFormSource, /className: 'detail-contribution__action'/);
   assert.match(photoFormSource, /label: 'Add a new photo'/);
   assert.equal((photoFormSource.match(/entryPoint: 'contribution'/g) || []).length, 1);
-  assert.match(balanceSource, /const WIDE_DESKTOP_QUERY = '\(min-width: 1180px\)'/);
+  assert.match(balanceSource, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
+  assert.doesNotMatch(balanceSource, /WIDE_DESKTOP_QUERY|1180px/);
   assert.match(balanceSource, /detail\?\.dataset\?\.profilePresentation === 'desktop'/);
 });
