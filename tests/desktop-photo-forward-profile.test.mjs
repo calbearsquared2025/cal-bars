@@ -17,6 +17,7 @@ test('wide desktop with a photo keeps the opening balanced and spans CGB Says ac
   assert.match(source, /> \.detail-desktop-opening\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-columns:\s*minmax\(0, \.9fr\) minmax\(0, 1\.1fr\)/);
   assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(editorial\) left\.append\(editorial\);[\s\S]*?right\.append\(photo\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
   assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left,[\s\S]*?\.detail-desktop-opening > \.detail-desktop-opening__right\s*\{[\s\S]*?display:\s*contents\s*!important;/);
+  assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-hero\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*center\s*!important;/);
   assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;[\s\S]*?grid-row:\s*3\s*!important;[\s\S]*?width:\s*100%\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__photo-attendance__editorial-party-community-contribution'/);
 });
@@ -63,6 +64,7 @@ test('wide desktop with no photo uses the existing local map as the photo-slot f
   assert.match(source, /if \(!photoForward\) \{[\s\S]*?arrangeStandardHierarchy\(/);
   assert.match(balance, /const localMap = detail\.querySelector\(':scope > \.detail-local-map'\)/);
   assert.match(balance, /detail\.dataset\.desktopFallbackMap = 'true'/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-hero\.detail-hero--no-photo\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*center\s*!important;/);
   assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-local-map\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;[\s\S]*?margin:\s*12px 18px 0 8px\s*!important;/);
   assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-what-to-know\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__map-attendance__editorial-party-community-contribution'/);
