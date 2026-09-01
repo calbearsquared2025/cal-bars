@@ -317,15 +317,13 @@ function showList() {
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('existing');
-  setSurface('map');
+  setSurface('list');
   if (window.CGBApp?.showLocations) {
-    currentSurface = 'list';
     window.CGBApp.showLocations();
     updateCommandState();
     return;
   }
   if (dom.tray?.dataset.state !== 'full') dom.trayHandle?.click();
-  currentSurface = 'list';
   updateCommandState();
 }
 
@@ -430,90 +428,58 @@ function beginContribution(intent, {
   }
 
   if (href) {
-    const opened = intent === CONTRIBUTION_INTENTS.watchParty
-      ? openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame(state)?.game_id)
-      : openExternalUrl(href);
-    setSurface('map');
-    return opened;
+    if (intent === CONTRIBUTION_INTENTS.watchParty) openWatchPartyUrlWithAttendanceChoice(href, venueId, state?.gameId || '');
+    else openExternalUrl(href);
+    return;
   }
 
-  if (intent === CONTRIBUTION_INTENTS.watchParty && selectedGame(state)?.game_status !== 'upcoming') {
-    showStatus('Watch Parties can be submitted for an upcoming game. Choose another game first.');
+  if (intent === CONTRIBUTION_INTENTS.report && !venueId) {
+    showSearch(CONTRIBUTION_INTENTS.report);
+    return;
   }
+
   showSearch(intent);
-  return false;
+}
+
+function handleSearchResultClick(event) {
+  const target = event.target.closest?.('.search-result--venue, .search-result--external');
+  if (!target || !contributionIntent) return;
+  const state = appState();
+
+  if (target.classList.contains('search-result--venue')) {
+    const venueId = target.dataset.venueId;
+    const href = contributionUrl(contributionIntent, venueId, state);
+    if (href) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (contributionIntent === CONTRIBUTION_INTENTS.watchParty) openWatchPartyUrlWithAttendanceChoice(href, venueId, state?.gameId || '');
+      else openExternalUrl(href);
+      return;
+    }
+  }
+
+  if (target.classList.contains('search-result--external') && contributionIntent === CONTRIBUTION_INTENTS.watchParty) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    window.CGBWatchParty?.selectExternal?.(target.dataset.externalIndex);
+  }
 }
 
 function handleSelectedVenueWatchParty(event) {
-  const button = event.target.closest?.('.selected-card__plan-party');
-  if (!button) return;
-
-  const venueId = button.closest('.selected-card[data-venue-id]')?.dataset.venueId || '';
-  if (!venueId) return;
-
+  const target = event.target.closest?.('[data-open-watch-party]');
+  if (!target) return;
+  const venueId = target.dataset.venueId || appState()?.selectedVenueId || '';
+  const href = watchPartyUrl(venueId);
+  if (!href) return;
   event.preventDefault();
-  beginContribution(CONTRIBUTION_INTENTS.watchParty, { venueId });
+  event.stopImmediatePropagation();
+  openWatchPartyUrlWithAttendanceChoice(href, venueId, appState()?.gameId || '');
 }
 
 function handleMobileLocationListSelection(event) {
   if (!isMobileLayout()) return;
-  if (!event.target.closest?.('#location-list .location-card[data-venue-id]')) return;
-  contributionIntent = '';
-  updateSearchIntent();
-  setSearchMode('existing');
+  if (!event.target.closest?.('#location-list .location-card')) return;
   setSurface('map');
-}
-
-function handleSearchResultClick(event) {
-  const existing = event.target.closest('button[data-venue-id]');
-  const external = event.target.closest('button[data-external-place-id]');
-  if (!existing && !external) return;
-
-  requestAnimationFrame(() => setSearchMode('existing'));
-
-  if (existing) {
-    const venueId = existing.dataset.venueId;
-    if (contributionIntent === CONTRIBUTION_INTENTS.report) {
-      contributionIntent = '';
-      updateSearchIntent();
-      requestAnimationFrame(() => {
-        updateAddContext();
-        setSurface('add');
-        dom.reportOptions.hidden = false;
-        dom.reportButton.setAttribute('aria-expanded', 'true');
-        dom.reportListingButton.focus();
-      });
-      return;
-    }
-    if (contributionIntent) {
-      const intent = contributionIntent;
-      const href = contributionUrl(intent, venueId);
-      if (href) {
-        if (intent === CONTRIBUTION_INTENTS.watchParty) {
-          openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame()?.game_id);
-        } else {
-          openExternalUrl(href);
-        }
-      } else if (intent === CONTRIBUTION_INTENTS.calBar) {
-        showStatus('This contribution form is not available for the selected location.');
-      } else {
-        showStatus('That contribution is not available for the selected place or game.');
-      }
-      contributionIntent = '';
-      updateSearchIntent();
-    }
-    requestAnimationFrame(() => setSurface('map'));
-    return;
-  }
-
-  if (contributionIntent === CONTRIBUTION_INTENTS.watchParty) {
-    showStatus('In the place confirmation, choose “Add a Watch Party.”', 4200);
-  } else if (contributionIntent === CONTRIBUTION_INTENTS.calBar) {
-    showStatus('Add this place to CGB first, then tell us about it from the location profile.', 4600);
-  } else if (contributionIntent === CONTRIBUTION_INTENTS.report) {
-    showStatus('Only existing CGB listings can be reported.', 3600);
-  }
-  requestAnimationFrame(() => setSurface('map'));
 }
 
 function normalizeDesktopTray() {
