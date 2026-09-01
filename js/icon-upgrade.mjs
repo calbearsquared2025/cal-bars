@@ -15,6 +15,7 @@ import { arrangeDesktopVenueMedia, enhanceVenueProfile } from './venue-profile-e
 
 let appConnected = false;
 let appConnectAttempts = 0;
+let postRenderUpgradeQueued = false;
 let detailLocalMap = null;
 let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
@@ -270,6 +271,15 @@ function scheduleUpgrade() {
   });
 }
 
+function schedulePostRenderUpgrade() {
+  if (postRenderUpgradeQueued) return;
+  postRenderUpgradeQueued = true;
+  queueMicrotask(() => {
+    postRenderUpgradeQueued = false;
+    runRefinements();
+  });
+}
+
 function connectApp() {
   if (appConnected) return;
   const app = window.CGBApp;
@@ -282,9 +292,9 @@ function connectApp() {
   }
 
   appConnected = true;
-  window.CGBApp?.subscribe?.('rendered', scheduleUpgrade);
-  window.CGBApp?.subscribe?.('ready', scheduleUpgrade);
-  scheduleUpgrade();
+  window.CGBApp?.subscribe?.('rendered', schedulePostRenderUpgrade);
+  window.CGBApp?.subscribe?.('ready', schedulePostRenderUpgrade);
+  schedulePostRenderUpgrade();
 }
 
 function initialize() {
