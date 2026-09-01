@@ -1,6 +1,5 @@
 const DESKTOP_QUERY = '(min-width: 900px)';
 const STYLE_ID = 'cgb-desktop-visual-cohesion';
-const FOOTER_READY = 'desktopCohesionReady';
 let gameDropdownWired = false;
 
 function isDesktop(windowObject = globalThis.window) {
@@ -153,7 +152,7 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         background: var(--cgb-gold-50, #fff8e6) !important;
       }
 
-      .site-footer.site-footer--desktop-cohesion {
+      .site-footer {
         min-height: var(--footer-height, 30px);
         display: flex;
         align-items: center;
@@ -169,9 +168,8 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         white-space: nowrap;
       }
 
-      .site-footer--desktop-cohesion .site-footer__brand,
-      .site-footer--desktop-cohesion .site-footer__link,
-      .site-footer--desktop-cohesion .text-button {
+      .site-footer a,
+      .site-footer .text-button {
         margin: 0;
         padding: 0;
         color: var(--cgb-navy-900, #002676);
@@ -183,27 +181,13 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         text-decoration: none;
       }
 
-      .site-footer--desktop-cohesion .site-footer__brand {
-        color: var(--cgb-navy-950, #010133);
-        font-family: var(--font-condensed, sans-serif);
-        font-weight: 900;
-        letter-spacing: .055em;
-      }
-
-      .site-footer--desktop-cohesion .site-footer__link:hover,
-      .site-footer--desktop-cohesion .site-footer__link:focus-visible,
-      .site-footer--desktop-cohesion .text-button:hover,
-      .site-footer--desktop-cohesion .text-button:focus-visible,
-      .site-footer--desktop-cohesion .site-footer__brand:hover,
-      .site-footer--desktop-cohesion .site-footer__brand:focus-visible {
+      .site-footer a:hover,
+      .site-footer a:focus-visible,
+      .site-footer .text-button:hover,
+      .site-footer .text-button:focus-visible {
         color: var(--cgb-navy-950, #010133);
         text-decoration: underline;
         text-underline-offset: 2px;
-      }
-
-      .site-footer--desktop-cohesion .site-footer__disclaimer {
-        color: var(--cgb-ink-500, #687280);
-        font-weight: 500;
       }
     }
   `;
@@ -298,42 +282,6 @@ function wireDesktopGameDropdown({
   return true;
 }
 
-export function syncDesktopFooter({
-  documentObject = globalThis.document,
-  windowObject = globalThis.window
-} = {}) {
-  if (!documentObject || !isDesktop(windowObject)) return false;
-  const footer = documentObject.querySelector('.site-footer');
-  if (!footer || footer.dataset[FOOTER_READY] === 'true') return false;
-
-  const aboutButton = footer.querySelector('#about-button');
-  const socialLink = footer.querySelector('a[href*="x.com/calbearsquared"]');
-  if (!aboutButton || !socialLink) return false;
-
-  const brand = documentObject.createElement('a');
-  brand.className = 'site-footer__brand';
-  brand.href = './';
-  brand.textContent = 'CAL GOLDEN BARS';
-
-  aboutButton.classList.add('site-footer__link');
-  socialLink.classList.add('site-footer__link');
-  socialLink.textContent = '@calbearsquared';
-
-  const disclaimer = documentObject.createElement('span');
-  disclaimer.className = 'site-footer__disclaimer';
-  disclaimer.textContent = 'Not affiliated with Cal Athletics or the California Alumni Association';
-
-  footer.replaceChildren(
-    brand,
-    aboutButton,
-    socialLink,
-    disclaimer
-  );
-  footer.classList.add('site-footer--desktop-cohesion');
-  footer.dataset[FOOTER_READY] = 'true';
-  return true;
-}
-
 export function syncDesktopAddLanguage({
   documentObject = globalThis.document,
   windowObject = globalThis.window
@@ -355,7 +303,6 @@ function initializeDesktopVisualCohesion({
   installDesktopVisualCohesionStyles(documentObject);
 
   const sync = () => {
-    syncDesktopFooter({ documentObject, windowObject });
     syncDesktopAddLanguage({ documentObject, windowObject });
   };
 

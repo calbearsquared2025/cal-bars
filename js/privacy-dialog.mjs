@@ -1,25 +1,35 @@
+import { connectFooterPopover } from './footer-popover.mjs';
+
+function addMobilePrivacySection(dialog) {
+  const aboutContent = document.querySelector('#about-surface .about-surface__content');
+  if (!aboutContent || aboutContent.querySelector('.about-privacy-section')) return;
+
+  const section = document.createElement('section');
+  section.className = 'about-subsection about-privacy-section';
+
+  const heading = document.createElement('span');
+  heading.className = 'eyebrow';
+  heading.textContent = 'Privacy';
+  section.append(heading);
+
+  dialog.querySelectorAll('.dialog-shell > p').forEach((paragraph) => {
+    section.append(paragraph.cloneNode(true));
+  });
+
+  aboutContent.append(section);
+}
+
 function initializePrivacyDialog() {
   const dialog = document.querySelector('#privacy-dialog');
   if (!dialog) return;
 
-  const aboutContent = document.querySelector('#about-surface .about-surface__content');
-  if (aboutContent && !aboutContent.querySelector('[data-privacy-open]')) {
-    const row = document.createElement('p');
-    const mobileButton = document.createElement('button');
-    mobileButton.type = 'button';
-    mobileButton.className = 'text-button';
-    mobileButton.dataset.privacyOpen = '';
-    mobileButton.textContent = 'Privacy';
-    row.append(mobileButton);
-    aboutContent.append(row);
-  }
+  addMobilePrivacySection(dialog);
 
-  const buttons = [
-    document.querySelector('#privacy-button'),
-    ...document.querySelectorAll('[data-privacy-open]')
-  ].filter(Boolean);
-
-  buttons.forEach((button) => button.addEventListener('click', () => dialog.showModal()));
+  connectFooterPopover({
+    dialog,
+    button: document.querySelector('#privacy-button'),
+    tray: document.querySelector('#venue-tray')
+  });
 }
 
 if (document.readyState === 'loading') {
