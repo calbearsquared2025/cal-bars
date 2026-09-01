@@ -1,9 +1,25 @@
 function initializePrivacyDialog() {
-  const button = document.querySelector('#privacy-button');
   const dialog = document.querySelector('#privacy-dialog');
-  if (!button || !dialog) return;
+  if (!dialog) return;
 
-  button.addEventListener('click', () => dialog.showModal());
+  const aboutContent = document.querySelector('#about-surface .about-surface__content');
+  if (aboutContent && !aboutContent.querySelector('[data-privacy-open]')) {
+    const row = document.createElement('p');
+    const mobileButton = document.createElement('button');
+    mobileButton.type = 'button';
+    mobileButton.className = 'text-button';
+    mobileButton.dataset.privacyOpen = '';
+    mobileButton.textContent = 'Privacy';
+    row.append(mobileButton);
+    aboutContent.append(row);
+  }
+
+  const buttons = [
+    document.querySelector('#privacy-button'),
+    ...document.querySelectorAll('[data-privacy-open]')
+  ].filter(Boolean);
+
+  buttons.forEach((button) => button.addEventListener('click', () => dialog.showModal()));
 }
 
 if (document.readyState === 'loading') {
