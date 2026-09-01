@@ -12,6 +12,10 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
   style.id = STYLE_ID;
   style.textContent = `
     @media (min-width: 900px) {
+      .mobile-command-bar .mobile-command {
+        text-transform: uppercase;
+      }
+
       #add-surface > .command-surface__shell {
         background: var(--cgb-warm-50, #f7f6f2) !important;
       }
