@@ -62,7 +62,7 @@
 - Apps Script validates and normalizes the submission.
 - One form submission may create one Watch Party row per selected game.
 - Safe positive structured Venue-capable details may auto-publish from either Venue or Watch Party contribution Forms; one valid submission is sufficient and corroboration is not required.
-- Venue-capable controlled values are `21_plus`, `audio_on`, `food`, `cal_beer`, `large_crowd`, and `cal_memorabilia`. Unchecked means unknown/not asserted.
+- Venue-capable controlled values are `21_plus`, `all_ages`, `audio_on`, `food`, `cal_beer`, `large_crowd`, and `cal_memorabilia`. Unchecked means unknown/not asserted; contradictory age assertions remain pending for review.
 - Watch Party-only controlled values are `rsvp_requested` and `cal_specials`.
 - Destructive or materially conflicting changes remain private for manual review rather than being inferred or overwritten.
 - A submitted event at an unlisted venue may create a Community Location.
@@ -131,7 +131,7 @@ Routine Fan Intent and external venue addition do not use forms.
 - On mobile, an approved Venue photo follows **YOU SAY** so core decision information appears first.
 - Wider layouts retain the existing tag placement and spatial hierarchy unless separately changed.
 - Watch Party-only tags remain on the specific Watch Party.
-- Avoid a redundant second stack of 21+/audio tags when the same persistent Venue context is already visible.
+- Avoid a redundant second stack of 21+/ALL AGES/audio tags when the same persistent Venue context is already visible.
 
 ### Superseded
 

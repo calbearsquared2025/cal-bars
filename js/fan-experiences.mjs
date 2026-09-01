@@ -11,10 +11,11 @@ import {
 const SECTION_SELECTOR = '[data-fan-experiences]';
 const MOBILE_WHAT_TO_KNOW_STYLE_ID = 'cgb-mobile-what-to-know';
 const VENUE_TAG_ORDER = Object.freeze([
-  '21_plus', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
+  '21_plus', 'all_ages', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
 ]);
 const VENUE_TAG_LABELS = Object.freeze({
   '21_plus': '21+',
+  all_ages: 'ALL AGES',
   audio_on: 'AUDIO ON',
   food: 'FOOD',
   cal_beer: 'CAL BEER',

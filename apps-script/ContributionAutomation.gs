@@ -22,12 +22,15 @@ const CGB_CONTRIBUTION_ADMIN_HEADERS = Object.freeze([
 
 const CGB_CONTRIBUTION_VENUE_TAGS = Object.freeze([
   '21_plus',
+  'all_ages',
   'audio_on',
   'food',
   'cal_beer',
   'large_crowd',
   'cal_memorabilia'
 ]);
+
+const CGB_CONTRIBUTION_AGE_TAGS = Object.freeze(['21_plus', 'all_ages']);
 
 const CGB_CONTRIBUTION_WATCH_PARTY_TAGS = Object.freeze([
   'rsvp_requested',
@@ -63,6 +66,7 @@ const CGB_CONTRIBUTION_FORM_ALIASES = Object.freeze({
 
 const CGB_CONTRIBUTION_TAG_LABEL_ALIASES = Object.freeze({
   '21_plus': Object.freeze(['21+']),
+  all_ages: Object.freeze(['ALL AGES', 'All ages']),
   audio_on: Object.freeze([
     'AUDIO ON — game sound is usually on',
     'AUDIO ON — game sound is expected/on',
@@ -161,9 +165,11 @@ function processVenueStructuredContribution_(event, source) {
       return CGB_CONTRIBUTION_VENUE_TAGS.indexOf(tag) >= 0;
     });
     const result = mergeVenueContributionTags_(context.workbook, venueId, venueTags);
-    const manualReviewReasons = source === 'venue_update'
-      ? contributionUpdateCategoryReviewReasons_('venue', context.namedValues)
-      : [];
+    const manualReviewReasons = uniqueContributionValues_(
+      (source === 'venue_update'
+        ? contributionUpdateCategoryReviewReasons_('venue', context.namedValues)
+        : []).concat(result.manualReviewReasons)
+    );
 
     return {
       ok: true,
@@ -313,10 +319,16 @@ function applyWatchPartyStructuredContribution_(workbook, watchPartyId, selected
   const manualReviewReasons = [];
   const updates = {};
 
-  if (venueTags.indexOf('21_plus') >= 0) {
+  const selectedAgeTags = CGB_CONTRIBUTION_AGE_TAGS.filter(function(tag) {
+    return venueTags.indexOf(tag) >= 0;
+  });
+  if (selectedAgeTags.length > 1) {
+    manualReviewReasons.push('age_policy_conflict');
+  } else if (selectedAgeTags.length === 1) {
+    const selectedAge = selectedAgeTags[0];
     const currentAge = cleanContributionText_(party.age_policy, 40).toLowerCase();
-    if (!currentAge || currentAge === 'unknown' || currentAge === '21_plus') {
-      if (currentAge !== '21_plus') updates.age_policy = '21_plus';
+    if (!currentAge || currentAge === 'unknown' || currentAge === selectedAge) {
+      if (currentAge !== selectedAge) updates.age_policy = selectedAge;
     } else {
       manualReviewReasons.push('age_policy_conflict');
     }
@@ -368,7 +380,8 @@ function applyWatchPartyStructuredContribution_(workbook, watchPartyId, selected
   }
 
   const venueTagsSafeToSeed = venueTags.filter(function(tag) {
-    if (tag === '21_plus' && manualReviewReasons.indexOf('age_policy_conflict') >= 0) return false;
+    if (CGB_CONTRIBUTION_AGE_TAGS.indexOf(tag) >= 0 &&
+        manualReviewReasons.indexOf('age_policy_conflict') >= 0) return false;
     if (tag === 'audio_on' && manualReviewReasons.indexOf('sound_status_conflict') >= 0) return false;
     return true;
   });
@@ -377,6 +390,7 @@ function applyWatchPartyStructuredContribution_(workbook, watchPartyId, selected
     String(party.venue_id || ''),
     venueTagsSafeToSeed
   );
+  manualReviewReasons.push.apply(manualReviewReasons, venueResult.manualReviewReasons);
   partyChanged = partyChanged || venueResult.changed;
 
   return {
@@ -399,15 +413,36 @@ function mergeVenueContributionTags_(workbook, venueId, additions) {
     reference.row.venue_tags,
     CGB_CONTRIBUTION_VENUE_TAGS
   );
-  const merged = mergeContributionTagLists_(current, additions, CGB_CONTRIBUTION_VENUE_TAGS);
+  const requested = mergeContributionTagLists_([], additions, CGB_CONTRIBUTION_VENUE_TAGS);
+  const currentAgeTags = CGB_CONTRIBUTION_AGE_TAGS.filter(function(tag) {
+    return current.indexOf(tag) >= 0;
+  });
+  const requestedAgeTags = CGB_CONTRIBUTION_AGE_TAGS.filter(function(tag) {
+    return requested.indexOf(tag) >= 0;
+  });
+  const ageConflict = requestedAgeTags.length > 1 || requestedAgeTags.some(function(tag) {
+    return currentAgeTags.some(function(currentTag) { return currentTag !== tag; });
+  });
+  const safeAdditions = ageConflict
+    ? requested.filter(function(tag) { return CGB_CONTRIBUTION_AGE_TAGS.indexOf(tag) < 0; })
+    : requested;
+  const manualReviewReasons = ageConflict ? ['venue_age_tag_conflict'] : [];
+  const merged = mergeContributionTagLists_(current, safeAdditions, CGB_CONTRIBUTION_VENUE_TAGS);
   const added = merged.filter(function(tag) { return current.indexOf(tag) < 0; });
-  if (!added.length) return { changed: false, added: [], tags: current };
+  if (!added.length) {
+    return { changed: false, added: [], tags: current, manualReviewReasons: manualReviewReasons };
+  }
 
   writeContributionCanonicalUpdates_(reference, {
     venue_tags: serializeContributionTagList_(merged, CGB_CONTRIBUTION_VENUE_TAGS),
     updated_at: new Date().toISOString()
   });
-  return { changed: true, added: added, tags: merged };
+  return {
+    changed: true,
+    added: added,
+    tags: merged,
+    manualReviewReasons: manualReviewReasons
+  };
 }
 
 function processContributionRawEvent_(event, processor) {
@@ -788,6 +823,10 @@ function contributionSerializedTagOptions_(allowed) {
   const count = Math.pow(2, allowed.length);
   for (let mask = 1; mask < count; mask += 1) {
     const tags = allowed.filter(function(_, index) { return (mask & (1 << index)) !== 0; });
+    const ageTagCount = tags.filter(function(tag) {
+      return CGB_CONTRIBUTION_AGE_TAGS.indexOf(tag) >= 0;
+    }).length;
+    if (ageTagCount > 1) continue;
     options.push(tags.join('|'));
   }
   return options;

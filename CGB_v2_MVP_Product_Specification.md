@@ -222,12 +222,12 @@ Recommended Watch Party module:
 - Event or organizer link
 - Start or arrival information
 - Event-specific positive tags such as **RSVP REQUESTED** and **CAL SPECIALS** when known
-- Event-level 21+ or audio information only when it adds context not already represented persistently for the venue
+- Event-level 21+, ALL AGES, or audio information only when it adds context not already represented persistently for the venue
 - Restrictions or game-day note when present
 - Current Bear count
 - **I’ll be here**
 
-On the mobile continuous Venue Profile, persistent community-contributed Venue observations appear in a compact **WHAT TO KNOW** block immediately after the venue identity/address and before the Watch Party module. The header includes a quiet **Add info →** link to the existing prefilled **Tell us about this location** Form without adding a separate CTA row. Render only known positive tags: **21+**, **AUDIO ON**, **FOOD**, **CAL BEER**, **LARGE CROWD**, and **CAL MEMORABILIA**. When none are known, keep the block compact with a subtle empty state. Do not duplicate these tags later under community quotes.
+On the mobile continuous Venue Profile, persistent community-contributed Venue observations appear in a compact **WHAT TO KNOW** block immediately after the venue identity/address and before the Watch Party module. The header includes a quiet **Add info →** link to the existing prefilled **Tell us about this location** Form without adding a separate CTA row. Render only known positive tags: **21+**, **ALL AGES**, **AUDIO ON**, **FOOD**, **CAL BEER**, **LARGE CROWD**, and **CAL MEMORABILIA**. When none are known, keep the block compact with a subtle empty state. Do not duplicate these tags later under community quotes.
 
 The community experience section is labeled **YOU SAY** and contains fan experiences plus the existing experience-contribution prompt. **CGB SAYS** remains reserved for CGB editorial content. On mobile, when an approved venue photo exists, it appears after **YOU SAY** so venue facts, selected-game activity, attendance actions, editorial context, and community context come before supporting media. Wider layouts may retain their existing spatial hierarchy and tag placement unless separately changed.
 
@@ -269,7 +269,7 @@ The Google Form collects structured information:
 - Optional combined structured detail block
 - Optional freeform game-day note
 
-The combined structured detail block uses the same contributor-facing vocabulary across Watch Party creation and update Forms. Venue-capable selections normalize to **21+**, **AUDIO ON**, **FOOD**, **CAL BEER**, **LARGE CROWD**, and **CAL MEMORABILIA**. Watch Party-only selections normalize to **RSVP REQUESTED** and **CAL SPECIALS**.
+The combined structured detail block uses the same contributor-facing vocabulary across Watch Party creation and update Forms. Venue-capable selections normalize to **21+**, **ALL AGES**, **AUDIO ON**, **FOOD**, **CAL BEER**, **LARGE CROWD**, and **CAL MEMORABILIA**. Watch Party-only selections normalize to **RSVP REQUESTED** and **CAL SPECIALS**.
 
 Submission behavior:
 
@@ -279,7 +279,7 @@ Submission behavior:
 4. The Watch Party publishes automatically.
 5. Venue-capable positive selections may immediately seed absent persistent Venue tags; one valid submission is sufficient.
 6. Watch Party-only selections remain attached only to that event.
-7. Existing event-level 21+ and audio fields remain supported for backward compatibility.
+7. Existing event-level 21+, all-ages, and audio fields remain supported for backward compatibility.
 8. A valid timezone-qualified start/arrival time may publish automatically. Ambiguous times remain private for review.
 9. Destructive or identity changes such as cancellation/move, organizer replacement, or material event-link replacement are never auto-applied from an unreviewed update.
 10. The user sees a simple submission confirmation.

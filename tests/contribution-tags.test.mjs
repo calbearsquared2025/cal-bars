@@ -20,9 +20,9 @@ function codeHarness() {
 
 test('venue tags use the approved vocabulary and deterministic display order', () => {
   assert.deepEqual(
-    venueTagsForVenue({ venue_tags: ['cal_memorabilia', 'food', '21_plus', 'not_approved'] }),
+    venueTagsForVenue({ venue_tags: ['cal_memorabilia', 'food', 'all_ages', 'not_approved'] }),
     [
-      { value: '21_plus', label: '21+' },
+      { value: 'all_ages', label: 'ALL AGES' },
       { value: 'food', label: 'FOOD' },
       { value: 'cal_memorabilia', label: 'CAL MEMORABILIA' }
     ]
@@ -50,11 +50,20 @@ test('Watch Party renders event-only tags and does not duplicate persistent venu
     }, { venue_tags: [] }),
     ['21+', 'AUDIO ON']
   );
+
+  assert.deepEqual(
+    watchPartyTagLabels({ age_policy: 'all_ages' }, { venue_tags: [] }),
+    ['ALL AGES']
+  );
+  assert.deepEqual(
+    watchPartyTagLabels({ age_policy: 'all_ages' }, { venue_tags: ['all_ages'] }),
+    []
+  );
 });
 
-test('rejected negative tags are not reintroduced by legacy age/audio values', () => {
+test('negative audio values do not create positive tags', () => {
   assert.deepEqual(
-    watchPartyTagLabels({ age_policy: 'all_ages', sound_status: 'confirmed_off' }, {}),
+    watchPartyTagLabels({ sound_status: 'confirmed_off' }, {}),
     []
   );
 });
@@ -66,8 +75,8 @@ test('Apps Script public whitelist exposes intended structured fields while cano
   assert.equal(Array.from(api.CGB_TABS.Venues).includes('venue_tags'), false);
   assert.equal(Array.from(api.CGB_TABS.Watch_Parties).includes('feature_tags'), false);
   assert.deepEqual(
-    Array.from(api.normalizePublicControlledTags_('food|malicious|21_plus|food', ['21_plus', 'food'])),
-    ['21_plus', 'food']
+    Array.from(api.normalizePublicControlledTags_('food|malicious|all_ages|food', ['all_ages', 'food'])),
+    ['all_ages', 'food']
   );
 });
 

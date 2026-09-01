@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 export const VENUE_TAGS = Object.freeze([
-  '21_plus', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
+  '21_plus', 'all_ages', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
 ]);
 export const WATCH_PARTY_TAGS = Object.freeze(['rsvp_requested', 'cal_specials']);
 
