@@ -14,11 +14,14 @@ export function connectFooterPopover({
   if (!dialog || !button || typeof window === 'undefined' || typeof document === 'undefined') return null;
 
   const media = window.matchMedia(mediaQuery);
+  button.setAttribute('aria-expanded', 'false');
+  if (dialog.id && !button.hasAttribute('aria-controls')) button.setAttribute('aria-controls', dialog.id);
 
   const clear = () => {
     dialog.classList.remove('about-dialog--footer-popover');
     dialog.style.removeProperty('--about-popover-left');
     dialog.style.removeProperty('--about-popover-bottom');
+    button.setAttribute('aria-expanded', 'false');
   };
 
   const close = ({ restoreFocus = false } = {}) => {
@@ -49,6 +52,7 @@ export function connectFooterPopover({
     dialog.style.setProperty('--about-popover-bottom', `${VIEWPORT_INSET}px`);
     dialog.classList.add('about-dialog--footer-popover');
     dialog.show();
+    button.setAttribute('aria-expanded', 'true');
     return true;
   };
 
