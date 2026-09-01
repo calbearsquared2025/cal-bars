@@ -134,6 +134,32 @@ async function confirmResolvedAddress() {
   check((element('#external-venue-confirm')?.textContent || '').trim() === 'I’ll be here', 'Resolved confirmation should use the existing I’ll be here action');
 }
 
+function verticalGap(upper, lower) {
+  if (!upper || !lower) return Number.NEGATIVE_INFINITY;
+  return lower.getBoundingClientRect().top - upper.getBoundingClientRect().bottom;
+}
+
+function checkManualAddressLayout() {
+  const name = element('#manual-venue-name');
+  const choices = element('.external-venue-manual > .external-venue-actions');
+  const address = element('#manual-venue-address');
+  const addressForm = address?.closest('form');
+  const submit = addressForm?.querySelector('button[type="submit"]');
+  const cancel = [...document.querySelectorAll('.external-venue-manual > .secondary-button')]
+    .find((button) => button.textContent.trim() === 'Cancel');
+
+  check(visible(name) && visible(choices) && visible(address) && visible(submit) && visible(cancel), 'Manual address layout controls should all be visible');
+  check(verticalGap(name, choices) >= 6, 'Mode selector should follow venue name without overlap');
+  check(verticalGap(choices, address) >= 6, 'Street address should follow mode selector without overlap');
+  check(verticalGap(address, submit) >= 6, 'Use this address should follow the street-address field without overlap');
+  check(verticalGap(submit, cancel) >= 6, 'Cancel should follow the address CTA without overlap');
+  if (address && submit && addressForm) {
+    const formWidth = addressForm.getBoundingClientRect().width;
+    check(Math.abs(address.getBoundingClientRect().width - formWidth) <= 2, 'Street address should use the full manual form width');
+    check(Math.abs(submit.getBoundingClientRect().width - formWidth) <= 2, 'Use this address should use the full manual form width');
+  }
+}
+
 async function runKnownLocation() {
   await openManualFallback();
   let geolocationCalls = 0;
@@ -156,6 +182,7 @@ async function runAddressEntry({ desktop = false } = {}) {
   [...document.querySelectorAll('.external-venue-manual .secondary-button')]
     .find((button) => button.textContent.trim() === 'Enter address')?.click();
   await waitFor(() => visible('#manual-venue-address'), 'manual address entry');
+  checkManualAddressLayout();
   element('#manual-venue-address').value = '2123 N Bellflower Blvd, Long Beach, CA 90815';
   element('#manual-venue-address').closest('form')?.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   await confirmResolvedAddress();
