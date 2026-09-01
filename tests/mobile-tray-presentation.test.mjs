@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const mobilePolish = await readFile(new URL('../js/mobile-polish.mjs', import.meta.url), 'utf8');
 const firstPass = await readFile(new URL('../js/map-profile-first-pass.mjs', import.meta.url), 'utf8');
+const shellControls = await readFile(new URL('../js/shell-controls.mjs', import.meta.url), 'utf8');
 const fanExperiences = await readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8');
 const mobileCss = await readFile(new URL('../css/mobile-polish.css', import.meta.url), 'utf8');
 
@@ -14,9 +15,9 @@ test('mobile opening stats and legend follow the existing tray data-state', () =
   assert.match(mobilePolish, /function sync\(\) \{[\s\S]*?syncOpeningStatVisibility\(\);/);
 });
 
-test('mobile list navigation reuses the app tray transition instead of writing duplicate state', () => {
-  assert.match(firstPass, /window\.CGBApp\?\.showLocations\?\.\(\);/);
-  assert.doesNotMatch(firstPass, /state\.trayState\s*=|tray\.dataset\.state\s*=|function setTrayState\(/);
+test('mobile list navigation has one canonical tray transition owner', () => {
+  assert.match(shellControls, /function showList\(\)[\s\S]*?window\.CGBApp\.showLocations\(\);/);
+  assert.doesNotMatch(firstPass, /state\.trayState\s*=|tray\.dataset\.state\s*=|function setTrayState\(|mobile-list-button|showLocations/);
 });
 
 test('WHAT TO KNOW keeps Add info adjacent to the section title', () => {
