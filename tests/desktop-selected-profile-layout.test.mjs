@@ -4,19 +4,20 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('wide desktop expands the selected profile and its navigation together while keeping browse width unchanged', async () => {
+test('desktop expands the selected profile and its navigation together while keeping browse width unchanged', async () => {
   const [shellCss, profileCss] = await Promise.all([
     read('css/design-board-4.css'),
     read('css/venue-profile.css')
   ]);
 
   assert.match(shellCss, /\.venue-tray\s*\{[\s\S]*?width:\s*min\(390px, 34vw\);/);
-  assert.match(profileCss, /@media \(min-width: 1100px\)[\s\S]*?#map-view > #venue-tray\.venue-tray\.tray--selected\s*\{[\s\S]*?width:\s*clamp\(500px, 36vw, 520px\)\s*!important;/);
-  assert.match(profileCss, /body\[data-view="map"\]:has\(#map-view > #venue-tray\.venue-tray\.tray--selected\) \.mobile-command-bar\s*\{[\s\S]*?width:\s*clamp\(500px, 36vw, 520px\)\s*!important;/);
-  assert.match(profileCss, /\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) \.maplibregl-ctrl-top-right\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 36vw, 520px\) \+ 26px\)\s*!important;/);
+  assert.match(profileCss, /@media \(min-width: 900px\)[\s\S]*?#map-view > #venue-tray\.venue-tray\.tray--selected\s*\{[\s\S]*?width:\s*clamp\(500px, 52vw, 620px\)\s*!important;/);
+  assert.match(profileCss, /body\[data-view="map"\]:has\(#map-view > #venue-tray\.venue-tray\.tray--selected\) \.mobile-command-bar\s*\{[\s\S]*?width:\s*clamp\(500px, 52vw, 620px\)\s*!important;/);
+  assert.match(profileCss, /\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) \.maplibregl-ctrl-top-right\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 52vw, 620px\) \+ 26px\)\s*!important;/);
+  assert.doesNotMatch(profileCss, /@media \(min-width: 1100px\)/);
 });
 
-test('wide desktop tray width and map controls animate together with reduced-motion support', async () => {
+test('desktop tray width and map controls animate together with reduced-motion support', async () => {
   const source = await read('js/icon-upgrade.mjs');
   const motionBlock = source.match(/function syncDesktopTrayMotion\(\) \{[\s\S]*?\n\}/)?.[0] || '';
 
@@ -34,7 +35,7 @@ test('wide desktop tray width and map controls animate together with reduced-mot
   assert.doesNotMatch(motionBlock, /document\.createElement\('style'\)/);
 });
 
-test('wide desktop pairs venue identity evenly with a full-height CGB Says surface while its gold rule tracks only editorial content', async () => {
+test('desktop pairs venue identity evenly with a full-height CGB Says surface while its gold rule tracks only editorial content', async () => {
   const [css, iconSource, profileSource] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/icon-upgrade.mjs'),
@@ -50,17 +51,19 @@ test('wide desktop pairs venue identity evenly with a full-height CGB Says surfa
   assert.match(css, /:has\(> \.detail-hero > \.venue-badges > \*\) > \.detail-editorial\s*\{[\s\S]*?padding-top:\s*34px\s*!important;/);
   assert.doesNotMatch(css, /:has\(> \.detail-hero > \.venue-badges > \*\) > \.detail-editorial::before/);
   assert.match(profileSource, /function arrangeDesktopVenueIdentity/);
+  assert.doesNotMatch(profileSource, /WIDE_DESKTOP_QUERY/);
   assert.doesNotMatch(iconSource, /syncDesktopProfileAttendance/);
   assert.doesNotMatch(iconSource, /detail-attendance-compact/);
   assert.doesNotMatch(css, /activity-card--desktop-attendance/);
 });
 
-test('wide desktop address keeps distance and Directions with locality without extra row spacing', async () => {
+test('desktop address keeps distance and Directions with locality without extra row spacing', async () => {
   const [css, source] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/venue-profile-enhancement.mjs')
   ]);
 
+  assert.match(source, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
   assert.match(source, /getWatchParty, haversineMiles/);
   assert.match(source, /function desktopDistanceCopy/);
   assert.match(source, /origin\?\.label !== 'your location'/);
@@ -83,13 +86,14 @@ test('desktop Locations remains navy when Selected is active without changing ta
   assert.doesNotMatch(css, /#mobile-list-button\s*\{[\s\S]*?pointer-events:\s*none/);
 });
 
-test('wide desktop keeps Locate me beside the expanded tray', async () => {
+test('desktop keeps Locate me beside the expanded tray', async () => {
   const css = await read('css/mobile-polish.css');
 
-  assert.match(css, /@media \(min-width: 1100px\)[\s\S]*?\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) > \.map-actions\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 36vw, 520px\) \+ 36px\);/);
+  assert.match(css, /@media \(min-width: 900px\)[\s\S]*?\.map-view:has\(> #venue-tray\.venue-tray\.tray--selected\) > \.map-actions\s*\{[\s\S]*?right:\s*calc\(clamp\(500px, 52vw, 620px\) \+ 36px\);/);
+  assert.doesNotMatch(css, /@media \(min-width: 1100px\)/);
 });
 
-test('wide desktop pins venue identity and CGB Says while Watch Party content scrolls normally', async () => {
+test('desktop pins venue identity and CGB Says while Watch Party content scrolls normally', async () => {
   const [profileCss, partyCss] = await Promise.all([
     read('css/venue-profile.css'),
     read('css/watch-party-display.css')
@@ -100,7 +104,7 @@ test('wide desktop pins venue identity and CGB Says while Watch Party content sc
   assert.match(partyCss, /@media \(min-width: 900px\)[\s\S]*?#tray-selected > #venue-detail > \.party-module\.party-module--multiple \.party-module__title\s*\{[\s\S]*?position:\s*static;/);
 });
 
-test('wide desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
+test('desktop watch party uses structured two-column metadata and full-width supporting content', async () => {
   const css = await read('css/venue-profile.css');
 
   assert.match(css, /> \.party-module\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0, 1\.08fr\) minmax\(150px, \.82fr\)\s*!important;[\s\S]*?column-gap:\s*26px\s*!important;/);
@@ -110,7 +114,7 @@ test('wide desktop watch party uses structured two-column metadata and full-widt
   assert.match(css, /> \.party-module > \.party-module__title,[\s\S]*?> \.party-module > \.party-module__report\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;/);
 });
 
-test('wide desktop keeps attendance horizontal without divider rules and community voices below it', async () => {
+test('desktop keeps attendance horizontal without divider rules and community voices below it', async () => {
   const css = await read('css/venue-profile.css');
 
   assert.match(css, /> \.activity-card\s*\{[\s\S]*?padding:\s*11px 18px\s*!important;[\s\S]*?border-top:\s*0\s*!important;/);
@@ -119,7 +123,7 @@ test('wide desktop keeps attendance horizontal without divider rules and communi
   assert.match(css, /> \.detail-fan-experiences\s*\{[\s\S]*?border-top:\s*0\s*!important;/);
 });
 
-test('wide desktop order is identity, CGB Says, watch party, attendance, Bears Say, then media', async () => {
+test('desktop order is identity, CGB Says, watch party, attendance, Bears Say, then media before final balancing', async () => {
   const [css, source] = await Promise.all([
     read('css/venue-profile.css'),
     read('js/venue-profile-enhancement.mjs')
