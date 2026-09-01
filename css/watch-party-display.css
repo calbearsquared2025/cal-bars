@@ -121,6 +121,7 @@
 .party-module__report-action {
   color: var(--cgb-navy-900);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .party-module__report:hover .party-module__report-action,
