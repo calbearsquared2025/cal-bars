@@ -54,12 +54,6 @@ function reviewPage(root, response) {
   const driver = `<script>
     (() => {
       const sleep = (ms = 30) => new Promise((resolve) => setTimeout(resolve, ms));
-      const visible = (node) => {
-        if (!node || node.hidden) return false;
-        const style = getComputedStyle(node);
-        const rect = node.getBoundingClientRect();
-        return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-      };
       const waitFor = async (predicate, timeout = 5000) => {
         const deadline = performance.now() + timeout;
         while (performance.now() < deadline) {
@@ -69,27 +63,39 @@ function reviewPage(root, response) {
         return false;
       };
       (async () => {
-        await waitFor(() => document.querySelector('#app')?.getAttribute('aria-busy') === 'false' && window.CGBApp?.getState?.()?.snapshot && window.CGBExternalVenueSearch && document.querySelector('#manual-venue-name'));
-        const mobile = matchMedia('(max-width: 899px)').matches;
-        if (mobile) {
+        await waitFor(() =>
+          document.querySelector('#app')?.getAttribute('aria-busy') === 'false' &&
+          window.CGBExternalVenueSearch &&
+          document.querySelector('#manual-venue-name') &&
+          document.querySelector('#manual-venue-address')
+        );
+
+        if (matchMedia('(max-width: 899px)').matches) {
           document.querySelector('#mobile-search-button')?.click();
-          await waitFor(() => visible(document.querySelector('#search-surface')));
+          await sleep(120);
         }
-        const current = window.CGBApp.getState();
-        current.searchMode = 'add-location';
-        current.nearbyOrigin = { lat: 33.7765, lon: -118.1258, label: 'your location' };
-        current.origin = null;
-        document.body.dataset.searchMode = 'add-location';
-        const input = document.querySelector('#location-query');
-        input.value = 'District 4 Pizza';
-        window.CGBExternalVenueSearch.searchCurrentQuery({ immediate: true, finalized: true });
-        await waitFor(() => visible(document.querySelector('.search-result-group--external .missing-location-link')));
-        document.querySelector('.search-result-group--external .missing-location-link')?.click();
-        await waitFor(() => document.querySelector('#external-venue-dialog')?.open && visible(document.querySelector('.external-venue-manual')));
-        [...document.querySelectorAll('.external-venue-manual .secondary-button')]
-          .find((button) => button.textContent.trim() === 'Enter address')?.click();
-        await waitFor(() => visible(document.querySelector('#manual-venue-address')));
-        document.querySelector('#manual-venue-address').value = '2123 N Bellflower Blvd, Long Beach, CA 90815';
+
+        const dialog = document.querySelector('#external-venue-dialog');
+        const shell = dialog?.querySelector('.external-venue-shell');
+        const panel = shell?.querySelector(':scope > .external-venue-manual');
+        const standardHeader = shell?.querySelector(':scope > header.external-venue-header');
+        const disclosure = shell?.querySelector(':scope > .external-venue-disclosure');
+        const standardError = shell?.querySelector(':scope > #external-venue-error');
+        const standardActions = shell?.querySelector(':scope > .external-venue-actions');
+        const name = document.querySelector('#manual-venue-name');
+        const address = document.querySelector('#manual-venue-address');
+        const addressForm = address?.closest('form');
+
+        if (!dialog || !panel || !name || !address || !addressForm) return;
+        if (standardHeader) standardHeader.hidden = true;
+        if (disclosure) disclosure.hidden = true;
+        if (standardError) standardError.hidden = true;
+        if (standardActions) standardActions.hidden = true;
+        panel.hidden = false;
+        addressForm.hidden = false;
+        name.value = 'District 4 Pizza';
+        address.value = '2123 N Bellflower Blvd, Long Beach, CA 90815';
+        if (!dialog.open) dialog.showModal();
         document.body.dataset.reviewReady = 'true';
       })();
     })();
@@ -137,7 +143,7 @@ async function serveAndCapture(root, label) {
         '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
         '--disable-sync', '--hide-scrollbars', '--metrics-recording-only', '--no-first-run',
         '--run-all-compositor-stages-before-draw', `--user-data-dir=${profile}`,
-        `--window-size=${viewport.width},${viewport.height}`, '--virtual-time-budget=30000',
+        `--window-size=${viewport.width},${viewport.height}`, '--virtual-time-budget=10000',
         `--screenshot=${output}`, `http://127.0.0.1:${port}/__cgb_add_place_review__`
       ];
       const child = spawn(browser, args, { stdio: ['ignore', 'pipe', 'pipe'] });
