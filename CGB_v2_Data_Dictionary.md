@@ -1,7 +1,7 @@
 # Cal Golden Bars v2.0 — Data Dictionary
 
 **Status:** Final for functional prototype  
-**Date:** July 25, 2026
+**Date:** September 1, 2026
 
 ## 1. Data architecture
 
@@ -108,6 +108,29 @@ cal_beer
 large_crowd
 cal_memorabilia
 ```
+
+#### Venue tag order and semantics
+
+Recognized `venue_tags` are stored and rendered in this canonical order:
+
+```text
+21_plus
+all_ages
+audio_on
+food
+cal_beer
+large_crowd
+cal_memorabilia
+```
+
+Rules:
+
+- `21_plus` and `all_ages` are mutually exclusive persistent age tags. Whichever applies occupies the first age slot in the canonical order.
+- `all_ages` means minors are normally admitted during hours when a Cal football game would reasonably be shown. A requirement that minors be accompanied by a parent or guardian is compatible with `all_ages`.
+- If age access materially depends on time, event, seating area, or another condition, omit the persistent age tag unless one policy is reliably representative. Use `Watch_Parties.age_policy` for a specific event when known.
+- `21_plus` means the venue is normally restricted to guests age 21 or older during those hours.
+- `food` means the venue serves a substantive food menu. Free snacks, popcorn, permission to bring outside food, or occasional third-party pop-ups alone do not qualify.
+- Missing tags mean unknown/not asserted, not false.
 
 ### Creation rules
 
