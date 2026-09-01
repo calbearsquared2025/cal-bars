@@ -26,3 +26,23 @@ test('About and Privacy share one desktop footer popover controller', () => {
   assert.doesNotMatch(privacySource, /showModal\(/);
   assert.match(supportCss, /\.about-dialog\.about-dialog--footer-popover/);
 });
+
+test('About attribution is added to both responsive About presentations before Support', () => {
+  assert.match(supportSource, /Cal Golden Bars is built and maintained by Matthew Putzulu\./);
+  assert.match(supportSource, /#about-surface \.about-surface__content/);
+  assert.match(supportSource, /#about-dialog \.dialog-shell/);
+  assert.match(supportSource, /support\.before\(paragraph\)/);
+});
+
+test('About initialization does not depend on the support iframe being available', () => {
+  const popoverIndex = supportSource.indexOf('const aboutPopover = connectFooterPopover');
+  const supportGuardIndex = supportSource.indexOf('if (!dialog || !frame || openButtons.length === 0) return;');
+  assert.ok(popoverIndex >= 0);
+  assert.ok(supportGuardIndex > popoverIndex);
+});
+
+test('desktop footer popovers keep their expanded state accessible', () => {
+  assert.match(popoverSource, /button\.setAttribute\('aria-expanded', 'false'\)/);
+  assert.match(popoverSource, /button\.setAttribute\('aria-expanded', 'true'\)/);
+  assert.match(popoverSource, /button\.setAttribute\('aria-controls', dialog\.id\)/);
+});
