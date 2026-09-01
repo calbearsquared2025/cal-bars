@@ -383,6 +383,8 @@
     <a href="https://x.com/calbearsquared" target="_blank" rel="noopener" aria-label="Cal Bear Squared on X">@calbearsquared</a>
     <span aria-hidden="true">·</span>
     <button id="about-button" class="text-button" type="button">About</button>
+    <span aria-hidden="true">·</span>
+    <button id="privacy-button" class="text-button" type="button">Privacy</button>
   </footer>
 
   <dialog id="about-dialog" class="about-dialog">
@@ -399,6 +401,21 @@
         <span class="eyebrow">Support Cal Golden Bars</span>
         <p>If Cal Golden Bars has helped you find your Cal crowd, consider <button class="text-button" type="button" data-support-open>supporting CGB</button>.</p>
       </div>
+    </form>
+  </dialog>
+
+  <dialog id="privacy-dialog" class="about-dialog" aria-labelledby="privacy-dialog-title">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-header">
+        <h2 id="privacy-dialog-title">Privacy</h2>
+        <button class="icon-button" value="cancel" aria-label="Close privacy panel">
+          <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-close"></use></svg>
+        </button>
+      </div>
+      <p>Cal Golden Bars doesn’t require an account.</p>
+      <p>We use a random browser ID to remember <strong>I’ll be here</strong> selections and Google Analytics for site analytics. If you share your device location, it’s used for location-based features and isn’t stored.</p>
+      <p>Private user information isn’t published or sold.</p>
+      <p>Questions, corrections, or removal requests? <a href="mailto:calbearsquared2025@gmail.com">Contact me.</a></p>
     </form>
   </dialog>
 
@@ -428,6 +445,7 @@
   <script type="module" src="js/icon-upgrade.mjs"></script>
   <script type="module" src="js/shell-controls.mjs"></script>
   <script type="module" src="js/support-dialog.mjs"></script>
+  <script type="module" src="js/privacy-dialog.mjs"></script>
   <script type="module" src="js/mobile-polish.mjs"></script>
   <script type="module" src="js/map-failure.mjs"></script>
   <script type="module" src="js/watch-party-display.js"></script>
