@@ -666,9 +666,11 @@ function cancelManualFlow() {
 
 function createManualPanel() {
   const panel = document.createElement('section');
-  panel.className = 'external-venue-header external-venue-manual';
+  panel.className = 'external-venue-manual';
   panel.hidden = true;
 
+  const header = document.createElement('header');
+  header.className = 'external-venue-header';
   const eyebrow = document.createElement('span');
   eyebrow.className = 'eyebrow';
   eyebrow.textContent = 'Add this place';
@@ -677,19 +679,20 @@ function createManualPanel() {
   const intro = document.createElement('p');
   intro.className = 'external-venue-context';
   intro.textContent = 'Keep the venue name, then use your location or enter the street address.';
+  header.append(eyebrow, title, intro);
 
   const nameLabel = document.createElement('label');
   nameLabel.htmlFor = 'manual-venue-name';
   nameLabel.textContent = 'Venue name';
   const nameField = document.createElement('div');
-  nameField.className = 'search-field';
+  nameField.className = 'external-venue-manual-field';
   const nameInput = document.createElement('input');
   nameInput.id = 'manual-venue-name';
   nameInput.type = 'text';
   nameInput.autocomplete = 'organization';
   nameInput.autocapitalize = 'words';
   nameInput.maxLength = 180;
-  nameField.append(nameInput);
+  nameField.append(nameLabel, nameInput);
 
   const choices = document.createElement('div');
   choices.className = 'external-venue-actions';
@@ -704,13 +707,11 @@ function createManualPanel() {
   choices.append(hereButton, addressChoice);
 
   const addressForm = document.createElement('form');
-  addressForm.className = 'external-venue-header';
+  addressForm.className = 'external-venue-manual-field external-venue-address-form';
   addressForm.hidden = true;
   const addressLabel = document.createElement('label');
   addressLabel.htmlFor = 'manual-venue-address';
   addressLabel.textContent = 'Street address';
-  const addressField = document.createElement('div');
-  addressField.className = 'search-field';
   const addressInput = document.createElement('input');
   addressInput.id = 'manual-venue-address';
   addressInput.type = 'search';
@@ -718,13 +719,12 @@ function createManualPanel() {
   addressInput.placeholder = 'Street address, city, state';
   const addressSubmit = document.createElement('button');
   addressSubmit.type = 'submit';
-  addressSubmit.className = 'search-submit';
+  addressSubmit.className = 'primary-button';
   addressSubmit.textContent = 'Use this address';
-  addressField.append(addressInput, addressSubmit);
-  addressForm.append(addressLabel, addressField);
+  addressForm.append(addressLabel, addressInput, addressSubmit);
 
   const status = document.createElement('p');
-  status.className = 'external-search-status';
+  status.className = 'external-venue-status';
   status.setAttribute('role', 'status');
   status.hidden = true;
   const error = document.createElement('p');
@@ -736,7 +736,7 @@ function createManualPanel() {
   cancel.className = 'secondary-button';
   cancel.textContent = 'Cancel';
 
-  panel.append(eyebrow, title, intro, nameLabel, nameField, choices, addressForm, status, error, cancel);
+  panel.append(header, nameField, choices, addressForm, status, error, cancel);
   dom.externalShell.append(panel);
   Object.assign(dom, {
     manualPanel: panel,
