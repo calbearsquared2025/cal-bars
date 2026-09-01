@@ -139,35 +139,8 @@ function installStyles() {
   document.head.append(style);
 }
 
-function setCommandActive(command) {
-  document.body.dataset.commandSurface = command;
-  document.querySelectorAll('.mobile-command').forEach((button) => {
-    const active = button.dataset.command === command ||
-      (button.id === `mobile-${command}-button`);
-    button.classList.toggle('mobile-command--active', active);
-    if (active) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
-}
-
-function openListSurface(event) {
-  if (!isMobile()) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-
-  document.querySelector('#search-surface')?.setAttribute('hidden', '');
-  document.querySelector('#add-surface')?.setAttribute('hidden', '');
-  window.CGBApp?.showLocations?.();
-  setCommandActive('list');
-}
-
-function initialize() {
-  installStyles();
-  document.querySelector('#mobile-list-button')?.addEventListener('click', openListSurface, { capture: true });
-}
-
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initialize, { once: true });
+  document.addEventListener('DOMContentLoaded', installStyles, { once: true });
 } else {
-  initialize();
+  installStyles();
 }
