@@ -101,6 +101,7 @@ archived
 
 venue_tags:
 21_plus
+all_ages
 audio_on
 food
 cal_beer
@@ -277,7 +278,7 @@ Processing fields:
 - `review_status`: private workflow state such as `pending` or `not_required`
 - `manual_review_reason`: private machine-readable reason(s) for consequential corrections, conflicts, or enhancement failures
 
-The raw response is private. Successful processing automatically creates canonical Watch Party rows. Venue-capable positive selections may also seed absent `Venues.venue_tags`; `rsvp_requested` and `cal_specials` remain event-only. An unambiguous timezone-qualified start/arrival time may populate `event_start_at`.
+The raw response is private. Successful processing automatically creates canonical Watch Party rows. Venue-capable positive selections, including `21_plus` and `all_ages`, may also seed absent `Venues.venue_tags`; contradictory age assertions remain pending for review. `rsvp_requested` and `cal_specials` remain event-only. An unambiguous timezone-qualified start/arrival time may populate `event_start_at`.
 
 ## 8. Venue contribution raw responses
 

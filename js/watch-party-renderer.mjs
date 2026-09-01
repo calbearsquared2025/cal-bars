@@ -64,6 +64,7 @@ export function watchPartyTagLabels(party = {}, venue = {}) {
   const labels = [];
 
   if (party.age_policy === '21_plus' && !venueTags.has('21_plus')) labels.push('21+');
+  if (party.age_policy === 'all_ages' && !venueTags.has('all_ages')) labels.push('ALL AGES');
   if (party.sound_status === 'confirmed_on' && !venueTags.has('audio_on')) labels.push('AUDIO ON');
   if (eventTags.has('rsvp_requested')) labels.push(WATCH_PARTY_FEATURE_LABELS.rsvp_requested);
   if (eventTags.has('cal_specials')) labels.push(WATCH_PARTY_FEATURE_LABELS.cal_specials);

@@ -145,7 +145,7 @@ function harness({
       return Boolean(patterns[type]?.test(String(value || '')));
     }
   });
-  vm.runInContext(`${source}\nglobalThis.__api = { onContributionFormSubmit, processVenueStructuredContribution_, processWatchPartyStructuredUpdate_, mergeVenueContributionTags_, normalizeContributionEventStart_, parseContributionStructuredTags_ };`, context);
+  vm.runInContext(`${source}\nglobalThis.__api = { onContributionFormSubmit, processVenueStructuredContribution_, processWatchPartyStructuredUpdate_, mergeVenueContributionTags_, normalizeContributionEventStart_, parseContributionStructuredTags_, contributionSerializedTagOptions_ };`, context);
 
   const event = {
     range: { getSheet: () => raw, getRow: () => 2 },
@@ -170,6 +170,22 @@ test('one structured venue tag seeds the persistent Venue and keeps freeform/con
   assert.equal(privateRow.manual_review_reason, '');
 });
 
+test('ALL AGES is parsed and stored as a persistent Venue tag', () => {
+  const rawRow = {
+    'Venue ID': VENUE_ID,
+    'Which of these describe this location?': 'ALL AGES'
+  };
+  const { api, event, venues } = harness({ rawRow });
+  const result = api.processVenueStructuredContribution_(event, 'venue_details');
+  assert.equal(result.ok, true);
+  assert.deepEqual(Array.from(result.added_venue_tags), ['all_ages']);
+  assert.equal(objectsFromSheet(venues)[0].venue_tags, 'all_ages');
+  assert.deepEqual(
+    Array.from(api.parseContributionStructuredTags_('ALL AGES, FOOD AVAILABLE')),
+    ['all_ages', 'food']
+  );
+});
+
 test('multiple venue tags merge deterministically and unchecked options mean no change', () => {
   const { api, workbook, venues } = harness();
   api.mergeVenueContributionTags_(workbook, VENUE_ID, ['cal_memorabilia', 'audio_on', 'food']);
@@ -177,6 +193,26 @@ test('multiple venue tags merge deterministically and unchecked options mean no 
   assert.equal(objectsFromSheet(venues)[0].venue_tags, '21_plus|audio_on|food|cal_memorabilia');
   const unchanged = api.mergeVenueContributionTags_(workbook, VENUE_ID, []);
   assert.equal(unchanged.changed, false);
+});
+
+test('contradictory persistent age tags stay pending while unrelated safe tags still apply', () => {
+  const { api, workbook, venues } = harness();
+  api.mergeVenueContributionTags_(workbook, VENUE_ID, ['21_plus']);
+  const result = api.mergeVenueContributionTags_(workbook, VENUE_ID, ['all_ages', 'food']);
+  assert.equal(result.changed, true);
+  assert.deepEqual(Array.from(result.added), ['food']);
+  assert.deepEqual(Array.from(result.manualReviewReasons), ['venue_age_tag_conflict']);
+  assert.equal(objectsFromSheet(venues)[0].venue_tags, '21_plus|food');
+});
+
+test('canonical tag validation options exclude contradictory age combinations', () => {
+  const { api } = harness();
+  const options = Array.from(api.contributionSerializedTagOptions_([
+    '21_plus', 'all_ages', 'audio_on', 'food'
+  ]));
+  assert.equal(options.includes('21_plus'), true);
+  assert.equal(options.includes('all_ages'), true);
+  assert.equal(options.some((value) => value.includes('21_plus') && value.includes('all_ages')), false);
 });
 
 test('destructive venue correction remains pending review while safe structured additions still apply', () => {
@@ -225,6 +261,24 @@ test('Watch Party update targets the exact ID, seeds Venue tags, keeps event-onl
   assert.equal(party.event_start_at, '2026-09-05T23:30:00.000Z');
   assert.equal(otherParty.feature_tags, '');
   assert.equal(objectsFromSheet(venues)[0].venue_tags, 'audio_on|food');
+  assert.equal(objectsFromSheet(raw)[0].review_status, 'not_required');
+});
+
+test('Watch Party ALL AGES selection updates age policy and seeds the persistent Venue tag', () => {
+  const rawRow = {
+    'Watch Party ID': WP_ID,
+    'What are you sharing?': 'Add missing information',
+    'Which of these details apply?': 'ALL AGES'
+  };
+  const { api, event, venues, parties, raw } = harness({
+    rawSheetName: 'Watch Party Problem Submission',
+    rawRow
+  });
+  const result = api.processWatchPartyStructuredUpdate_(event);
+  assert.equal(result.ok, true);
+  assert.equal(objectsFromSheet(parties)[0].age_policy, 'all_ages');
+  assert.equal(objectsFromSheet(venues)[0].venue_tags, 'all_ages');
+  assert.deepEqual(Array.from(result.manual_review_reasons), []);
   assert.equal(objectsFromSheet(raw)[0].review_status, 'not_required');
 });
 

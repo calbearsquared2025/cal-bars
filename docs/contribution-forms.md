@@ -35,6 +35,7 @@ Contributor-facing labels normalize to canonical values:
 | Form label | Canonical value | Public display |
 |---|---|---|
 | `21+` | `21_plus` | `21+` |
+| `ALL AGES` | `all_ages` | `ALL AGES` |
 | `AUDIO ON — game sound is usually on` or Watch Party equivalent | `audio_on` | `AUDIO ON` |
 | `FOOD AVAILABLE` | `food` | `FOOD` |
 | `Serves Cal beer (Oski's Gold, Coach Ron Golden Ale)` | `cal_beer` | `CAL BEER` |
@@ -50,9 +51,9 @@ On the mobile continuous Venue Profile, persistent Venue tags render in the comp
 | `RSVP REQUESTED` | `rsvp_requested` | `RSVP REQUESTED` |
 | `CAL SPECIALS — special food, drink, or pricing for the Cal group` | `cal_specials` | `CAL SPECIALS` |
 
-These stay with the specific Watch Party. Event-level legacy 21+/audio values remain supported, but the UI suppresses a redundant event tag when the same persistent Venue context is already visible.
+These stay with the specific Watch Party. Event-level legacy 21+/ALL AGES/audio values remain supported, but the UI suppresses a redundant event tag when the same persistent Venue context is already visible.
 
-Rejected concepts are not part of the current public tag model: `ALL AGES`, `RSVP REQUIRED`, `CAL AREA`, `DEDICATED CAL AREA`, `OUTDOOR`, `ARRIVE EARLY`, `ALUMNI OWNED`, and `ALUMNI GROUP`.
+Rejected concepts are not part of the current public tag model: `RSVP REQUIRED`, `CAL AREA`, `DEDICATED CAL AREA`, `OUTDOOR`, `ARRIVE EARLY`, `ALUMNI OWNED`, and `ALUMNI GROUP`.
 
 ## 1. Tell us about this location
 
@@ -72,7 +73,7 @@ Approved questions:
 1. `Venue Name` — required short answer; prefilled.
 2. `Your relationship to this venue` — required: `Venue owner or staff`, `Alumni group organizer`, `Attendee`, `Other`.
 3. `How often do Cal fans gather here?` — required: `Most Cal football games`, `Several times per season`, `At least once per season`, `Other`.
-4. `Which of these describe this location?` — optional checkbox block using the six Venue-capable labels above.
+4. `Which of these describe this location?` — optional checkbox block using the seven Venue-capable labels above.
 5. `Anything else we should know about this venue?` — optional paragraph. Helper: `What makes this place special for Cal fans, or what should someone know before watching a game here?`
 6. `Your email (optional, kept private)` — optional short answer.
 7. `Venue ID` — required short answer; prefilled internal reference.
@@ -98,7 +99,7 @@ Approved questions:
 
 1. `Venue Name` — required, prefilled.
 2. `What are you sharing?` — required: `Add missing information`, `Correct existing information`, `Location closed or moved`, `Other`.
-3. `Which of these describe this location?` — optional, exact six-option Venue tag block.
+3. `Which of these describe this location?` — optional, exact seven-option Venue tag block.
 4. `Anything else we should add or change?` — optional paragraph.
 5. `Name (optional)` — optional/private.
 6. `Email (optional)` — optional/private.
@@ -129,14 +130,14 @@ Approved structure:
 5. `Official event or RSVP link` — optional.
 6. `What is your relationship to this Watch Party?` — required.
 7. `Event start or suggested arrival time` — optional. Include a timezone for automatic publication, e.g. `4:30 PM PT` or `7:00 PM ET`.
-8. `Which of these details apply?` — optional combined eight-option block: six Venue-capable values plus `RSVP REQUESTED` and `CAL SPECIALS`.
+8. `Which of these details apply?` — optional combined nine-option block: seven Venue-capable values plus `RSVP REQUESTED` and `CAL SPECIALS`.
 9. `Anything else fans should know?` — optional.
 10. `Contact Email` — optional/private.
 11. `Venue ID (existing)` — required, prefilled.
 
 Routine valid Watch Party submissions continue to auto-publish one canonical Watch Party per selected game. The combined structured checkbox replaces the older separate age/audio questions in the manually maintained Form. Processors remain tolerant of those historical raw columns.
 
-Venue-capable selected values may seed absent persistent Venue tags. `21+` and `AUDIO ON` also populate the existing Watch Party `age_policy`/`sound_status` compatibility fields when non-conflicting. `RSVP REQUESTED` and `CAL SPECIALS` populate only `Watch_Parties.feature_tags`.
+Venue-capable selected values may seed absent persistent Venue tags. `21+`, `ALL AGES`, and `AUDIO ON` also populate the existing Watch Party `age_policy`/`sound_status` compatibility fields when non-conflicting. Contradictory age selections remain pending for review. `RSVP REQUESTED` and `CAL SPECIALS` populate only `Watch_Parties.feature_tags`.
 
 A timezone-qualified start/arrival time may populate `event_start_at`; an ambiguous time remains private for review rather than being guessed.
 
@@ -163,7 +164,7 @@ Approved questions:
 1. `Venue Name` — required, prefilled.
 2. `Game` — required, prefilled.
 3. `What are you sharing?` — required: `Add missing information`, `Correct existing information`, `Event canceled or moved`, `Organizer / event link update`, `Other`.
-4. `Which of these details apply?` — optional, same eight-option block as Watch Party creation.
+4. `Which of these details apply?` — optional, same nine-option block as Watch Party creation.
 5. `Event start or suggested arrival time` — optional; include timezone for automatic publication.
 6. `Anything else we should add or change?` — optional.
 7. `Name (optional)` — optional/private.

@@ -12,7 +12,7 @@ const CGB_WORKBOOK_PROPERTY = 'CGB_WORKBOOK_ID';
 const CGB_PUBLIC_CACHE_KEY = 'cgb_v2_public_snapshot';
 const CGB_PUBLIC_CACHE_SECONDS = 300;
 const CGB_PUBLIC_VENUE_TAGS = Object.freeze([
-  '21_plus', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
+  '21_plus', 'all_ages', 'audio_on', 'food', 'cal_beer', 'large_crowd', 'cal_memorabilia'
 ]);
 const CGB_PUBLIC_WATCH_PARTY_TAGS = Object.freeze([
   'rsvp_requested', 'cal_specials'
