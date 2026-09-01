@@ -438,43 +438,67 @@ function mapVisibilityMetrics() {
 
   if (mobile && dom.mapToolbar) {
     const toolbarRect = dom.mapToolbar.getBoundingClientRect();
-    if (toolbarRect.bottom > mapRect.top && toolbarRect.top < mapRect.bottom) {
-      insets.top = Math.max(insets.top, toolbarRect.bottom - mapRect.top + 12);
-    }
+    insets.top = Math.max(insets.top, toolbarRect.bottom - mapRect.top + 8);
   }
-
-  if (mobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
+  if (mobile && dom.tray && state.trayState !== 'peek') {
     const trayRect = dom.tray.getBoundingClientRect();
-    if (trayRect.top < mapRect.bottom && trayRect.bottom > mapRect.top) {
-      insets.bottom = Math.max(insets.bottom, mapRect.bottom - Math.max(mapRect.top, trayRect.top) + 12);
-    }
+    insets.bottom = Math.max(insets.bottom, mapRect.bottom - trayRect.top + 12);
   }
-
-  if (!mobile && dom.tray && getComputedStyle(dom.tray).display !== 'none') {
-    const trayRect = dom.tray.getBoundingClientRect();
-    if (trayRect.left < mapRect.right && trayRect.right > mapRect.left) {
-      insets.right = Math.max(insets.right, mapRect.right - Math.max(mapRect.left, trayRect.left) + 16);
-    }
-  }
-
-  return { viewport: { width: mapRect.width, height: mapRect.height }, insets };
+  return { mapRect, insets };
 }
 
-function panToVenue(venue) {
-  if (!state.map || !venue) return;
-  const point = state.map.project([Number(venue.longitude), Number(venue.latitude)]);
-  const { viewport, insets } = mapVisibilityMetrics();
-  const offset = calculateMinimalPan({ point, viewport, insets });
-  if (Math.abs(offset.x) < 0.5 && Math.abs(offset.y) < 0.5) return;
+function markerScreenPoint(venue) {
+  if (!state.map) return null;
+  const longitude = Number(venue?.longitude);
+  const latitude = Number(venue?.latitude);
+  if (![longitude, latitude].every(Number.isFinite)) return null;
+  const projected = state.map.project([longitude, latitude]);
+  if (!projected) return null;
+  return { x: Number(projected.x), y: Number(projected.y) };
+}
 
-  const currentZoom = state.map.getZoom();
-  const centerPoint = state.map.project(state.map.getCenter());
-  const nextCenter = state.map.unproject([centerPoint.x - offset.x, centerPoint.y - offset.y]);
-  state.map.easeTo({
-    center: nextCenter,
-    zoom: currentZoom,
-    duration: REDUCED_MOTION ? 0 : 320,
+function venueNeedsPan(venue, metrics) {
+  const point = markerScreenPoint(venue);
+  if (!point) return false;
+  const { mapRect, insets } = metrics;
+  const x = point.x;
+  const y = point.y;
+  return x < insets.left ||
+    x > mapRect.width - insets.right ||
+    y < insets.top ||
+    y > mapRect.height - insets.bottom;
+}
+
+function selectedVenuePan() {
+  const venue = selectedVenue();
+  if (!venue || !state.map || state.detailMode) return null;
+  const metrics = mapVisibilityMetrics();
+  if (!venueNeedsPan(venue, metrics)) return null;
+  const point = markerScreenPoint(venue);
+  if (!point) return null;
+  const target = {
+    x: Math.min(Math.max(point.x, metrics.insets.left), metrics.mapRect.width - metrics.insets.right),
+    y: Math.min(Math.max(point.y, metrics.insets.top), metrics.mapRect.height - metrics.insets.bottom)
+  };
+  const delta = calculateMinimalPan(point, target);
+  return Math.abs(delta.x) > 0.5 || Math.abs(delta.y) > 0.5 ? delta : null;
+}
+
+function keepSelectedVenueVisible() {
+  const delta = selectedVenuePan();
+  if (!delta || !state.map) return false;
+  state.map.panBy([delta.x, delta.y], {
+    duration: REDUCED_MOTION ? 0 : 260,
     essential: true
+  });
+  return true;
+}
+
+function scheduleSelectedVenueVisibility() {
+  clearVenueVisibilitySchedule();
+  state.venueVisibilityFrame = requestAnimationFrame(() => {
+    state.venueVisibilityFrame = null;
+    keepSelectedVenueVisible();
   });
 }
 
@@ -483,18 +507,6 @@ function clearVenueVisibilitySchedule() {
     cancelAnimationFrame(state.venueVisibilityFrame);
     state.venueVisibilityFrame = null;
   }
-}
-
-function scheduleSelectedVenueVisibility() {
-  clearVenueVisibilitySchedule();
-  if (!state.map || !state.selectedVenueId ||
-      (isMobileLayout() && (state.detailMode || state.trayState !== 'selected'))) return;
-  state.venueVisibilityFrame = requestAnimationFrame(() => {
-    state.venueVisibilityFrame = requestAnimationFrame(() => {
-      state.venueVisibilityFrame = null;
-      panToVenue(selectedVenue());
-    });
-  });
 }
 
 function observeTrayLayout() {
@@ -598,266 +610,78 @@ function createBadges(venue, party) {
   return badges;
 }
 
-function createDetailLocalMap(venue) {
-  const latitude = Number(venue.latitude);
-  const longitude = Number(venue.longitude);
-  if (venue.photo_url || ![latitude, longitude].every(Number.isFinite)) return null;
-  const map = document.createElement('div');
-  map.className = 'detail-local-map';
-  map.dataset.venueId = venue.venue_id;
-  map.dataset.latitude = String(latitude);
-  map.dataset.longitude = String(longitude);
-  map.dataset.zoom = '15';
-  map.dataset.markerKind = markerKind(state.snapshot, state.gameId, venue);
-  map.setAttribute('role', 'group');
-  map.setAttribute('aria-label', `Local map centered on ${venue.name}`);
-  map.setAttribute('aria-busy', 'true');
-  return map;
-}
-
-function takeReusableDetailLocalMap(venue) {
-  if (venue.photo_url) return null;
-  const map = dom.venueDetail.querySelector(':scope > .detail-hero > .detail-local-map');
-  const latitude = Number(venue.latitude);
-  const longitude = Number(venue.longitude);
-  const reusable = map?.dataset.venueId === venue.venue_id &&
-    Number(map.dataset.latitude) === latitude &&
-    Number(map.dataset.longitude) === longitude &&
-    map.dataset.markerKind === markerKind(state.snapshot, state.gameId, venue);
-  if (!reusable) return null;
-  map.remove();
-  return map;
-}
-
-function renderDetailAttendanceCopy(element, copy) {
-  const raw = String(copy || '').trim();
-  const match = raw.match(/^(\d+)\s+Bear(?:s)?\s+watching here/i);
-  element.setAttribute('aria-label', raw);
-  if (!match) {
-    element.textContent = raw;
-    return;
+function createFanIntentButton(venueId, count) {
+  const intentButton = document.createElement('button');
+  intentButton.type = 'button';
+  intentButton.className = 'intent-button intent-button--compact';
+  intentButton.dataset.intentVenue = venueId;
+  intentButton.dataset.intentUi = 'compact';
+  intentButton.textContent = 'I’ll be here';
+  const activeVenueId = activeFanIntentVenueId();
+  if (activeVenueId === venueId) {
+    intentButton.classList.add('intent-button--active');
+    intentButton.textContent = 'You’ll be here · Undo';
   }
-  const number = Number(match[1]);
-  const numeral = document.createElement('span');
-  numeral.className = 'bear-count__number';
-  numeral.textContent = String(number);
-  const label = document.createElement('span');
-  label.className = 'bear-count__label';
-  label.textContent = number === 1 ? 'Bear watching here' : 'Bears watching here';
-  element.replaceChildren(numeral, label);
+  return intentButton;
 }
 
-function createDetailActionRow(venue) {
-  const row = document.createElement('div');
-  row.className = 'action-row detail-primary-actions';
-  row.dataset.venueId = venue.venue_id;
-
-  const intent = document.createElement('button');
-  intent.type = 'button';
-  intent.className = 'primary-button intent-button';
-  intent.dataset.venueId = venue.venue_id;
-  intent.textContent = 'I’ll be here';
-  intent.disabled = true;
-
-  const share = document.createElement('button');
-  share.type = 'button';
-  share.className = 'secondary-button detail-share';
-  share.textContent = 'Share';
-  share.addEventListener('click', () => shareVenue(venue));
-  row.append(intent, share);
-  return row;
-}
-
-function createDetailContribution() {
-  const section = document.createElement('section');
-  section.className = 'detail-contribution';
-  section.hidden = true;
-  const heading = document.createElement('h2');
-  heading.textContent = 'Help improve this listing';
-  const actions = document.createElement('div');
-  actions.className = 'detail-contribution__actions';
-  section.append(heading, actions);
-  return section;
-}
-
-function legacyCopyText(text) {
-  const proxy = document.createElement('textarea');
-  proxy.className = 'copy-proxy';
-  proxy.value = text;
-  proxy.readOnly = true;
-  proxy.setAttribute('aria-hidden', 'true');
-  document.body.append(proxy);
-  proxy.focus();
-  proxy.select();
-  proxy.setSelectionRange(0, proxy.value.length);
-  let copied = false;
-  try { copied = typeof document.execCommand === 'function' && document.execCommand('copy') === true; } catch (_) {}
-  proxy.remove();
-  return copied;
-}
-
-function showManualCopy(text) {
-  document.querySelector('.manual-copy-panel')?.remove();
-  const panel = document.createElement('section');
-  panel.className = 'manual-copy-panel';
-  panel.setAttribute('role', 'dialog');
-  panel.setAttribute('aria-modal', 'true');
-  panel.setAttribute('aria-label', 'Copy share message');
-
-  const heading = document.createElement('strong');
-  heading.textContent = 'Copy this message';
-  const explanation = document.createElement('p');
-  explanation.textContent = 'Automatic copying is unavailable in this browser. Select and copy the complete message below.';
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.readOnly = true;
-  input.value = text;
-  input.setAttribute('aria-label', 'Share message');
-  input.addEventListener('focus', () => input.select());
-
-  const actions = document.createElement('div');
-  actions.className = 'manual-copy-actions';
-  const select = document.createElement('button');
-  select.type = 'button';
-  select.className = 'primary-button';
-  select.textContent = 'Select message';
-  select.addEventListener('click', () => { input.focus(); input.select(); });
-  const close = document.createElement('button');
-  close.type = 'button';
-  close.className = 'secondary-button';
-  close.textContent = 'Close';
-  close.addEventListener('click', () => panel.remove());
-  actions.append(select, close);
-  panel.append(heading, explanation, input, actions);
-  document.body.append(panel);
-  input.focus();
-  input.select();
-}
-
-function buildVenueSharePayload(venue) {
-  const game = selectedGame();
-  const url = buildVenueUrl(venue.slug, game, location.href);
+function createSelectedCard(venue) {
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
-  return {
-    title: `${party ? 'Watch Party at ' : ''}${venue.name} · Cal Golden Bars`,
-    text: buildVenueShareMessage({
-      venueName: venue.name,
-      opponentName: game?.opponent_name,
-      hasWatchParty: Boolean(party),
-      url
-    })
-  };
-}
-
-async function shareVenue(venue) {
-  const payload = buildVenueSharePayload(venue);
-  let nativeShareAvailable = typeof navigator.share === 'function';
-  if (nativeShareAvailable && typeof navigator.canShare === 'function') {
-    try { nativeShareAvailable = navigator.canShare(payload); } catch (_) { nativeShareAvailable = false; }
-  }
-  const result = await shareOrCopy({
-    payload,
-    copyText: payload.text,
-    share: nativeShareAvailable ? (sharePayload) => navigator.share(sharePayload) : null,
-    writeClipboard: typeof navigator.clipboard?.writeText === 'function'
-      ? (text) => navigator.clipboard.writeText(text)
-      : null,
-    legacyCopy: legacyCopyText
+  const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
+  const activeVenueId = activeFanIntentVenueId();
+  const selected = activeVenueId === venue.venue_id;
+  const ranked = rankedVisibleVenues();
+  const row = ranked.find((item) => item.venue.venue_id === venue.venue_id);
+  const distanceCopy = row ? formatDistance(row.distance) : '';
+  return createSelectedVenueCard({
+    venue,
+    party,
+    count,
+    selected,
+    distanceCopy,
+    onDirections: () => window.open(directionsUrl(venue), '_blank', 'noopener,noreferrer'),
+    onDetails: () => openDetail(venue.venue_id),
+    onShare: () => shareVenue(venue.venue_id),
+    onPlanParty: () => window.CGBWatchParty?.open?.(venue.venue_id)
   });
-
-  if (result.method === 'clipboard' || result.method === 'legacy-copy') showStatus('Message copied');
-  else if (result.method === 'manual') showManualCopy(result.text);
-  return result;
 }
 
 function renderSelectedCard() {
-  const venue = selectedVenue();
   dom.traySelected.replaceChildren();
-  if (!venue) {
-    setTrayState(isMobileLayout() ? 'peek' : 'full');
-    return;
-  }
-  const ranked = rankVenues(state.snapshot, state.gameId, state.origin);
-  const distance = ranked.find((item) => item.venue.venue_id === venue.venue_id)?.distance;
-  const card = createSelectedVenueCard({
-    state,
-    venue,
-    game: selectedGame(),
-    mobile: isMobileLayout(),
-    distance,
-    detailHref: buildVenueUrl(venue.slug, selectedGame(), location.href),
-    directionsHref: directionsUrl(venue),
-    onCollapse: () => setTrayState('peek', { animate: true }),
-    onShare: () => shareVenue(venue),
-    documentObject: document
-  });
-  dom.traySelected.append(card);
+  const venue = selectedVenue();
+  if (!venue) return;
+  dom.traySelected.append(createSelectedCard(venue));
 }
 
-function renderLocationControl() {
-  const usingNearby = Boolean(normalizedUserLocation(state.origin));
-  const filteringSearch = Boolean(state.listQuery || (state.origin && !usingNearby));
-  const browsingAll = !usingNearby && !filteringSearch;
-  const canRestoreNearby = !usingNearby && Boolean(normalizedUserLocation(state.nearbyOrigin));
-  dom.listLocationNearby.setAttribute('aria-pressed', String(usingNearby));
-  dom.listLocationAll.setAttribute('aria-pressed', String(browsingAll));
-  dom.listLocationNearby.setAttribute('aria-label', usingNearby
-    ? `Near me selected, showing locations within ${NEARBY_RADIUS_MILES} miles`
-    : canRestoreNearby
-      ? 'Show nearby locations using your saved location'
-      : 'Use my location to show nearby locations');
-  dom.listLocationAll.setAttribute('aria-label', browsingAll
-    ? 'All locations selected'
-    : 'Show all mapped locations');
-}
-
-function renderLocationList(query = state.listQuery) {
-  renderLocationControl();
-  const ranked = rankedVisibleVenues(query);
+function renderLocationList() {
   dom.locationList.replaceChildren();
-  dom.listHeading.textContent = query
-    ? `${ranked.length} matching ${ranked.length === 1 ? 'location' : 'locations'}`
-    : state.origin
-      ? `${ranked.length} ${ranked.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
-      : `${gameTitle(selectedGame())} locations`;
-
-  if (!ranked.length) {
-    const empty = document.createElement('section');
-    empty.className = 'empty-state';
-    if (state.origin && !query) {
-      const heading = document.createElement('strong');
-      heading.textContent = `No listed Cal gathering locations within ${NEARBY_RADIUS_MILES} miles.`;
-      const guidance = document.createElement('p');
-      guidance.textContent = 'Try another city or ZIP, or choose All locations to browse every mapped location.';
-      empty.append(heading, guidance);
-    } else {
-      empty.textContent = 'No mapped locations match this search.';
-    }
-    dom.locationList.append(empty);
-    return;
-  }
-
-  ranked.forEach(({ venue, party, fanCount, distance }) => {
+  const ranked = rankedVisibleVenues();
+  const game = selectedGame();
+  dom.listHeading.textContent = state.listQuery
+    ? `Results for “${state.listQuery}”`
+    : `${gameTitle(game)} locations`;
+  for (const { venue, distance } of ranked) {
+    const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
+    const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'location-card';
     button.dataset.venueId = venue.venue_id;
-    button.dataset.selected = String(venue.venue_id === state.selectedVenueId);
-    const top = document.createElement('div');
+    const top = document.createElement('span');
     top.className = 'location-card__top';
-    const info = document.createElement('div');
-    info.append(createBadges(venue, party));
-    const name = document.createElement('strong');
-    name.textContent = venue.name;
-    info.append(name);
+    const title = document.createElement('span');
+    title.className = 'location-card__title';
+    title.append(createBadges(venue, party), document.createTextNode(venue.name));
     const meta = document.createElement('span');
-    meta.textContent = [venue.city, venue.region, formatDistance(distance)].filter(Boolean).join(' · ');
-    info.append(meta);
-    top.append(info);
-    const count = document.createElement('span');
-    count.className = 'location-card__count';
-    count.textContent = bearCountCopy(fanCount);
-    top.append(count);
+    meta.className = 'location-card__meta';
+    const place = compactVenueLocation(venue);
+    meta.textContent = [place, formatDistance(distance)].filter(Boolean).join(' · ');
+    title.append(meta);
+    const countLabel = count === 1 ? '1 Bear' : `${count} Bears`;
+    const countSpan = document.createElement('span');
+    countSpan.className = 'location-card__count';
+    countSpan.textContent = countLabel;
+    top.append(title, countSpan);
     button.append(top);
     if (party) {
       const host = document.createElement('span');
@@ -918,405 +742,192 @@ function renderVenueProfile() {
     dom.detailBack.href = buildGameUrl(game, location.href);
   } else {
     document.body.dataset.view = 'map';
-    delete document.body.dataset.detailState;
     dom.mapView.hidden = false;
     dom.detailView.hidden = true;
-    dom.detailView.setAttribute('aria-busy', 'false');
-    setTrayState('selected');
   }
-
-  const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
-  const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
-  const activityPresentation = venueActivityPresentation({
-    snapshot: state.snapshot,
-    game,
-    venue,
-    currentCopy: bearCountCopy(count)
-  });
-
-  const localMap = takeReusableDetailLocalMap(venue) || createDetailLocalMap(venue);
   dom.venueDetail.replaceChildren();
-  dom.venueDetail.dataset.venueId = venue.venue_id;
-  dom.venueDetail.dataset.profilePresentation = mobile ? 'mobile' : 'desktop';
-  const hero = document.createElement('header');
-  hero.className = `detail-hero${venue.photo_url ? '' : ' detail-hero--no-photo'}`;
-  if (localMap) hero.append(localMap);
-  hero.append(createBadges(venue, party));
+
+  const hero = document.createElement('section');
+  hero.className = 'detail-hero';
+  const badges = createBadges(venue, getWatchParty(state.snapshot, state.gameId, venue.venue_id));
   const title = document.createElement('h1');
   title.textContent = venue.name;
-  hero.append(title);
-
-  const streetAddress = [venue.address_line_1, venue.address_line_2].filter(Boolean).join(', ');
-  const addressLabel = (streetAddress
-    ? [streetAddress, venue.city, venue.region, venue.postal_code].filter(Boolean).join(', ')
-    : [venue.city, venue.region].filter(Boolean).join(', ')) || venue.name;
   const address = document.createElement('p');
   address.className = 'detail-address';
+  const addressText = [venue.address_line_1, venue.city, venue.region].filter(Boolean).join(', ');
   const directions = document.createElement('a');
   directions.className = 'detail-directions-inline';
   directions.href = directionsUrl(venue);
   directions.target = '_blank';
-  directions.rel = 'noopener';
-  directions.append(createIcon('directions'), document.createTextNode(addressLabel));
+  directions.rel = 'noopener noreferrer';
+  directions.append(createIcon('directions'), document.createTextNode(addressText));
   address.append(directions);
-  hero.append(address);
+  hero.append(badges, title, address);
 
-  if (venue.website_url) {
-    const addressActions = document.createElement('div');
-    addressActions.className = 'detail-address-actions';
-    const website = document.createElement('a');
-    website.className = 'detail-website-inline';
-    website.href = venue.website_url;
-    website.target = '_blank';
-    website.rel = 'noopener';
-    website.append(createIcon('external'), document.createTextNode('Visit venue website'));
-    addressActions.append(website);
-    hero.append(addressActions);
-  }
-  if (venue.short_description && !legacyActivitySeason(venue)) {
+  if (venue.short_description) {
     const description = document.createElement('p');
     description.className = 'detail-description';
     description.textContent = venue.short_description;
     hero.append(description);
   }
+
+  const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
+  if (party) hero.append(createPartyModule(party));
   dom.venueDetail.append(hero);
 
   const activity = document.createElement('section');
   activity.className = 'activity-card';
-  const current = document.createElement('strong');
-  renderDetailAttendanceCopy(current, activityPresentation.primary);
-  activity.append(current);
-  const historical = document.createElement('p');
-  historical.hidden = activityPresentation.secondary.length === 0;
-  activityPresentation.secondary.forEach((line, index) => {
-    if (index > 0) historical.append(document.createElement('br'));
-    historical.append(document.createTextNode(line));
-  });
-  activity.append(historical);
+  activity.append(createActivityBody(venue));
   dom.venueDetail.append(activity);
 
-  dom.venueDetail.append(createDetailContribution());
-  dom.venueDetail.append(createDetailActionRow(venue));
+  if (!party) {
+    const prompt = document.createElement('section');
+    prompt.className = 'detail-inline-cta';
+    const label = document.createElement('p');
+    label.textContent = 'Is there a watch party going on?';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'text-button';
+    button.textContent = 'Submit a Watch Party';
+    button.addEventListener('click', () => window.CGBWatchParty?.open?.(venue.venue_id));
+    prompt.append(label, button);
+    dom.venueDetail.append(prompt);
+  }
+
+  if (venue.venue_type === 'community_location') {
+    const nomination = document.createElement('section');
+    nomination.className = 'detail-inline-cta detail-inline-cta--cal-bar';
+    const question = document.createElement('p');
+    question.textContent = 'Think this is a Cal bar?';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'text-button';
+    button.textContent = 'Nominate as a Cal Bar';
+    button.addEventListener('click', () => window.CGBCalBarNomination?.open?.(venue.venue_id));
+    nomination.append(question, button);
+    dom.venueDetail.append(nomination);
+  }
+
+  const secondaryActions = document.createElement('div');
+  secondaryActions.className = 'detail-secondary-actions';
+  const photoAction = document.createElement('button');
+  photoAction.type = 'button';
+  photoAction.className = 'text-button detail-photo-action';
+  photoAction.textContent = 'Add a Photo';
+  photoAction.addEventListener('click', () => window.CGBPhotoForm?.open?.(venue.venue_id));
+  const listingUpdate = document.createElement('button');
+  listingUpdate.type = 'button';
+  listingUpdate.className = 'text-button detail-listing-update';
+  listingUpdate.textContent = 'Suggest an Update';
+  listingUpdate.addEventListener('click', () => window.CGBListingUpdate?.open?.(venue.venue_id));
+  secondaryActions.append(photoAction, listingUpdate);
+  dom.venueDetail.append(secondaryActions);
+
+  const shareButton = document.createElement('button');
+  shareButton.type = 'button';
+  shareButton.className = 'primary-button detail-share';
+  shareButton.textContent = 'Share';
+  shareButton.addEventListener('click', () => shareVenue(venue.venue_id));
+  dom.venueDetail.append(shareButton);
+
+  if (mobile) {
+    requestAnimationFrame(() => {
+      if (!state.detailMode || state.selectedVenueId !== venue.venue_id || dom.detailView.hidden) return;
+      document.body.dataset.detailState = 'ready';
+      dom.detailView.setAttribute('aria-busy', 'false');
+      dom.detailBack.focus({ preventScroll: true });
+    });
+  }
 }
 
-function emitRendered() {
-  emitAppEvent('rendered', {
-    snapshot: state.snapshot,
-    gameId: state.gameId,
-    selectedVenueId: state.selectedVenueId,
-    detailMode: state.detailMode
-  });
+function createPartyModule(party) {
+  const section = document.createElement('section');
+  section.className = 'party-module';
+  const heading = document.createElement('h2');
+  heading.textContent = 'Watch Party';
+  const host = document.createElement('p');
+  host.textContent = `Hosted by ${party.organizer_name}`;
+  section.append(heading, host);
+  if (party.official_event_url) {
+    const link = document.createElement('a');
+    link.href = party.official_event_url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Official event details';
+    section.append(link);
+  }
+  const details = [party.event_start_at ? `Starts ${formatKickoff({ ...selectedGame(), kickoff_at: party.event_start_at, kickoff_status: 'confirmed' })}` : '', party.age_policy === '21_plus' ? '21+' : '', party.sound_status === 'confirmed_on' ? 'Game audio on' : ''].filter(Boolean);
+  if (details.length) {
+    const meta = document.createElement('p');
+    meta.className = 'party-meta';
+    meta.textContent = details.join(' · ');
+    section.append(meta);
+  }
+  if (party.restrictions_note) {
+    const restrictions = document.createElement('p');
+    restrictions.textContent = party.restrictions_note;
+    section.append(restrictions);
+  }
+  if (party.game_day_note) {
+    const note = document.createElement('p');
+    note.textContent = party.game_day_note;
+    section.append(note);
+  }
+  return section;
+}
+
+function createActivityBody(venue) {
+  const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
+  const card = document.createElement('div');
+  card.className = 'activity-card__body';
+  const countText = document.createElement('strong');
+  countText.textContent = bearCountCopy(count);
+  const button = createFanIntentButton(venue.venue_id, count);
+  card.append(countText, button);
+  return card;
+}
+
+function createDetailContribution() {
+  const section = document.createElement('section');
+  section.className = 'detail-contribution';
+  return section;
 }
 
 function renderAll() {
-  if (!state.snapshot) return;
   renderHeaderAndStats();
   renderGameDialog();
-  const mobile = isMobileLayout();
-
-  if (!mobile && state.selectedVenueId && !state.detailMode && state.trayState !== 'full') {
-    state.detailMode = true;
-  }
-
-  if (state.detailMode) {
-    renderVenueProfile();
-    if (!mobile) {
-      renderLocationList();
-      if (state.map) renderMarkers();
-      else initMap();
-      scheduleSelectedVenueVisibility();
-    }
-  } else {
-    document.body.dataset.view = 'map';
-    delete document.body.dataset.detailState;
-    dom.mapView.hidden = false;
-    dom.detailView.hidden = true;
-    renderTray();
-    if (state.map) renderMarkers();
-    else initMap();
-  }
+  renderTray();
+  renderVenueProfile();
+  renderMarkers();
   emitRendered();
 }
 
-function showLocations() {
-  state.detailMode = false;
-  setTrayState('full');
-  updateRouteForGame();
-  renderAll();
-}
-
-function showSelectedVenue() {
-  if (!state.selectedVenueId) {
-    setTrayState('peek');
-    return;
-  }
-  if (isMobileLayout()) {
-    setTrayState('selected');
-    return;
-  }
-  state.detailMode = true;
-  setTrayState('selected');
-  updateRouteForGame();
-  renderAll();
-}
-
-function showAllLocations() {
-  const savedLocation = Boolean(rememberNearbyOrigin());
-  state.listQuery = '';
-  state.origin = null;
-  dom.searchInput.value = '';
-  dom.searchDropdown.hidden = true;
-  state.detailMode = false;
-  setTrayState('full');
-  updateRouteForGame();
-  renderAll();
-  showStatus(savedLocation
-    ? 'Showing all mapped locations. Your location is saved for Nearby.'
-    : 'Showing all mapped locations');
-  return savedLocation;
-}
-
-function showNearbyLocations({ trayState = 'full', focus = true, preserveSelectedProfile = false } = {}) {
-  const remembered = normalizedUserLocation(state.nearbyOrigin);
-  if (!remembered) return false;
-  state.nearbyOrigin = remembered;
-  state.origin = { ...remembered };
-  state.listQuery = '';
-  dom.searchInput.value = '';
-  dom.searchDropdown.hidden = true;
-  if (!preserveSelectedProfile) state.detailMode = false;
-  setTrayState(trayState);
-  updateRouteForGame();
-  const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
-  renderAll();
-  if (focus) requestAnimationFrame(() => focusLocation(state.origin, nearby));
-  showStatus(nearby.length
-    ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles using your saved location`
-    : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your saved location`);
-  return true;
-}
-
-function locateOnMap() {
-  const mobile = isMobileLayout();
-  const preserveSelectedProfile = Boolean(state.selectedVenueId) &&
-    (mobile ? state.trayState === 'selected' : state.detailMode);
-  const nextTrayState = preserveSelectedProfile ? 'selected' : mobile ? 'peek' : 'full';
-  if (!normalizedUserLocation(state.origin) && showNearbyLocations({
-    trayState: nextTrayState,
-    focus: true,
-    preserveSelectedProfile
-  })) return;
-  if (!navigator.geolocation) return showStatus('Location is not available in this browser');
-
-  dom.nearMe.disabled = true;
-  showStatus('Finding your location…', 5000);
-  navigator.geolocation.getCurrentPosition((position) => {
-    state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
-    rememberNearbyOrigin();
-    state.listQuery = '';
-    if (!preserveSelectedProfile) state.detailMode = false;
-    dom.searchInput.value = '';
-    dom.searchDropdown.hidden = true;
-    setTrayState(nextTrayState);
-    updateRouteForGame();
-    const nearby = rankNearbyVenues(state.snapshot, state.gameId, state.origin, NEARBY_RADIUS_MILES);
-    renderAll();
-    requestAnimationFrame(() => focusLocation(state.origin, nearby));
-    dom.nearMe.disabled = false;
-    showStatus(nearby.length
-      ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
-      : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
-  }, () => {
-    dom.nearMe.disabled = false;
-    showStatus('Location permission was not available');
-  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
-}
-
-function focusReturnedDetailVenue(venue) {
-  const longitude = Number(venue?.longitude);
-  const latitude = Number(venue?.latitude);
-  if (![longitude, latitude].every(Number.isFinite)) return;
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      if ((state.detailMode && isMobileLayout()) || state.selectedVenueId !== venue.venue_id || !state.map) return;
-      const currentZoom = Number(state.map.getZoom?.()) || 0;
-      state.map.easeTo({
-        center: [longitude, latitude],
-        zoom: Math.max(currentZoom, 11),
-        duration: REDUCED_MOTION ? 0 : 420,
-        essential: true
-      });
-      scheduleSelectedVenueVisibility();
-    });
+async function shareVenue(venueId = state.selectedVenueId) {
+  const venue = state.snapshot?.venues?.find((item) => item.venue_id === venueId);
+  const game = selectedGame();
+  if (!venue || !game) return false;
+  const detailUrl = buildVenueUrl(venue.slug, game, location.href);
+  return shareOrCopy({
+    title: venue.name,
+    text: buildVenueShareMessage({ venue, game, count: getFanCount(state.snapshot, game.game_id, venue.venue_id), watchParty: getWatchParty(state.snapshot, game.game_id, venue.venue_id) }),
+    url: detailUrl
   });
 }
 
-function returnToMapFromDetail(event) {
-  const venue = selectedVenue();
-  if (!state.detailMode || !venue) return;
-  event.preventDefault();
-  if (!isMobileLayout()) return;
-  state.detailMode = false;
-  setTrayState('selected');
-  updateRouteForGame();
-  renderAll();
-  focusReturnedDetailVenue(venue);
-}
-
-function restoreSelection({ preserveCurrentWhenEmpty = false } = {}) {
-  const before = state.selectedVenueId;
-  restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty });
-  if (!state.detailMode) setTrayState(state.trayState);
-  return before !== state.selectedVenueId;
-}
-
-function mapTilerCountryCode(feature) {
-  const items = [feature, ...(Array.isArray(feature?.context) ? feature.context : [])].filter(Boolean);
-  const country = items.find((item) => {
-    const id = String(item?.id || '').toLowerCase();
-    const types = [item?.type, item?.place_type]
-      .flat()
-      .filter(Boolean)
-      .map((value) => String(value).toLowerCase());
-    return id.startsWith('country.') || types.includes('country');
-  });
-  const raw = country?.short_code || country?.properties?.short_code ||
-    country?.country_code || country?.properties?.country_code ||
-    feature?.properties?.country_code || feature?.country_code || '';
-  const parts = String(raw).toUpperCase().split(/[-_]/).filter(Boolean);
-  const code = parts.at(-1)?.replace(/[^A-Z]/g, '') || '';
-  if (code === 'USA') return 'US';
-  return code.length === 2 ? code : '';
-}
-
-async function geocode(query) {
-  const url = new URL(`https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json`);
-  url.searchParams.set('key', MAPTILER_KEY);
-  url.searchParams.set('language', 'en');
-  url.searchParams.set('limit', '5');
-  url.searchParams.set('autocomplete', 'false');
-  url.searchParams.set('country', 'us');
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Location search failed');
-  const data = await response.json();
-  const features = Array.isArray(data?.features) ? data.features : [];
-  for (const feature of features) {
-    const explicitCountry = mapTilerCountryCode(feature);
-    if (explicitCountry && explicitCountry !== 'US') continue;
-    const coordinates = feature?.center || feature?.geometry?.coordinates;
-    if (!coordinates || coordinates.length < 2) continue;
-    const lon = Number(coordinates[0]);
-    const lat = Number(coordinates[1]);
-    if (!Number.isFinite(lon) || lon < -180 || lon > 180 || !Number.isFinite(lat) || lat < -90 || lat > 90) continue;
-    return { lon, lat, label: feature.place_name || feature.matching_place_name || feature.text || feature.name || query };
-  }
-  throw new Error('Location not found');
-}
-
-function queryMatchesMappedLocationField(query) {
-  const normalizedQuery = normalizeSearchText(query);
-  if (!normalizedQuery) return false;
-  return state.snapshot.venues.some((venue) =>
-    [venue.city, venue.region, venue.postal_code, venue.address_line_1]
-      .some((value) => normalizeSearchText(value).includes(normalizedQuery))
-  );
-}
-
-async function runSearch(query) {
-  const normalizedQuery = query.trim();
-  if (!normalizedQuery) return;
-
-  const mappedMatches = rankVenues(state.snapshot, state.gameId, state.origin, normalizedQuery);
-  const exact = findExactVenueMatch(mappedMatches.map(({ venue }) => venue), normalizedQuery);
-  dom.searchDropdown.hidden = true;
-
-  if (exact) {
-    state.origin = null;
-    state.listQuery = '';
-    renderUserMarker();
-    selectVenue(exact.venue_id);
-    return;
-  }
-
-  if (mappedMatches.length && !queryMatchesMappedLocationField(normalizedQuery)) {
-    state.selectedVenueId = null;
-    state.detailMode = false;
-    state.origin = null;
-    state.listQuery = normalizedQuery;
-    updateRouteForGame();
-    renderUserMarker();
-    renderLocationList();
-    renderMarkers();
-    setTrayState('full');
-    showStatus(`${mappedMatches.length} mapped ${mappedMatches.length === 1 ? 'location matches' : 'locations match'} your search`);
-    emitRendered();
-    return;
-  }
-
-  showStatus('Finding that area…', 5000);
-  try {
-    const origin = await geocode(normalizedQuery);
-    state.selectedVenueId = null;
-    state.detailMode = false;
-    state.origin = origin;
-    state.listQuery = '';
-    updateRouteForGame();
-    renderUserMarker();
-    const nearby = rankedVisibleVenues();
-    renderLocationList();
-    renderMarkers();
-    setTrayState('full');
-    state.map?.easeTo({
-      center: [state.origin.lon, state.origin.lat],
-      zoom: 10,
-      duration: REDUCED_MOTION ? 0 : 500
-    });
-    showStatus(nearby.length
-      ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`
-      : `No listed locations within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`);
-    emitRendered();
-  } catch (_) {
-    showStatus('Location not found');
-  }
-}
-
-function renderSuggestions() {
-  const query = dom.searchInput.value.trim();
-  dom.suggestions.replaceChildren();
-  const showAddLocationAction = state.searchMode === 'existing';
-  dom.addLocationSearch.hidden = !showAddLocationAction;
-  if (!query) {
-    state.listQuery = '';
-    dom.searchDropdown.hidden = !showAddLocationAction || document.activeElement !== dom.searchInput;
-    renderLocationList();
-    emitRendered();
-    return;
-  }
-
-  const matches = rankVenues(state.snapshot, state.gameId, state.origin, query).slice(0, 5);
-  matches.forEach(({ venue, party }) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.setAttribute('role', 'option');
-    button.dataset.venueId = venue.venue_id;
-    const name = document.createElement('strong');
-    name.textContent = venue.name;
-    const locationLine = document.createElement('span');
-    locationLine.textContent = `${party ? 'Watch Party · ' : ''}${venue.city}, ${venue.region}`;
-    button.append(name, locationLine);
-    button.addEventListener('click', () => {
-      dom.searchInput.value = venue.name;
-      state.origin = null;
-      state.listQuery = '';
-      dom.searchDropdown.hidden = true;
-      renderUserMarker();
-      selectVenue(venue.venue_id);
-    });
-    dom.suggestions.append(button);
-  });
-  dom.searchDropdown.hidden = matches.length === 0 && !showAddLocationAction;
+function runSearch(query) {
   state.listQuery = query;
+  dom.searchDropdown.hidden = true;
+  const exact = findExactVenueMatch(state.snapshot, query);
+  if (exact) {
+    state.origin = { lat: Number(exact.latitude), lon: Number(exact.longitude), label: exact.name, venueId: exact.venue_id };
+    selectVenue(exact.venue_id);
+    focusLocation(state.origin, rankedVisibleVenues());
+    updateRouteForGame();
+    return;
+  }
+  const results = rankVenues(state.snapshot, state.gameId, state.origin, query);
+  state.detailMode = false;
+  setTrayState('full');
   renderLocationList();
   renderMarkers();
   emitRendered();
@@ -1405,6 +1016,7 @@ function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
   dom.browseButton.addEventListener('click', () => setTrayState('full'));
+  document.querySelector('#mobile-list-button')?.addEventListener('click', showLocations);
   dom.closeList.addEventListener('click', showSelectedVenue);
   dom.searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
