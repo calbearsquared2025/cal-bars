@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const source = await readFile(new URL('../js/desktop-visual-cohesion.mjs', import.meta.url), 'utf8');
 const profileSource = await readFile(new URL('../js/venue-profile-enhancement.mjs', import.meta.url), 'utf8');
+const indexSource = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
 test('desktop cohesion module is loaded without changing mobile rules', () => {
   assert.match(profileSource, /import '\.\/desktop-visual-cohesion\.mjs';/);
@@ -47,16 +48,14 @@ test('desktop Add surface uses warm cream with white action cards and a gold sel
   assert.match(source, /title\.textContent = 'Add somewhere else'/);
 });
 
-test('desktop footer keeps the compact utility content with the full affiliation disclaimer', () => {
-  assert.match(source, /brand\.textContent = 'CAL GOLDEN BARS'/);
-  assert.match(source, /socialLink\.textContent = '@calbearsquared'/);
-  assert.match(source, /disclaimer\.textContent = 'Not affiliated with Cal Athletics or the California Alumni Association'/);
-  assert.match(source, /footer\.replaceChildren\(\s*brand,\s*aboutButton,\s*socialLink,\s*disclaimer\s*\)/);
-  assert.doesNotMatch(source, /addButton\.textContent = 'Add to CGB'/);
-  assert.doesNotMatch(source, /CrowdMapped/i);
-  assert.match(source, /background: var\(--cgb-warm-50, #f7f6f2\)/);
+test('desktop footer uses the static HTML markup and keeps Privacy', () => {
+  assert.match(indexSource, /<footer class="site-footer">[\s\S]*?id="about-button"[\s\S]*?id="privacy-button"[\s\S]*?<\/footer>/);
+  assert.doesNotMatch(source, /syncDesktopFooter/);
+  assert.doesNotMatch(source, /footer\.replaceChildren/);
+  assert.doesNotMatch(source, /FOOTER_READY/);
+  assert.match(source, /\.site-footer\s*\{[\s\S]*?background: var\(--cgb-warm-50, #f7f6f2\)/);
 });
 
 test('desktop footer is flush with square corners', () => {
-  assert.match(source, /\.site-footer\.site-footer--desktop-cohesion[\s\S]*?border-radius: 0 !important;[\s\S]*?clip-path: none !important;/);
+  assert.match(source, /\.site-footer\s*\{[\s\S]*?border-radius: 0 !important;[\s\S]*?clip-path: none !important;/);
 });
