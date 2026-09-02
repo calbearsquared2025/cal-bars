@@ -530,12 +530,37 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail.venue-detail > .party-module {
     margin: 16px 18px 0 !important;
-    padding: 13px 14px !important;
-    background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 82%) !important;
-    border: 1px solid var(--cgb-gold-200) !important;
-    border-left: 4px solid var(--cgb-gold-400) !important;
-    border-radius: 14px !important;
+    padding: 15px 16px !important;
+    color: var(--cgb-navy-950) !important;
+    background: var(--cgb-gold-300, #ffd15a) !important;
+    border: 1px solid var(--cgb-gold-500) !important;
+    border-radius: 12px !important;
     box-shadow: none !important;
+  }
+
+  html #tray-selected > #venue-detail.venue-detail > .party-module .party-module__title {
+    font-family: var(--font-condensed, var(--font-display)) !important;
+    font-size: 1.35rem !important;
+    font-weight: 900 !important;
+    letter-spacing: .015em !important;
+    line-height: 1 !important;
+  }
+
+  html #tray-selected > #venue-detail.venue-detail > .party-module .party-module__title .ui-icon {
+    color: var(--cgb-navy-950) !important;
+  }
+
+  html #tray-selected > #venue-detail.venue-detail > .party-module .party-module__date,
+  html #tray-selected > #venue-detail.venue-detail > .party-module p,
+  html #tray-selected > #venue-detail.venue-detail > .party-module a {
+    color: var(--cgb-navy-950) !important;
+  }
+
+  html #tray-selected > #venue-detail.venue-detail > .action-row.detail-primary-actions > .intent-button {
+    color: var(--cgb-white) !important;
+    background: var(--cgb-navy-950) !important;
+    border-color: var(--cgb-navy-950) !important;
+    font-weight: 900 !important;
   }
 }
 
