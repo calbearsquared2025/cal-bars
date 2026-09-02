@@ -158,32 +158,6 @@ function installStyles(documentObject) {
         font-size: .6rem !important;
         line-height: 1.25 !important;
       }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-local-map {
-        position: relative !important;
-        z-index: 0 !important;
-        width: 100% !important;
-        height: 138px !important;
-        margin: 0 !important;
-        overflow: hidden !important;
-        background: var(--cgb-neutral-100) !important;
-        border: 1px solid var(--cgb-neutral-200) !important;
-        border-radius: 14px !important;
-        clip-path: none !important;
-        visibility: hidden !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-local-map.is-ready {
-        visibility: visible !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-local-map canvas {
-        cursor: default !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-local-map .maplibregl-control-container {
-        display: none !important;
-      }
     }
   `;
   documentObject.head.append(style);
@@ -323,25 +297,45 @@ function removeGateway(documentObject) {
   documentObject.querySelectorAll('#tray-selected .selected-card__details').forEach((link) => link.remove());
 }
 
-function clearMobileOpeningPhoto(card) {
+function clearMobileOpeningMedia(card) {
   card?.querySelector?.(':scope > .detail-photo--mobile-opening')?.remove();
-  if (card?.dataset) delete card.dataset.mobilePhotoForward;
+  card?.querySelector?.(':scope > .detail-local-map--mobile-opening')?.remove();
+  if (card?.dataset) {
+    delete card.dataset.mobileMediaForward;
+    delete card.dataset.mobileMediaType;
+  }
 }
 
-function placeMobileOpeningPhoto(detail, card) {
+function placeMobileOpeningMedia(detail, card) {
   const hero = detail?.querySelector?.(':scope > .detail-hero');
-  const photo = hero?.querySelector?.(':scope > .detail-photo') || detail?.querySelector?.(':scope > .detail-photo');
-  clearMobileOpeningPhoto(card);
+  const media = hero?.querySelector?.(':scope > .detail-photo, :scope > .detail-local-map') ||
+    detail?.querySelector?.(':scope > .detail-photo, :scope > .detail-local-map');
+  clearMobileOpeningMedia(card);
   hero?.classList?.remove('detail-hero--mobile-opening-empty');
-  if (!hero || !photo || !card) return false;
+  if (!hero || !media || !card) return null;
 
-  photo.classList.remove('detail-photo--mobile-deferred', 'detail-profile-media--desktop');
-  photo.classList.add('detail-photo--mobile-opening');
+  const isPhoto = media.classList.contains('detail-photo');
+  media.classList.remove('detail-photo--mobile-deferred', 'detail-profile-media--desktop');
+  media.classList.add(isPhoto ? 'detail-photo--mobile-opening' : 'detail-local-map--mobile-opening');
   const header = card.querySelector(':scope > .selected-card__header');
-  if (header) header.after(photo);
-  else card.prepend(photo);
-  card.dataset.mobilePhotoForward = 'true';
+  if (header) header.after(media);
+  else card.prepend(media);
+  card.dataset.mobileMediaForward = 'true';
+  card.dataset.mobileMediaType = isPhoto ? 'photo' : 'map';
   if (!hero.children.length) hero.classList.add('detail-hero--mobile-opening-empty');
+  return media;
+}
+
+function movePhotoActionToOpeningMap(detail, openingMedia) {
+  if (!openingMedia?.classList?.contains('detail-local-map--mobile-opening')) return false;
+  const link = detail?.querySelector?.('[data-photo-form-entry]');
+  if (!link) return false;
+  link.className = 'detail-local-map__photo-action';
+  link.dataset.photoFormEntry = 'mobile-map-overlay';
+  link.textContent = 'Add a photo';
+  openingMedia.append(link);
+  const contribution = detail.querySelector(':scope > .detail-contribution');
+  if (contribution) contribution.hidden = !contribution.querySelector('.detail-contribution__actions > a[href]');
   return true;
 }
 
@@ -358,7 +352,7 @@ function syncContinuationRevealHeight(venueTray, selectedCard, windowObject) {
 
 function clearContinuation(documentObject) {
   destroyContinuationMap();
-  clearMobileOpeningPhoto(documentObject?.querySelector?.('#tray-selected > .selected-card'));
+  clearMobileOpeningMedia(documentObject?.querySelector?.('#tray-selected > .selected-card'));
   if (cachedVenueDetail?.dataset.profilePresentation === 'mobile-continuation') {
     cachedVenueDetail.classList.remove('venue-detail--selected-continuation');
     if (cachedVenueDetail.parentElement?.id === 'tray-selected') cachedVenueDetail.remove();
@@ -402,7 +396,7 @@ export function renderMobileSelectedProfileContinuation({
 
   removeGateway(documentObject);
   destroyContinuationMap();
-  clearMobileOpeningPhoto(selectedCard);
+  clearMobileOpeningMedia(selectedCard);
   const changedVenue = lastContinuationVenueId !== venue.venue_id;
   lastContinuationVenueId = venue.venue_id;
 
@@ -431,13 +425,16 @@ export function renderMobileSelectedProfileContinuation({
     documentObject,
     onPhotoError: () => queueMicrotask(() => renderMobileSelectedProfileContinuation({ app, documentObject, windowObject }))
   });
-  placeMobileOpeningPhoto(cachedVenueDetail, selectedCard);
+  const openingMedia = placeMobileOpeningMedia(cachedVenueDetail, selectedCard);
   renderFanExperiences({ app: continuationApp, documentObject });
   renderCalBarNominationEntry({ app: continuationApp, documentObject });
   renderPhotoFormEntry({ app: continuationApp, documentObject });
+  movePhotoActionToOpeningMap(cachedVenueDetail, openingMedia);
   renderListingUpdateEntry({ app: continuationApp, documentObject });
 
-  const localMap = hero.querySelector(':scope > .detail-local-map');
+  const localMap = openingMedia?.classList?.contains('detail-local-map--mobile-opening')
+    ? openingMedia
+    : hero.querySelector(':scope > .detail-local-map');
   syncLocalMap(localMap, venue, continuationState, windowObject);
   syncContinuationRevealHeight(venueTray, selectedCard, windowObject);
   windowObject.requestAnimationFrame?.(() => syncContinuationRevealHeight(venueTray, selectedCard, windowObject));
