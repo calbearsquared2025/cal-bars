@@ -85,8 +85,6 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const figure = documentObject.createElement('figure');
   figure.className = 'detail-photo';
   figure.dataset.photoUrl = presentation.photoUrl;
-  figure.style.width = 'min(100%, 520px)';
-  figure.style.margin = '10px auto 0';
 
   const frame = documentObject.createElement('div');
   frame.className = 'detail-photo__frame';
