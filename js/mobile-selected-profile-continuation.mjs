@@ -204,15 +204,13 @@ function installStyles(documentObject) {
       }
 
       .detail-photo-viewer__metadata {
-        display: grid;
-        gap: 3px;
-        padding: 10px 14px 12px;
+        padding: 9px 12px 10px;
       }
 
-      .detail-photo-viewer__metadata .detail-photo__caption,
-      .detail-photo-viewer__metadata .detail-photo__credit {
+      .detail-photo-viewer__metadata-line {
         margin: 0;
-        font-size: .72rem;
+        color: var(--cgb-ink-600);
+        font-size: .7rem;
         line-height: 1.35;
       }
 
@@ -401,10 +399,28 @@ function createMobilePhotoViewer(documentObject, figure) {
   image.decoding = 'async';
   surface.append(image);
 
-  const metadata = figure.querySelector(':scope > .detail-photo__metadata')?.cloneNode(true);
-  if (metadata) {
-    metadata.classList.add('detail-photo-viewer__metadata');
-    surface.append(metadata);
+  const sourceMetadata = figure.querySelector(':scope > .detail-photo__metadata');
+  const sourceCaption = sourceMetadata?.querySelector('.detail-photo__caption');
+  const sourceCredit = sourceMetadata?.querySelector('.detail-photo__credit');
+  if (sourceCaption || sourceCredit) {
+    const metadata = documentObject.createElement('div');
+    metadata.className = 'detail-photo-viewer__metadata';
+    const line = documentObject.createElement('p');
+    line.className = 'detail-photo-viewer__metadata-line';
+
+    const captionText = clean(sourceCaption?.textContent);
+    if (captionText) line.append(documentObject.createTextNode(captionText));
+
+    const creditIdentity = sourceCredit?.querySelector('a, span');
+    if (creditIdentity) {
+      line.append(documentObject.createTextNode(captionText ? ' · Photo: ' : 'Photo: '));
+      line.append(creditIdentity.cloneNode(true));
+    }
+
+    if (line.childNodes.length) {
+      metadata.append(line);
+      surface.append(metadata);
+    }
   }
 
   const close = documentObject.createElement('button');
