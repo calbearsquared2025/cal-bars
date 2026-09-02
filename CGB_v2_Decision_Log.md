@@ -126,16 +126,17 @@ Routine Fan Intent and external venue addition do not use forms.
 
 ### Locked
 
-- On the mobile continuous Venue Profile, persistent structured Venue observations render in a compact **WHAT TO KNOW** block immediately after venue identity/address and before the Watch Party module.
+- On the mobile continuous Venue Profile, persistent structured Venue observations render in a compact **WHAT TO KNOW** block after the opening identity/media area and before the Watch Party module.
 - **WHAT TO KNOW** includes a quiet header-level **Add info →** link to the existing prefilled **Tell us about this location** Form; it does not add a separate CTA row.
 - If no structured Venue observations are known, keep **WHAT TO KNOW** present with a subtle compact empty state.
 - Do not duplicate persistent Venue tags later in the mobile community-experience section.
 - The community-experience section is labeled **YOU SAY**.
 - **CGB SAYS** remains reserved for CGB editorial content.
-- Approved Venue photos use the shared 3:2 cover crop and participate in a photo-forward opening on both desktop and mobile rather than being deferred beneath editorial/community content.
-- On mobile photo venues, the selected-card opening pairs venue identity with the photo in row 1 and **WHAT TO KNOW** with current attendance in row 2; the Watch Party and selected-game actions then continue at full width.
+- Mobile uses one permanent split opening: venue identity on the left, venue media on the right, current attendance directly beneath the media, and **WHAT TO KNOW** spanning the full card width below the split area.
+- Approved Venue photos use the shared 3:2 cover crop in the right-side media slot.
+- When no approved photo exists, the same media slot shows the local map with an **Add a photo** action using the existing prefilled photo form.
+- The Watch Party and selected-game actions continue at full width after **WHAT TO KNOW**.
 - After those primary mobile decision and action elements, the continuous profile continues with **CGB SAYS** and **YOU SAY**.
-- No-photo mobile Venues retain the existing local-map fallback in the continued profile.
 - Watch Party-only tags remain on the specific Watch Party.
 - Avoid a redundant second stack of 21+/ALL AGES/audio tags when the same persistent Venue context is already visible.
 
@@ -145,6 +146,8 @@ Routine Fan Intent and external venue addition do not use forms.
 - A separate mobile **WHAT TO KNOW** block is prohibited.
 - On mobile, an approved Venue photo follows **YOU SAY** so core decision information appears first.
 - Mobile and desktop may intentionally use unrelated photo hierarchy once an approved photo exists.
+- On mobile photo venues, **WHAT TO KNOW** is confined to the left column while attendance occupies the right column beneath the photo.
+- No-photo mobile Venues keep the local map only in the continued profile below the selected card.
 
 ## 7. Photos
 
