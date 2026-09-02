@@ -9,7 +9,7 @@ function clean(value) {
 
 const failedPhotoKeys = new Set();
 const DESKTOP_QUERY = '(min-width: 900px)';
-const VENUE_PHOTO_ASPECT_RATIO = '3 / 2';
+const VENUE_PHOTO_ASPECT_RATIO = 'var(--cgb-venue-media-aspect, 3 / 2)';
 const VENUE_PHOTO_OBJECT_FIT = 'cover';
 
 export function safeHttpUrl(value) {
