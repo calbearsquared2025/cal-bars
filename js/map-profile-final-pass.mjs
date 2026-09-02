@@ -330,6 +330,8 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share {
         grid-column: 2 !important;
         grid-row: 1 !important;
+        width: 100%;
+        min-width: 0;
         min-height: 50px !important;
         display: inline-flex !important;
         align-items: center !important;
