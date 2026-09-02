@@ -27,7 +27,7 @@ function installStyles() {
       line-height: 1.1 !important;
     }
 
-    #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count {
+    #map-view > #venue-tray.venue-tray.tray--selected .selected-card:not([data-mobile-photo-forward="true"]) > .bear-count {
       grid-column: 2 !important;
       grid-row: 1 !important;
       align-self: center !important;
@@ -72,10 +72,19 @@ function installStyles() {
 
     @media (max-width: 899px) {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
-        grid-template-columns: minmax(0, 1fr) 98px !important;
-        gap: 9px 14px !important;
+        --cgb-selected-card-aside-width: 98px;
+        --cgb-selected-card-row-gap: 9px;
+        --cgb-selected-card-column-gap: 14px;
+        grid-template-columns: minmax(0, 1fr) var(--cgb-selected-card-aside-width) !important;
+        gap: var(--cgb-selected-card-row-gap) var(--cgb-selected-card-column-gap) !important;
         padding: 0 14px 12px !important;
         border-bottom: 0 !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] {
+        --cgb-selected-card-aside-width: minmax(124px, 40%);
+        --cgb-selected-card-column-gap: 12px;
+        align-items: start;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header {
@@ -86,6 +95,47 @@ function installStyles() {
         background: transparent !important;
         border-left: 0 !important;
         border-bottom: 0 !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] > .selected-card__what-to-know {
+        grid-column: 1;
+        grid-row: 2;
+        align-self: start;
+        margin-bottom: 0;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] > .detail-photo--mobile-opening {
+        grid-column: 2;
+        grid-row: 1;
+        align-self: start;
+        width: 100%;
+        max-width: none;
+        margin: 8px 0 0;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] > .bear-count {
+        grid-column: 2;
+        grid-row: 2;
+        align-self: start;
+        margin: 0;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] > .bear-count:not(.bear-count--empty) {
+        min-height: 72px;
+        padding: 6px 0;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] > .bear-count:not(.bear-count--empty) .bear-count__number {
+        font-size: 2rem;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] > .bear-count.bear-count--empty {
+        min-height: 72px;
+        padding: 6px 0;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] > .venue-activity-history {
+        grid-column: 1 / -1;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card h2 {
@@ -293,24 +343,7 @@ function installStyles() {
         font-weight: 700 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__details {
-        grid-column: 1 / -1 !important;
-        grid-row: 2 !important;
-        min-height: 44px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 7px !important;
-        color: var(--cgb-navy-900) !important;
-        background: var(--cgb-navy-50) !important;
-        border: 1px solid var(--cgb-neutral-200) !important;
-        border-radius: 11px !important;
-        font-size: .74rem !important;
-        font-weight: 800 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__details .ui-icon {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon {
         width: 17px !important;
         height: 17px !important;
         display: inline-block !important;
@@ -326,9 +359,14 @@ function installStyles() {
 
       @media (max-width: 359px) {
         body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
-          grid-template-columns: minmax(0, 1fr) 82px !important;
-          gap: 7px 9px !important;
+          --cgb-selected-card-aside-width: 82px;
+          --cgb-selected-card-row-gap: 7px;
+          --cgb-selected-card-column-gap: 9px;
           padding-inline: 10px !important;
+        }
+
+        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-photo-forward="true"] {
+          --cgb-selected-card-aside-width: 116px;
         }
 
         body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {
@@ -339,7 +377,6 @@ function installStyles() {
   `;
   document.head.append(style);
 }
-
 
 function initialize() {
   installStyles();
