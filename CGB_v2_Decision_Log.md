@@ -106,9 +106,13 @@ Use focused forms for:
 5. Add a Photo
 6. Suggest a Missing Location when search fails
 
-Venue and Watch Party entities remain separate even though the first four Forms share a controlled vocabulary where appropriate. Safe additive structured details may be processed automatically; freeform text and consequential identity/destructive changes remain private for review.
+Venue and Watch Party entities remain separate even though the first four Forms share a controlled vocabulary where appropriate. Safe additive structured details may be processed automatically. The optional freeform answer from **Tell us about this location** is the deliberate exception to the otherwise-private freeform rule: it is copied into `Fan_Experiences_Raw` for the canonical Venue and may enter **YOU SAY** only if the existing Fan Experience cleaning/moderation pipeline publishes it. Submitter relationship/frequency context, contact information, other freeform text, and consequential identity/destructive changes remain private.
 
 Routine Fan Intent and external venue addition do not use forms.
+
+### Superseded
+
+- The **Tell us about this location** freeform answer must always remain private and can never feed **YOU SAY**.
 
 ### Excluded
 
