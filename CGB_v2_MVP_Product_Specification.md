@@ -237,7 +237,7 @@ Optional authorized venue photos appear below core decision information. The pho
 
 Every Venue may link to a short prefilled **Tell us about this location** Form containing the canonical Venue name and Venue ID. The contributor may provide relationship/frequency context, optional freeform context, and any known positive structured Venue details.
 
-The structured Venue details are intentionally additive. A single valid submission may seed a previously absent persistent Venue tag without corroboration. Unchecked options mean unknown/not asserted, not false. Freeform text remains private source material and does not automatically become **YOU SAY** or **CGB SAYS** copy.
+The structured Venue details are intentionally additive. A single valid submission may seed a previously absent persistent Venue tag without corroboration. Unchecked options mean unknown/not asserted, not false. The optional freeform answer is copied into `Fan_Experiences_Raw` for the canonical Venue and processed through the same Fan Experience cleaning and moderation pipeline as the focused Fan Experience form. It may appear under **YOU SAY** only when that pipeline publishes it; it never becomes **CGB SAYS** copy. Submitter relationship/frequency context and private email remain private.
 
 A separate **Add or update location details** Form handles missing information and corrections. Safe additive structured Venue tags may publish automatically. Closure, relocation, Venue identity/name/address changes, and other destructive or materially conflicting changes remain private for manual review.
 
