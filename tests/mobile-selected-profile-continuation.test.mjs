@@ -120,7 +120,7 @@ test('mobile media opening has one grid owner and balances What to know against 
   assert.doesNotMatch(enhancementSource, /figure\.style\.margin/);
 });
 
-test('mobile approved photos use the shared 3:2 cover crop without a local override', async () => {
+test('mobile approved photos use the shared 3:2 cover crop without a local opening override', async () => {
   const [enhancementSource, continuationSource] = await Promise.all([
     readFile(new URL('../js/venue-profile-enhancement.mjs', import.meta.url), 'utf8'),
     readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8')
@@ -128,7 +128,26 @@ test('mobile approved photos use the shared 3:2 cover crop without a local overr
   assert.match(enhancementSource, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
   assert.match(enhancementSource, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
   assert.doesNotMatch(continuationSource, /aspect-ratio:\s*4 \/ 3/);
-  assert.doesNotMatch(continuationSource, /object-fit:\s*contain/);
+  const openingImageBlock = continuationSource.match(/\.detail-photo--mobile-opening \.detail-photo__image\s*\{([\s\S]*?)\}/)?.[1] || '';
+  assert.doesNotMatch(openingImageBlock, /object-fit:\s*contain/);
+});
+
+test('mobile approved photos open a lightweight accessible viewer without changing desktop', async () => {
+  const source = await readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8');
+
+  assert.match(source, /const PHOTO_VIEWER_SELECTOR = 'dialog\[data-mobile-photo-viewer\]'/);
+  assert.match(source, /frame\.dataset\.mobilePhotoExpandable = 'true'/);
+  assert.match(source, /frame\.setAttribute\('role', 'button'\)/);
+  assert.match(source, /frame\.setAttribute\('aria-haspopup', 'dialog'\)/);
+  assert.match(source, /frame\.setAttribute\('aria-label', 'Expand venue photo'\)/);
+  assert.match(source, /enableMobilePhotoViewer\(openingMedia, documentObject, windowObject\)/);
+  assert.match(source, /dialog\.className = 'detail-photo-viewer'/);
+  assert.match(source, /typeof dialog\.showModal === 'function'/);
+  assert.match(source, /event\.target === dialog/);
+  assert.match(source, /cloneNode\(true\)/);
+  assert.match(source, /\.detail-photo-viewer\s*\{[\s\S]*?width:\s*min\(94vw, 720px\)/);
+  assert.match(source, /\.detail-photo-viewer__image\s*\{[\s\S]*?max-height:\s*74dvh;[\s\S]*?object-fit:\s*contain;/);
+  assert.match(source, /if \(windowObject\?\.matchMedia\?\.\(MOBILE_QUERY\)\?\.matches !== true\) return false;/);
 });
 
 test('mobile no-photo profile uses the opening map and promotes the existing photo form action', async () => {
