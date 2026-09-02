@@ -129,6 +129,8 @@ test('mobile approved photos use the shared responsive crop and 4:3 mobile media
   assert.match(enhancementSource, /const VENUE_PHOTO_ASPECT_RATIO = 'var\(--cgb-venue-media-aspect, 3 \/ 2\)'/);
   assert.match(enhancementSource, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
   assert.match(finalPass, /--cgb-venue-media-aspect:\s*4 \/ 3/);
+  assert.match(finalPass, /> \.detail-photo--mobile-opening,[\s\S]*?> \.detail-local-map--mobile-opening\s*\{[\s\S]*?align-self:\s*stretch;[\s\S]*?background:\s*var\(--cgb-navy-950\);/);
+  assert.match(finalPass, /> \.detail-photo--mobile-opening \.detail-photo__metadata\s*\{[\s\S]*?position:\s*absolute;[\s\S]*?background:\s*rgba\(1, 1, 51, \.72\);/);
   assert.doesNotMatch(continuationSource, /object-fit:\s*contain/);
 });
 
