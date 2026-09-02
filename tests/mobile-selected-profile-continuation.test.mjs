@@ -68,7 +68,7 @@ test('mobile selected profile puts compact What to know context before the Watch
   assert.match(source, /if \(!mobileContinuation\) \{[\s\S]*?createVenueTagList\(documentObject, venueTags\)/);
 });
 
-test('mobile media opening has one grid owner and uses full-width What to know', async () => {
+test('mobile media opening has one grid owner and balances What to know against attendance', async () => {
   const [fanSource, continuationSource, finalPass, firstPass, enhancementSource] = await Promise.all([
     readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8'),
     readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8'),
@@ -94,21 +94,27 @@ test('mobile media opening has one grid owner and uses full-width What to know',
 
   assert.match(finalPass, /\.selected-card:not\(\[data-mobile-media-forward="true"\]\) > \.bear-count/);
   assert.match(finalPass, /--cgb-selected-card-aside-width:\s*minmax\(124px, 40%\)/);
+  assert.match(finalPass, /--cgb-selected-card-row-gap:\s*8px;/);
 
+  const headerBlock = finalPass.match(/\.selected-card\[data-mobile-media-forward="true"\] > \.selected-card__header\s*\{([\s\S]*?)\}/)?.[1] || '';
   const mediaBlock = finalPass.match(/\.selected-card\[data-mobile-media-forward="true"\] > \.detail-photo--mobile-opening,[\s\S]*?> \.detail-local-map--mobile-opening\s*\{([\s\S]*?)\}/)?.[1] || '';
   const attendanceBlock = finalPass.match(/\.selected-card\[data-mobile-media-forward="true"\] > \.bear-count\s*\{([\s\S]*?)\}/)?.[1] || '';
   const whatToKnowBlock = finalPass.match(/\.selected-card\[data-mobile-media-forward="true"\] > \.selected-card__what-to-know\s*\{([\s\S]*?)\}/)?.[1] || '';
 
+  assert.match(headerBlock, /grid-column:\s*1;/);
+  assert.match(headerBlock, /grid-row:\s*1;/);
+  assert.doesNotMatch(headerBlock, /span 2/);
   assert.match(mediaBlock, /grid-column:\s*2;/);
   assert.match(mediaBlock, /grid-row:\s*1;/);
   assert.match(attendanceBlock, /grid-column:\s*2;/);
   assert.match(attendanceBlock, /grid-row:\s*2;/);
-  assert.match(whatToKnowBlock, /grid-column:\s*1 \/ -1;/);
-  assert.match(whatToKnowBlock, /grid-row:\s*3;/);
+  assert.match(whatToKnowBlock, /grid-column:\s*1;/);
+  assert.match(whatToKnowBlock, /grid-row:\s*2;/);
   assert.doesNotMatch(mediaBlock, /!important/);
   assert.doesNotMatch(attendanceBlock, /!important/);
   assert.doesNotMatch(whatToKnowBlock, /!important/);
 
+  assert.match(finalPass, /> \.bear-count:not\(\.bear-count--empty\)\s*\{[\s\S]*?min-height:\s*64px;[\s\S]*?padding:\s*0;/);
   assert.doesNotMatch(enhancementSource, /figure\.style\.width/);
   assert.doesNotMatch(enhancementSource, /figure\.style\.margin/);
 });
@@ -137,5 +143,5 @@ test('mobile no-photo profile uses the opening map and promotes the existing pho
   assert.match(photoFormSource, /entryPoint: 'contribution'/);
   assert.match(photoFormSource, /className: 'detail-contribution__action'/);
   assert.match(finalPass, /\.detail-local-map--mobile-opening[\s\S]*?aspect-ratio:\s*3 \/ 2;/);
-  assert.match(finalPass, /\.detail-local-map__photo-action/);
+  assert.match(finalPass, /\.detail-local-map__photo-action[\s\S]*?min-height:\s*26px;[\s\S]*?padding:\s*4px 7px;/);
 });
