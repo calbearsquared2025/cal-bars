@@ -120,14 +120,15 @@ test('mobile media opening has one grid owner and balances What to know against 
   assert.doesNotMatch(enhancementSource, /figure\.style\.margin/);
 });
 
-test('mobile approved photos use the shared 3:2 cover crop without a local override', async () => {
-  const [enhancementSource, continuationSource] = await Promise.all([
+test('mobile approved photos use the shared responsive crop and 4:3 mobile media variable', async () => {
+  const [enhancementSource, continuationSource, finalPass] = await Promise.all([
     readFile(new URL('../js/venue-profile-enhancement.mjs', import.meta.url), 'utf8'),
-    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8')
+    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/map-profile-final-pass.mjs', import.meta.url), 'utf8')
   ]);
-  assert.match(enhancementSource, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
+  assert.match(enhancementSource, /const VENUE_PHOTO_ASPECT_RATIO = 'var\(--cgb-venue-media-aspect, 3 \/ 2\)'/);
   assert.match(enhancementSource, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
-  assert.doesNotMatch(continuationSource, /aspect-ratio:\s*4 \/ 3/);
+  assert.match(finalPass, /--cgb-venue-media-aspect:\s*4 \/ 3/);
   assert.doesNotMatch(continuationSource, /object-fit:\s*contain/);
 });
 
@@ -143,6 +144,6 @@ test('mobile no-photo profile uses the opening map and promotes the existing pho
   assert.match(continuationSource, /link\.textContent = 'Add a photo'/);
   assert.match(photoFormSource, /entryPoint: 'contribution'/);
   assert.match(photoFormSource, /className: 'detail-contribution__action'/);
-  assert.match(finalPass, /\.detail-local-map--mobile-opening[\s\S]*?aspect-ratio:\s*3 \/ 2;/);
+  assert.match(finalPass, /\.detail-local-map--mobile-opening[\s\S]*?aspect-ratio:\s*var\(--cgb-venue-media-aspect\);/);
   assert.match(finalPass, /\.detail-local-map__photo-action[\s\S]*?min-height:\s*26px;[\s\S]*?padding:\s*4px 7px;/);
 });
