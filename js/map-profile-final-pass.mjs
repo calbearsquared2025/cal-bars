@@ -77,15 +77,18 @@ function installStyles() {
         --cgb-selected-card-column-gap: 14px;
         grid-template-columns: minmax(0, 1fr) var(--cgb-selected-card-aside-width) !important;
         gap: var(--cgb-selected-card-row-gap) var(--cgb-selected-card-column-gap) !important;
-        padding: 0 14px 12px !important;
+        padding: 0 14px 14px !important;
+        overflow: hidden !important;
+        background: var(--cgb-white) !important;
         border-bottom: 0 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] {
         --cgb-selected-card-aside-width: minmax(124px, 40%);
         --cgb-selected-card-row-gap: 8px;
-        --cgb-selected-card-column-gap: 12px;
-        align-items: start;
+        --cgb-selected-card-column-gap: 0;
+        align-items: stretch;
+        padding-top: 0 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card:not([data-mobile-media-forward="true"]) > .selected-card__header {
@@ -102,18 +105,51 @@ function installStyles() {
         grid-column: 1;
         grid-row: 1;
         min-width: 0;
-        margin: 0;
-        padding: 8px 0 0;
-        background: transparent;
+        margin: 0 0 0 -14px;
+        padding: 14px 10px 14px 14px;
+        color: var(--cgb-white);
+        background: var(--cgb-navy-950);
         border-left: 0;
         border-bottom: 0;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header h2 {
+        max-width: 10ch;
+        color: var(--cgb-white) !important;
+        font-family: var(--font-condensed, var(--font-display)) !important;
+        font-size: clamp(1.55rem, 7.2vw, 2.2rem) !important;
+        font-weight: 900 !important;
+        letter-spacing: -.03em !important;
+        line-height: .92 !important;
+        text-transform: uppercase;
+        text-wrap: balance;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-location,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .selected-card__proximity-row {
+        color: rgba(255, 255, 255, .86) !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .selected-card__directions-inline {
+        color: var(--cgb-gold-300) !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .icon-button {
+        color: var(--cgb-white) !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-badge {
+        color: var(--cgb-gold-300) !important;
+        background: transparent !important;
+        border: 1px solid var(--cgb-gold-400) !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__what-to-know {
         grid-column: 1;
         grid-row: 2;
         align-self: start;
-        margin: 2px 0 0;
+        margin: 4px 12px 0 0;
+        padding-top: 10px;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-photo--mobile-opening,
@@ -123,7 +159,14 @@ function installStyles() {
         align-self: start;
         width: 100%;
         max-width: none;
-        margin: 8px 0 0;
+        margin: 0 -14px 0 0;
+        background: var(--cgb-navy-950);
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-photo--mobile-opening .detail-photo__frame,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening {
+        border: 0 !important;
+        border-radius: 0 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening {
@@ -187,11 +230,22 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) {
         min-height: 64px;
-        padding: 0;
+        padding: 8px 0 0 12px;
+        border-left: 1px solid var(--cgb-neutral-200);
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) .bear-count__number {
-        font-size: 2rem;
+        font-size: clamp(2.85rem, 13vw, 4rem) !important;
+        font-weight: 900 !important;
+        line-height: .8 !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count .bear-count__label,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count .bear-count__attending,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count .bear-count__context {
+        font-size: .72rem !important;
+        font-weight: 900 !important;
+        line-height: 1 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count.bear-count--empty {
@@ -217,8 +271,12 @@ function installStyles() {
         display: block;
         margin: 4px 0 3px;
         overflow: visible;
-        font-size: clamp(1.2rem, 5.25vw, 1.5rem);
-        line-height: 1.08;
+        font-family: var(--font-condensed, var(--font-display));
+        font-size: clamp(1.55rem, 7.2vw, 2.2rem);
+        font-weight: 900;
+        letter-spacing: -.03em;
+        line-height: .92;
+        text-transform: uppercase;
         -webkit-box-orient: initial;
         -webkit-line-clamp: unset;
       }
@@ -298,12 +356,11 @@ function installStyles() {
         display: grid !important;
         gap: 4px !important;
         margin: 0 !important;
-        padding: 10px 12px 9px !important;
+        padding: 14px 13px 12px !important;
         color: var(--cgb-navy-950) !important;
-        background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 78%) !important;
-        border: 1px solid var(--cgb-gold-300, #f2cc67) !important;
-        border-left: 4px solid var(--cgb-gold-400) !important;
-        border-radius: 14px !important;
+        background: var(--cgb-gold-300, #ffd15a) !important;
+        border: 1px solid var(--cgb-gold-500) !important;
+        border-radius: 12px !important;
         clip-path: none !important;
         box-shadow: none !important;
       }
@@ -313,12 +370,15 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title strong {
-        font-weight: 850 !important;
+        font-family: var(--font-condensed, var(--font-display)) !important;
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
+        letter-spacing: .02em !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p {
         margin: 0 !important;
-        color: var(--cgb-ink-700) !important;
+        color: var(--cgb-navy-950) !important;
         font-size: .74rem !important;
         line-height: 1.27 !important;
       }
@@ -379,10 +439,12 @@ function installStyles() {
         grid-row: 1 !important;
         min-height: 50px !important;
         margin: 0 !important;
-        color: var(--cgb-navy-950) !important;
-        background: linear-gradient(135deg, var(--cgb-gold-400), var(--cgb-gold-300, #ffd15a)) !important;
-        border-color: var(--cgb-gold-500) !important;
+        color: var(--cgb-white) !important;
+        background: var(--cgb-navy-950) !important;
+        border-color: var(--cgb-navy-950) !important;
+        font-family: var(--font-condensed, var(--font-display)) !important;
         font-size: 1rem !important;
+        font-weight: 900 !important;
       }
 
       .intent-button__main {
