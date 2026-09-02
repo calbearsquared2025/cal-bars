@@ -7,6 +7,7 @@ import { enhanceVenueProfile } from './venue-profile-enhancement.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-selected-profile-continuation';
+const PHOTO_VIEWER_SELECTOR = 'dialog[data-mobile-photo-viewer]';
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
 const BASE_TRAY_VIEWPORT_RATIO = 0.58;
@@ -142,6 +143,15 @@ function installStyles(documentObject) {
         display: block !important;
       }
 
+      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .detail-photo--mobile-opening .detail-photo__frame[data-mobile-photo-expandable="true"] {
+        cursor: zoom-in;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .detail-photo--mobile-opening .detail-photo__frame[data-mobile-photo-expandable="true"]:focus-visible {
+        outline: 2px solid var(--cgb-gold-500);
+        outline-offset: 2px;
+      }
+
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-photo__metadata,
       body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .detail-photo--mobile-opening .detail-photo__metadata {
         display: grid !important;
@@ -157,6 +167,71 @@ function installStyles(documentObject) {
         color: var(--cgb-ink-500) !important;
         font-size: .6rem !important;
         line-height: 1.25 !important;
+      }
+
+      .detail-photo-viewer {
+        width: min(94vw, 720px);
+        max-width: 94vw;
+        max-height: 88dvh;
+        margin: auto;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        overflow: visible;
+      }
+
+      .detail-photo-viewer::backdrop {
+        background: rgba(1, 1, 20, .78);
+      }
+
+      .detail-photo-viewer__surface {
+        position: relative;
+        max-height: 88dvh;
+        display: grid;
+        gap: 0;
+        background: var(--cgb-white);
+        border-radius: 14px;
+        box-shadow: 0 18px 48px rgba(1, 1, 51, .28);
+        overflow: hidden;
+      }
+
+      .detail-photo-viewer__image {
+        width: 100%;
+        max-height: 74dvh;
+        display: block;
+        object-fit: contain;
+        background: var(--cgb-navy-950);
+      }
+
+      .detail-photo-viewer__metadata {
+        display: grid;
+        gap: 3px;
+        padding: 10px 14px 12px;
+      }
+
+      .detail-photo-viewer__metadata .detail-photo__caption,
+      .detail-photo-viewer__metadata .detail-photo__credit {
+        margin: 0;
+        font-size: .72rem;
+        line-height: 1.35;
+      }
+
+      .detail-photo-viewer__close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        color: var(--cgb-navy-950);
+        background: rgba(255, 255, 255, .94);
+        border: 1px solid rgba(1, 1, 51, .14);
+        border-radius: 999px;
+        box-shadow: 0 2px 8px rgba(1, 1, 51, .14);
+        font-size: 1.25rem;
+        line-height: 1;
       }
     }
   `;
@@ -297,6 +372,91 @@ function removeGateway(documentObject) {
   documentObject.querySelectorAll('#tray-selected .selected-card__details').forEach((link) => link.remove());
 }
 
+function closeMobilePhotoViewer(documentObject) {
+  const dialog = documentObject?.querySelector?.(PHOTO_VIEWER_SELECTOR);
+  if (!dialog) return false;
+  try {
+    if (dialog.open) dialog.close();
+  } catch (_) {}
+  dialog.remove();
+  return true;
+}
+
+function createMobilePhotoViewer(documentObject, figure) {
+  const sourceImage = figure?.querySelector?.('.detail-photo__image');
+  if (!sourceImage?.src) return null;
+
+  const dialog = documentObject.createElement('dialog');
+  dialog.className = 'detail-photo-viewer';
+  dialog.dataset.mobilePhotoViewer = 'true';
+  dialog.setAttribute('aria-label', sourceImage.alt || 'Venue photo');
+
+  const surface = documentObject.createElement('div');
+  surface.className = 'detail-photo-viewer__surface';
+
+  const image = documentObject.createElement('img');
+  image.className = 'detail-photo-viewer__image';
+  image.src = sourceImage.currentSrc || sourceImage.src;
+  image.alt = sourceImage.alt;
+  image.decoding = 'async';
+  surface.append(image);
+
+  const metadata = figure.querySelector(':scope > .detail-photo__metadata')?.cloneNode(true);
+  if (metadata) {
+    metadata.classList.add('detail-photo-viewer__metadata');
+    surface.append(metadata);
+  }
+
+  const close = documentObject.createElement('button');
+  close.type = 'button';
+  close.className = 'detail-photo-viewer__close';
+  close.setAttribute('aria-label', 'Close photo');
+  close.textContent = '×';
+  close.addEventListener('click', () => dialog.close());
+  surface.append(close);
+
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  dialog.addEventListener('close', () => dialog.remove(), { once: true });
+  dialog.append(surface);
+  return dialog;
+}
+
+function openMobilePhotoViewer(figure, documentObject, windowObject) {
+  if (windowObject?.matchMedia?.(MOBILE_QUERY)?.matches !== true) return false;
+  closeMobilePhotoViewer(documentObject);
+  const dialog = createMobilePhotoViewer(documentObject, figure);
+  if (!dialog || !documentObject?.body) return false;
+  documentObject.body.append(dialog);
+  if (typeof dialog.showModal === 'function') dialog.showModal();
+  else dialog.setAttribute('open', '');
+  return true;
+}
+
+function enableMobilePhotoViewer(media, documentObject, windowObject) {
+  if (!media?.classList?.contains('detail-photo--mobile-opening')) return false;
+  const frame = media.querySelector(':scope > .detail-photo__frame');
+  if (!frame || frame.dataset.mobilePhotoExpandable === 'true') return Boolean(frame);
+
+  frame.dataset.mobilePhotoExpandable = 'true';
+  frame.setAttribute('role', 'button');
+  frame.setAttribute('tabindex', '0');
+  frame.setAttribute('aria-haspopup', 'dialog');
+  frame.setAttribute('aria-label', 'Expand venue photo');
+
+  const activate = (event) => {
+    event.preventDefault();
+    openMobilePhotoViewer(media, documentObject, windowObject);
+  };
+  frame.addEventListener('click', activate);
+  frame.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    activate(event);
+  });
+  return true;
+}
+
 function clearMobileOpeningMedia(card) {
   card?.querySelector?.(':scope > .detail-photo--mobile-opening')?.remove();
   card?.querySelector?.(':scope > .detail-local-map--mobile-opening')?.remove();
@@ -352,6 +512,7 @@ function syncContinuationRevealHeight(venueTray, selectedCard, windowObject) {
 
 function clearContinuation(documentObject) {
   destroyContinuationMap();
+  closeMobilePhotoViewer(documentObject);
   clearMobileOpeningMedia(documentObject?.querySelector?.('#tray-selected > .selected-card'));
   if (cachedVenueDetail?.dataset.profilePresentation === 'mobile-continuation') {
     cachedVenueDetail.classList.remove('venue-detail--selected-continuation');
@@ -398,6 +559,7 @@ export function renderMobileSelectedProfileContinuation({
   destroyContinuationMap();
   clearMobileOpeningMedia(selectedCard);
   const changedVenue = lastContinuationVenueId !== venue.venue_id;
+  if (changedVenue) closeMobilePhotoViewer(documentObject);
   lastContinuationVenueId = venue.venue_id;
 
   cachedVenueDetail.replaceChildren();
@@ -426,6 +588,7 @@ export function renderMobileSelectedProfileContinuation({
     onPhotoError: () => queueMicrotask(() => renderMobileSelectedProfileContinuation({ app, documentObject, windowObject }))
   });
   const openingMedia = placeMobileOpeningMedia(cachedVenueDetail, selectedCard);
+  enableMobilePhotoViewer(openingMedia, documentObject, windowObject);
   renderFanExperiences({ app: continuationApp, documentObject });
   renderCalBarNominationEntry({ app: continuationApp, documentObject });
   renderPhotoFormEntry({ app: continuationApp, documentObject });
