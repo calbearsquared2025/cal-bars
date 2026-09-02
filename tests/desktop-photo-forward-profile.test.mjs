@@ -30,7 +30,7 @@ test('desktop photo reuses the shared 3:2 cover presentation instead of redefini
     read('js/venue-profile-enhancement.mjs')
   ]);
 
-  assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
+  assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = 'var\(--cgb-venue-media-aspect, 3 \/ 2\)'/);
   assert.match(enhancement, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
   assert.match(enhancement, /frame\.style\.setProperty\('aspect-ratio', VENUE_PHOTO_ASPECT_RATIO, 'important'\)/);
   assert.match(enhancement, /image\.style\.setProperty\('object-fit', VENUE_PHOTO_OBJECT_FIT, 'important'\)/);
@@ -51,7 +51,7 @@ test('all desktop widths use the expanded profile while mobile aligns its media-
   assert.doesNotMatch(enhancement, /WIDE_DESKTOP_QUERY/);
   assert.doesNotMatch(source, /1180px/);
   assert.doesNotMatch(source, /@media \(max-width: 899px\)/);
-  assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = '3 \/ 2'/);
+  assert.match(enhancement, /const VENUE_PHOTO_ASPECT_RATIO = 'var\(--cgb-venue-media-aspect, 3 \/ 2\)'/);
   assert.match(enhancement, /const VENUE_PHOTO_OBJECT_FIT = 'cover'/);
   assert.doesNotMatch(source, /'4 \/ 3'/);
   assert.doesNotMatch(source, /'contain'/);
