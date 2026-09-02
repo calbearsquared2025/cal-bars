@@ -9,15 +9,16 @@ const zIndex = (source, selector) => {
   return match ? Number(match[1]) : null;
 };
 
-test('desktop zoom controls stay above selected pins and below the venue profile', async () => {
-  const [baseCss, markerCss] = await Promise.all([
+test('desktop zoom controls stay above selected pins and below the effective venue profile layer', async () => {
+  const [baseCss, boardCss, markerCss] = await Promise.all([
     read('css/styles.css'),
+    read('css/design-board-2.css'),
     read('css/mobile-polish.css')
   ]);
 
   const zoomControls = zIndex(baseCss, '.maplibregl-ctrl-top-right');
   const selectedMarker = zIndex(markerCss, '.cgb-marker.is-selected');
-  const tray = zIndex(baseCss, '.venue-tray');
+  const tray = zIndex(boardCss, '.venue-tray');
 
   assert.equal(zoomControls, 42);
   assert.equal(selectedMarker, 40);
