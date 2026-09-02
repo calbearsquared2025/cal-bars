@@ -9,16 +9,19 @@ const zIndex = (source, selector) => {
   return match ? Number(match[1]) : null;
 };
 
-test('desktop venue tray stays above selected map markers and below the site header', async () => {
-  const [baseCss, markerCss] = await Promise.all([
+test('effective desktop venue tray stays above selected map markers and below the site header', async () => {
+  const [baseCss, boardCss, markerCss] = await Promise.all([
     read('css/styles.css'),
+    read('css/design-board-2.css'),
     read('css/mobile-polish.css')
   ]);
 
-  const tray = zIndex(baseCss, '.venue-tray');
+  const baseTray = zIndex(baseCss, '.venue-tray');
+  const tray = zIndex(boardCss, '.venue-tray');
   const selectedMarker = zIndex(markerCss, '.cgb-marker.is-selected');
   const header = zIndex(baseCss, '.site-header');
 
+  assert.equal(baseTray, 30);
   assert.equal(tray, 45);
   assert.equal(selectedMarker, 40);
   assert.equal(header, 50);
