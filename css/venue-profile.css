@@ -147,8 +147,8 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
   margin: 0 0 6px;
   color: var(--cgb-navy-950);
   font-family: var(--font-display);
-  font-size: .72rem;
-  font-weight: 850;
+  font-size: .8rem;
+  font-weight: 900;
   letter-spacing: .09em;
   line-height: 1.15;
 }
@@ -204,7 +204,7 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
   top: 10px;
   bottom: 10px;
   left: 16px;
-  width: 3px;
+  width: 4px;
   border-radius: var(--radius-pill);
 }
 
@@ -561,6 +561,14 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     background: var(--cgb-navy-950) !important;
     border-color: var(--cgb-navy-950) !important;
     font-weight: 900 !important;
+    letter-spacing: .015em !important;
+    text-transform: uppercase !important;
+  }
+
+  html #tray-selected > #venue-detail.venue-detail > .action-row.detail-primary-actions > .detail-share {
+    font-size: .7rem !important;
+    line-height: 1.05 !important;
+    text-transform: uppercase !important;
   }
 }
 
