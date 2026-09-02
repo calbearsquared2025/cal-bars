@@ -126,7 +126,7 @@ a { color: inherit; }
 .map { width: 100%; height: 100%; min-height: calc(100dvh - var(--header-height) - var(--footer-height)); }
 .map--fallback { background: radial-gradient(circle at 30% 30%, #e7f0f5 0, #c8d8e4 48%, #b9ccd9 100%); }
 .map-fallback { position: absolute; inset: 0; display: grid; place-content: center; gap: 5px; text-align: center; color: var(--cal-blue); padding: 24px; }
-.maplibregl-ctrl-top-right { top: 145px; }
+.maplibregl-ctrl-top-right { top: 145px; z-index: 42; }
 .maplibregl-ctrl-group { border-radius: 12px !important; overflow: hidden; box-shadow: 0 8px 20px rgba(0,25,79,.15) !important; }
 
 .primary-button, .secondary-button, .icon-button, .text-button {
