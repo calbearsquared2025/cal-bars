@@ -21,6 +21,7 @@ Use one private Google Spreadsheet containing multiple purpose-built tabs.
 - `Listing_Updates_Raw`
 - `Photo_Submissions_Raw`
 - `Missing_Location_Suggestions_Raw`
+- `Fan_Experiences_Raw`
 
 The full workbook remains private. Apps Script exposes only approved public fields.
 
@@ -303,7 +304,7 @@ Processing fields:
 
 The raw response is private. Successful processing automatically creates canonical Watch Party rows. Venue-capable positive selections, including `21_plus` and `all_ages`, may also seed absent `Venues.venue_tags`; contradictory age assertions remain pending for review. `rsvp_requested` and `cal_specials` remain event-only. An unambiguous timezone-qualified start/arrival time may populate `event_start_at`.
 
-## 8. Venue contribution raw responses
+## 8. Venue contribution and Fan Experience raw responses
 
 The live **Tell us about this location** response tab remains Form-owned and private. Existing raw headings are preserved for history; current processing is heading/alias based rather than column-order based.
 
@@ -317,7 +318,19 @@ Current contribution contract includes:
 - optional private email
 - private processing status/error/timestamp plus `review_status` / `manual_review_reason` columns appended by Apps Script
 
-Only the controlled positive Venue tags auto-publish. Freeform context, email, historical alumni-affiliation answers, crowd-size answers, and other legacy raw columns stay private. No public-name field is required for this workflow.
+Only the controlled positive Venue tags auto-publish directly into the canonical Venue record. A nonblank freeform Venue answer is copied into `Fan_Experiences_Raw` with the canonical Venue ID and source submission timestamp, then processed through the same Fan Experience cleaning and moderation rules as a direct Fan Experience form response. The copied row uses a private `source_contribution_key` so trigger redelivery and the one-time historical backfill remain idempotent. Submitter relationship/frequency context, private email, historical alumni-affiliation answers, crowd-size answers, and other legacy raw columns are not copied into Fan Experiences or the public model.
+
+### `Fan_Experiences_Raw`
+
+The focused Fan Experience Google Form owns the primary response columns. Apps Script appends deliberate private publication fields:
+
+- `public_text`
+- `public_display_name`
+- `moderation_status`
+- `moderation_reason`
+- `source_contribution_key`, blank for ordinary direct Fan Experience form submissions and populated only for copied venue-detail submissions
+
+A copied venue-detail response preserves the venue-detail submission timestamp, canonical Venue ID, venue name when available, and freeform text. It intentionally has no copied display name, relationship/frequency data, or contact information. Only rows that pass the normal Fan Experience moderation/publication rules may enter the public **YOU SAY** projection.
 
 ## 9. Venue and Watch Party update raw responses
 
@@ -331,7 +344,7 @@ Stable relationship key: canonical Venue ID. Safe additive `venue_tags` auto-pub
 
 Stable relationship key: canonical Watch Party ID. Safe additive structured details may update the exact Watch Party automatically. Venue-capable selections may seed missing `Venues.venue_tags`; `rsvp_requested` and `cal_specials` update only `Watch_Parties.feature_tags`. A valid timezone-qualified start/arrival time may populate a previously absent `event_start_at`. Cancellation/move, organizer replacement, and material official-event-link replacement remain private/manual-review items.
 
-Freeform text, submitter names, and submitter email never enter the public read model automatically.
+Freeform text, submitter names, and submitter email never enter the public read model automatically, except for the **Tell us about this location** freeform answer routed through the separate Fan Experience moderation/publication pipeline described above.
 
 ## 10. `Photo_Submissions_Raw`
 
