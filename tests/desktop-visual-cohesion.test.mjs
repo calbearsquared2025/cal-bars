@@ -52,8 +52,8 @@ test('desktop Add surface uses warm cream with white action cards and a gold sel
   assert.match(source, /title\.textContent = 'Add somewhere else'/);
 });
 
-test('desktop footer uses the static HTML markup and keeps Privacy', () => {
-  assert.match(indexSource, /<footer class="site-footer">[\s\S]*?id="about-button"[\s\S]*?id="privacy-button"[\s\S]*?<\/footer>/);
+test('desktop footer uses static HTML with the full affiliation disclaimer in the approved order', () => {
+  assert.match(indexSource, /<footer class="site-footer">[\s\S]*?>@CalBearSquared<\/a>[\s\S]*?id="about-button"[^>]*>About<\/button>[\s\S]*?id="privacy-button"[^>]*>Privacy<\/button>[\s\S]*?Not affiliated with Cal Athletics or the California Alumni Association[\s\S]*?<\/footer>/);
   assert.doesNotMatch(source, /syncDesktopFooter/);
   assert.doesNotMatch(source, /footer\.replaceChildren/);
   assert.doesNotMatch(source, /FOOTER_READY/);
