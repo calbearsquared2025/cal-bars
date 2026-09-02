@@ -19,7 +19,7 @@ test('desktop with a photo keeps the opening balanced and continues with Watch P
   assert.match(source, /left\.append\(hero, whatToKnow\);[\s\S]*?if \(editorial\) left\.append\(editorial\);[\s\S]*?right\.append\(photo\);[\s\S]*?if \(activity\) right\.append\(activity\);/);
   assert.match(balance, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
   assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left,[\s\S]*?\.detail-desktop-opening > \.detail-desktop-opening__right\s*\{[\s\S]*?display:\s*contents\s*!important;/);
-  assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-hero\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*center\s*!important;/);
+  assert.match(balance, /\.detail-desktop-opening > \.detail-desktop-opening__left > \.detail-hero\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*stretch\s*!important;/);
   assert.match(balance, /\[data-desktop-photo-forward="true"\] > \.detail-editorial\s*\{[\s\S]*?width:\s*100%\s*!important;[\s\S]*?border-top:\s*1px solid var\(--cgb-neutral-200\)\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__photo-attendance__party-editorial-community-contribution'/);
 });
@@ -73,7 +73,7 @@ test('desktop with no photo uses the existing local map as the photo-slot fallba
   assert.match(source, /if \(!photoForward\) \{[\s\S]*?arrangeStandardHierarchy\(/);
   assert.match(balance, /const localMap = detail\.querySelector\(':scope > \.detail-local-map'\)/);
   assert.match(balance, /detail\.dataset\.desktopFallbackMap = 'true'/);
-  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-hero\.detail-hero--no-photo\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*center\s*!important;/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-hero\.detail-hero--no-photo\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*stretch\s*!important;/);
   assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-local-map\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;[\s\S]*?margin:\s*0\s*!important;/);
   assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-what-to-know\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__map-attendance__party-editorial-community-contribution'/);
@@ -110,7 +110,7 @@ test('desktop final hierarchy matches mobile for both real and empty Watch Party
   assert.match(watchPartyForm, /maintenance\.before\(section\);[\s\S]*?syncDesktopProfileFinalBalance\(\{ detail, documentObject, windowObject \}\);/);
 });
 
-test('desktop attendance keeps the approved lockup and centers vertically opposite What to know', async () => {
+test('desktop attendance uses a large count with stacked supporting copy opposite What to know', async () => {
   const [source, balance] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/desktop-profile-final-balance.mjs')
@@ -121,15 +121,16 @@ test('desktop attendance keeps the approved lockup and centers vertically opposi
   assert.match(source, /attending\.textContent = 'ATTENDING'/);
   assert.match(source, /context\.textContent = 'ON CGB'/);
   assert.match(source, /\.bear-count__number\s*\{[\s\S]*?font-size:\s*1\.9rem\s*!important;/);
-  assert.match(balance, /\[data-desktop-photo-forward="true"\][\s\S]*?> \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*center\s*!important;[\s\S]*?padding:\s*12px 18px 12px 32px\s*!important;/);
-  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*center\s*!important;[\s\S]*?padding:\s*12px 18px 12px 32px\s*!important;/);
+  assert.match(balance, /\[data-desktop-photo-forward="true"\][\s\S]*?> \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*stretch\s*!important;[\s\S]*?padding:\s*12px 18px 12px 32px\s*!important;/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*stretch\s*!important;[\s\S]*?padding:\s*12px 18px 12px 32px\s*!important;/);
+  assert.match(balance, /\.activity-card > strong\.bear-count:not\(\.bear-count--empty\)\s*\{[\s\S]*?display:\s*grid\s*!important;[\s\S]*?grid-template-rows:\s*repeat\(3, auto\)/);
 });
 
 test('desktop bold hybrid uses a navy identity hero, edge-to-edge 3:2 media, and a subtle photo feather', async () => {
   const balance = await read('js/desktop-profile-final-balance.mjs');
 
   assert.match(balance, /\.detail-desktop-opening\s*\{[\s\S]*?background:\s*var\(--cgb-navy-950\)/);
-  assert.match(balance, /\.detail-hero h1\s*\{[\s\S]*?font-size:\s*clamp\(2\.25rem, 4\.15vw, 3\.45rem\)[\s\S]*?text-transform:\s*uppercase/);
+  assert.match(balance, /\.detail-hero h1\s*\{[\s\S]*?font-size:\s*clamp\(2rem, 3\.15vw, 2\.8rem\)[\s\S]*?overflow-wrap:\s*break-word\s*!important;[\s\S]*?word-break:\s*normal\s*!important;[\s\S]*?text-transform:\s*uppercase/);
   assert.match(balance, /> \.detail-photo::before\s*\{[\s\S]*?width:\s*14%;[\s\S]*?linear-gradient\(90deg, var\(--cgb-navy-950\), rgba\(1, 1, 51, 0\)\)/);
   assert.match(balance, /> \.detail-photo \.detail-photo__frame\s*\{[\s\S]*?border-radius:\s*0\s*!important;/);
 });
