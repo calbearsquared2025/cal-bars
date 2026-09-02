@@ -68,7 +68,7 @@ test('mobile selected profile puts compact What to know context before the Watch
   assert.match(source, /if \(!mobileContinuation\) \{[\s\S]*?createVenueTagList\(documentObject, venueTags\)/);
 });
 
-test('mobile split-photo layout has one grid owner and no specificity fight', async () => {
+test('mobile media opening has one grid owner and uses full-width What to know', async () => {
   const [fanSource, continuationSource, finalPass, firstPass, enhancementSource] = await Promise.all([
     readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8'),
     readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8'),
@@ -81,30 +81,31 @@ test('mobile split-photo layout has one grid owner and no specificity fight', as
   assert.doesNotMatch(fanSource, /detail-photo--mobile-deferred/);
   assert.doesNotMatch(fanSource, /detail-hero--deferred-photo-empty/);
 
-  assert.match(continuationSource, /photo\.classList\.add\('detail-photo--mobile-opening'\)/);
-  assert.match(continuationSource, /header\.after\(photo\)/);
-  assert.match(continuationSource, /card\.dataset\.mobilePhotoForward = 'true'/);
-  assert.doesNotMatch(continuationSource, /\.selected-card\[data-mobile-photo-forward="true"\]/);
+  assert.match(continuationSource, /media\.classList\.add\(isPhoto \? 'detail-photo--mobile-opening' : 'detail-local-map--mobile-opening'\)/);
+  assert.match(continuationSource, /header\.after\(media\)/);
+  assert.match(continuationSource, /card\.dataset\.mobileMediaForward = 'true'/);
+  assert.match(continuationSource, /card\.dataset\.mobileMediaType = isPhoto \? 'photo' : 'map'/);
+  assert.doesNotMatch(continuationSource, /\.selected-card\[data-mobile-media-forward="true"\]/);
   assert.match(continuationSource, /detail-hero--mobile-opening-empty/);
   assert.match(continuationSource, /if \(!venue\.photo_url\) \{[\s\S]*?createLocalMapElement/);
 
   assert.doesNotMatch(firstPass, /\.selected-card\s*\{/);
   assert.doesNotMatch(firstPass, /\.selected-card\s*>\s*\*/);
 
-  assert.match(finalPass, /\.selected-card:not\(\[data-mobile-photo-forward="true"\]\) > \.bear-count/);
+  assert.match(finalPass, /\.selected-card:not\(\[data-mobile-media-forward="true"\]\) > \.bear-count/);
   assert.match(finalPass, /--cgb-selected-card-aside-width:\s*minmax\(124px, 40%\)/);
 
-  const photoBlock = finalPass.match(/\.selected-card\[data-mobile-photo-forward="true"\] > \.detail-photo--mobile-opening\s*\{([\s\S]*?)\}/)?.[1] || '';
-  const attendanceBlock = finalPass.match(/\.selected-card\[data-mobile-photo-forward="true"\] > \.bear-count\s*\{([\s\S]*?)\}/)?.[1] || '';
-  const whatToKnowBlock = finalPass.match(/\.selected-card\[data-mobile-photo-forward="true"\] > \.selected-card__what-to-know\s*\{([\s\S]*?)\}/)?.[1] || '';
+  const mediaBlock = finalPass.match(/\.selected-card\[data-mobile-media-forward="true"\] > \.detail-photo--mobile-opening,[\s\S]*?> \.detail-local-map--mobile-opening\s*\{([\s\S]*?)\}/)?.[1] || '';
+  const attendanceBlock = finalPass.match(/\.selected-card\[data-mobile-media-forward="true"\] > \.bear-count\s*\{([\s\S]*?)\}/)?.[1] || '';
+  const whatToKnowBlock = finalPass.match(/\.selected-card\[data-mobile-media-forward="true"\] > \.selected-card__what-to-know\s*\{([\s\S]*?)\}/)?.[1] || '';
 
-  assert.match(photoBlock, /grid-column:\s*2;/);
-  assert.match(photoBlock, /grid-row:\s*1;/);
+  assert.match(mediaBlock, /grid-column:\s*2;/);
+  assert.match(mediaBlock, /grid-row:\s*1;/);
   assert.match(attendanceBlock, /grid-column:\s*2;/);
   assert.match(attendanceBlock, /grid-row:\s*2;/);
-  assert.match(whatToKnowBlock, /grid-column:\s*1;/);
-  assert.match(whatToKnowBlock, /grid-row:\s*2;/);
-  assert.doesNotMatch(photoBlock, /!important/);
+  assert.match(whatToKnowBlock, /grid-column:\s*1 \/ -1;/);
+  assert.match(whatToKnowBlock, /grid-row:\s*3;/);
+  assert.doesNotMatch(mediaBlock, /!important/);
   assert.doesNotMatch(attendanceBlock, /!important/);
   assert.doesNotMatch(whatToKnowBlock, /!important/);
 
@@ -123,18 +124,18 @@ test('mobile approved photos use the shared 3:2 cover crop without a local overr
   assert.doesNotMatch(continuationSource, /object-fit:\s*contain/);
 });
 
-test('mobile no-photo profile keeps the photo contribution in the normal maintenance flow', async () => {
-  const [photoFormSource, balanceSource, continuationSource] = await Promise.all([
+test('mobile no-photo profile uses the opening map and promotes the existing photo form action', async () => {
+  const [photoFormSource, continuationSource, finalPass] = await Promise.all([
     readFile(new URL('../js/photo-form.js', import.meta.url), 'utf8'),
-    readFile(new URL('../js/desktop-profile-final-balance.mjs', import.meta.url), 'utf8'),
-    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8')
+    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/map-profile-final-pass.mjs', import.meta.url), 'utf8')
   ]);
   assert.match(continuationSource, /renderPhotoFormEntry\(\{ app: continuationApp, documentObject \}\)/);
+  assert.match(continuationSource, /movePhotoActionToOpeningMap\(cachedVenueDetail, openingMedia\)/);
+  assert.match(continuationSource, /link\.dataset\.photoFormEntry = 'mobile-map-overlay'/);
+  assert.match(continuationSource, /link\.textContent = 'Add a photo'/);
   assert.match(photoFormSource, /entryPoint: 'contribution'/);
   assert.match(photoFormSource, /className: 'detail-contribution__action'/);
-  assert.match(photoFormSource, /label: 'Add a new photo'/);
-  assert.equal((photoFormSource.match(/entryPoint: 'contribution'/g) || []).length, 1);
-  assert.match(balanceSource, /const DESKTOP_QUERY = '\(min-width: 900px\)'/);
-  assert.doesNotMatch(balanceSource, /WIDE_DESKTOP_QUERY|1180px/);
-  assert.match(balanceSource, /detail\?\.dataset\?\.profilePresentation === 'desktop'/);
+  assert.match(finalPass, /\.detail-local-map--mobile-opening[\s\S]*?aspect-ratio:\s*3 \/ 2;/);
+  assert.match(finalPass, /\.detail-local-map__photo-action/);
 });
