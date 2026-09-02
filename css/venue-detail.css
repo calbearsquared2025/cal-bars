@@ -703,7 +703,7 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
     z-index: 8 !important;
     bottom: 0 !important;
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 104px !important;
+    grid-template-columns: minmax(0, 1fr) 150px !important;
     gap: 8px !important;
     margin: 0 !important;
     padding: 12px 18px 14px !important;
