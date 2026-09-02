@@ -60,6 +60,13 @@ test('desktop footer uses static HTML with the full affiliation disclaimer in th
   assert.match(source, /\.site-footer\s*\{[\s\S]*?background: var\(--cgb-warm-50, #f7f6f2\)/);
 });
 
+test('About attribution is static in both mobile and desktop About immediately before Support', () => {
+  const attribution = 'Cal Golden Bars is built and maintained by Matthew Putzulu.';
+  assert.equal(indexSource.split(attribution).length - 1, 2);
+  assert.match(indexSource, new RegExp(`id="about-surface"[\\s\\S]*?${attribution.replace('.', '\\.') }[\\s\\S]*?<div class="about-support">`));
+  assert.match(indexSource, new RegExp(`id="about-dialog"[\\s\\S]*?${attribution.replace('.', '\\.') }[\\s\\S]*?<div class="about-support">`));
+});
+
 test('desktop footer is flush with square corners', () => {
   assert.match(source, /\.site-footer\s*\{[\s\S]*?border-radius: 0 !important;[\s\S]*?clip-path: none !important;/);
 });
