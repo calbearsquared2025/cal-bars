@@ -181,7 +181,7 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count {
         grid-column: 2;
         grid-row: 2;
-        align-self: start;
+        align-self: center;
         margin: 0;
       }
 
