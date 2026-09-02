@@ -1,6 +1,6 @@
 # Contribution Forms
 
-California Golden Bars uses focused Google Forms backed by the private CGB workbook. The original Form response is always retained privately. Safe controlled positive information may update canonical public records automatically; freeform text, submitter identity/contact information, and destructive or materially conflicting corrections do not.
+California Golden Bars uses focused Google Forms backed by the private CGB workbook. The original Form response is always retained privately. Safe controlled positive information may update canonical public records automatically. Freeform text, submitter identity/contact information, and destructive or materially conflicting corrections remain private by default; the optional freeform answer from **Tell us about this location** is the deliberate exception and may enter **YOU SAY** only through the existing Fan Experience moderation/publication pipeline.
 
 This document supersedes older statements that all Venue/listing updates require manual review. The later approved rule is additive: a single valid structured contribution can create useful public Venue or Watch Party context without corroboration.
 
@@ -16,8 +16,8 @@ For the structured contribution Forms below:
 - Google Forms owns the original response columns; Apps Script appends only private processing status/error/timestamp plus `review_status` and `manual_review_reason` fields.
 - Processors resolve fields by question-title aliases rather than brittle column positions so legacy responses remain auditable.
 - Unchecked structured options mean **unknown / not asserted**, not false.
-- Freeform answers never create public tags and never auto-publish into **YOU SAY** or **CGB SAYS**.
-- Names and email addresses never enter the public snapshot.
+- Freeform answers never create public tags or **CGB SAYS** copy. The **Tell us about this location** `Anything else we should know about this venue?` answer is copied into `Fan_Experiences_Raw` and can reach **YOU SAY** only after the normal Fan Experience cleaning/moderation rules publish it. Other freeform answers remain private.
+- Names and email addresses never enter the public snapshot through these contribution flows.
 - Safe additive structured changes may auto-publish after canonical-ID validation and a script lock.
 - Closure, relocation, cancellation/move, Venue identity/name/address changes, organizer replacement, and material event-link replacement remain private for review. The raw row is durably marked `review_status = pending` with a machine-readable `manual_review_reason`; safe structured additions in the same response may still apply.
 - If a Watch Party base submission publishes successfully but its structured enhancement fails afterward, the raw row is marked retryable `processing_status = enhancement_error`, retains the canonical Watch Party relationship created by the idempotent base processor, and remains `review_status = pending` until enhancement succeeds or is reviewed.
@@ -25,6 +25,8 @@ For the structured contribution Forms below:
 For launch, the four existing Google Forms are maintained manually. The repository intentionally does not include Apps Script that creates, deletes, reorders, or edits Form questions. Do not run or recreate `syncContributionForms()` as part of owner setup. Preserve each existing public Form URL, linked response destination, prefill question, and `entry.*` ID, and maintain the approved questions below directly in Google Forms.
 
 The structured contribution processor remains `ContributionAutomation.gs`. Install exactly one spreadsheet-bound `onContributionFormSubmit` trigger manually in Apps Script using **From spreadsheet → On form submit**. Establish that trigger before removing any obsolete `onWatchPartyFormSubmit` trigger. Leave unrelated project triggers alone. The canonical workbook must contain `Venues.venue_tags` and `Watch_Parties.feature_tags` before structured contributions are enabled.
+
+The existing spreadsheet-bound `onFanExperienceFormSubmit` trigger remains the Fan Experience processor. It now also recognizes the live **Tell us about this location** response tab, copies a nonblank freeform answer into `Fan_Experiences_Raw` with the canonical Venue ID, and applies the same moderation rules as a direct Fan Experience response. No additional trigger is required. After deploying this behavior, run `backfillVenueDetailFanExperiences()` once if historical venue-detail freeform responses should also enter the Fan Experience pipeline; the backfill is idempotent.
 
 ## Controlled structured vocabulary
 
@@ -78,7 +80,7 @@ Approved questions:
 6. `Your email (optional, kept private)` — optional short answer.
 7. `Venue ID` — required short answer; prefilled internal reference.
 
-There is no name field. One selected safe tag is a useful submission and may immediately seed a previously absent `Venues.venue_tags` value. The optional paragraph remains private source material.
+There is no name field. One selected safe tag is a useful submission and may immediately seed a previously absent `Venues.venue_tags` value. A nonblank optional paragraph is copied to `Fan_Experiences_Raw` for the canonical Venue and processed as an anonymous Fan Experience; it reaches **YOU SAY** only if the existing moderation pipeline publishes it. Relationship/frequency context and email remain private and are not copied into Fan Experiences.
 
 The post-add Community Location prompt continues to open this same Form with Venue Name + Venue ID.
 
@@ -191,7 +193,7 @@ Photo intake remains manually reviewed. Google Forms file upload may require sig
 
 ### Share your Cal Game Experience
 
-This remains the primary workflow for public **YOU SAY** prose. Its focused Apps Script moderation/publication path remains separate from the four structured contribution Forms. Structured Venue tags can appear alongside these experiences according to the profile presentation rules above, but freeform answers from Venue/listing Forms do not become **YOU SAY** quotes automatically.
+This remains the primary direct workflow for public **YOU SAY** prose. Its focused Apps Script moderation/publication path also processes the nonblank `Anything else we should know about this venue?` answer copied from **Tell us about this location**. Those copied comments use the canonical Venue ID, remain anonymous, and must pass the same moderation rules before publication. Other Venue/listing freeform answers do not become **YOU SAY** quotes automatically.
 
 ### Suggest a Missing Location
 
