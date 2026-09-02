@@ -49,7 +49,7 @@
 /* Positive fan attendance is one compact CGB-community unit. */
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) {
   width: 100% !important;
-  min-height: 94px !important;
+  min-height: 52px !important;
   display: grid !important;
   grid-template-columns: auto auto !important;
   grid-template-rows: auto auto auto !important;
@@ -57,10 +57,10 @@
   align-items: start !important;
   justify-content: center !important;
   justify-items: start !important;
-  column-gap: 4px !important;
+  column-gap: 3px !important;
   row-gap: 0 !important;
-  margin: 2px 0 0 !important;
-  padding: 8px 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
   color: var(--cgb-navy-950) !important;
   background: transparent !important;
   border: 0 !important;
@@ -73,10 +73,10 @@
   align-self: start !important;
   justify-self: end !important;
   font-family: var(--font-ui) !important;
-  font-size: 2.5rem !important;
+  font-size: 1.8rem !important;
   font-weight: 850 !important;
   letter-spacing: -.055em !important;
-  line-height: .82 !important;
+  line-height: .86 !important;
 }
 
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
@@ -84,12 +84,12 @@
   grid-row: 1 !important;
   align-self: start !important;
   justify-self: start !important;
-  padding-top: 1px !important;
+  padding-top: 0 !important;
   font-family: var(--font-ui) !important;
-  font-size: .78rem !important;
+  font-size: .72rem !important;
   font-weight: 850 !important;
   letter-spacing: .025em !important;
-  line-height: 1 !important;
+  line-height: .95 !important;
 }
 
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending,
@@ -98,21 +98,21 @@
   justify-self: start !important;
   font-family: var(--font-ui) !important;
   font-weight: 800 !important;
-  letter-spacing: .055em !important;
-  line-height: 1.05 !important;
+  letter-spacing: .045em !important;
+  line-height: .98 !important;
   text-align: left !important;
   white-space: nowrap !important;
 }
 
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending {
   grid-row: 2 !important;
-  margin-top: 2px !important;
-  font-size: .64rem !important;
+  margin-top: 0 !important;
+  font-size: .6rem !important;
 }
 
 #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
   grid-row: 3 !important;
-  font-size: .62rem !important;
+  font-size: .58rem !important;
 }
 
 .intent-button:hover:not(:disabled) {
@@ -193,25 +193,25 @@
   }
 
   #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) {
-    min-height: 82px !important;
+    min-height: 50px !important;
     column-gap: 3px !important;
-    padding: 6px 0 !important;
+    padding: 0 !important;
   }
 
   #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
-    font-size: 2.15rem !important;
+    font-size: 1.75rem !important;
   }
 
   #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
-    font-size: .68rem !important;
+    font-size: .66rem !important;
   }
 
   #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending {
-    font-size: .58rem !important;
+    font-size: .56rem !important;
   }
 
   #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
-    font-size: .56rem !important;
+    font-size: .54rem !important;
   }
 }
 
