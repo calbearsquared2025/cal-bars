@@ -74,7 +74,7 @@ test('desktop with no photo uses the existing local map as the photo-slot fallba
   assert.match(balance, /const localMap = detail\.querySelector\(':scope > \.detail-local-map'\)/);
   assert.match(balance, /detail\.dataset\.desktopFallbackMap = 'true'/);
   assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-hero\.detail-hero--no-photo\s*\{[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?align-self:\s*center\s*!important;/);
-  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-local-map\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;[\s\S]*?margin:\s*12px 18px 0 8px\s*!important;/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-local-map\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*1\s*!important;[\s\S]*?aspect-ratio:\s*3 \/ 2\s*!important;[\s\S]*?margin:\s*0\s*!important;/);
   assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-what-to-know\s*\{[\s\S]*?grid-column:\s*1\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
   assert.match(balance, /desktopProfileArrangement = 'identity-what-to-know__map-attendance__party-editorial-community-contribution'/);
   assert.doesNotMatch(balance, /append\(hero|append\(localMap|insertBefore\(/);
@@ -121,8 +121,17 @@ test('desktop attendance keeps the approved lockup and centers vertically opposi
   assert.match(source, /attending\.textContent = 'ATTENDING'/);
   assert.match(source, /context\.textContent = 'ON CGB'/);
   assert.match(source, /\.bear-count__number\s*\{[\s\S]*?font-size:\s*1\.9rem\s*!important;/);
-  assert.match(balance, /\[data-desktop-photo-forward="true"\][\s\S]*?> \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*center\s*!important;[\s\S]*?padding:\s*0 18px 0 34px\s*!important;/);
-  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*center\s*!important;[\s\S]*?padding:\s*0 18px 0 34px\s*!important;/);
+  assert.match(balance, /\[data-desktop-photo-forward="true"\][\s\S]*?> \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*center\s*!important;[\s\S]*?padding:\s*12px 18px 12px 32px\s*!important;/);
+  assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.activity-card\s*\{[\s\S]*?grid-row:\s*2\s*!important;[\s\S]*?align-self:\s*center\s*!important;[\s\S]*?padding:\s*12px 18px 12px 32px\s*!important;/);
+});
+
+test('desktop bold hybrid uses a navy identity hero, edge-to-edge 3:2 media, and a subtle photo feather', async () => {
+  const balance = await read('js/desktop-profile-final-balance.mjs');
+
+  assert.match(balance, /\.detail-desktop-opening\s*\{[\s\S]*?background:\s*var\(--cgb-navy-950\)/);
+  assert.match(balance, /\.detail-hero h1\s*\{[\s\S]*?font-size:\s*clamp\(2\.25rem, 4\.15vw, 3\.45rem\)[\s\S]*?text-transform:\s*uppercase/);
+  assert.match(balance, /> \.detail-photo::before\s*\{[\s\S]*?width:\s*14%;[\s\S]*?linear-gradient\(90deg, var\(--cgb-navy-950\), rgba\(1, 1, 51, 0\)\)/);
+  assert.match(balance, /> \.detail-photo \.detail-photo__frame\s*\{[\s\S]*?border-radius:\s*0\s*!important;/);
 });
 
 test('desktop selected panel and map controls share one responsive width from 900px up', async () => {
