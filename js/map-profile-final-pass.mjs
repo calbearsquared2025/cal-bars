@@ -84,6 +84,7 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] {
+        --cgb-venue-media-aspect: 4 / 3;
         --cgb-selected-card-aside-width: minmax(124px, 40%);
         --cgb-selected-card-row-gap: 8px;
         --cgb-selected-card-column-gap: 0;
@@ -172,7 +173,7 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening {
         position: relative;
         z-index: 0;
-        aspect-ratio: 3 / 2;
+        aspect-ratio: var(--cgb-venue-media-aspect);
         min-height: 0;
         overflow: hidden;
         background: var(--cgb-neutral-100);
