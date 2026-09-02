@@ -15,7 +15,7 @@ function installStyles(documentObject) {
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening {
         display: grid !important;
         grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto;
         align-items: start;
         width: 100%;
       }
@@ -44,13 +44,12 @@ function installStyles(documentObject) {
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening > .detail-desktop-opening__right > .activity-card {
         grid-column: 2 !important;
         grid-row: 2 !important;
-        align-self: start !important;
+        align-self: center !important;
+        padding: 0 18px 0 34px !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening > .detail-desktop-opening__left > .detail-editorial {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-editorial {
         position: relative !important;
-        grid-column: 1 / -1 !important;
-        grid-row: 3 !important;
         width: 100% !important;
         margin: 0 !important;
         padding: 12px 18px 14px 38px !important;
@@ -61,7 +60,7 @@ function installStyles(documentObject) {
         box-sizing: border-box !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening > .detail-desktop-opening__left > .detail-editorial::before {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-editorial::before {
         position: absolute !important;
         top: 12px !important;
         right: auto !important;
@@ -71,15 +70,15 @@ function installStyles(documentObject) {
         height: auto !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening > .detail-desktop-opening__left > .detail-editorial > h2,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-desktop-opening > .detail-desktop-opening__left > .detail-editorial > .detail-editorial__copy {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-editorial > h2,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-editorial > .detail-editorial__copy {
         display: block !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"][data-desktop-fallback-map="true"] {
         display: grid !important;
         grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr) !important;
-        grid-template-rows: auto auto auto;
+        grid-template-rows: auto auto;
         grid-auto-rows: auto;
         column-gap: 0 !important;
         row-gap: 0 !important;
@@ -121,14 +120,14 @@ function installStyles(documentObject) {
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"][data-desktop-fallback-map="true"] > .activity-card {
         grid-column: 2 !important;
         grid-row: 2 !important;
-        align-self: start !important;
-        padding: 4px 18px 10px 34px !important;
+        align-self: center !important;
+        padding: 0 18px 0 34px !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"][data-desktop-fallback-map="true"] > .detail-editorial {
         position: relative !important;
         grid-column: 1 / -1 !important;
-        grid-row: 3 !important;
+        grid-row: auto !important;
         width: 100% !important;
         margin: 0 !important;
         padding: 12px 18px 14px 38px !important;
@@ -158,6 +157,30 @@ function installStyles(documentObject) {
   documentObject.head.append(style);
 }
 
+function placeAfter(cursor, node) {
+  if (!cursor || !node) return cursor;
+  cursor.after(node);
+  return node;
+}
+
+function syncDesktopProfileOrder(detail) {
+  const opening = detail.querySelector(':scope > [data-desktop-opening]');
+  const parties = [...detail.querySelectorAll(':scope > .party-module')];
+  const editorial = detail.querySelector(':scope > .detail-editorial') ||
+    opening?.querySelector(':scope > .detail-desktop-opening__left > .detail-editorial');
+  const community = detail.querySelector(':scope > .detail-fan-experiences');
+
+  let cursor = opening ||
+    detail.querySelector(':scope > .detail-local-map') ||
+    detail.querySelector(':scope > .activity-card') ||
+    detail.querySelector(':scope > .detail-what-to-know') ||
+    detail.querySelector(':scope > .detail-hero');
+
+  parties.forEach((party) => { cursor = placeAfter(cursor, party); });
+  cursor = placeAfter(cursor, editorial);
+  placeAfter(cursor, community);
+}
+
 export function syncDesktopProfileFinalBalance({
   detail = globalThis.document?.querySelector?.('#venue-detail'),
   documentObject = globalThis.document,
@@ -170,9 +193,10 @@ export function syncDesktopProfileFinalBalance({
   installStyles(documentObject);
   const opening = detail.querySelector(':scope > [data-desktop-opening]');
   if (detail.dataset.desktopPhotoForward === 'true' && opening) {
+    syncDesktopProfileOrder(detail);
     delete detail.dataset.desktopFallbackMap;
     detail.dataset.desktopEditorialSpan = 'true';
-    detail.dataset.desktopProfileArrangement = 'identity-what-to-know__photo-attendance__editorial-party-community-contribution';
+    detail.dataset.desktopProfileArrangement = 'identity-what-to-know__photo-attendance__party-editorial-community-contribution';
     return { mode: 'photo', map: null };
   }
 
@@ -187,6 +211,7 @@ export function syncDesktopProfileFinalBalance({
   detail.dataset.desktopFallbackMap = 'true';
   detail.dataset.desktopEditorialSpan = 'true';
   detail.dataset.desktopBalancedOpening = 'true';
-  detail.dataset.desktopProfileArrangement = 'identity-what-to-know__map-attendance__editorial-party-community-contribution';
+  syncDesktopProfileOrder(detail);
+  detail.dataset.desktopProfileArrangement = 'identity-what-to-know__map-attendance__party-editorial-community-contribution';
   return { mode: 'map', map: localMap };
 }
