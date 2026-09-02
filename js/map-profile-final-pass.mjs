@@ -107,7 +107,7 @@ function installStyles() {
         grid-row: 1;
         min-width: 0;
         margin: 0 0 0 -14px;
-        padding: 14px 10px 14px 14px;
+        padding: 10px 9px 11px 14px;
         color: var(--cgb-white);
         background: var(--cgb-navy-950);
         border-left: 0;
@@ -115,13 +115,15 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header h2 {
-        max-width: 10ch;
         color: var(--cgb-white) !important;
         font-family: var(--font-condensed, var(--font-display)) !important;
-        font-size: clamp(1.55rem, 7.2vw, 2.2rem) !important;
+        font-size: clamp(1.45rem, 6.4vw, 1.85rem) !important;
         font-weight: 900 !important;
         letter-spacing: -.03em !important;
-        line-height: .92 !important;
+        line-height: .94 !important;
+        overflow-wrap: break-word !important;
+        word-break: normal !important;
+        hyphens: none !important;
         text-transform: uppercase;
         text-wrap: balance;
       }
@@ -129,6 +131,8 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-location,
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .selected-card__proximity-row {
         color: rgba(255, 255, 255, .86) !important;
+        font-size: .7rem !important;
+        line-height: 1.2 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .selected-card__directions-inline {
@@ -140,9 +144,12 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-badge {
+        min-height: 20px !important;
+        padding: 2px 6px !important;
         color: var(--cgb-gold-300) !important;
         background: transparent !important;
         border: 1px solid var(--cgb-gold-400) !important;
+        font-size: .58rem !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__what-to-know {
@@ -157,11 +164,35 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening {
         grid-column: 2;
         grid-row: 1;
-        align-self: start;
+        position: relative;
+        align-self: stretch;
         width: 100%;
         max-width: none;
         margin: 0 -14px 0 0;
         background: var(--cgb-navy-950);
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-photo--mobile-opening .detail-photo__metadata {
+        position: absolute;
+        z-index: 2;
+        right: 5px;
+        bottom: 5px;
+        left: 5px;
+        gap: 1px !important;
+        padding: 3px 5px !important;
+        color: var(--cgb-white) !important;
+        background: rgba(1, 1, 51, .72);
+        border-radius: 4px;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-photo--mobile-opening .detail-photo__caption,
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-photo--mobile-opening .detail-photo__credit {
+        overflow: hidden;
+        color: inherit !important;
+        font-size: .54rem !important;
+        line-height: 1.15 !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-photo--mobile-opening .detail-photo__frame,
@@ -231,12 +262,21 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) {
         min-height: 64px;
-        padding: 8px 0 0 12px;
+        display: grid !important;
+        grid-template-columns: auto minmax(0, 1fr) !important;
+        grid-template-rows: repeat(3, auto) !important;
+        column-gap: 7px !important;
+        row-gap: 0 !important;
+        align-content: center !important;
+        padding: 7px 0 5px 12px;
         border-left: 1px solid var(--cgb-neutral-200);
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) .bear-count__number {
-        font-size: clamp(2.85rem, 13vw, 4rem) !important;
+        grid-column: 1 !important;
+        grid-row: 1 / span 3 !important;
+        align-self: center !important;
+        font-size: clamp(2.65rem, 11vw, 3.5rem) !important;
         font-weight: 900 !important;
         line-height: .8 !important;
       }
@@ -247,6 +287,25 @@ function installStyles() {
         font-size: .72rem !important;
         font-weight: 900 !important;
         line-height: 1 !important;
+        white-space: normal !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count .bear-count__label {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        align-self: end !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count .bear-count__attending {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count .bear-count__context {
+        grid-column: 2 !important;
+        grid-row: 3 !important;
+        align-self: start !important;
+        font-weight: 650 !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count.bear-count--empty {
@@ -273,10 +332,13 @@ function installStyles() {
         margin: 4px 0 3px;
         overflow: visible;
         font-family: var(--font-condensed, var(--font-display));
-        font-size: clamp(1.55rem, 7.2vw, 2.2rem);
+        font-size: clamp(1.45rem, 6.4vw, 1.85rem);
         font-weight: 900;
         letter-spacing: -.03em;
-        line-height: .92;
+        line-height: .94;
+        overflow-wrap: break-word;
+        word-break: normal;
+        hyphens: none;
         text-transform: uppercase;
         -webkit-box-orient: initial;
         -webkit-line-clamp: unset;
@@ -429,7 +491,7 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {
         display: grid !important;
-        grid-template-columns: minmax(0, 2fr) minmax(96px, 1fr) !important;
+        grid-template-columns: minmax(0, 1.6fr) minmax(128px, 1fr) !important;
         gap: 8px !important;
         margin-top: 0 !important;
         margin-inline: 4px;
@@ -446,6 +508,8 @@ function installStyles() {
         font-family: var(--font-condensed, var(--font-display)) !important;
         font-size: 1rem !important;
         font-weight: 900 !important;
+        letter-spacing: .015em !important;
+        text-transform: uppercase !important;
       }
 
       .intent-button__main {
@@ -481,7 +545,9 @@ function installStyles() {
         border: 1px solid var(--cgb-neutral-300) !important;
         border-radius: 11px !important;
         font-size: .78rem !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
+        line-height: 1.05 !important;
+        text-transform: uppercase !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon {
