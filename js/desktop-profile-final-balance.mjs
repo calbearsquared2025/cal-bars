@@ -167,7 +167,9 @@ function placeAfter(cursor, node) {
 
 function syncDesktopProfileOrder(detail) {
   const opening = detail.querySelector(':scope > [data-desktop-opening]');
-  const parties = [...detail.querySelectorAll(':scope > .party-module')];
+  const partySections = [
+    ...detail.querySelectorAll(':scope > .party-module, :scope > [data-watch-party-form-section]')
+  ];
   const editorial = detail.querySelector(':scope > .detail-editorial') ||
     opening?.querySelector(':scope > .detail-desktop-opening__left > .detail-editorial');
   const community = detail.querySelector(':scope > .detail-fan-experiences');
@@ -178,7 +180,7 @@ function syncDesktopProfileOrder(detail) {
     detail.querySelector(':scope > .detail-what-to-know') ||
     detail.querySelector(':scope > .detail-hero');
 
-  parties.forEach((party) => { cursor = placeAfter(cursor, party); });
+  partySections.forEach((partySection) => { cursor = placeAfter(cursor, partySection); });
   cursor = placeAfter(cursor, editorial);
   placeAfter(cursor, community);
 }
