@@ -328,7 +328,7 @@
 /* ---------- Layered location tray ---------- */
 .venue-tray {
   position: absolute;
-  z-index: 34;
+  z-index: 45;
   left: max(10px, env(safe-area-inset-left));
   right: max(10px, env(safe-area-inset-right));
   bottom: calc(var(--footer-height) + 9px);
