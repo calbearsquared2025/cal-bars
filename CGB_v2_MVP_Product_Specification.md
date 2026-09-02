@@ -229,9 +229,9 @@ Recommended Watch Party module:
 
 On the mobile continuous Venue Profile, persistent community-contributed Venue observations appear in a compact **WHAT TO KNOW** block immediately after the venue identity/address and before the Watch Party module. The header includes a quiet **Add info →** link to the existing prefilled **Tell us about this location** Form without adding a separate CTA row. Render only known positive tags: **21+**, **ALL AGES**, **AUDIO ON**, **FOOD**, **CAL BEER**, **LARGE CROWD**, and **CAL MEMORABILIA**. When none are known, keep the block compact with a subtle empty state. Do not duplicate these tags later under community quotes.
 
-The community experience section is labeled **YOU SAY** and contains fan experiences plus the existing experience-contribution prompt. **CGB SAYS** remains reserved for CGB editorial content. On mobile, when an approved venue photo exists, it appears after **YOU SAY** so venue facts, selected-game activity, attendance actions, editorial context, and community context come before supporting media. Wider layouts may retain their existing spatial hierarchy and tag placement unless separately changed.
+The community experience section is labeled **YOU SAY** and contains fan experiences plus the existing experience-contribution prompt. **CGB SAYS** remains reserved for CGB editorial content. When an approved venue photo exists, mobile and desktop both use a photo-forward opening rather than deferring the image beneath community/editorial content. On mobile, the selected-card opening pairs venue identity with the approved 3:2 photo in the first row and **WHAT TO KNOW** with current attendance in the second row; the Watch Party and selected-game actions then continue below at full width. **CGB SAYS** and **YOU SAY** remain in the continuous profile below those primary decision and action elements.
 
-Optional authorized venue photos appear below core decision information. The photo section disappears when no approved photo is available.
+Approved venue photos use the shared 3:2 cover crop. When no approved photo is available, the photo position disappears and the existing local-map fallback behavior remains available in the continued profile.
 
 ## 11. Venue contributions
 
