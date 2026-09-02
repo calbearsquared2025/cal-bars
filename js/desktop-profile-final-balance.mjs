@@ -50,6 +50,7 @@ function installStyles(documentObject) {
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="true"] > .detail-editorial {
         position: relative !important;
+        display: block !important;
         width: 100% !important;
         margin: 0 !important;
         padding: 12px 18px 14px 38px !important;
@@ -126,6 +127,7 @@ function installStyles(documentObject) {
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"][data-desktop-photo-forward="false"][data-desktop-fallback-map="true"] > .detail-editorial {
         position: relative !important;
+        display: block !important;
         grid-column: 1 / -1 !important;
         grid-row: auto !important;
         width: 100% !important;
