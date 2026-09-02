@@ -108,6 +108,7 @@ test('mobile media opening has one grid owner and balances What to know against 
   assert.match(mediaBlock, /grid-row:\s*1;/);
   assert.match(attendanceBlock, /grid-column:\s*2;/);
   assert.match(attendanceBlock, /grid-row:\s*2;/);
+  assert.match(attendanceBlock, /align-self:\s*center;/);
   assert.match(whatToKnowBlock, /grid-column:\s*1;/);
   assert.match(whatToKnowBlock, /grid-row:\s*2;/);
   assert.doesNotMatch(mediaBlock, /!important/);
