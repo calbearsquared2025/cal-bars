@@ -156,7 +156,7 @@ a { color: inherit; }
 
 .venue-tray {
   position: absolute;
-  z-index: 30;
+  z-index: 45;
   left: 0; right: 0; bottom: 0;
   max-height: calc(100dvh - var(--header-height) - 16px);
   background: white;
