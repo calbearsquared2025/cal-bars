@@ -21,7 +21,7 @@ test('effective desktop venue tray stays above selected map markers and below th
   const selectedMarker = zIndex(markerCss, '.cgb-marker.is-selected');
   const header = zIndex(baseCss, '.site-header');
 
-  assert.equal(baseTray, 30);
+  assert.equal(baseTray, 30, 'do not add an ineffective base-layer tray override');
   assert.equal(tray, 45);
   assert.equal(selectedMarker, 40);
   assert.equal(header, 50);
