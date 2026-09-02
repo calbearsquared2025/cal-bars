@@ -85,8 +85,6 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const figure = documentObject.createElement('figure');
   figure.className = 'detail-photo';
   figure.dataset.photoUrl = presentation.photoUrl;
-  figure.style.width = 'min(100%, 520px)';
-  figure.style.margin = '10px auto 0';
 
   const frame = documentObject.createElement('div');
   frame.className = 'detail-photo__frame';
@@ -342,6 +340,14 @@ function syncDetailShareLabel(detail, state, venue) {
   return true;
 }
 
+function unwrapExistingDesktopOpening(detail) {
+  const opening = detail?.querySelector?.(':scope > [data-desktop-opening]');
+  if (!opening) return false;
+  const nodes = [...opening.children].flatMap((column) => [...column.children]);
+  opening.replaceWith(...nodes);
+  return true;
+}
+
 export function enhanceVenueProfile({
   state = globalThis.window?.CGBApp?.getState?.(),
   documentObject = globalThis.document,
@@ -350,6 +356,7 @@ export function enhanceVenueProfile({
   if (!state?.detailMode || !documentObject) return false;
   const venue = state.snapshot?.venues?.find((item) => clean(item?.venue_id) === clean(state.selectedVenueId));
   const detail = documentObject.querySelector('#venue-detail');
+  unwrapExistingDesktopOpening(detail);
   const hero = detail?.querySelector(':scope > .detail-hero');
   if (!venue || !detail || !hero) return false;
 

@@ -31,7 +31,7 @@ test('desktop selected profile uses the current two-action renderer without a st
   assert.match(renderer, /location\.append\([\s\S]*createDirectionsLink/);
 });
 
-test('desktop attendance is compact while the shared mobile attendance structure remains unchanged', async () => {
+test('desktop attendance remains compact while the shared mobile attendance treatment is balanced', async () => {
   const [desktopCss, fanIntentCss] = await Promise.all([
     read('css/design-board-4.css'),
     read('css/fan-intent.css')
@@ -39,6 +39,12 @@ test('desktop attendance is compact while the shared mobile attendance structure
   const desktop = desktopBlock(desktopCss);
   assert.match(desktop, /\.bear-count:not\(\.bear-count--empty\)\s*\{[\s\S]*?min-height:\s*48px\s*!important;[\s\S]*?display:\s*flex\s*!important;/);
   assert.match(desktop, /\.bear-count__number\s*\{[\s\S]*?font-size:\s*1\.9rem\s*!important;/);
-  assert.match(fanIntentCss, /min-height:\s*94px\s*!important;/);
-  assert.match(fanIntentCss, /font-size:\s*2\.5rem\s*!important;/);
+  assert.match(fanIntentCss, /min-height:\s*56px\s*!important;/);
+  assert.match(fanIntentCss, /font-size:\s*2\.15rem\s*!important;/);
+  assert.match(fanIntentCss, /\.bear-count__label[\s\S]*?font-size:\s*\.75rem\s*!important;/);
+  assert.match(fanIntentCss, /\.bear-count__attending[\s\S]*?font-size:\s*\.62rem\s*!important;/);
+  assert.match(fanIntentCss, /\.bear-count__context[\s\S]*?font-size:\s*\.6rem\s*!important;/);
+  assert.match(fanIntentCss, /margin-top:\s*0\s*!important;/);
+  assert.doesNotMatch(fanIntentCss, /min-height:\s*94px\s*!important;/);
+  assert.doesNotMatch(fanIntentCss, /font-size:\s*2\.5rem\s*!important;/);
 });

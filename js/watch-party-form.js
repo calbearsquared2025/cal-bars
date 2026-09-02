@@ -1,4 +1,5 @@
 import { initializeCalBarNominationEntry } from './cal-bar-nomination.js';
+import { syncDesktopProfileFinalBalance } from './desktop-profile-final-balance.mjs';
 import { initializeListingUpdateEntry } from './listing-update.js';
 import { initializePhotoFormEntry } from './photo-form.js';
 import './external-watch-party-cta.js';
@@ -58,7 +59,7 @@ function createWatchPartySection(documentObject, { href, onActivate }) {
 
   const prompt = documentObject.createElement('p');
   prompt.className = 'detail-watch-party-cta__prompt';
-  prompt.textContent = 'No Watch Party listed for this game. Organizing one or know of one? Add it so other Bears can find it.';
+  prompt.textContent = 'No Watch Party listed for this game. Organizing or know of one? Add it so other Bears can find it.';
 
   const link = documentObject.createElement('a');
   link.className = 'detail-watch-party-cta__action';
@@ -176,6 +177,7 @@ export function renderWatchPartyFormEntryPoint({
     maintenance.before(section);
   }
 
+  syncDesktopProfileFinalBalance({ detail, documentObject, windowObject });
   syncDetailContributionVisibility(detail);
   return href;
 }
