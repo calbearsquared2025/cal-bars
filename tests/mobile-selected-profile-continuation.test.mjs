@@ -68,21 +68,48 @@ test('mobile selected profile puts compact What to know context before the Watch
   assert.match(source, /if \(!mobileContinuation\) \{[\s\S]*?createVenueTagList\(documentObject, venueTags\)/);
 });
 
-test('mobile selected profile uses the desktop-aligned split photo hierarchy and removes the superseded photo deferral', async () => {
-  const [fanSource, continuationSource] = await Promise.all([
+test('mobile split-photo layout has one grid owner and no specificity fight', async () => {
+  const [fanSource, continuationSource, finalPass, firstPass, enhancementSource] = await Promise.all([
     readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8'),
-    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8')
+    readFile(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/map-profile-final-pass.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/map-profile-first-pass.mjs', import.meta.url), 'utf8'),
+    readFile(new URL('../js/venue-profile-enhancement.mjs', import.meta.url), 'utf8')
   ]);
+
   assert.doesNotMatch(fanSource, /communitySection\.after\(photo\)/);
   assert.doesNotMatch(fanSource, /detail-photo--mobile-deferred/);
   assert.doesNotMatch(fanSource, /detail-hero--deferred-photo-empty/);
+
   assert.match(continuationSource, /photo\.classList\.add\('detail-photo--mobile-opening'\)/);
   assert.match(continuationSource, /header\.after\(photo\)/);
   assert.match(continuationSource, /card\.dataset\.mobilePhotoForward = 'true'/);
-  assert.match(continuationSource, /\.selected-card\[data-mobile-photo-forward="true"\] > \.detail-photo--mobile-opening \{[\s\S]*?grid-column: 2 !important;[\s\S]*?grid-row: 1 !important;/);
-  assert.match(continuationSource, /\.selected-card\[data-mobile-photo-forward="true"\] > \.bear-count \{[\s\S]*?grid-column: 2 !important;[\s\S]*?grid-row: 2 !important;/);
+  assert.doesNotMatch(continuationSource, /\.selected-card\[data-mobile-photo-forward="true"\]/);
   assert.match(continuationSource, /detail-hero--mobile-opening-empty/);
   assert.match(continuationSource, /if \(!venue\.photo_url\) \{[\s\S]*?createLocalMapElement/);
+
+  assert.doesNotMatch(firstPass, /\.selected-card\s*\{/);
+  assert.doesNotMatch(firstPass, /\.selected-card\s*>\s*\*/);
+
+  assert.match(finalPass, /\.selected-card:not\(\[data-mobile-photo-forward="true"\]\) > \.bear-count/);
+  assert.match(finalPass, /--cgb-selected-card-aside-width:\s*minmax\(124px, 40%\)/);
+
+  const photoBlock = finalPass.match(/\.selected-card\[data-mobile-photo-forward="true"\] > \.detail-photo--mobile-opening\s*\{([\s\S]*?)\}/)?.[1] || '';
+  const attendanceBlock = finalPass.match(/\.selected-card\[data-mobile-photo-forward="true"\] > \.bear-count\s*\{([\s\S]*?)\}/)?.[1] || '';
+  const whatToKnowBlock = finalPass.match(/\.selected-card\[data-mobile-photo-forward="true"\] > \.selected-card__what-to-know\s*\{([\s\S]*?)\}/)?.[1] || '';
+
+  assert.match(photoBlock, /grid-column:\s*2;/);
+  assert.match(photoBlock, /grid-row:\s*1;/);
+  assert.match(attendanceBlock, /grid-column:\s*2;/);
+  assert.match(attendanceBlock, /grid-row:\s*2;/);
+  assert.match(whatToKnowBlock, /grid-column:\s*1;/);
+  assert.match(whatToKnowBlock, /grid-row:\s*2;/);
+  assert.doesNotMatch(photoBlock, /!important/);
+  assert.doesNotMatch(attendanceBlock, /!important/);
+  assert.doesNotMatch(whatToKnowBlock, /!important/);
+
+  assert.doesNotMatch(enhancementSource, /figure\.style\.width/);
+  assert.doesNotMatch(enhancementSource, /figure\.style\.margin/);
 });
 
 test('mobile approved photos use the shared 3:2 cover crop without a local override', async () => {
