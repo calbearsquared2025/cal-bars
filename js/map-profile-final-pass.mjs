@@ -296,6 +296,7 @@ function installStyles() {
         grid-template-columns: minmax(0, 2fr) minmax(96px, 1fr) !important;
         gap: 8px !important;
         margin-top: 0 !important;
+        margin-inline: 4px;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .intent-button {
