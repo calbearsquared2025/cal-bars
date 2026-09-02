@@ -90,10 +90,11 @@ test('desktop photo is not duplicated below the opening area', async () => {
   assert.match(arrange, /if \(localMap\) \{[\s\S]*?cursor = placeAfter\(cursor, localMap\);/);
 });
 
-test('desktop final hierarchy matches mobile: Watch Party before CGB Says before You Say', async () => {
-  const [source, balance] = await Promise.all([
+test('desktop final hierarchy matches mobile for both real and empty Watch Party states', async () => {
+  const [source, balance, watchPartyForm] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
-    read('js/desktop-profile-final-balance.mjs')
+    read('js/desktop-profile-final-balance.mjs'),
+    read('js/watch-party-form.js')
   ]);
 
   assert.match(source, /title\.textContent = 'WHAT TO KNOW'/);
@@ -101,9 +102,12 @@ test('desktop final hierarchy matches mobile: Watch Party before CGB Says before
   assert.match(source, /link\.textContent = 'Add info →'/);
   assert.match(source, /CGBSnapshotRefresh\?\.refresh\?\.\(\)/);
   assert.match(source, /> \.detail-fan-experiences > \[data-venue-tags\]\s*\{[\s\S]*?display:\s*none\s*!important;/);
-  assert.match(balance, /function syncDesktopProfileOrder\(detail\)[\s\S]*?parties\.forEach\(\(party\) => \{ cursor = placeAfter\(cursor, party\); \}\);[\s\S]*?cursor = placeAfter\(cursor, editorial\);[\s\S]*?placeAfter\(cursor, community\);/);
+  assert.match(balance, /querySelectorAll\(':scope > \.party-module, :scope > \[data-watch-party-form-section\]'\)/);
+  assert.match(balance, /function syncDesktopProfileOrder\(detail\)[\s\S]*?partySections\.forEach\(\(partySection\) => \{ cursor = placeAfter\(cursor, partySection\); \}\);[\s\S]*?cursor = placeAfter\(cursor, editorial\);[\s\S]*?placeAfter\(cursor, community\);/);
   assert.match(balance, /opening\?\.querySelector\(':scope > \.detail-desktop-opening__left > \.detail-editorial'\)/);
   assert.match(balance, /\[data-desktop-fallback-map="true"\] > \.detail-editorial\s*\{[\s\S]*?grid-column:\s*1 \/ -1\s*!important;[\s\S]*?grid-row:\s*auto\s*!important;/);
+  assert.match(watchPartyForm, /import \{ syncDesktopProfileFinalBalance \} from '\.\/desktop-profile-final-balance\.mjs'/);
+  assert.match(watchPartyForm, /maintenance\.before\(section\);[\s\S]*?syncDesktopProfileFinalBalance\(\{ detail, documentObject, windowObject \}\);/);
 });
 
 test('desktop attendance keeps the approved lockup and centers vertically opposite What to know', async () => {
