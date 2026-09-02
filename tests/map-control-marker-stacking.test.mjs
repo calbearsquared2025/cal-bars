@@ -10,7 +10,8 @@ const zIndex = (source, selector) => {
 };
 
 test('desktop zoom controls stay above selected pins and below the effective venue profile layer', async () => {
-  const [baseCss, boardCss, markerCss] = await Promise.all([
+  const [html, baseCss, boardCss, markerCss] = await Promise.all([
+    read('index.html'),
     read('css/styles.css'),
     read('css/design-board-2.css'),
     read('css/mobile-polish.css')
@@ -20,6 +21,8 @@ test('desktop zoom controls stay above selected pins and below the effective ven
   const selectedMarker = zIndex(markerCss, '.cgb-marker.is-selected');
   const tray = zIndex(boardCss, '.venue-tray');
 
+  assert.ok(html.indexOf('css/styles.css') < html.indexOf('css/design-board-2.css'));
+  assert.ok(html.indexOf('css/design-board-2.css') < html.indexOf('css/mobile-polish.css'));
   assert.equal(zoomControls, 42);
   assert.equal(selectedMarker, 40);
   assert.equal(tray, 45);
