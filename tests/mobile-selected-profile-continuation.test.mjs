@@ -144,9 +144,13 @@ test('mobile approved photos open a lightweight accessible viewer without changi
   assert.match(source, /dialog\.className = 'detail-photo-viewer'/);
   assert.match(source, /typeof dialog\.showModal === 'function'/);
   assert.match(source, /event\.target === dialog/);
-  assert.match(source, /cloneNode\(true\)/);
+  assert.match(source, /line\.className = 'detail-photo-viewer__metadata-line'/);
+  assert.match(source, /captionText \? ' · Photo: ' : 'Photo: '/);
+  assert.match(source, /creditIdentity\.cloneNode\(true\)/);
   assert.match(source, /\.detail-photo-viewer\s*\{[\s\S]*?width:\s*min\(94vw, 720px\)/);
   assert.match(source, /\.detail-photo-viewer__image\s*\{[\s\S]*?max-height:\s*74dvh;[\s\S]*?object-fit:\s*contain;/);
+  assert.match(source, /\.detail-photo-viewer__metadata\s*\{[\s\S]*?padding:\s*9px 12px 10px;/);
+  assert.match(source, /\.detail-photo-viewer__metadata-line\s*\{[\s\S]*?font-size:\s*\.7rem;[\s\S]*?line-height:\s*1\.35;/);
   assert.match(source, /if \(windowObject\?\.matchMedia\?\.\(MOBILE_QUERY\)\?\.matches !== true\) return false;/);
 });
 
