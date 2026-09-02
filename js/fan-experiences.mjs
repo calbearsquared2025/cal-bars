@@ -186,20 +186,6 @@ function installMobileWhatToKnowStyles(documentObject) {
         font-size: .66rem;
         line-height: 1.25;
       }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero.detail-hero--deferred-photo-empty {
-        min-height: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: 0 !important;
-        overflow: hidden !important;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation > .detail-photo.detail-photo--mobile-deferred {
-        width: calc(100% - 32px) !important;
-        margin: 0 16px 16px !important;
-      }
     }
   `;
   documentObject.head.append(style);
@@ -274,20 +260,6 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
   return section;
 }
 
-function placeMobileDeferredPhoto(detail, communitySection) {
-  if (!detail?.classList?.contains('venue-detail--selected-continuation')) return false;
-  const hero = detail.querySelector(':scope > .detail-hero');
-  const photo = detail.querySelector('.detail-photo');
-  if (!hero || !photo || !communitySection) {
-    hero?.classList?.remove('detail-hero--deferred-photo-empty');
-    return false;
-  }
-  photo.classList.add('detail-photo--mobile-deferred');
-  communitySection.after(photo);
-  if (!hero.children.length) hero.classList.add('detail-hero--deferred-photo-empty');
-  return true;
-}
-
 function createQuote(documentObject, item) {
   const experience = documentObject.createElement('article');
   experience.className = 'detail-fan-experiences__item';
@@ -339,9 +311,8 @@ function placeSection(detail, section) {
   else detail.prepend(section);
 }
 
-function finalizeMobileCommunityPresentation({ detail, section, state, venue, documentObject }) {
+function finalizeMobileCommunityPresentation({ detail, state, venue, documentObject }) {
   syncMobileWhatToKnow({ detail, state, venue, documentObject });
-  placeMobileDeferredPhoto(detail, section);
 }
 
 export function renderFanExperiences({ app = window.CGBApp, documentObject = document } = {}) {
@@ -383,7 +354,7 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
     const share = createShareLink(documentObject, href);
     if (share) section.append(share);
     placeSection(detail, section);
-    finalizeMobileCommunityPresentation({ detail, section, state, venue, documentObject });
+    finalizeMobileCommunityPresentation({ detail, state, venue, documentObject });
     return section;
   }
 
@@ -416,6 +387,6 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
   const share = createShareLink(documentObject, href);
   if (share) section.append(share);
   placeSection(detail, section);
-  finalizeMobileCommunityPresentation({ detail, section, state, venue, documentObject });
+  finalizeMobileCommunityPresentation({ detail, state, venue, documentObject });
   return section;
 }
