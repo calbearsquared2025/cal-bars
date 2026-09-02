@@ -83,7 +83,7 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] {
         --cgb-selected-card-aside-width: minmax(124px, 40%);
-        --cgb-selected-card-row-gap: 6px;
+        --cgb-selected-card-row-gap: 8px;
         --cgb-selected-card-column-gap: 12px;
         align-items: start;
       }
@@ -100,7 +100,7 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header {
         grid-column: 1;
-        grid-row: 1 / span 2;
+        grid-row: 1;
         min-width: 0;
         margin: 0;
         padding: 8px 0 0;
@@ -110,8 +110,8 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__what-to-know {
-        grid-column: 1 / -1;
-        grid-row: 3;
+        grid-column: 1;
+        grid-row: 2;
         align-self: start;
         margin: 2px 0 0;
       }
@@ -160,11 +160,11 @@ function installStyles() {
         z-index: 4;
         right: 6px;
         bottom: 6px;
-        min-height: 28px;
+        min-height: 26px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 5px 8px;
+        padding: 4px 7px;
         color: var(--cgb-navy-900);
         background: rgba(255, 255, 255, .96);
         border: 1px solid var(--cgb-gold-500);
@@ -186,8 +186,8 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) {
-        min-height: 72px;
-        padding: 4px 0 0;
+        min-height: 64px;
+        padding: 0;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) .bear-count__number {
@@ -195,8 +195,8 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count.bear-count--empty {
-        min-height: 72px;
-        padding: 4px 0 0;
+        min-height: 64px;
+        padding: 0;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .venue-activity-history {
