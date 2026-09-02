@@ -414,6 +414,7 @@ function focusVenue(venueId, { force = false } = {}) {
       preserveMobileCameraOwnership(state);
       state.map.stop?.();
       const { verticalOffset, bottomPadding } = selectedTrayCameraMetrics();
+      const currentZoom = Number(state.map.getZoom?.()) || 0;
       const nearby = nearbyVenuesForSelected(state, venue);
       if (nearby.length > 0) {
         const points = [venue, ...nearby.map(({ venue: candidate }) => candidate)]
@@ -421,11 +422,28 @@ function focusVenue(venueId, { force = false } = {}) {
           .filter(([longitude, latitude]) => Number.isFinite(longitude) && Number.isFinite(latitude));
         const longitudes = points.map(([longitude]) => longitude);
         const latitudes = points.map(([, latitude]) => latitude);
-        state.map.fitBounds([
+        const bounds = [
           [Math.min(...longitudes), Math.min(...latitudes)],
           [Math.max(...longitudes), Math.max(...latitudes)]
-        ], {
-          padding: { top: 36, right: 36, bottom: bottomPadding, left: 36 },
+        ];
+        const padding = { top: 36, right: 36, bottom: bottomPadding, left: 36 };
+        const regionalCamera = state.map.cameraForBounds?.(bounds, {
+          padding,
+          maxZoom: REGIONAL_FOCUS_MAX_ZOOM
+        });
+        const regionalZoom = Number(regionalCamera?.zoom);
+        if (Number.isFinite(regionalZoom) && currentZoom > regionalZoom) {
+          state.map.easeTo({
+            center: [Number(venue.longitude), Number(venue.latitude)],
+            zoom: currentZoom,
+            offset: [0, verticalOffset],
+            duration: reducedMotion() ? 0 : 420,
+            essential: true
+          });
+          return;
+        }
+        state.map.fitBounds(bounds, {
+          padding,
           maxZoom: REGIONAL_FOCUS_MAX_ZOOM,
           duration: reducedMotion() ? 0 : 420,
           essential: true
@@ -433,7 +451,6 @@ function focusVenue(venueId, { force = false } = {}) {
         return;
       }
 
-      const currentZoom = Number(state.map.getZoom?.()) || 0;
       state.map.easeTo({
         center: [Number(venue.longitude), Number(venue.latitude)],
         zoom: Math.max(currentZoom, FOCUS_ZOOM),
