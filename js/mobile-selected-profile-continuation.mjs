@@ -178,10 +178,6 @@ function removeGateway(documentObject) {
 function clearLegacyOpeningMedia(card) {
   card?.querySelector?.(':scope > .detail-photo--mobile-opening')?.remove();
   card?.querySelector?.(':scope > .detail-local-map--mobile-opening')?.remove();
-  if (card?.dataset) {
-    delete card.dataset.mobileMediaForward;
-    delete card.dataset.mobileMediaType;
-  }
 }
 
 function placeSupportingPhoto(detail) {
