@@ -251,7 +251,7 @@
     position: static;
   }
 
-  #tray-selected > #venue-detail .party-module .party-module__report {
+  #tray-selected > #venue-detail > .party-module .party-module__report {
     font-size: .65rem;
   }
 
