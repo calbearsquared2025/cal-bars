@@ -38,7 +38,7 @@ test('desktop photo reuses the shared 3:2 cover presentation instead of redefini
   assert.doesNotMatch(source, /setProperty\('object-fit'/);
 });
 
-test('all desktop widths use the expanded profile while mobile aligns its media-forward placement', async () => {
+test('all desktop widths use the expanded profile while mobile keeps media in the supporting profile flow', async () => {
   const [source, enhancement, mobileSource, mobileContinuation] = await Promise.all([
     read('js/desktop-photo-forward-profile.mjs'),
     read('js/venue-profile-enhancement.mjs'),
@@ -59,8 +59,9 @@ test('all desktop widths use the expanded profile while mobile aligns its media-
   assert.match(source, /const photoForward = Boolean\(photo\);/);
   assert.match(mobileSource, /section\.dataset\.mobileWhatToKnow = 'true'/);
   assert.doesNotMatch(mobileSource, /placeMobileDeferredPhoto/);
-  assert.match(mobileContinuation, /media\.classList\.add\(isPhoto \? 'detail-photo--mobile-opening' : 'detail-local-map--mobile-opening'\)/);
-  assert.match(mobileContinuation, /card\.dataset\.mobileMediaForward = 'true'/);
+  assert.match(mobileContinuation, /photo\.classList\.add\('detail-photo--supporting'\)/);
+  assert.match(mobileContinuation, /placeSupportingPhoto\(cachedVenueDetail\)/);
+  assert.doesNotMatch(mobileContinuation, /placeMobileOpeningMedia/);
 });
 
 test('desktop with no photo uses the existing local map as the photo-slot fallback without DOM reparenting', async () => {
