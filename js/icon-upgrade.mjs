@@ -233,7 +233,7 @@ function syncDetailLocalMap(root, venue, state) {
     navigationControl: false,
     geolocateControl: false,
     maptilerLogo: false,
-    attributionControl: false,
+    attributionControl: { compact: true },
     fadeDuration: 0
   });
   detailLocalMap = map;
