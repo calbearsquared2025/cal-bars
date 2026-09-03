@@ -74,7 +74,7 @@ function storageSet(key, value) {
 }
 
 function storageRemove(key) {
-  try { window.localStorage.setItem(key, value); } catch (_) {}
+  try { window.localStorage.removeItem(key); } catch (_) {}
 }
 
 function configuredEndpoint() {
@@ -246,7 +246,7 @@ function renderHeaderAndStats() {
   const partyCount = getWatchPartiesForGame(state.snapshot, state.gameId).length;
   dom.partyStat.textContent = `${partyCount} watch ${partyCount === 1 ? 'party' : 'parties'} for this game`;
   dom.locationStat.textContent = `${state.snapshot.venues.length} locations mapped`;
-  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(game)} locations`;
+  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(selectedGame())} locations`;
 }
 
 function selectGame(gameId) {
