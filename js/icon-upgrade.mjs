@@ -204,7 +204,8 @@ function syncDetailLocalMap(root, venue, state) {
   detailLocalMapContainer = container;
   detailLocalMapVenueId = venue.venue_id;
 
-  if (!window.maplibregl?.Map || !window.maplibregl?.Marker) {
+  const sdk = window.maptilersdk;
+  if (!sdk?.Map || !sdk?.Marker) {
     const fallback = document.createElement('span');
     fallback.className = 'detail-local-map__fallback';
     fallback.textContent = 'Map unavailable';
@@ -218,15 +219,20 @@ function syncDetailLocalMap(root, venue, state) {
     revealDetailLocalMap(container);
     return;
   }
+  sdk.config.apiKey = key;
+  sdk.config.session = true;
   const style = `https://api.maptiler.com/maps/${DETAIL_MAP_STYLE_ID}/style.json?key=${encodeURIComponent(key)}`;
   const configuredZoom = Number(container.dataset.zoom);
   const zoom = Number.isFinite(configuredZoom) ? configuredZoom : DETAIL_MAP_ZOOM;
-  const map = new window.maplibregl.Map({
+  const map = new sdk.Map({
     container,
     style,
     center: [longitude, latitude],
     zoom,
     interactive: false,
+    navigationControl: false,
+    geolocateControl: false,
+    maptilerLogo: false,
     attributionControl: false,
     fadeDuration: 0
   });
@@ -237,7 +243,7 @@ function syncDetailLocalMap(root, venue, state) {
     revealPendingDetailViewWhenSettled();
   });
   map.on('error', (event) => console.warn('Detail map error', event?.error || event));
-  new window.maplibregl.Marker({
+  new sdk.Marker({
     element: createDetailLocalMarker(venue, state),
     anchor: 'bottom'
   }).setLngLat([longitude, latitude]).addTo(map);
