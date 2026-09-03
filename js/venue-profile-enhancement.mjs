@@ -108,7 +108,6 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
     if (!hero) return;
     hero.classList.remove('detail-hero--has-photo');
     hero.classList.add('detail-hero--no-photo');
-    ensureLocalMapFallback(hero, documentObject, venue);
     onPhotoError?.();
   }, { once: true });
   image.src = presentation.photoUrl;
@@ -400,7 +399,8 @@ export function enhanceVenueProfile({
     placePhotoForPresentation(detail, hero, photo);
   } else {
     existingPhoto?.remove();
-    if (existingLocalMap) hero.prepend(existingLocalMap);
+    if (failed) existingLocalMap?.remove();
+    else if (existingLocalMap) hero.prepend(existingLocalMap);
     else if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 
