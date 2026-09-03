@@ -11,6 +11,8 @@ test('selected desktop venue camera is resolved before the map load animation ca
   assert.match(coordination, /function applyInitialSelectedCamera\(\)/);
   assert.match(coordination, /const map = state\?\.map;/);
   assert.match(coordination, /if \(!map \|\| initialSelectedCameraMaps\.has\(map\) \|\| !state\.selectedVenueId\) return false;/);
+  assert.match(coordination, /if \(typeof map\.loaded === 'function' && map\.loaded\(\)\) \{[\s\S]*?initialSelectedCameraMaps\.add\(map\);[\s\S]*?return false;/,
+    'The preload camera must not jump again when a user selects a venue on an already-loaded map.');
   assert.match(coordination, /map\.jumpTo\(\{[\s\S]*?center,[\s\S]*?zoom: Math\.max\([\s\S]*?INITIAL_SELECTED_ZOOM\)/);
   assert.match(coordination, /app\.subscribe\('rendered', applyInitialSelectedCamera\)/);
   assert.match(coordination, /app\.subscribe\('ready', applyInitialSelectedCamera\)/);
