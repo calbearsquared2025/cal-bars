@@ -29,6 +29,14 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         bottom: 16px !important;
       }
 
+      .maplibregl-ctrl-top-right {
+        bottom: 44px !important;
+      }
+
+      .map-actions {
+        bottom: 142px !important;
+      }
+
       .maplibregl-ctrl-bottom-right {
         right: calc(min(390px, 34vw) + 26px) !important;
         bottom: 16px !important;
