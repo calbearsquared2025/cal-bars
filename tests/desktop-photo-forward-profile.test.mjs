@@ -20,7 +20,8 @@ test('desktop uses one full-width identity hero without a split media opening', 
   assert.doesNotMatch(source, /createDesktopOpening/);
   assert.doesNotMatch(source, /detail-desktop-opening__left/);
   assert.doesNotMatch(source, /grid-template-columns:\s*minmax\(0, \.9fr\) minmax\(0, 1\.1fr\)/);
-  assert.doesNotMatch(balance, /desktopFallbackMap/);
+  assert.match(balance, /delete detail\.dataset\.desktopFallbackMap/);
+  assert.doesNotMatch(balance, /desktopFallbackMap\s*=\s*'true'/);
 });
 
 test('desktop approved photo remains 3:2 cover but is supporting content below community voices', async () => {
@@ -36,7 +37,8 @@ test('desktop approved photo remains 3:2 cover but is supporting content below c
   assert.match(enhancement, /image\.loading = 'lazy'/);
   assert.match(source, /cursor = placeAfter\(cursor, community\);[\s\S]*?cursor = placeAfter\(cursor, photo\);[\s\S]*?placeAfter\(cursor, contribution\)/);
   assert.match(balance, /cursor = placeAfter\(cursor, community\);[\s\S]*?cursor = placeAfter\(cursor, photo\);[\s\S]*?placeAfter\(cursor, contribution\)/);
-  assert.doesNotMatch(source, /detail-photo--desktop-opening/);
+  assert.match(source, /photo\.classList\.remove\('detail-photo--desktop-opening'\)/);
+  assert.doesNotMatch(source, /classList\.add\([^\n]*detail-photo--desktop-opening/);
 });
 
 test('desktop no-photo state has no reserved map or media fallback', async () => {
