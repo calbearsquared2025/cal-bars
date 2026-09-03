@@ -16,3 +16,26 @@ test('desktop selected profiles always use the universal hero treatment', () => 
     'Desktop hero styling must not depend on an extra identity-state class.'
   );
 });
+
+test('desktop selected profiles follow the approved information order', () => {
+  assert.match(
+    source,
+    /desktopProfileArrangement = 'identity-what-to-know-party-attendance-editorial-community-photo-contribution'/,
+    'Desktop profile arrangement should keep attendance after Watch Party and before CGB Says.'
+  );
+  assert.match(
+    source,
+    /cursor = placeAfter\(cursor, whatToKnow\);\s*parties\.forEach\(\(party\) => \{ cursor = placeAfter\(cursor, party\); \}\);\s*cursor = placeAfter\(cursor, activity\);\s*cursor = placeAfter\(cursor, editorial\);/,
+    'DOM order should be What to Know, Watch Party, attendance, then CGB Says.'
+  );
+  assert.match(
+    source,
+    /\.detail-what-to-know \{\s*grid-column: 1 \/ -1 !important;/,
+    'What to Know should occupy its own full-width row.'
+  );
+  assert.match(
+    source,
+    /> \.activity-card \{\s*grid-column: 1 \/ -1 !important;/,
+    'Attendance should occupy its own full-width row.'
+  );
+});
