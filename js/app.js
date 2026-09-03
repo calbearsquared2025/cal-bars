@@ -74,7 +74,7 @@ function storageSet(key, value) {
 }
 
 function storageRemove(key) {
-  try { window.localStorage.removeItem(key); } catch (_) {}
+  try { window.localStorage.setItem(key, value); } catch (_) {}
 }
 
 function configuredEndpoint() {
@@ -359,14 +359,13 @@ function initMap() {
     navigationControl: false,
     geolocateControl: false,
     maptilerLogo: false,
-    attributionControl: false,
+    attributionControl: { compact: true },
     fadeDuration: 100
   });
   if (!bounds.isEmpty()) {
     state.map.fitBounds(bounds, { padding: 56, maxZoom: 7, duration: 0 });
   }
   state.map.addControl(new sdk.NavigationControl({ showCompass: false }), 'top-right');
-  state.map.addControl(new sdk.AttributionControl({ compact: true }), 'bottom-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
   state.map.on('load', () => {
     renderMarkers();
