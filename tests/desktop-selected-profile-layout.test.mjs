@@ -123,22 +123,22 @@ test('desktop keeps attendance horizontal without divider rules and community vo
   assert.match(css, /> \.detail-fan-experiences\s*\{[\s\S]*?border-top:\s*0\s*!important;/);
 });
 
-test('desktop order is identity, CGB Says, watch party, attendance, Bears Say, then media before final balancing', async () => {
-  const [css, source] = await Promise.all([
-    read('css/venue-profile.css'),
-    read('js/venue-profile-enhancement.mjs')
+test('desktop order keeps the identity hero first and treats approved photos as optional supporting content', async () => {
+  const [source, balance] = await Promise.all([
+    read('js/venue-profile-enhancement.mjs'),
+    read('js/desktop-profile-final-balance.mjs')
   ]);
 
-  assert.match(source, /detail\.dataset\.desktopProfileArrangement = 'identity-editorial-party-attendance-community-media'/);
-  assert.match(source, /let cursor = hero;/);
-  assert.match(source, /if \(editorial\) \{[\s\S]*?cursor\.after\(editorial\);[\s\S]*?cursor = editorial;/);
-  assert.match(source, /parties\.forEach\(\(party\) => \{[\s\S]*?cursor\.after\(party\);[\s\S]*?cursor = party;/);
-  assert.match(source, /if \(activity\) \{[\s\S]*?cursor\.after\(activity\);[\s\S]*?cursor = activity;/);
-  assert.match(source, /if \(fanExperiences\) \{[\s\S]*?cursor\.after\(fanExperiences\);[\s\S]*?cursor = fanExperiences;/);
-  assert.match(source, /media\.classList\.add\('detail-profile-media--desktop'\)/);
-  assert.match(source, /cursor\.after\(media\)/);
-  assert.match(css, /> \.detail-photo\.detail-profile-media--desktop\s*\{[\s\S]*?width:\s*calc\(100% - 36px\)\s*!important;/);
-  assert.match(css, /> \.detail-local-map\.detail-profile-media--desktop\s*\{[\s\S]*?height:\s*220px\s*!important;/);
+  assert.match(source, /hero\.classList\.add\('detail-hero--identity'\)/);
+  assert.match(balance, /cursor = placeAfter\(cursor, whatToKnow\);/);
+  assert.match(balance, /cursor = placeAfter\(cursor, activity\);/);
+  assert.match(balance, /partySections\.forEach\(\(partySection\) => \{ cursor = placeAfter\(cursor, partySection\); \}\);/);
+  assert.match(balance, /cursor = placeAfter\(cursor, editorial\);/);
+  assert.match(balance, /cursor = placeAfter\(cursor, community\);/);
+  assert.match(balance, /photo\.classList\.add\('detail-profile-media--desktop', 'detail-photo--supporting'\)/);
+  assert.match(balance, /cursor = placeAfter\(cursor, photo\);/);
+  assert.match(balance, /if \(contribution\) placeAfter\(cursor, contribution\);/);
+  assert.doesNotMatch(balance, /detail-local-map\.detail-profile-media--desktop/);
 });
 
 test('existing Watch Party contribution becomes the second Help improve action', async () => {
