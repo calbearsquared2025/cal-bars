@@ -143,7 +143,7 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know {
-        grid-column: 1 / -1 !important;
+        grid-column: 1 / 8 !important;
         grid-row: auto !important;
         align-self: stretch !important;
         margin: 0 !important;
@@ -217,7 +217,7 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
-        grid-column: 1 / -1 !important;
+        grid-column: 8 / 13 !important;
         grid-row: auto !important;
         align-self: stretch !important;
         min-height: 56px !important;
@@ -229,6 +229,7 @@ function installStyles(documentObject) {
         background: var(--cgb-white) !important;
         border: 0 !important;
         border-top: 1px solid var(--cgb-neutral-200) !important;
+        border-left: 1px solid var(--cgb-neutral-200) !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count:not(.bear-count--empty) {
@@ -498,12 +499,12 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   delete detail.dataset.desktopPhotoForward;
   delete detail.dataset.desktopBalancedOpening;
   delete detail.dataset.desktopFallbackMap;
-  detail.dataset.desktopProfileArrangement = 'identity-what-to-know-party-attendance-editorial-community-photo-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-what-to-know-attendance-party-editorial-community-photo-contribution';
 
   let cursor = hero;
   cursor = placeAfter(cursor, whatToKnow);
-  parties.forEach((party) => { cursor = placeAfter(cursor, party); });
   cursor = placeAfter(cursor, activity);
+  parties.forEach((party) => { cursor = placeAfter(cursor, party); });
   cursor = placeAfter(cursor, editorial);
   cursor = placeAfter(cursor, community);
   if (photo) {
