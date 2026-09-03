@@ -99,6 +99,7 @@ function openListSurface(event) {
 
   document.querySelector('#search-surface')?.setAttribute('hidden', '');
   document.querySelector('#add-surface')?.setAttribute('hidden', '');
+  document.querySelector('#about-surface')?.setAttribute('hidden', '');
   setTrayState('full');
   setCommandActive('list');
 }
