@@ -64,11 +64,88 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] {
-        display: block !important;
+        display: grid !important;
+        grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+        column-gap: 0 !important;
+        row-gap: 0 !important;
+        align-content: start !important;
         background: var(--cgb-white) !important;
       }
 
-      html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+        grid-column: 1 / -1 !important;
+        grid-row: auto !important;
+        width: 100% !important;
+        min-height: 0 !important;
+        display: block !important;
+        margin: 0 !important;
+        padding: 18px 20px 17px !important;
+        color: var(--cgb-white) !important;
+        background: var(--cgb-navy-950) !important;
+        border: 0 !important;
+        border-bottom: 3px solid var(--cgb-gold-400) !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity h1 {
+        margin: 8px 0 0 !important;
+        color: var(--cgb-white) !important;
+        font-family: var(--font-condensed, "Barlow Condensed", "Arial Narrow", sans-serif) !important;
+        font-size: clamp(2.35rem, 4.3vw, 3.15rem) !important;
+        font-weight: 900 !important;
+        letter-spacing: -.025em !important;
+        line-height: .9 !important;
+        overflow-wrap: break-word !important;
+        word-break: normal !important;
+        hyphens: none !important;
+        text-wrap: balance;
+        text-transform: uppercase !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .venue-badges {
+        position: static !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+        margin: 0 !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .venue-badge {
+        color: var(--cgb-gold-300) !important;
+        background: transparent !important;
+        border-color: var(--cgb-gold-400) !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .detail-address {
+        display: block !important;
+        margin: 12px 0 0 !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .detail-address__location,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .detail-address__street,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .detail-address__locality,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .detail-address__distance {
+        color: rgba(255, 255, 255, .88) !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .detail-address__separator {
+        color: rgba(255, 255, 255, .5) !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity .detail-directions-inline--desktop,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero.detail-hero--identity a {
+        color: var(--cgb-gold-300) !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know {
+        grid-column: 1 / 8 !important;
+        grid-row: auto !important;
+        align-self: stretch !important;
         margin: 0 !important;
         padding: 12px 18px 10px !important;
         background: var(--cgb-white) !important;
@@ -139,13 +216,20 @@ function installStyles(documentObject) {
         display: none !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card {
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
+        grid-column: 8 / 13 !important;
+        grid-row: auto !important;
+        align-self: stretch !important;
         display: flex !important;
         align-items: center !important;
         justify-content: flex-start !important;
         gap: 3px !important;
-        padding: 6px 18px 10px !important;
-        border-top: 0 !important;
+        margin: 0 !important;
+        padding: 8px 18px 10px 22px !important;
+        background: var(--cgb-white) !important;
+        border: 0 !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+        border-left: 1px solid var(--cgb-neutral-200) !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count:not(.bear-count--empty) {
@@ -225,8 +309,44 @@ function installStyles(documentObject) {
         display: none !important;
       }
 
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > [data-watch-party-form-section],
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-fan-experiences,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-photo--supporting,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-contribution {
+        grid-column: 1 / -1 !important;
+        grid-row: auto !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial {
+        position: relative !important;
+        top: auto !important;
+        z-index: auto !important;
+        display: block !important;
+        width: auto !important;
+        margin: 0 !important;
+        padding: 16px 18px 16px 40px !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial::before {
+        position: absolute !important;
+        top: 10px !important;
+        bottom: 10px !important;
+        left: 18px !important;
+        width: 3px !important;
+        height: auto !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial > h2,
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial > .detail-editorial__copy {
+        display: block !important;
+      }
+
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-photo--supporting {
         width: calc(100% - 36px) !important;
+        max-width: none !important;
         margin: 14px 18px 4px !important;
       }
     }
