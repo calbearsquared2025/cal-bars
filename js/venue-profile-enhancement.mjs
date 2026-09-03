@@ -167,9 +167,28 @@ function moveEditorialDescription(detail, hero, documentObject) {
   return true;
 }
 
+function isMobileContinuation(detail) {
+  return detail?.dataset?.profilePresentation === 'mobile-continuation';
+}
+
 function profileMedia(detail, hero) {
   return hero.querySelector(':scope > .detail-photo, :scope > .detail-local-map') ||
     detail.querySelector(':scope > .detail-photo, :scope > .detail-local-map');
+}
+
+function placePhotoForPresentation(detail, hero, photo) {
+  if (!photo) return false;
+  if (!isMobileContinuation(detail)) {
+    hero.prepend(photo);
+    return true;
+  }
+
+  photo.classList.remove('detail-photo--mobile-opening', 'detail-photo--mobile-deferred', 'detail-profile-media--desktop');
+  photo.classList.add('detail-photo--supporting');
+  const contribution = detail.querySelector(':scope > .detail-contribution');
+  if (contribution) detail.insertBefore(photo, contribution);
+  else detail.append(photo);
+  return true;
 }
 
 function addressLabel(venue) {
@@ -295,7 +314,7 @@ export function arrangeDesktopVenueMedia({
     }
     if (media) {
       media.classList.remove('detail-profile-media--desktop');
-      if (media.parentElement !== hero) hero.prepend(media);
+      if (!isMobileContinuation(detail) && media.parentElement !== hero) hero.prepend(media);
     }
     return syncDesktopPhotoForwardProfile({ state, documentObject, windowObject });
   }
@@ -378,7 +397,7 @@ export function enhanceVenueProfile({
       existingPhoto?.remove();
       photo = createPhotoFigure(documentObject, venue, presentation, onPhotoError);
     }
-    if (photo) hero.prepend(photo);
+    placePhotoForPresentation(detail, hero, photo);
   } else {
     existingPhoto?.remove();
     if (existingLocalMap) hero.prepend(existingLocalMap);
