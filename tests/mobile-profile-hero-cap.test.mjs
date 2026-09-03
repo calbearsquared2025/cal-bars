@@ -28,6 +28,18 @@ test('mobile selected tray cap starts navy and becomes gold after the hero passe
   assert.match(source, /prefers-reduced-motion: reduce/);
 });
 
+test('mobile selected tray cap latches after passing and resets for another profile session', async () => {
+  const source = await read('js/mobile-profile-hero-cap.mjs');
+  assert.match(source, /const PASSED_VENUE_ATTR = 'profileHeroPassedVenue'/);
+  assert.match(source, /const selectedCard = tray\.querySelector\?\.\('#tray-selected > \.selected-card'\)/);
+  assert.match(source, /selectedCard\?\.dataset\?\.venueId/);
+  assert.match(source, /if \(alreadyPassed && venueId && passedVenueId === venueId\) return true;/);
+  assert.match(source, /if \(alreadyPassed \|\| passedVenueId\) clearPassedState\(tray\);/);
+  assert.match(source, /tray\.dataset\[PASSED_VENUE_ATTR\] = venueId/);
+  assert.match(source, /delete tray\.dataset\[PASSED_VENUE_ATTR\]/);
+  assert.doesNotMatch(source, /if \(passed\)[\s\S]{0,120}else clearPassedState\(tray\)/);
+});
+
 test('collapsed selected venue preview is the same navy identity surface as the expanded hero', async () => {
   const source = await read('js/mobile-profile-hero-cap.mjs');
   assert.match(source, /tray--peek:has\(#browse-locations-button\[data-preview-mode="selected"\]\)[\s\S]*?background: var\(--cgb-navy-950\) !important;/);
