@@ -1,6 +1,7 @@
 import { buildGameUrl } from './core.mjs';
 // Mobile selected-profile interaction refinements share this existing profile bootstrap.
 import './mobile-selected-profile-expansion.mjs';
+import './mobile-profile-hero-cap.mjs';
 import './mobile-profile-pinch-guard.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
