@@ -16,15 +16,11 @@ test('desktop profile enhancement unwraps the previous opening before inserting 
   );
 });
 
-test('desktop final balance keeps top-level CGB Says as a normal full-width block', async () => {
+test('desktop final balance keeps CGB Says as a normal top-level block after Watch Party content', async () => {
   const source = await read('js/desktop-profile-final-balance.mjs');
 
-  assert.match(
-    source,
-    /\[data-desktop-photo-forward="true"\] > \.detail-editorial\s*\{[\s\S]*?position:\s*relative\s*!important;[\s\S]*?display:\s*block\s*!important;[\s\S]*?width:\s*100%\s*!important;/
-  );
-  assert.match(
-    source,
-    /\[data-desktop-photo-forward="false"\]\[data-desktop-fallback-map="true"\] > \.detail-editorial\s*\{[\s\S]*?position:\s*relative\s*!important;[\s\S]*?display:\s*block\s*!important;[\s\S]*?grid-column:\s*1 \/ -1\s*!important;/
-  );
+  assert.match(source, /const editorial = detail\.querySelector\(':scope > \.detail-editorial'\)/);
+  assert.match(source, /partySections\.forEach\(\(partySection\) => \{ cursor = placeAfter\(cursor, partySection\); \}\);[\s\S]*?cursor = placeAfter\(cursor, editorial\);/);
+  assert.doesNotMatch(source, /\[data-desktop-photo-forward="true"\] > \.detail-editorial/);
+  assert.doesNotMatch(source, /\[data-desktop-fallback-map="true"\] > \.detail-editorial/);
 });
