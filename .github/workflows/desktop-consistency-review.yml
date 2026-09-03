@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   screenshots:
-    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-photo-forward-profile' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns' || github.head_ref == 'fix/mobile-tray-presentation-clean' || github.head_ref == 'feature/navy-venue-hero'
+    if: github.head_ref == 'feature/desktop-consistency-pass' || github.head_ref == 'feature/contribution-form-tags' || github.head_ref == 'feature/desktop-photo-forward-profile' || github.head_ref == 'feature/desktop-photo-forward-balanced-columns' || github.head_ref == 'fix/mobile-tray-presentation-clean'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
