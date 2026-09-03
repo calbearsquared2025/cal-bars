@@ -4,6 +4,8 @@ import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
 const externalVenueCode = await readFile(new URL('../apps-script/ExternalVenue.gs', import.meta.url), 'utf8');
+const externalVenueContributionCode = await readFile(new URL('../apps-script/ExternalVenueContribution.gs', import.meta.url), 'utf8');
+const frontendContributionCode = await readFile(new URL('../js/external-venue-contribution.js', import.meta.url), 'utf8');
 
 function buildContext() {
   const context = vm.createContext({
@@ -24,7 +26,7 @@ function buildContext() {
     isSafeCanonicalId_: (value) => /^[A-Za-z0-9_-]{3,80}$/.test(String(value || '')),
     createCanonicalEntityId_: () => 'venue_created'
   });
-  vm.runInContext(externalVenueCode, context);
+  vm.runInContext(`${externalVenueCode}\n${externalVenueContributionCode}`, context);
   return context;
 }
 
@@ -61,6 +63,29 @@ test('joinExternalVenue accepts an optional sanitized user-supplied venue name',
 
   assert.equal(request.externalPlace.name, 'District 4 Pizza');
   assert.equal(request.externalPlace.placeId, 'address.12345');
+});
+
+test('addExternalVenue accepts an optional sanitized user-supplied venue name', () => {
+  const context = buildContext();
+  const request = context.parseAddExternalVenuePayload_({
+    gameId: 'game_1',
+    externalPlace: {
+      source: 'maptiler',
+      placeId: 'address.12345',
+      name: '  Buffalo   Wild Wings  '
+    }
+  });
+
+  assert.equal(request.externalPlace.name, 'Buffalo Wild Wings');
+  assert.equal(request.externalPlace.placeId, 'address.12345');
+});
+
+test('watch-party-only external venue flow forwards and applies the requested venue name', () => {
+  assert.match(frontendContributionCode, /placeId:\s*selected\.placeId,\s*name:\s*selected\.name/s);
+  assert.match(
+    externalVenueContributionCode,
+    /verifiedPlace\s*=\s*applyRequestedExternalVenueName_\(verifiedPlace,\s*request\.externalPlace\);/
+  );
 });
 
 test('address-resolved manual locations keep the requested venue name for new canonical creation', () => {
