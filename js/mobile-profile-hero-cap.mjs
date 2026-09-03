@@ -33,14 +33,58 @@ function installStyles(documentObject = document) {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) {
+        background: var(--cgb-navy-950) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle,
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
         background: var(--cgb-navy-950) !important;
         transition: background-color 140ms ease;
       }
 
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle span,
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
         background: var(--cgb-gold-400) !important;
         transition: background-color 140ms ease;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-peek,
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] {
+        color: var(--cgb-white) !important;
+        background: var(--cgb-navy-950) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] .tray-summary__copy .eyebrow {
+        color: var(--cgb-gold-300) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] .tray-summary__copy strong {
+        color: var(--cgb-white) !important;
+        font-family: var(--font-condensed, "Barlow Condensed", "Arial Narrow", sans-serif) !important;
+        font-size: 1.05rem !important;
+        font-weight: 900 !important;
+        letter-spacing: -.015em !important;
+        line-height: 1 !important;
+        text-transform: uppercase !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] .tray-summary__copy small {
+        color: rgba(255, 255, 255, .78) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] .tray-summary__count,
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] .tray-summary__chevron {
+        color: var(--cgb-gold-300) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] .tray-summary__marker[data-kind="cal-bar"] {
+        background: var(--cgb-white) !important;
+        border-color: var(--cgb-white) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button[data-preview-mode="selected"] .tray-summary__marker[data-kind="cal-bar"]::after {
+        background: var(--cgb-navy-950) !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-profile-hero-passed="true"] .tray-handle {
@@ -53,6 +97,8 @@ function installStyles(documentObject = document) {
     }
 
     @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle,
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle span,
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle,
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
         transition: none !important;
