@@ -47,7 +47,8 @@ function renderApplication(windowObject) {
 function externalPlacePayload(selected) {
   return {
     source: selected.source,
-    placeId: selected.placeId
+    placeId: selected.placeId,
+    name: selected.name
   };
 }
 
