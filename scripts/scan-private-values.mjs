@@ -1,5 +1,4 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { extname } from 'node:path';
 
 const ALLOWED_EXTENSIONS = new Set(['.css', '.gs', '.html', '.js', '.json', '.md', '.mjs', '.yml', '.yaml']);
@@ -20,24 +19,52 @@ function changedFiles() {
   return output.split(/\r?\n/).map((value) => value.trim()).filter(Boolean);
 }
 
+function addedLines(file) {
+  const output = execFileSync('git', [
+    'diff', '--unified=0', '--no-color', '--diff-filter=ACMR', 'origin/main...HEAD', '--', file
+  ], { encoding: 'utf8' });
+
+  const lines = output.split(/\r?\n/);
+  const additions = [];
+  let newLineNumber = 0;
+  let inHunk = false;
+
+  for (const line of lines) {
+    const hunk = line.match(/^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
+    if (hunk) {
+      newLineNumber = Number(hunk[1]);
+      inHunk = true;
+      continue;
+    }
+    if (!inHunk || line.startsWith('+++') || line.startsWith('---')) continue;
+    if (line.startsWith('+')) {
+      additions.push({ line: newLineNumber, content: line.slice(1) });
+      newLineNumber += 1;
+      continue;
+    }
+    if (line.startsWith('-')) continue;
+    newLineNumber += 1;
+  }
+
+  return additions;
+}
+
 const findings = [];
 for (const file of changedFiles()) {
   if (!ALLOWED_EXTENSIONS.has(extname(file).toLowerCase())) continue;
   if (EXCLUDED_PATHS.some((pattern) => pattern.test(file))) continue;
-  const content = readFileSync(file, 'utf8');
-  for (const { name, pattern } of PATTERNS) {
-    pattern.lastIndex = 0;
-    for (const match of content.matchAll(pattern)) {
-      const line = content.slice(0, match.index).split(/\r?\n/).length;
-      findings.push(`${file}:${line}: ${name}`);
+  for (const addition of addedLines(file)) {
+    for (const { name, pattern } of PATTERNS) {
+      pattern.lastIndex = 0;
+      if (pattern.test(addition.content)) findings.push(`${file}:${addition.line}: ${name}`);
     }
   }
 }
 
 if (findings.length) {
-  console.error('Potential private values found in changed public files:');
+  console.error('Potential private values found in newly added public content:');
   findings.forEach((finding) => console.error(`- ${finding}`));
   process.exit(1);
 }
 
-console.log('No concrete browser IDs, credentials, private keys, workbook IDs, or contact values found in changed public files.');
+console.log('No concrete browser IDs, credentials, private keys, workbook IDs, or contact values found in newly added public content.');

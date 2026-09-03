@@ -29,10 +29,22 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         bottom: 16px !important;
       }
 
+      .maplibregl-ctrl-top-right {
+        bottom: 44px !important;
+      }
+
+      .map-actions {
+        bottom: 142px !important;
+      }
+
       .maplibregl-ctrl-bottom-right {
-        right: auto !important;
+        right: calc(min(390px, 34vw) + 26px) !important;
         bottom: 16px !important;
-        left: 90px !important;
+        left: auto !important;
+      }
+
+      body[data-view="map"] .map-view:has(> #venue-tray.venue-tray.tray--selected) .maplibregl-ctrl-bottom-right {
+        right: calc(clamp(500px, 52vw, 620px) + 26px) !important;
       }
 
       .mobile-command-bar #mobile-add-button {

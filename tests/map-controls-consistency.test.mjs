@@ -99,21 +99,12 @@ test('mobile legend has a little more white breathing room below the labels', as
   assert.match(css, /\.map-legend\s*\{[\s\S]*?padding-bottom:\s*4px;/);
 });
 
-
-test('MapTiler Free logo is official, linked, and deliberately unobtrusive', async () => {
-  const [html, controls, mobile, logo] = await Promise.all([
-    read('index.html'),
-    read('css/design-board-2.css'),
-    read('css/mobile-first-paint.css'),
-    read('assets/maptiler-logo.svg')
-  ]);
-  assert.match(html, /class="maptiler-logo"[\s\S]*?href="https:\/\/www\.maptiler\.com"[\s\S]*?src="assets\/maptiler-logo\.svg"/);
-  assert.match(controls, /\.maptiler-logo img[\s\S]*?width:\s*56px/);
-  assert.match(mobile, /\.maptiler-logo img[\s\S]*?width:\s*50px/);
-  assert.match(mobile, /\.maptiler-logo[\s\S]*?top:\s*100px/);
-  assert.match(logo, /<svg/);
+test('MapTiler branding is SDK-owned rather than duplicated in static page markup', async () => {
+  const html = await read('index.html');
+  assert.match(html, /maptiler-sdk-js\/v4\.1\.0\/maptiler-sdk\.umd\.min\.js/);
+  assert.doesNotMatch(html, /class="maptiler-logo"/);
+  assert.doesNotMatch(html, /assets\/maptiler-logo\.svg/);
 });
-
 
 test('Locate icon is centered in its circular mobile control', async () => {
   const css = await read('css/mobile-polish.css');
