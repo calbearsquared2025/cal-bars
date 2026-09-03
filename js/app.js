@@ -246,7 +246,7 @@ function renderHeaderAndStats() {
   const partyCount = getWatchPartiesForGame(state.snapshot, state.gameId).length;
   dom.partyStat.textContent = `${partyCount} watch ${partyCount === 1 ? 'party' : 'parties'} for this game`;
   dom.locationStat.textContent = `${state.snapshot.venues.length} locations mapped`;
-  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(selectedGame())} locations`;
+  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(game)} locations`;
 }
 
 function selectGame(gameId) {
