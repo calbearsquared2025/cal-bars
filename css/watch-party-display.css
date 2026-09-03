@@ -137,6 +137,23 @@
   #venue-tray .selected-card > .party-module .party-module__date {
     margin-left: 0;
   }
+
+  /* iOS can visually pull the selected profile below the top of its scrollport.
+     Paint only the area above the refreshed card navy so the lower white surface stays unchanged. */
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] {
+    box-shadow: 0 -240px 0 var(--cgb-navy-950) !important;
+  }
+
+  /* The legacy polygon clip makes the outlined CAL BAR badge look truncated in the navy hero. */
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-badges {
+    overflow: visible !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-badge {
+    box-sizing: border-box !important;
+    clip-path: none !important;
+    border-radius: 0 !important;
+  }
 }
 
 @media (min-width: 900px) {

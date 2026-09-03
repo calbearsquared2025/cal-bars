@@ -9,114 +9,8 @@ function clean(value) {
 
 const failedPhotoKeys = new Set();
 const DESKTOP_QUERY = '(min-width: 900px)';
-const VENUE_PHOTO_ASPECT_RATIO = '3 / 2';
+const VENUE_PHOTO_ASPECT_RATIO = 'var(--cgb-venue-media-aspect, 3 / 2)';
 const VENUE_PHOTO_OBJECT_FIT = 'cover';
-const FONT_LINK_ID = 'cgb-barlow-condensed-font';
-const HERO_STYLE_ID = 'cgb-venue-identity-hero';
-
-function ensureProfileVisualAssets(documentObject) {
-  if (!documentObject?.head) return;
-
-  if (!documentObject.getElementById(FONT_LINK_ID)) {
-    const font = documentObject.createElement('link');
-    font.id = FONT_LINK_ID;
-    font.rel = 'stylesheet';
-    font.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&display=swap';
-    documentObject.head.append(font);
-  }
-
-  if (documentObject.getElementById(HERO_STYLE_ID)) return;
-  const style = documentObject.createElement('style');
-  style.id = HERO_STYLE_ID;
-  style.textContent = `
-    #venue-detail > .detail-hero.detail-hero--identity {
-      position: static !important;
-      top: auto !important;
-      z-index: auto !important;
-      width: 100% !important;
-      min-height: 0 !important;
-      display: block !important;
-      margin: 0 !important;
-      padding: 18px 18px 17px !important;
-      color: var(--cgb-white) !important;
-      background: var(--cgb-navy-950) !important;
-      border: 0 !important;
-      border-bottom: 3px solid var(--cgb-gold-400) !important;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      box-sizing: border-box !important;
-      overflow: visible !important;
-    }
-
-    #venue-detail > .detail-hero.detail-hero--identity h1 {
-      margin: 8px 0 0 !important;
-      color: var(--cgb-white) !important;
-      font-family: var(--font-condensed, "Barlow Condensed", "Arial Narrow", sans-serif) !important;
-      font-size: clamp(2.2rem, 4.3vw, 3.15rem) !important;
-      font-weight: 900 !important;
-      letter-spacing: -.025em !important;
-      line-height: .9 !important;
-      overflow-wrap: break-word !important;
-      word-break: normal !important;
-      hyphens: none !important;
-      text-wrap: balance;
-      text-transform: uppercase !important;
-    }
-
-    #venue-detail > .detail-hero.detail-hero--identity .venue-badge {
-      color: var(--cgb-gold-300) !important;
-      background: transparent !important;
-      border-color: var(--cgb-gold-400) !important;
-    }
-
-    #venue-detail > .detail-hero.detail-hero--identity .detail-address,
-    #venue-detail > .detail-hero.detail-hero--identity .detail-address__location,
-    #venue-detail > .detail-hero.detail-hero--identity .detail-address__street,
-    #venue-detail > .detail-hero.detail-hero--identity .detail-address__locality,
-    #venue-detail > .detail-hero.detail-hero--identity .detail-address__distance {
-      color: rgba(255, 255, 255, .88) !important;
-    }
-
-    #venue-detail > .detail-hero.detail-hero--identity .detail-address {
-      margin-top: 12px !important;
-    }
-
-    #venue-detail > .detail-hero.detail-hero--identity .detail-address__separator {
-      color: rgba(255, 255, 255, .48) !important;
-    }
-
-    #venue-detail > .detail-hero.detail-hero--identity .detail-directions-inline,
-    #venue-detail > .detail-hero.detail-hero--identity a {
-      color: var(--cgb-gold-300) !important;
-    }
-
-    #venue-detail > .detail-photo.detail-photo--supporting {
-      width: calc(100% - 36px) !important;
-      max-width: none !important;
-      margin: 14px 18px 4px !important;
-    }
-
-    #venue-detail > .detail-photo.detail-photo--supporting .detail-photo__frame {
-      border-radius: 12px !important;
-    }
-
-    @media (max-width: 899px) {
-      body[data-view="detail"] #venue-detail > .detail-hero.detail-hero--identity {
-        padding: 16px 16px 15px !important;
-      }
-
-      body[data-view="detail"] #venue-detail > .detail-hero.detail-hero--identity h1 {
-        font-size: clamp(2rem, 10vw, 2.75rem) !important;
-      }
-
-      #venue-detail > .detail-photo.detail-photo--supporting {
-        width: calc(100% - 32px) !important;
-        margin: 14px 16px 4px !important;
-      }
-    }
-  `;
-  documentObject.head.append(style);
-}
 
 export function safeHttpUrl(value) {
   const raw = clean(value);
@@ -157,9 +51,39 @@ function photoKey(venue, photoUrl) {
   return `${clean(venue?.venue_id)}::${photoUrl}`;
 }
 
+function createLocalMapFallback(documentObject, venue) {
+  const latitude = Number(venue?.latitude);
+  const longitude = Number(venue?.longitude);
+  if (![latitude, longitude].every(Number.isFinite)) return null;
+  const map = documentObject.createElement('div');
+  map.className = 'detail-local-map';
+  map.dataset.venueId = clean(venue.venue_id);
+  map.dataset.latitude = String(latitude);
+  map.dataset.longitude = String(longitude);
+  map.dataset.zoom = '16';
+  map.setAttribute('role', 'group');
+  map.setAttribute('aria-label', `Local map centered on ${clean(venue.name) || 'this venue'}`);
+  map.setAttribute('aria-busy', 'true');
+  return map;
+}
+
+function ensureLocalMapFallback(hero, documentObject, venue) {
+  const detail = hero.closest?.('#venue-detail');
+  const existing = hero.querySelector(':scope > .detail-local-map') ||
+    detail?.querySelector(':scope > .detail-local-map');
+  if (existing) {
+    hero.prepend(existing);
+    return true;
+  }
+  const map = createLocalMapFallback(documentObject, venue);
+  if (!map) return false;
+  hero.prepend(map);
+  return true;
+}
+
 function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   const figure = documentObject.createElement('figure');
-  figure.className = 'detail-photo detail-photo--supporting';
+  figure.className = 'detail-photo';
   figure.dataset.photoUrl = presentation.photoUrl;
 
   const frame = documentObject.createElement('div');
@@ -176,10 +100,15 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
   image.style.setProperty('object-fit', VENUE_PHOTO_OBJECT_FIT, 'important');
   image.style.setProperty('object-position', 'center', 'important');
   image.decoding = 'async';
-  image.loading = 'lazy';
+  image.loading = 'eager';
   image.addEventListener('error', () => {
     failedPhotoKeys.add(photoKey(venue, presentation.photoUrl));
     figure.remove();
+    const hero = documentObject.querySelector('#venue-detail > .detail-hero');
+    if (!hero) return;
+    hero.classList.remove('detail-hero--has-photo');
+    hero.classList.add('detail-hero--no-photo');
+    ensureLocalMapFallback(hero, documentObject, venue);
     onPhotoError?.();
   }, { once: true });
   image.src = presentation.photoUrl;
@@ -238,8 +167,9 @@ function moveEditorialDescription(detail, hero, documentObject) {
   return true;
 }
 
-function profileMedia(detail) {
-  return detail.querySelector(':scope > .detail-photo');
+function profileMedia(detail, hero) {
+  return hero.querySelector(':scope > .detail-photo, :scope > .detail-local-map') ||
+    detail.querySelector(':scope > .detail-photo, :scope > .detail-local-map');
 }
 
 function addressLabel(venue) {
@@ -348,16 +278,10 @@ export function arrangeDesktopVenueMedia({
   const venue = state.snapshot?.venues?.find((item) => clean(item?.venue_id) === clean(state.selectedVenueId));
   if (!detail || !hero || !venue) return false;
 
-  ensureProfileVisualAssets(documentObject);
-  hero.classList.remove('detail-hero--has-photo', 'detail-hero--no-photo');
-  hero.classList.add('detail-hero--identity');
-  detail.querySelectorAll(':scope > .detail-local-map, :scope > .detail-hero > .detail-local-map').forEach((map) => map.remove());
-
-  const media = profileMedia(detail);
+  const media = profileMedia(detail, hero);
   const activity = detail.querySelector(':scope > .activity-card');
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const fanExperiences = detail.querySelector(':scope > .detail-fan-experiences');
-  const contribution = detail.querySelector(':scope > .detail-contribution');
   const parties = [...detail.querySelectorAll(':scope > .party-module')];
   const desktop = windowObject?.matchMedia?.(DESKTOP_QUERY)?.matches === true;
   arrangeDesktopVenueIdentity({ detail, hero, venue, state, desktop, documentObject });
@@ -371,10 +295,7 @@ export function arrangeDesktopVenueMedia({
     }
     if (media) {
       media.classList.remove('detail-profile-media--desktop');
-      media.classList.add('detail-photo--supporting');
-      const cursor = fanExperiences || editorial || activity || hero;
-      cursor.after(media);
-      if (contribution && media.nextElementSibling !== contribution) media.after(contribution);
+      if (media.parentElement !== hero) hero.prepend(media);
     }
     return syncDesktopPhotoForwardProfile({ state, documentObject, windowObject });
   }
@@ -399,7 +320,7 @@ export function arrangeDesktopVenueMedia({
   }
 
   if (media) {
-    media.classList.add('detail-profile-media--desktop', 'detail-photo--supporting');
+    media.classList.add('detail-profile-media--desktop');
     if (media.previousElementSibling !== cursor) cursor.after(media);
   }
   syncDesktopPhotoForwardProfile({ state, documentObject, windowObject });
@@ -439,29 +360,29 @@ export function enhanceVenueProfile({
   const hero = detail?.querySelector(':scope > .detail-hero');
   if (!venue || !detail || !hero) return false;
 
-  ensureProfileVisualAssets(documentObject);
-  hero.classList.remove('detail-hero--has-photo', 'detail-hero--no-photo');
-  hero.classList.add('detail-hero--identity');
-  detail.querySelectorAll(':scope > .detail-local-map, :scope > .detail-hero > .detail-local-map').forEach((map) => map.remove());
-
   const presentation = venuePhotoPresentation(venue);
   const failed = Boolean(presentation && failedPhotoKeys.has(photoKey(venue, presentation.photoUrl)));
   const showPhoto = Boolean(presentation && !failed);
-  let existingPhoto = hero.querySelector(':scope > .detail-photo') || detail.querySelector(':scope > .detail-photo');
+  const existingPhoto = hero.querySelector(':scope > .detail-photo') ||
+    detail.querySelector(':scope > .detail-photo');
+  const existingLocalMap = hero.querySelector(':scope > .detail-local-map') ||
+    detail.querySelector(':scope > .detail-local-map');
+
+  hero.classList.toggle('detail-hero--has-photo', showPhoto);
+  hero.classList.toggle('detail-hero--no-photo', !showPhoto);
 
   if (showPhoto) {
+    existingLocalMap?.remove();
     let photo = existingPhoto;
     if (existingPhoto?.dataset.photoUrl !== presentation.photoUrl) {
       existingPhoto?.remove();
       photo = createPhotoFigure(documentObject, venue, presentation, onPhotoError);
     }
-    if (photo) {
-      photo.classList.remove('detail-photo--desktop-opening', 'detail-photo--mobile-opening', 'detail-photo--mobile-deferred');
-      photo.classList.add('detail-photo--supporting');
-      detail.append(photo);
-    }
+    if (photo) hero.prepend(photo);
   } else {
     existingPhoto?.remove();
+    if (existingLocalMap) hero.prepend(existingLocalMap);
+    else if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 
   moveEditorialDescription(detail, hero, documentObject);
