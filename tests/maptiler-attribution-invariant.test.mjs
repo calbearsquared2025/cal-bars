@@ -4,16 +4,17 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('MapTiler attribution is SDK-owned without duplicate page branding or controls', async () => {
+test('MapTiler attribution has one SDK logo and one compact text control', async () => {
   const [app, iconUpgrade, index] = await Promise.all([
     read('js/app.js'),
     read('js/icon-upgrade.mjs'),
     read('index.html')
   ]);
 
-  assert.match(app, /attributionControl:\s*\{\s*compact:\s*true\s*\}/);
-  assert.doesNotMatch(app, /addControl\(\s*new\s+sdk\.AttributionControl/);
-  assert.match(iconUpgrade, /attributionControl:\s*\{\s*compact:\s*true\s*\}/);
+  assert.match(app, /attributionControl:\s*false/);
+  assert.match(app, /addControl\(new sdk\.AttributionControl\(\{ compact: true \}\), 'bottom-right'\)/);
+  assert.equal((app.match(/new sdk\.AttributionControl/g) || []).length, 1);
+  assert.match(iconUpgrade, /attributionControl:\s*false/);
   assert.doesNotMatch(index, /<a\s+class="maptiler-logo"/);
   assert.doesNotMatch(index, /assets\/maptiler-logo\.svg/);
 });
