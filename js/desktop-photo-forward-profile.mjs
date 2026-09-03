@@ -143,7 +143,7 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know {
-        grid-column: 1 / 8 !important;
+        grid-column: 1 / -1 !important;
         grid-row: auto !important;
         align-self: stretch !important;
         margin: 0 !important;
@@ -217,75 +217,97 @@ function installStyles(documentObject) {
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
-        grid-column: 8 / 13 !important;
+        grid-column: 1 / -1 !important;
         grid-row: auto !important;
         align-self: stretch !important;
+        min-height: 56px !important;
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 3px !important;
+        justify-content: center !important;
         margin: 0 !important;
-        padding: 8px 18px 10px 22px !important;
+        padding: 0 18px !important;
         background: var(--cgb-white) !important;
         border: 0 !important;
         border-top: 1px solid var(--cgb-neutral-200) !important;
-        border-left: 1px solid var(--cgb-neutral-200) !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count:not(.bear-count--empty) {
-        width: fit-content;
-        min-height: 32px;
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 4px;
-        margin: 0;
-        color: var(--cgb-navy-950);
-        font-family: var(--font-ui);
-        line-height: 1;
-        text-align: left;
-        white-space: nowrap;
+        width: 100% !important;
+        min-height: 56px !important;
+        display: grid !important;
+        grid-template-columns: auto auto !important;
+        grid-template-rows: auto auto auto !important;
+        align-content: center !important;
+        align-items: start !important;
+        justify-content: center !important;
+        justify-items: start !important;
+        column-gap: 6px !important;
+        row-gap: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        color: var(--cgb-navy-950) !important;
+        background: transparent !important;
+        border: 0 !important;
+        font-family: var(--font-ui) !important;
+        text-align: left !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__number {
-        flex: 0 0 auto;
-        align-self: center;
-        margin-right: 1px;
-        font-size: 1.9rem !important;
+        grid-column: 1 !important;
+        grid-row: 1 / 4 !important;
+        align-self: start !important;
+        justify-self: end !important;
+        font-family: var(--font-ui) !important;
+        font-size: 2.15rem !important;
         font-weight: 850 !important;
-        letter-spacing: -.05em;
+        letter-spacing: -.055em !important;
         line-height: .84 !important;
       }
 
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__label,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__attending,
-      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__context {
-        flex: 0 0 auto;
-        align-self: center;
-        padding: 0;
-        margin: 0;
-        font-weight: 800 !important;
-        line-height: 1 !important;
-        white-space: nowrap;
-      }
-
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__label {
-        font-size: .68rem !important;
-        letter-spacing: .025em;
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        align-self: start !important;
+        justify-self: start !important;
+        padding-top: 0 !important;
+        margin: 0 !important;
+        font-family: var(--font-ui) !important;
+        font-size: .75rem !important;
+        font-weight: 850 !important;
+        letter-spacing: .025em !important;
+        line-height: .95 !important;
+        white-space: nowrap !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__attending,
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__context {
-        font-size: .61rem !important;
-        letter-spacing: .035em;
+        grid-column: 2 !important;
+        justify-self: start !important;
+        margin: 0 !important;
+        font-family: var(--font-ui) !important;
+        font-weight: 800 !important;
+        letter-spacing: .045em !important;
+        line-height: .98 !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__attending {
+        grid-row: 2 !important;
+        margin-top: 0 !important;
+        font-size: .62rem !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__context {
+        grid-row: 3 !important;
+        font-size: .6rem !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty {
-        min-height: 32px;
+        min-height: 56px;
         display: inline-flex !important;
         align-items: center;
-        justify-content: flex-start;
+        justify-content: center;
         gap: 5px;
         margin: 0;
         text-align: left;
@@ -476,12 +498,12 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   delete detail.dataset.desktopPhotoForward;
   delete detail.dataset.desktopBalancedOpening;
   delete detail.dataset.desktopFallbackMap;
-  detail.dataset.desktopProfileArrangement = 'identity-what-to-know-attendance-party-editorial-community-photo-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-what-to-know-party-attendance-editorial-community-photo-contribution';
 
   let cursor = hero;
   cursor = placeAfter(cursor, whatToKnow);
-  cursor = placeAfter(cursor, activity);
   parties.forEach((party) => { cursor = placeAfter(cursor, party); });
+  cursor = placeAfter(cursor, activity);
   cursor = placeAfter(cursor, editorial);
   cursor = placeAfter(cursor, community);
   if (photo) {
