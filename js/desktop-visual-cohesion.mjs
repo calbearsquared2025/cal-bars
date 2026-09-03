@@ -30,9 +30,9 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
       }
 
       .maplibregl-ctrl-bottom-right {
-        right: auto !important;
+        right: calc(min(390px, 34vw) + 26px) !important;
         bottom: 16px !important;
-        left: 90px !important;
+        left: auto !important;
       }
 
       .mobile-command-bar #mobile-add-button {
