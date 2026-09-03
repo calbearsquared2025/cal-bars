@@ -17,20 +17,33 @@ test('desktop selected profiles always use the universal hero treatment', () => 
   );
 });
 
-test('desktop opening matches the approved guide with attendance beside What to Know', () => {
+test('desktop selected profiles follow the approved information order', () => {
   assert.match(
     source,
-    /\.detail-what-to-know \{[\s\S]*?grid-column:\s*1 \/ 8 !important;/,
-    'What to Know should occupy the left side of the opening information row.'
+    /desktopProfileArrangement = 'identity-what-to-know-party-attendance-editorial-community-photo-contribution'/,
+    'Desktop profile arrangement should keep attendance after Watch Party and before CGB Says.'
   );
   assert.match(
     source,
-    /> \.activity-card \{[\s\S]*?grid-column:\s*8 \/ 13 !important;/,
-    'Bear attendance should occupy the right side of the same row.'
+    /cursor = placeAfter\(cursor, whatToKnow\);\s*parties\.forEach\(\(party\) => \{ cursor = placeAfter\(cursor, party\); \}\);\s*cursor = placeAfter\(cursor, activity\);\s*cursor = placeAfter\(cursor, editorial\);/,
+    'DOM order should be What to Know, Watch Party, attendance, then CGB Says.'
   );
   assert.match(
     source,
-    /cursor = placeAfter\(cursor, whatToKnow\);\s*cursor = placeAfter\(cursor, activity\);\s*parties\.forEach/,
-    'Attendance should remain paired with What to Know before the Watch Party block.'
+    /\.detail-what-to-know \{\s*grid-column: 1 \/ -1 !important;/,
+    'What to Know should occupy its own full-width row.'
   );
+  assert.match(
+    source,
+    /> \.activity-card \{\s*grid-column: 1 \/ -1 !important;/,
+    'Attendance should occupy its own full-width row.'
+  );
+});
+
+test('desktop Bear attendance matches the mobile compact count treatment', () => {
+  assert.match(source, /\.activity-card > strong\.bear-count:not\(\.bear-count--empty\) \{[\s\S]*?grid-template-columns: auto auto !important;[\s\S]*?grid-template-rows: auto auto auto !important;[\s\S]*?justify-content: center !important;/);
+  assert.match(source, /\.bear-count__number \{[\s\S]*?grid-row: 1 \/ 4 !important;[\s\S]*?font-size: 2\.15rem !important;/);
+  assert.match(source, /\.bear-count__label \{[\s\S]*?grid-row: 1 !important;[\s\S]*?font-size: \.75rem !important;/);
+  assert.match(source, /\.bear-count__attending \{[\s\S]*?grid-row: 2 !important;[\s\S]*?font-size: \.62rem !important;/);
+  assert.match(source, /\.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.6rem !important;/);
 });
