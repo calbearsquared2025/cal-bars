@@ -138,21 +138,100 @@
     margin-left: 0;
   }
 
-  /* iOS can visually pull the selected profile below the top of its scrollport.
-     Paint only the area above the refreshed card navy so the lower white surface stays unchanged. */
-  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] {
+  /* The current mobile profile no longer promotes media into the opening card.
+     Keep the identity treatment universal rather than depending on the obsolete
+     data-mobile-media-forward presentation flag. */
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card {
     box-shadow: 0 -240px 0 var(--cgb-navy-950) !important;
   }
 
-  /* The legacy polygon clip makes the outlined CAL BAR badge look truncated in the navy hero. */
-  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-badges {
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header {
+    grid-column: 1 / -1 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+    margin: 0 -14px !important;
+    padding: 12px 14px 13px !important;
+    color: var(--cgb-white) !important;
+    background: var(--cgb-navy-950) !important;
+    border: 0 !important;
+    border-bottom: 3px solid var(--cgb-gold-400) !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header h2 {
+    display: block !important;
+    margin: 6px 0 5px !important;
+    overflow: visible !important;
+    color: var(--cgb-white) !important;
+    font-family: var(--font-condensed, "Barlow Condensed", "Arial Narrow", sans-serif) !important;
+    font-size: clamp(1.95rem, 9.1vw, 2.55rem) !important;
+    font-weight: 900 !important;
+    letter-spacing: -.025em !important;
+    line-height: .91 !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    hyphens: none !important;
+    text-transform: uppercase !important;
+    text-wrap: balance;
+    -webkit-box-orient: initial !important;
+    -webkit-line-clamp: unset !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-badges {
     overflow: visible !important;
   }
 
-  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header .venue-badge {
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-badge {
     box-sizing: border-box !important;
-    clip-path: none !important;
+    color: var(--cgb-gold-300) !important;
+    background: transparent !important;
+    border: 1px solid var(--cgb-gold-400) !important;
     border-radius: 0 !important;
+    clip-path: none !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-location,
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .selected-card__proximity-row {
+    color: rgba(255, 255, 255, .86) !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .selected-card__directions-inline {
+    color: var(--cgb-gold-300) !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__what-to-know {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    align-self: start !important;
+    margin: 4px 12px 0 0 !important;
+    padding-top: 10px !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
+    align-self: center !important;
+    margin: 0 !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count:not(.bear-count--empty) {
+    min-height: 64px !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    grid-template-rows: repeat(3, auto) !important;
+    column-gap: 7px !important;
+    row-gap: 0 !important;
+    align-content: center !important;
+    padding: 7px 0 5px 12px !important;
+    border-left: 1px solid var(--cgb-neutral-200) !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
+    grid-column: 1 !important;
+    grid-row: 1 / span 3 !important;
+    align-self: center !important;
+    font-size: clamp(2.65rem, 11vw, 3.5rem) !important;
+    font-weight: 900 !important;
+    line-height: .8 !important;
   }
 }
 
