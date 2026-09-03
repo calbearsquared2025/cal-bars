@@ -138,10 +138,9 @@
     margin-left: 0;
   }
 
-  /* The current mobile profile no longer promotes media into the opening card.
-     Keep the identity treatment universal rather than depending on the obsolete
-     data-mobile-media-forward presentation flag. */
+  /* Selected mobile profiles use one universal navy identity treatment. */
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card {
+    padding-bottom: 14px !important;
     box-shadow: 0 -240px 0 var(--cgb-navy-950) !important;
   }
 
@@ -232,6 +231,59 @@
     font-size: clamp(2.65rem, 11vw, 3.5rem) !important;
     font-weight: 900 !important;
     line-height: .8 !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count .bear-count__label,
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count .bear-count__attending,
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count .bear-count__context {
+    font-size: .72rem !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    white-space: normal !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count .bear-count__context {
+    font-weight: 650 !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .party-module {
+    padding: 14px 13px 12px !important;
+    color: var(--cgb-navy-950) !important;
+    background: var(--cgb-gold-300, #ffd15a) !important;
+    border: 1px solid var(--cgb-gold-500) !important;
+    border-radius: 12px !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .party-module .party-module__title strong {
+    font-family: var(--font-condensed, var(--font-display)) !important;
+    font-size: 1.15rem !important;
+    font-weight: 900 !important;
+    letter-spacing: .02em !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .party-module p {
+    color: var(--cgb-navy-950) !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .action-row {
+    grid-template-columns: minmax(0, 1.6fr) minmax(128px, 1fr) !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .action-row > .intent-button {
+    color: var(--cgb-white) !important;
+    background: var(--cgb-navy-950) !important;
+    border-color: var(--cgb-navy-950) !important;
+    font-family: var(--font-condensed, var(--font-display)) !important;
+    font-size: 1rem !important;
+    font-weight: 900 !important;
+    letter-spacing: .015em !important;
+    text-transform: uppercase !important;
+  }
+
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .action-row > .selected-card__share {
+    font-weight: 800 !important;
+    line-height: 1.05 !important;
+    text-transform: uppercase !important;
   }
 }
 
