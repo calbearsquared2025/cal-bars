@@ -15,11 +15,17 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Syntax checks
+        run: npm run check:syntax
       - name: Compact test suite
         timeout-minutes: 5
         run: time npm test
       - name: Public data validation
         run: npm run validate:data
+      - name: Private value scan
+        run: npm run validate:private
