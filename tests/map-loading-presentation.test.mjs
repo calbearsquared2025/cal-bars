@@ -108,6 +108,8 @@ test('normal map loading shows only the branded game artwork, without unavailabl
   const style = head.children.find((child) => child.id === 'cgb-map-fallback-style');
   assert.ok(style);
   assert.match(style.textContent, /map-fallback--loading/);
+  assert.match(style.textContent, /\.map-fallback\s*\{[\s\S]*?z-index:\s*50;/,
+    'Loading artwork must remain above the highest map-pin stacking level.');
   assert.match(style.textContent, /transition:\s*opacity 240ms ease/);
   assert.match(style.textContent, /map-fallback--loading \.map-fallback__card[\s\S]*?max-height:\s*100%/);
   assert.match(style.textContent, /prefers-reduced-motion:\s*reduce/);
