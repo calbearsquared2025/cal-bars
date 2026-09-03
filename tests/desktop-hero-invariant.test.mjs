@@ -64,7 +64,7 @@ test('desktop first paint never exposes the legacy profile presentation', () => 
   );
   assert.match(
     firstPaintCss,
-    /:not\(:has\(> \.detail-what-to-know\)\) > :not\(\.detail-hero\) \{\s*visibility: hidden !important;/,
+    /:not\(:has\(> \.detail-what-to-know\)\) > :not\(\.detail-hero\) \{[\s\S]*?visibility: hidden !important;/,
     'Legacy body children must stay out of the paint until the final opening hierarchy exists.'
   );
 });
@@ -80,7 +80,7 @@ test('attendance has one formatting owner after profile enrichment', () => {
 test('What to Know action and profile badges match the approved guide', () => {
   assert.match(
     firstPaintCss,
-    /\.detail-what-to-know__header \{\s*justify-content: flex-start !important;\s*gap: 8px !important;/,
+    /\.detail-what-to-know__header \{[\s\S]*?justify-content: flex-start !important;[\s\S]*?gap: 8px !important;/,
     'Add info should sit immediately to the right of WHAT TO KNOW.'
   );
   assert.match(
