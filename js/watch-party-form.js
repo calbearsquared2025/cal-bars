@@ -1,5 +1,4 @@
 import { initializeCalBarNominationEntry } from './cal-bar-nomination.js';
-import { syncDesktopProfileFinalBalance } from './desktop-profile-final-balance.mjs';
 import { initializeListingUpdateEntry } from './listing-update.js';
 import { initializePhotoFormEntry } from './photo-form.js';
 import './external-watch-party-cta.js';
@@ -177,7 +176,6 @@ export function renderWatchPartyFormEntryPoint({
     maintenance.before(section);
   }
 
-  syncDesktopProfileFinalBalance({ detail, documentObject, windowObject });
   syncDetailContributionVisibility(detail);
   return href;
 }
