@@ -35,6 +35,10 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         left: auto !important;
       }
 
+      body[data-view="map"] .map-view:has(> #venue-tray.venue-tray.tray--selected) .maplibregl-ctrl-bottom-right {
+        right: calc(clamp(500px, 52vw, 620px) + 26px) !important;
+      }
+
       .mobile-command-bar #mobile-add-button {
         width: 100% !important;
         min-width: 0 !important;
