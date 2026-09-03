@@ -1,6 +1,7 @@
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-profile-hero-cap';
 const PASSED_ATTR = 'profileHeroPassed';
+const PASSED_VENUE_ATTR = 'profileHeroPassedVenue';
 const EDGE_TOLERANCE_PX = 1;
 
 let appConnected = false;
@@ -111,6 +112,7 @@ function installStyles(documentObject = document) {
 function clearPassedState(tray) {
   if (!tray?.dataset) return;
   delete tray.dataset[PASSED_ATTR];
+  delete tray.dataset[PASSED_VENUE_ATTR];
 }
 
 export function syncMobileProfileHeroCap({
@@ -132,8 +134,20 @@ export function syncMobileProfileHeroCap({
     return false;
   }
 
+  const selectedCard = tray.querySelector?.('#tray-selected > .selected-card');
+  const venueId = String(
+    selectedCard?.dataset?.venueId ||
+    windowObject.CGBApp?.getState?.()?.selectedVenueId ||
+    ''
+  );
+  const alreadyPassed = tray.dataset[PASSED_ATTR] === 'true';
+  const passedVenueId = String(tray.dataset[PASSED_VENUE_ATTR] || '');
+
+  if (alreadyPassed && venueId && passedVenueId === venueId) return true;
+  if (alreadyPassed || passedVenueId) clearPassedState(tray);
+
   const handle = tray.querySelector?.(':scope > .tray-handle');
-  const hero = tray.querySelector?.('#tray-selected > .selected-card > .selected-card__header');
+  const hero = selectedCard?.querySelector?.(':scope > .selected-card__header');
   const heroRect = hero?.getBoundingClientRect?.();
   const handleRect = handle?.getBoundingClientRect?.();
   const passed = heroHasPassedTrayCap({
@@ -141,8 +155,10 @@ export function syncMobileProfileHeroCap({
     capBottom: handleRect?.bottom
   });
 
-  if (passed) tray.dataset[PASSED_ATTR] = 'true';
-  else clearPassedState(tray);
+  if (passed) {
+    tray.dataset[PASSED_ATTR] = 'true';
+    if (venueId) tray.dataset[PASSED_VENUE_ATTR] = venueId;
+  }
   return passed;
 }
 
