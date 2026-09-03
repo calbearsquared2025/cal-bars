@@ -6,11 +6,14 @@ import { heroHasPassedTrayCap } from '../js/mobile-profile-hero-cap.mjs';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('tray cap changes only when the actual hero edge reaches the cap', () => {
+test('tray cap changes only when the actual hero edge reaches or passes the cap', () => {
   assert.equal(heroHasPassedTrayCap({ heroBottom: 240, capBottom: 120 }), false);
   assert.equal(heroHasPassedTrayCap({ heroBottom: 121, capBottom: 120 }), true);
   assert.equal(heroHasPassedTrayCap({ heroBottom: 120, capBottom: 120 }), true);
-  assert.equal(heroHasPassedTrayCap({ heroBottom: 0, capBottom: 120 }), false);
+  assert.equal(heroHasPassedTrayCap({ heroBottom: 0, capBottom: 120 }), true);
+  assert.equal(heroHasPassedTrayCap({ heroBottom: -40, capBottom: 120 }), true);
+  assert.equal(heroHasPassedTrayCap({ capBottom: 120 }), false);
+  assert.equal(heroHasPassedTrayCap({ heroBottom: 80 }), false);
 });
 
 test('mobile selected tray cap starts navy and becomes gold after the hero passes', async () => {
