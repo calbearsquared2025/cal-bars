@@ -1,3 +1,5 @@
+import './marker-overlap-spread.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
 
@@ -99,6 +101,7 @@ function openListSurface(event) {
 
   document.querySelector('#search-surface')?.setAttribute('hidden', '');
   document.querySelector('#add-surface')?.setAttribute('hidden', '');
+  document.querySelector('#about-surface')?.setAttribute('hidden', '');
   setTrayState('full');
   setCommandActive('list');
 }

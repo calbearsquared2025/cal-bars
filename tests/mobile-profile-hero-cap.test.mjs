@@ -2,15 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-import { heroHasPassedTrayCap } from '../js/mobile-profile-hero-cap.mjs';
+import {
+  heroHasPassedTrayCap,
+  nextHeroCapPassedState
+} from '../js/mobile-profile-hero-cap.mjs';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('tray cap changes only when the actual hero edge reaches the cap', () => {
+test('tray cap changes only when the actual hero edge reaches or passes the cap', () => {
   assert.equal(heroHasPassedTrayCap({ heroBottom: 240, capBottom: 120 }), false);
   assert.equal(heroHasPassedTrayCap({ heroBottom: 121, capBottom: 120 }), true);
   assert.equal(heroHasPassedTrayCap({ heroBottom: 120, capBottom: 120 }), true);
-  assert.equal(heroHasPassedTrayCap({ heroBottom: 0, capBottom: 120 }), false);
+  assert.equal(heroHasPassedTrayCap({ heroBottom: 0, capBottom: 120 }), true);
+  assert.equal(heroHasPassedTrayCap({ heroBottom: -40, capBottom: 120 }), true);
+  assert.equal(heroHasPassedTrayCap({ capBottom: 120 }), false);
+  assert.equal(heroHasPassedTrayCap({ heroBottom: 80 }), false);
+});
+
+test('tray cap reverses on upward scroll with hysteresis around the boundary', () => {
+  assert.equal(nextHeroCapPassedState({ heroBottom: 130, capBottom: 120, wasPassed: false }), false);
+  assert.equal(nextHeroCapPassedState({ heroBottom: 121, capBottom: 120, wasPassed: false }), true);
+  assert.equal(nextHeroCapPassedState({ heroBottom: 124, capBottom: 120, wasPassed: true }), true);
+  assert.equal(nextHeroCapPassedState({ heroBottom: 126, capBottom: 120, wasPassed: true }), true);
+  assert.equal(nextHeroCapPassedState({ heroBottom: 127, capBottom: 120, wasPassed: true }), false);
+  assert.equal(nextHeroCapPassedState({ heroBottom: Number.NaN, capBottom: 120, wasPassed: true }), true);
+  assert.equal(nextHeroCapPassedState({ heroBottom: Number.NaN, capBottom: 120, wasPassed: false }), false);
 });
 
 test('mobile selected tray cap starts navy and becomes gold after the hero passes', async () => {
@@ -23,6 +39,16 @@ test('mobile selected tray cap starts navy and becomes gold after the hero passe
   assert.match(source, /capBottom: handleRect\?\.bottom/);
   assert.match(source, /#tray-selected'\)\?\.addEventListener\('scroll'/);
   assert.match(source, /prefers-reduced-motion: reduce/);
+});
+
+test('mobile selected tray cap is reversible rather than latched', async () => {
+  const source = await read('js/mobile-profile-hero-cap.mjs');
+  assert.match(source, /const EXIT_TOLERANCE_PX = 6/);
+  assert.match(source, /const wasPassed = tray\.dataset\[PASSED_ATTR\] === 'true'/);
+  assert.match(source, /nextHeroCapPassedState\(\{[\s\S]*?wasPassed[\s\S]*?\}\)/);
+  assert.match(source, /if \(passed\) tray\.dataset\[PASSED_ATTR\] = 'true';\n  else clearPassedState\(tray\);/);
+  assert.doesNotMatch(source, /PASSED_VENUE_ATTR/);
+  assert.doesNotMatch(source, /alreadyPassed && venueId/);
 });
 
 test('collapsed selected venue preview is the same navy identity surface as the expanded hero', async () => {
