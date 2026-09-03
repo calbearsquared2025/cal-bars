@@ -12,14 +12,14 @@ function finite(value) {
 }
 
 export function heroHasPassedTrayCap({
-  heroBottom = 0,
-  capBottom = 0,
+  heroBottom = Number.NaN,
+  capBottom = Number.NaN,
   tolerance = EDGE_TOLERANCE_PX
 } = {}) {
-  const hero = finite(heroBottom);
-  const cap = finite(capBottom);
+  const hero = Number(heroBottom);
+  const cap = Number(capBottom);
   const slack = Math.max(0, finite(tolerance));
-  if (hero <= 0 || cap <= 0) return false;
+  if (!Number.isFinite(hero) || !Number.isFinite(cap) || cap <= 0) return false;
   return hero <= cap + slack;
 }
 
