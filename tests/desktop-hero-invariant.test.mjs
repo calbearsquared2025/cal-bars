@@ -9,12 +9,12 @@ const watchPartyFormSource = await readFile(new URL('../js/watch-party-form.js',
 
 test('desktop selected profiles always use the universal hero treatment', () => {
   assert.match(
-    source,
+    firstPaintCss,
     /#venue-detail\[data-profile-presentation="desktop"\] > \.detail-hero \{/,
     'Desktop hero styling should target every direct detail hero.'
   );
   assert.doesNotMatch(
-    source,
+    `${source}\n${firstPaintCss}`,
     /\.detail-hero\.detail-hero--identity/,
     'Desktop hero styling must not depend on an extra identity-state class.'
   );
@@ -32,30 +32,30 @@ test('desktop opening keeps attendance to the right of What to Know', () => {
     'DOM order should keep What to Know and attendance adjacent before Watch Party.'
   );
   assert.match(
-    source,
+    firstPaintCss,
     /\.detail-what-to-know \{\s*grid-column: 1 \/ 8 !important;/,
     'What to Know should occupy the left side of the opening information row.'
   );
   assert.match(
-    source,
+    firstPaintCss,
     /> \.activity-card \{\s*grid-column: 8 \/ 13 !important;/,
     'Attendance should occupy the right side of the same opening information row.'
   );
 });
 
 test('desktop Bear attendance matches the mobile compact count treatment', () => {
-  assert.match(source, /\.activity-card > strong\.bear-count:not\(\.bear-count--empty\) \{[\s\S]*?grid-template-columns: auto auto !important;[\s\S]*?grid-template-rows: auto auto auto !important;[\s\S]*?justify-content: center !important;/);
-  assert.match(source, /\.bear-count__number \{[\s\S]*?grid-row: 1 \/ 4 !important;[\s\S]*?font-size: 2\.15rem !important;/);
-  assert.match(source, /\.bear-count__label \{[\s\S]*?grid-row: 1 !important;[\s\S]*?font-size: \.75rem !important;/);
-  assert.match(source, /\.bear-count__attending \{[\s\S]*?grid-row: 2 !important;[\s\S]*?font-size: \.62rem !important;/);
-  assert.match(source, /\.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.6rem !important;/);
+  assert.match(firstPaintCss, /\.activity-card > strong\.bear-count:not\(\.bear-count--empty\) \{[\s\S]*?grid-template-columns: auto auto !important;[\s\S]*?grid-template-rows: auto auto auto !important;[\s\S]*?justify-content: center !important;/);
+  assert.match(firstPaintCss, /\.bear-count__number \{[\s\S]*?grid-row: 1 \/ 4 !important;[\s\S]*?font-size: 2\.15rem !important;/);
+  assert.match(firstPaintCss, /\.bear-count__label \{[\s\S]*?grid-row: 1 !important;[\s\S]*?font-size: \.75rem !important;/);
+  assert.match(firstPaintCss, /\.bear-count__attending \{[\s\S]*?grid-row: 2 !important;[\s\S]*?font-size: \.62rem !important;/);
+  assert.match(firstPaintCss, /\.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.6rem !important;/);
 });
 
 test('desktop first paint never exposes the legacy profile presentation', () => {
   assert.match(
     watchPartyFormCss,
     /@import url\('\.\/profile-first-paint\.css'\);/,
-    'Paint-safe profile styles must load through a render-blocking stylesheet.'
+    'Profile styles must load through a render-blocking stylesheet.'
   );
   assert.match(
     firstPaintCss,
@@ -69,7 +69,12 @@ test('desktop first paint never exposes the legacy profile presentation', () => 
   );
 });
 
-test('attendance has one formatting owner after profile enrichment', () => {
+test('desktop profile styling has one static owner', () => {
+  assert.doesNotMatch(
+    source,
+    /installStyles|createElement\('style'\)|cgb-desktop-photo-forward-profile/,
+    'Desktop profile styling must not be injected again after first paint.'
+  );
   assert.doesNotMatch(
     watchPartyFormSource,
     /syncDesktopProfileFinalBalance|desktop-profile-final-balance/,
