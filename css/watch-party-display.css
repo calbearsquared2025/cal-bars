@@ -138,11 +138,12 @@
     margin-left: 0;
   }
 
-  /* The current mobile profile no longer promotes media into the opening card.
-     Keep the identity treatment universal rather than depending on the obsolete
-     data-mobile-media-forward presentation flag. */
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card {
-    box-shadow: 0 -240px 0 var(--cgb-navy-950) !important;
+  /* iOS rubber-band exposes the selected tray scrollport itself. Paint the top of
+     that scrollport navy while keeping the lower overscroll surface white. */
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected {
+    background:
+      linear-gradient(var(--cgb-navy-950), var(--cgb-navy-950)) top / 100% 240px no-repeat,
+      var(--cgb-white) !important;
   }
 
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header {
@@ -250,7 +251,7 @@
     position: static;
   }
 
-  #tray-selected > #venue-detail > .party-module .party-module__report {
+  #tray-selected > #venue-detail .party-module .party-module__report {
     font-size: .65rem;
   }
 
