@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('MapTiler attribution is SDK-owned without a duplicate manual logo', async () => {
+test('MapTiler attribution is SDK-owned without duplicate page branding or controls', async () => {
   const [app, iconUpgrade, index] = await Promise.all([
     read('js/app.js'),
     read('js/icon-upgrade.mjs'),
