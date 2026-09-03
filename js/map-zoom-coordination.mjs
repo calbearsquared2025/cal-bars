@@ -43,6 +43,14 @@ function applyInitialSelectedCamera() {
   const map = state?.map;
   if (!map || initialSelectedCameraMaps.has(map) || !state.selectedVenueId) return false;
 
+  // This jump exists only to seed a direct-selected route before the map's first
+  // visible load. Once the map is already interactive, the normal selection
+  // camera owns the move; jumping here would create a second visible motion.
+  if (typeof map.loaded === 'function' && map.loaded()) {
+    initialSelectedCameraMaps.add(map);
+    return false;
+  }
+
   const center = selectedVenueCoordinates(state);
   if (!center || typeof map.jumpTo !== 'function') return false;
 
