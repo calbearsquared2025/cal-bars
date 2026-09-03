@@ -17,26 +17,26 @@ test('desktop selected profiles always use the universal hero treatment', () => 
   );
 });
 
-test('desktop selected profiles follow the approved information order', () => {
+test('desktop opening keeps attendance to the right of What to Know', () => {
   assert.match(
     source,
-    /desktopProfileArrangement = 'identity-what-to-know-party-attendance-editorial-community-photo-contribution'/,
-    'Desktop profile arrangement should keep attendance after Watch Party and before CGB Says.'
+    /desktopProfileArrangement = 'identity-what-to-know-attendance-party-editorial-community-photo-contribution'/,
+    'Desktop profile arrangement should pair attendance with What to Know before Watch Party.'
   );
   assert.match(
     source,
-    /cursor = placeAfter\(cursor, whatToKnow\);\s*parties\.forEach\(\(party\) => \{ cursor = placeAfter\(cursor, party\); \}\);\s*cursor = placeAfter\(cursor, activity\);\s*cursor = placeAfter\(cursor, editorial\);/,
-    'DOM order should be What to Know, Watch Party, attendance, then CGB Says.'
+    /cursor = placeAfter\(cursor, whatToKnow\);\s*cursor = placeAfter\(cursor, activity\);\s*parties\.forEach/,
+    'DOM order should keep What to Know and attendance adjacent before Watch Party.'
   );
   assert.match(
     source,
-    /\.detail-what-to-know \{\s*grid-column: 1 \/ -1 !important;/,
-    'What to Know should occupy its own full-width row.'
+    /\.detail-what-to-know \{\s*grid-column: 1 \/ 8 !important;/,
+    'What to Know should occupy the left side of the opening information row.'
   );
   assert.match(
     source,
-    /> \.activity-card \{\s*grid-column: 1 \/ -1 !important;/,
-    'Attendance should occupy its own full-width row.'
+    /> \.activity-card \{\s*grid-column: 8 \/ 13 !important;/,
+    'Attendance should occupy the right side of the same opening information row.'
   );
 });
 
