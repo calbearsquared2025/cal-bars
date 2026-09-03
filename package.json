@@ -9,7 +9,9 @@
     "test:unit": "node --test tests/*.test.mjs",
     "test:migration": "node --test tests/venue-migration.test.mjs tests/venue-load-validation.test.mjs",
     "test:browser": "node scripts/run-browser-harness.mjs",
+    "check:syntax": "node --check scripts/run-browser-harness.mjs && node --check tests/browser/smoke-runtime-harness.mjs && node --check tests/browser/manual-place-runtime-harness.mjs && node --check tests/browser/external-search-efficiency-runtime-harness.mjs",
     "validate:data": "node scripts/validate-v2-data.mjs data/fallback-v2.json && node scripts/validate-contribution-tags.mjs data/fallback-v2.json",
+    "validate:private": "node scripts/scan-private-values.mjs",
     "validate:venue-load": "node scripts/validate-venue-load.mjs",
     "migration:dry-run": "node scripts/migrate-v1-venues.mjs"
   }
