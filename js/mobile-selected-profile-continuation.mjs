@@ -185,7 +185,8 @@ function clearLegacyOpeningMedia(card) {
 }
 
 function placeSupportingPhoto(detail) {
-  const photo = detail?.querySelector?.(':scope > .detail-photo');
+  const photo = detail?.querySelector?.(':scope > .detail-photo') ||
+    detail?.querySelector?.(':scope > .detail-hero > .detail-photo');
   if (!photo) return false;
   const community = detail.querySelector(':scope > .detail-fan-experiences');
   const editorial = detail.querySelector(':scope > .detail-editorial');
