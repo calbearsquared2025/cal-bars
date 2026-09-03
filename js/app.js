@@ -246,7 +246,7 @@ function renderHeaderAndStats() {
   const partyCount = getWatchPartiesForGame(state.snapshot, state.gameId).length;
   dom.partyStat.textContent = `${partyCount} watch ${partyCount === 1 ? 'party' : 'parties'} for this game`;
   dom.locationStat.textContent = `${state.snapshot.venues.length} locations mapped`;
-  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(game)} locations`;
+  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(selectedGame())} locations`;
 }
 
 function selectGame(gameId) {
@@ -325,7 +325,7 @@ function initMap() {
     return;
   }
   const sdk = window.maptilersdk;
-  if (!sdk?.Map || !sdk?.Marker || !sdk?.LngLatBounds || !sdk?.NavigationControl || !sdk?.AttributionControl) {
+  if (!sdk?.Map || !sdk?.Marker || !sdk?.LngLatBounds || !sdk?.NavigationControl) {
     dom.mapFallback.hidden = false;
     dom.map.classList.add('map--fallback');
     return;
@@ -359,14 +359,13 @@ function initMap() {
     navigationControl: false,
     geolocateControl: false,
     maptilerLogo: false,
-    attributionControl: false,
+    attributionControl: { compact: false },
     fadeDuration: 100
   });
   if (!bounds.isEmpty()) {
     state.map.fitBounds(bounds, { padding: 56, maxZoom: 7, duration: 0 });
   }
   state.map.addControl(new sdk.NavigationControl({ showCompass: false }), 'top-right');
-  state.map.addControl(new sdk.AttributionControl({ compact: true }), 'bottom-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
   state.map.on('load', () => {
     renderMarkers();
