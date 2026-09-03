@@ -1,3 +1,5 @@
+import './marker-overlap-spread.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
 
