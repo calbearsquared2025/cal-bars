@@ -255,9 +255,6 @@ export function createSelectedVenueCard({
     card.append(createPlanWatchPartyAction(documentObject));
   }
 
-  const attendance = createAttendance(state, game, venue, documentObject);
-  card.append(attendance.count);
-
   card.append(createSelectedActionRow({
     state,
     venue,
@@ -265,6 +262,9 @@ export function createSelectedVenueCard({
     onShare,
     documentObject
   }));
+
+  const attendance = createAttendance(state, game, venue, documentObject);
+  card.append(attendance.count);
 
   if (attendance.history) card.append(attendance.history);
   return card;
