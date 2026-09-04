@@ -22,7 +22,7 @@ test('typed manual address geocoding does not use the browser home-location prox
   );
 });
 
-test('area searches frame the search origin with only venues inside the nearby radius', () => {
+test('area searches frame the search origin with only venues inside the nearby radius while leaving other markers available', () => {
   assert.match(
     mapRefinementSource,
     /rankNearbyVenues\(state\.snapshot, state\.gameId, origin, NEARBY_RADIUS_MILES\)/
@@ -33,4 +33,8 @@ test('area searches frame the search origin with only venues inside the nearby r
   );
   assert.match(mapRefinementSource, /map\.fitBounds\(/);
   assert.match(mapRefinementSource, /maxZoom: 11/);
+  assert.doesNotMatch(
+    mapRefinementSource,
+    /function syncAreaSearchCamera[\s\S]*?state\.snapshot\.venues\.map/
+  );
 });
