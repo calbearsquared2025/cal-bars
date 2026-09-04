@@ -215,6 +215,42 @@ function fetchMapTilerFeatures_(query, key, querySuffix) {
   return payload && Array.isArray(payload.features) ? payload.features : [];
 }
 
+function mapTilerVerificationQueries_(feature) {
+  if (!feature || typeof feature !== 'object') return [];
+  const placeId = cleanExternalText_(feature.id, 200).toLowerCase();
+  const isAddress = placeId.indexOf('address.') === 0;
+  const queries = [];
+  const seen = {};
+  const add = function(value) {
+    const query = cleanExternalText_(value, CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
+    const key = query.toLowerCase();
+    if (!query || seen[key]) return;
+    seen[key] = true;
+    queries.push(query);
+  };
+
+  if (!isAddress) {
+    add(feature.text || feature.name);
+    return queries;
+  }
+
+  add(feature.place_name || feature.matching_place_name);
+  add([feature.address, feature.text || feature.name].filter(Boolean).join(' '));
+
+  const coordinates = Array.isArray(feature.center)
+    ? feature.center
+    : feature.geometry && feature.geometry.type === 'Point' && Array.isArray(feature.geometry.coordinates)
+      ? feature.geometry.coordinates
+      : null;
+  const longitude = coordinates && Number(coordinates[0]);
+  const latitude = coordinates && Number(coordinates[1]);
+  if (Number.isFinite(latitude) && latitude >= -90 && latitude <= 90 &&
+      Number.isFinite(longitude) && longitude >= -180 && longitude <= 180) {
+    add(longitude + ',' + latitude);
+  }
+  return queries;
+}
+
 function verifyExternalPlaceWithMapTiler_(clientPlace) {
   const key = mapTilerVerificationKey_();
   if (!key) throw externalVenueError_('external_venue_unavailable');
@@ -225,13 +261,13 @@ function verifyExternalPlaceWithMapTiler_(clientPlace) {
   });
   let verified = normalizeMapTilerFeatureForPublication_(exactFeature);
   if (!verified && exactFeature) {
-    const canonicalName = cleanExternalText_(exactFeature.text || exactFeature.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
-    if (canonicalName) {
-      const enrichedFeatures = fetchMapTilerFeatures_(
-        canonicalName,
-        key,
-        '&limit=10&autocomplete=false&types=poi%2Caddress'
-      );
+    const isAddress = cleanExternalText_(clientPlace.placeId, 200).toLowerCase().indexOf('address.') === 0;
+    const querySuffix = isAddress
+      ? '&limit=10&autocomplete=false&types=address'
+      : '&limit=10&autocomplete=false&types=poi%2Caddress';
+    const enrichmentQueries = mapTilerVerificationQueries_(exactFeature);
+    for (let index = 0; index < enrichmentQueries.length && !verified; index += 1) {
+      const enrichedFeatures = fetchMapTilerFeatures_(enrichmentQueries[index], key, querySuffix);
       const enrichedFeature = enrichedFeatures.find(function(candidate) {
         return cleanExternalText_(candidate && candidate.id, 200) === clientPlace.placeId;
       });
