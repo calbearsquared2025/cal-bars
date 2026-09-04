@@ -12,11 +12,12 @@ test('desktop Venue Profile renders attendance as one compact status row without
   assert.match(css, /activity-card:has\(\.bear-count__number\) > p:not\(\.activity-card__presence\)\s*\{[\s\S]*?grid-column:\s*2\s*!important;[\s\S]*?grid-row:\s*2\s*!important;/);
 });
 
-test('search helper stays hidden during first paint until search opens it', async () => {
-  const [css, html] = await Promise.all([
-    read('css/external-venue.css'),
+test('search helper starts hidden before JavaScript interaction', async () => {
+  const [appSource, html] = await Promise.all([
+    read('js/app.js'),
     read('index.html')
   ]);
   assert.match(html, /<div id="search-dropdown" class="search-suggestions" hidden>/);
-  assert.match(css, /#search-dropdown\[hidden\]\s*\{[\s\S]*?display:\s*none\s*!important;[\s\S]*?\}/);
+  assert.match(html, /id="search-add-location-button"[^>]* hidden>/);
+  assert.match(appSource, /if \(!query\) \{[\s\S]*?dom\.searchDropdown\.hidden = true;/);
 });

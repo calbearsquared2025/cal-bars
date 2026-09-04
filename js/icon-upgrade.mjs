@@ -25,25 +25,10 @@ const APP_CONNECT_MAX_ATTEMPTS = 1200;
 const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
 const MOBILE_QUERY = '(max-width: 899px)';
-const MOBILE_SEARCH_HELPER_STYLE_ID = 'cgb-mobile-search-helper-visibility';
 const WIDE_DESKTOP_QUERY = '(min-width: 1100px)';
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 const DESKTOP_TRAY_MOTION_DURATION = '210ms';
 const DESKTOP_TRAY_MOTION_EASING = 'cubic-bezier(.16, 1, .3, 1)';
-
-function installMobileSearchHelperVisibility() {
-  if (document.getElementById(MOBILE_SEARCH_HELPER_STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = MOBILE_SEARCH_HELPER_STYLE_ID;
-  style.textContent = `
-    @media (max-width: 899px) {
-      #location-search:has(#location-query:placeholder-shown) #search-dropdown {
-        display: none !important;
-      }
-    }
-  `;
-  document.head.append(style);
-}
 
 function replaceTextWithIcon(element, iconName, className = 'ui-icon') {
   if (!element || element.querySelector('.ui-icon')) return;
@@ -343,7 +328,6 @@ function connectApp() {
 }
 
 function initialize() {
-  installMobileSearchHelperVisibility();
   installCommandSurfaceUpgradeObserver();
   runRefinements();
   window.matchMedia?.(WIDE_DESKTOP_QUERY)?.addEventListener?.('change', scheduleUpgrade);

@@ -17,7 +17,6 @@ const desktopReviewPreviewActive = applyDesktopReviewPreview();
 const MOBILE_QUERY = '(max-width: 899px)';
 const DESKTOP_ADD_SEARCH_STYLE_ID = 'cgb-desktop-add-inline-search-style';
 const AREA_FOCUS_MAX_ATTEMPTS = 12;
-let desktopSearchEngaged = false;
 let preserveQueryForNextDesktopAdd = false;
 let desktopAddObserver = null;
 let lastAreaFocusKey = '';
@@ -636,9 +635,8 @@ function syncDesktopSearchUi() {
 
   const matchCount = desktopMatchCount(query, state);
   const listQuery = String(state?.listQuery || '').trim();
-  const showSearchHelper = existingMode && desktopSearchEngaged && Boolean(query);
+  const showSearchHelper = existingMode && Boolean(query) && !button.hidden;
 
-  button.hidden = !showSearchHelper;
   if (showSearchHelper) {
     setAddLocationCopy(
       button,
@@ -670,37 +668,14 @@ function handleDesktopMapDeselect(event) {
 }
 
 function initialize() {
-  const form = document.querySelector('#location-search');
-  const searchInput = document.querySelector('#location-query');
-
   ensureDesktopAddSearchStyle();
   observeDesktopAddSearch();
   document.addEventListener('click', handleDesktopContributionClicks);
-
-  searchInput?.addEventListener('input', () => {
-    if (!isMobile()) desktopSearchEngaged = true;
-    syncDesktopSearchUi();
-  });
-  searchInput?.addEventListener('focus', () => {
-    if (!isMobile()) desktopSearchEngaged = true;
-    syncDesktopSearchUi();
-  });
-  form?.addEventListener('focusout', () => {
-    if (isMobile()) return;
-    requestAnimationFrame(() => {
-      if (form.contains(document.activeElement)) return;
-      desktopSearchEngaged = false;
-      syncDesktopSearchUi();
-    });
-  });
   document.querySelector('#add-new-location-button')?.addEventListener('click', () => {
     document.querySelector('#search-add-location-button')?.click();
   });
   document.addEventListener('click', handleDesktopMapDeselect);
-  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
-    desktopSearchEngaged = false;
-    syncSearchMapExperience();
-  });
+  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', syncSearchMapExperience);
   window.CGBApp?.subscribe?.('rendered', syncSearchMapExperience);
   window.CGBApp?.subscribe?.('ready', syncSearchMapExperience);
   syncSearchMapExperience();

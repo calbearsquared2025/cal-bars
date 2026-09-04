@@ -296,7 +296,7 @@ function setSearchMode(mode = 'existing', { refresh = true } = {}) {
     ? 'Find a place that isn’t listed in Cal Golden Bars yet.'
     : 'Find a location already listed in Cal Golden Bars.';
   dom.searchInput.placeholder = addingLocation ? 'Venue or address' : 'City, ZIP, or venue';
-  dom.addLocationSearch.hidden = mode !== 'existing';
+  if (mode !== 'existing') dom.addLocationSearch.hidden = true;
   if (changed && refresh) dom.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
   if (addingLocation && refresh) window.CGBExternalVenueSearch?.searchCurrentQuery?.({ immediate: true });
 }
