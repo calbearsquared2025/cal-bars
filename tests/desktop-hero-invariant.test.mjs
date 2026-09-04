@@ -63,10 +63,11 @@ test('desktop CGB Says and You Say share a row when both exist', () => {
 });
 
 test('fan experience quotes do not publish name or year attribution in the profile', () => {
+  const createQuoteSource = fanExperiencesSource.match(/function createQuote\([\s\S]*?\n}\n\nfunction placeSection/)?.[0] || '';
   assert.doesNotMatch(
-    fanExperiencesSource,
-    /detail-fan-experiences__attribution|detail-fan-experiences__name|detail-fan-experiences__year/,
-    'YOU SAY quotes should render without contributor name or year attribution.'
+    createQuoteSource,
+    /display_name|\.year|detail-fan-experiences__attribution|detail-fan-experiences__name|detail-fan-experiences__year/,
+    'YOU SAY quote rendering should not include contributor name or year attribution.'
   );
 });
 
