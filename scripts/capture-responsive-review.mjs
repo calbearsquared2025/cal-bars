@@ -23,6 +23,7 @@ const mimeTypes = new Map([
 const standardViewports = [
   { label: '1024', width: 1024, height: 800 },
   { label: '1280', width: 1280, height: 900 },
+  { label: '1440-locations', width: 1440, height: 1000, reviewMode: 'locations' },
   { label: '1440', width: 1440, height: 1000 },
   { label: 'mobile-390', width: 390, height: 844 },
   { label: 'mobile-390-bears-say', width: 390, height: 844, reviewMode: 'bears-say' }
@@ -129,6 +130,11 @@ function reviewPage(root, response) {
         } else {
           window.CGBApp?.showLocations?.();
           await waitFor(() => visible(document.querySelector('#tray-list')));
+        }
+
+        if (!mobile && reviewMode === 'locations') {
+          document.body.dataset.reviewReady = 'true';
+          return;
         }
 
         if (trayReview && reviewMode === 'tray-full') {
