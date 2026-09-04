@@ -296,7 +296,7 @@ function setSearchMode(mode = 'existing', { refresh = true } = {}) {
     ? 'Find a place that isn’t listed in Cal Golden Bars yet.'
     : 'Find a location already listed in Cal Golden Bars.';
   dom.searchInput.placeholder = addingLocation ? 'Venue or address' : 'City, ZIP, or venue';
-  dom.addLocationSearch.hidden = mode !== 'existing';
+  if (mode !== 'existing') dom.addLocationSearch.hidden = true;
   if (changed && refresh) dom.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
   if (addingLocation && refresh) window.CGBExternalVenueSearch?.searchCurrentQuery?.({ immediate: true });
 }
@@ -329,378 +329,96 @@ function showList() {
   updateCommandState();
 }
 
-function updateSearchIntent() {
-  const calBarTitle = isMobileLayout() ? 'Tell us about this location' : 'Tell us about a location';
-  const messages = {
-    [CONTRIBUTION_INTENTS.watchParty]: '<strong>Add a Watch Party</strong><span>Search for the venue. Existing CGB locations open the prefilled form; external places offer “Add a Watch Party” after selection.</span>',
-    [CONTRIBUTION_INTENTS.calBar]: `<strong>${calBarTitle}</strong><span>Search for an existing CGB location. Unlisted places must first be added to Cal Golden Bars.</span>`,
-    [CONTRIBUTION_INTENTS.report]: '<strong>Report a problem</strong><span>Search for the existing CGB listing you need to correct.</span>'
-  };
-  const message = messages[contributionIntent] || '';
-  dom.searchIntent.hidden = !message;
-  dom.searchIntent.innerHTML = message;
+function normalizeDesktopTray() {
+  if (isMobileLayout() || !dom.tray) return;
+  const state = appState();
+  if (state?.selectedVenueId) {
+    window.CGBApp?.showSelectedVenue?.();
+  } else {
+    window.CGBApp?.showLocations?.();
+  }
 }
 
-function showSearch(intent = '') {
+function showSearch() {
   leaveDetailForCommand();
-  contributionIntent = intent;
+  contributionIntent = '';
   updateSearchIntent();
-  setSearchMode(intent === CONTRIBUTION_INTENTS.watchParty || intent === CONTRIBUTION_INTENTS.calBar
-    ? 'contribution-external'
-    : intent === CONTRIBUTION_INTENTS.report ? 'contribution-existing' : 'existing');
-  setSurface('search', { focus: true });
+  setSearchMode('existing');
+  setSurface(isMobileLayout() ? 'search' : 'map', { focus: true });
+  if (!isMobileLayout()) {
+    window.setTimeout(() => {
+      dom.searchInput?.focus({ preventScroll: true });
+      dom.searchInput?.select?.();
+    }, 0);
+  }
+}
+
+function showAdd({ preserveSearchQuery = false } = {}) {
+  leaveDetailForCommand();
+  contributionIntent = '';
+  updateSearchIntent();
+  const state = appState();
+  if (!preserveSearchQuery) {
+    if (state) state.listQuery = '';
+    if (dom.searchInput) dom.searchInput.value = '';
+    if (dom.searchDropdown) dom.searchDropdown.hidden = true;
+  }
+  setSearchMode('add-location');
+  setSurface('add');
+  updateAddContext();
+}
+
+function closeCurrentSurface() {
+  contributionIntent = '';
+  updateSearchIntent();
+  setSearchMode('existing');
+  setSurface('map');
+  if (isMobileLayout() && dom.tray?.dataset.state === 'full') dom.trayHandle?.click();
+}
+
+function clearSearchUi() {
+  if (dom.searchInput) dom.searchInput.value = '';
+  if (dom.searchDropdown) dom.searchDropdown.hidden = true;
+  if (dom.searchSuggestions) dom.searchSuggestions.replaceChildren();
+}
+
+function searchSubmissionWantsAddFlow() {
+  return appState()?.searchMode === 'add-location';
+}
+
+function armSearchSubmissionHandoff() {
+  if (!dom?.searchForm || searchSubmissionPending) return;
+  const mode = appState()?.searchMode || 'existing';
+  const query = dom.searchInput?.value?.trim() || '';
+  if (!query) return;
+  searchSubmissionPending = true;
+  queueMicrotask(() => {
+    searchSubmissionPending = false;
+    if (mode === 'add-location') return;
+    if (isMobileLayout()) setSurface('map');
+  });
+}
+
+function completeExternalSearchSelection() {
+  if (!isMobileLayout()) return;
+  setSurface('map');
+}
+
+function updateSearchIntent() {
+  document.body.dataset.addIntent = contributionIntent || '';
 }
 
 function updateAddContext() {
-  const venue = selectedVenue();
+  const state = appState();
+  const venue = selectedVenue(state);
+  if (!dom.addContext) return;
   dom.addContext.hidden = !venue;
-  dom.reportOptions.hidden = true;
-  dom.reportButton.setAttribute('aria-expanded', 'false');
-  if (!venue) {
-    dom.addContextName.textContent = 'No place selected';
-    dom.addContextCopy.textContent = 'Choose an action and Search will help you find the right place.';
-    dom.reportPartyButton.hidden = true;
-    return;
-  }
-  const place = [venue.city, venue.region].filter(Boolean).join(', ');
+  if (!venue) return;
+
   dom.addContextName.textContent = venue.name;
-  if (isMobileLayout()) {
-    dom.addContextCopy.replaceChildren();
-    if (place) {
-      dom.addContextCopy.append(document.createTextNode(place), document.createElement('br'));
-    }
-    dom.addContextCopy.append(document.createTextNode('Available actions will use this place when possible.'));
-  } else {
-    dom.addContextCopy.textContent = place || 'Selected location';
-  }
-  dom.reportPartyButton.hidden = !watchPartyIssueUrl(venue.venue_id);
-}
-
-function showAdd() {
-  leaveDetailForCommand();
-  contributionIntent = '';
-  updateSearchIntent();
-  setSearchMode('existing');
-  updateAddContext();
-  setSurface('add');
-}
-
-function showAbout() {
-  leaveDetailForCommand();
-  contributionIntent = '';
-  updateSearchIntent();
-  setSearchMode('existing');
-  setSurface('about');
-}
-
-function showAddLocationSearch() {
-  contributionIntent = '';
-  updateSearchIntent();
-  setSearchMode('add-location');
-
-  if (isMobileLayout()) {
-    setSurface('search', { focus: true });
-    return;
-  }
-
-  setSurface('map');
-  requestAnimationFrame(() => {
-    dom.searchInput?.focus({ preventScroll: true });
-    dom.searchInput?.select?.();
-  });
-}
-
-function beginContribution(intent, {
-  venueId: requestedVenueId = ''
-} = {}) {
-  const state = appState();
-  const venue = requestedVenueId
-    ? state?.snapshot?.venues?.find((item) => item.venue_id === requestedVenueId) || null
-    : selectedVenue(state);
-  const venueId = venue?.venue_id || '';
-  const href = venueId ? contributionUrl(intent, venueId, state) : '';
-
-  if (intent === CONTRIBUTION_INTENTS.report && venueId) {
-    const partyHref = watchPartyIssueUrl(venueId);
-    dom.reportPartyButton.hidden = !partyHref;
-    dom.reportOptions.hidden = false;
-    dom.reportButton.setAttribute('aria-expanded', 'true');
-    dom.reportListingButton.focus();
-    return;
-  }
-
-  if (href) {
-    const opened = intent === CONTRIBUTION_INTENTS.watchParty
-      ? openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame(state)?.game_id)
-      : openExternalUrl(href);
-    setSurface('map');
-    return opened;
-  }
-
-  if (intent === CONTRIBUTION_INTENTS.watchParty && selectedGame(state)?.game_status !== 'upcoming') {
-    showStatus('Watch Parties can be submitted for an upcoming game. Choose another game first.');
-  }
-  showSearch(intent);
-  return false;
-}
-
-function handleSelectedVenueWatchParty(event) {
-  const button = event.target.closest?.('.selected-card__plan-party');
-  if (!button) return;
-
-  const venueId = button.closest('.selected-card[data-venue-id]')?.dataset.venueId || '';
-  if (!venueId) return;
-
-  event.preventDefault();
-  beginContribution(CONTRIBUTION_INTENTS.watchParty, { venueId });
-}
-
-function handleMobileLocationListSelection(event) {
-  if (!isMobileLayout()) return;
-  if (!event.target.closest?.('#location-list .location-card[data-venue-id]')) return;
-  contributionIntent = '';
-  updateSearchIntent();
-  setSearchMode('existing');
-  setSurface('map');
-}
-
-function handleSearchResultClick(event) {
-  const existing = event.target.closest('button[data-venue-id]');
-  const external = event.target.closest('button[data-external-place-id]');
-  if (!existing && !external) return;
-
-  requestAnimationFrame(() => setSearchMode('existing'));
-
-  if (existing) {
-    const venueId = existing.dataset.venueId;
-    if (contributionIntent === CONTRIBUTION_INTENTS.report) {
-      contributionIntent = '';
-      updateSearchIntent();
-      requestAnimationFrame(() => {
-        updateAddContext();
-        setSurface('add');
-        dom.reportOptions.hidden = false;
-        dom.reportButton.setAttribute('aria-expanded', 'true');
-        dom.reportListingButton.focus();
-      });
-      return;
-    }
-    if (contributionIntent) {
-      const intent = contributionIntent;
-      const href = contributionUrl(intent, venueId);
-      if (href) {
-        if (intent === CONTRIBUTION_INTENTS.watchParty) {
-          openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame()?.game_id);
-        } else {
-          openExternalUrl(href);
-        }
-      } else if (intent === CONTRIBUTION_INTENTS.calBar) {
-        showStatus('This contribution form is not available for the selected location.');
-      } else {
-        showStatus('That contribution is not available for the selected place or game.');
-      }
-      contributionIntent = '';
-      updateSearchIntent();
-    }
-    requestAnimationFrame(() => setSurface('map'));
-    return;
-  }
-
-  if (contributionIntent === CONTRIBUTION_INTENTS.watchParty) {
-    showStatus('In the place confirmation, choose “Add a Watch Party.”', 4200);
-  } else if (contributionIntent === CONTRIBUTION_INTENTS.calBar) {
-    showStatus('Add this place to CGB first, then tell us about it from the location profile.', 4600);
-  } else if (contributionIntent === CONTRIBUTION_INTENTS.report) {
-    showStatus('Only existing CGB listings can be reported.', 3600);
-  }
-  requestAnimationFrame(() => setSurface('map'));
-}
-
-function normalizeDesktopTray() {
-  if (isMobileLayout() || document.body.dataset.view === 'detail') return false;
-  if (selectedVenue() || currentSurface === 'search' || currentSurface === 'add' || currentSurface === 'about') {
-    return false;
-  }
-
-  currentSurface = 'list';
-  if (dom.tray?.dataset.state !== 'full' && window.CGBApp?.showLocations) {
-    window.CGBApp.showLocations();
-    return true;
-  }
-  return false;
-}
-
-function syncDesktopBrowseState() {
-  if (!dom || isMobileLayout()) return;
-  const state = appState();
-  if (!state?.listQuery) {
-    dom.listHeading.textContent = 'Find your Cal crowd';
-    dom.listEyebrow.textContent = 'Browse';
-  }
-
-}
-
-function syncViewState() {
-  const pendingDirectDetail = isMobileLayout() &&
-    dom.app?.getAttribute('aria-busy') === 'true' &&
-    new URLSearchParams(location.search).has('venue');
-  const detailVisible = !dom.detailView?.hidden || pendingDirectDetail;
-  document.body.dataset.view = detailVisible ? 'detail' : 'map';
-
-  if (detailVisible) {
-    dom.searchSurface.hidden = true;
-    dom.addSurface.hidden = true;
-    dom.aboutSurface.hidden = true;
-  } else {
-    normalizeDesktopTray();
-  }
-
-  updateAddContext();
-  updateCommandState();
-  syncDesktopBrowseState();
-
-  const trayState = dom.tray?.dataset.state || 'peek';
-  if (searchSubmissionPending && currentSurface === 'search' && (trayState === 'full' || trayState === 'selected')) {
-    searchSubmissionPending = false;
-    contributionIntent = '';
-    updateSearchIntent();
-
-    if (isMobileLayout()) {
-      const state = appState();
-      if (trayState === 'full' && state) state.selectedVenueId = '';
-      if (trayState === 'full' && state?.listQuery) showList();
-      else showMap();
-      return;
-    }
-
-    setSurface(trayState === 'full' ? 'list' : 'map');
-  }
-}
-
-function cacheDom() {
-  const commandButtons = Array.from(document.querySelectorAll('.mobile-command'));
-  const addNewLocationButton = document.querySelector('#add-new-location-button');
-  const addCalBarButton = document.querySelector('#add-cal-bar-button');
-  dom = {
-    app: document.querySelector('#app'),
-    detailView: document.querySelector('#detail-view'),
-    mapToolbar: document.querySelector('.map-toolbar'),
-    searchForm: document.querySelector('#location-search'),
-    searchInput: document.querySelector('#location-query'),
-    suggestions: document.querySelector('#search-suggestions'),
-    addLocationSearch: document.querySelector('#search-add-location-button'),
-    searchSurface: document.querySelector('#search-surface'),
-    searchTitle: document.querySelector('#search-surface-title'),
-    searchIntro: document.querySelector('#search-surface-intro'),
-    searchSlot: document.querySelector('#search-surface-form-slot'),
-    searchIntent: document.querySelector('#search-surface-intent'),
-    addSurface: document.querySelector('#add-surface'),
-    aboutSurface: document.querySelector('#about-surface'),
-    addContext: document.querySelector('#add-surface .add-context:not(.add-game-context)'),
-    addContextActions: document.querySelector('#add-surface .add-context:not(.add-game-context) > .add-actions'),
-    addContextName: document.querySelector('#add-context-name'),
-    addContextCopy: document.querySelector('#add-context-copy'),
-    addSomewhereElse: document.querySelector('#add-surface .add-somewhere-else'),
-    addSomewhereElseTitle: document.querySelector('#add-somewhere-else-title'),
-    addSomewhereElseIntro: document.querySelector('#add-surface .add-somewhere-else > .command-surface__intro'),
-    addNewLocationButton,
-    addNewLocationTitle: addNewLocationButton?.querySelector('strong'),
-    addNewLocationDetail: addNewLocationButton?.querySelector('small'),
-    addCalBarButton,
-    addCalBarTitle: addCalBarButton?.querySelector('strong'),
-    reportButton: document.querySelector('#add-report-button'),
-    reportOptions: document.querySelector('#add-report-options'),
-    reportListingButton: document.querySelector('#add-report-listing-button'),
-    reportPartyButton: document.querySelector('#add-report-party-button'),
-    listHeading: document.querySelector('#list-heading'),
-    listEyebrow: document.querySelector('#tray-list .tray-list__header .eyebrow'),
-    tray: document.querySelector('#venue-tray'),
-    trayHandle: document.querySelector('#tray-handle'),
-    closeList: document.querySelector('#close-list-button'),
-    commandButtons
-  };
-  commandButtons.forEach((button) => {
-    if (button.id === 'mobile-map-button') button.dataset.command = 'map';
-    if (button.id === 'mobile-search-button') button.dataset.command = 'search';
-    if (button.id === 'mobile-add-button') button.dataset.command = 'add';
-    if (button.id === 'mobile-list-button') button.dataset.command = 'list';
-    if (button.id === 'mobile-about-button') button.dataset.command = 'about';
-  });
-  return Object.entries(dom).every(([key, value]) => key === 'commandButtons' ? value.length === 5 : Boolean(value));
-}
-
-function initializeShellControls() {
-  if (!cacheDom()) return;
-  setSearchMode('existing', { refresh: false });
-  setSurface('map');
-
-  document.querySelector('#header-about-button')?.addEventListener('click', () => {
-    if (isMobileLayout()) {
-      showAbout();
-      return;
-    }
-    document.querySelector('#about-button')?.click();
-  });
-  document.querySelector('#mobile-map-button')?.addEventListener('click', showMap);
-  document.querySelector('#mobile-search-button')?.addEventListener('click', () => showSearch());
-  document.querySelector('#mobile-add-button')?.addEventListener('click', showAdd);
-  document.querySelector('#mobile-list-button')?.addEventListener('click', showList);
-  document.querySelector('#mobile-about-button')?.addEventListener('click', showAbout);
-  dom.addLocationSearch.addEventListener('click', showAddLocationSearch);
-  document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
-
-  document.addEventListener('click', handleMobileLocationListSelection, { capture: true });
-  document.addEventListener('click', handleSelectedVenueWatchParty);
-  document.querySelector('#add-watch-party-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.watchParty));
-  document.querySelector('#add-cal-bar-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.calBar));
-  document.querySelector('#add-report-button')?.addEventListener('click', () => beginContribution(CONTRIBUTION_INTENTS.report));
-  dom.reportListingButton.addEventListener('click', () => {
-    const href = listingUpdateUrl(selectedVenue()?.venue_id || '');
-    if (href) openExternalUrl(href);
-    else showSearch(CONTRIBUTION_INTENTS.report);
-  });
-  dom.reportPartyButton.addEventListener('click', () => {
-    const href = watchPartyIssueUrl(selectedVenue()?.venue_id || '');
-    if (href) openExternalUrl(href);
-  });
-
-  dom.suggestions.addEventListener('click', handleSearchResultClick, { capture: true });
-  dom.searchForm.addEventListener('submit', () => {
-    const state = appState();
-    searchSubmissionPending = Boolean(dom.searchInput.value.trim() && state?.searchMode !== 'add-location');
-  }, { capture: true });
-  dom.searchInput.addEventListener('input', () => {
-    searchSubmissionPending = false;
-  });
-  document.addEventListener('click', (event) => {
-    if (isMobileLayout()) return;
-    if (!event.target.closest?.('#location-list .location-card, .cgb-marker')) return;
-    setSearchMode('existing');
-    requestAnimationFrame(updateCommandState);
-  });
-
-  window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
-    setSearchMode('existing');
-    moveSearchForm();
-    if (!isMobileLayout()) {
-      currentSurface = 'map';
-      dom.searchSurface.hidden = true;
-      dom.addSurface.hidden = true;
-      dom.aboutSurface.hidden = true;
-      document.body.dataset.commandSurface = 'map';
-      normalizeDesktopTray();
-    }
-    updateCommandState();
-    syncDesktopBrowseState();
-  });
-
-  syncViewState();
-  subscribeAppEvent('rendered', syncViewState);
-  subscribeAppEvent('ready', syncViewState);
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initializeShellControls, { once: true });
-} else {
-  initializeShellControls();
+  dom.addContextLocation.textContent = [venue.city, venue.region].filter(Boolean).join(', ');
+  dom.addWatchParty.hidden = !watchPartyUrl(venue.venue_id, state);
+  dom.addCalBar.hidden = !calBarNominationUrl(venue.venue_id, state);
+  dom.addReport.hidden = !listingUpdateUrl(venue.venue_id, state);
+  dom.addCalBarTitle.textContent = venue.venue_type === 'community_location' ? 'Tell us about this location' : 'Tell us about this location';
 }
