@@ -64,8 +64,7 @@ function installStyles(documentObject = document) {
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle span,
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
-        background: var(--cgb-gold-400) !important;
-        transition: background-color 140ms ease;
+        display: none !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-peek,
@@ -109,17 +108,11 @@ function installStyles(documentObject = document) {
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-profile-hero-passed="true"] .tray-handle {
         background: var(--cgb-gold-400) !important;
       }
-
-      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-profile-hero-passed="true"] .tray-handle span {
-        background: var(--cgb-navy-950) !important;
-      }
     }
 
     @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle,
-      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle span,
-      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle,
-      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
         transition: none !important;
       }
     }
