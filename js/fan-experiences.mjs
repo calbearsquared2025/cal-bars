@@ -118,8 +118,13 @@ function installMobileWhatToKnowStyles(documentObject) {
   style.textContent = `
     @media (max-width: 899px) {
       body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .selected-card__what-to-know {
+        grid-row: auto !important;
         margin: 2px 0 12px;
         padding: 0;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .bear-count {
+        grid-row: auto !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-header {
@@ -202,6 +207,8 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
   const card = documentObject.querySelector('#tray-selected > .selected-card');
   const header = card?.querySelector(':scope > .selected-card__header');
   if (!card || !header) return null;
+  const eventBlocks = [...card.querySelectorAll(':scope > .party-module, :scope > .selected-card__plan-party')];
+  const eventAnchor = eventBlocks[eventBlocks.length - 1] || header;
 
   installMobileWhatToKnowStyles(documentObject);
   const section = documentObject.createElement('section');
@@ -249,7 +256,7 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
     section.append(empty);
   }
 
-  header.after(section);
+  eventAnchor.after(section);
   return section;
 }
 
