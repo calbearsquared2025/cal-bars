@@ -107,7 +107,7 @@ function installStyles(documentObject = document) {
       /* Match the full profile's oversized attendance numeral while keeping the mini card narrow. */
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__count {
         width: max-content !important;
-        max-width: 68px !important;
+        max-width: 64px !important;
         display: grid !important;
         grid-template-columns: auto auto !important;
         align-items: center !important;
