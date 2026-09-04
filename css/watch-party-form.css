@@ -54,6 +54,10 @@
   line-height: 1.4;
 }
 
+.detail-watch-party-cta__prompt-tail {
+  margin-left: .25em;
+}
+
 .detail-watch-party-cta__action-label--desktop {
   display: none;
 }
@@ -179,13 +183,13 @@
 
   .detail-watch-party-cta__action {
     order: 3;
-    width: 100%;
     margin-top: 9px;
   }
 }
 
 @media (max-width: 599px) {
-  .watch-party-contribution__action {
+  .watch-party-contribution__action,
+  .detail-watch-party-cta__action {
     width: 100%;
   }
 
