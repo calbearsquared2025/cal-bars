@@ -33,6 +33,17 @@ const CGB_US_REGION_CODES = Object.freeze({
   'american samoa': 'as', 'northern mariana islands': 'mp',
   'united states virgin islands': 'vi', 'u s virgin islands': 'vi'
 });
+const CGB_CITY_PLACE_DESIGNATIONS = Object.freeze({ city: true, town: true, village: true });
+const CGB_NON_CITY_PLACE_DESIGNATIONS = Object.freeze({
+  borough: true,
+  district: true,
+  hamlet: true,
+  isolated_dwelling: true,
+  neighborhood: true,
+  neighbourhood: true,
+  quarter: true,
+  suburb: true
+});
 
 function parseJoinExternalVenueRequest_(event) {
   const contents = event && event.postData && event.postData.contents;
@@ -320,6 +331,12 @@ function normalizeMapTilerFeatureForPublication_(feature) {
   const text = function(item, maximum) {
     return cleanExternalText_(item && (item.text || item.place_name || item.name), maximum || 160);
   };
+  const designation = function(item) {
+    return cleanExternalText_(
+      item && (item.place_designation || item.properties && item.properties.place_designation),
+      40
+    ).toLowerCase();
+  };
 
   const country = find(['country']);
   const rawCountryCode = cleanExternalText_(
@@ -337,15 +354,24 @@ function normalizeMapTilerFeatureForPublication_(feature) {
   const cityTypes = countryCode === 'US'
     ? ['municipality', 'joint_municipality', 'place', 'locality']
     : ['place', 'municipality', 'joint_municipality', 'locality'];
-  const designatedCity = hierarchy.find(function(item) {
-    const designation = cleanExternalText_(
-      item && (item.place_designation || item.properties && item.properties.place_designation),
-      40
-    ).toLowerCase();
-    return ['city', 'town', 'village'].indexOf(designation) >= 0 &&
+  let cityItem = hierarchy.find(function(item) {
+    return Boolean(CGB_CITY_PLACE_DESIGNATIONS[designation(item)]) &&
       cityTypes.some(function(prefix) { return matches(item, prefix); });
-  });
-  const city = text(designatedCity || find(cityTypes), 140);
+  }) || null;
+  if (!cityItem) {
+    for (let cityIndex = 0; cityIndex < cityTypes.length && !cityItem; cityIndex += 1) {
+      const prefix = cityTypes[cityIndex];
+      cityItem = hierarchy.find(function(item) {
+        if (!matches(item, prefix)) return false;
+        const itemDesignation = designation(item);
+        if (CGB_NON_CITY_PLACE_DESIGNATIONS[itemDesignation]) return false;
+        if ((prefix === 'place' || prefix === 'locality') && itemDesignation &&
+            !CGB_CITY_PLACE_DESIGNATIONS[itemDesignation]) return false;
+        return true;
+      }) || null;
+    }
+  }
+  const city = text(cityItem, 140);
 
   let region = '';
   if (countryCode === 'US') {
