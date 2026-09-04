@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const source = await readFile(new URL('../js/desktop-photo-forward-profile.mjs', import.meta.url), 'utf8');
+const fanExperiencesSource = await readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8');
 const firstPaintCss = await readFile(new URL('../css/profile-first-paint.css', import.meta.url), 'utf8');
 const watchPartyFormCss = await readFile(new URL('../css/watch-party-form.css', import.meta.url), 'utf8');
 const watchPartyFormSource = await readFile(new URL('../js/watch-party-form.js', import.meta.url), 'utf8');
@@ -58,6 +59,14 @@ test('desktop CGB Says and You Say share a row when both exist', () => {
     firstPaintCss,
     /\.detail-fan-experiences \{[\s\S]*?align-self: stretch !important;[\s\S]*?margin: 0 !important;[\s\S]*?border-top: 1px solid var\(--cgb-neutral-200\) !important;/,
     'The paired You Say column should align cleanly with CGB Says without the stacked-section offset.'
+  );
+});
+
+test('fan experience quotes do not publish name or year attribution in the profile', () => {
+  assert.doesNotMatch(
+    fanExperiencesSource,
+    /detail-fan-experiences__attribution|detail-fan-experiences__name|detail-fan-experiences__year/,
+    'YOU SAY quotes should render without contributor name or year attribution.'
   );
 });
 
