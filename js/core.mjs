@@ -118,7 +118,7 @@ export function haversineMiles(lat1, lon1, lat2, lon2) {
   const dLat = toRad(bLat - aLat);
   const dLon = toRad(bLon - aLon);
   const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(toRad(dLon / 2)) ** 2;
+    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
   return 2 * radius * Math.asin(Math.sqrt(a));
 }
 
