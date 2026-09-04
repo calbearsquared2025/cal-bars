@@ -113,10 +113,10 @@ function syncDesktopContributionEntry() {
     gap: '4px',
     margin: '0',
     padding: '0',
-    color: 'var(--cgb-navy-800, #0b2856)',
+    color: 'var(--cgb-white, #fff)',
     background: 'transparent',
-    border: '0',
-    borderRadius: '0',
+    border: '1px solid rgba(255, 255, 255, .38)',
+    borderRadius: 'var(--radius-sm, 8px)',
     boxShadow: 'none',
     fontSize: '.7rem',
     fontWeight: '800',
@@ -150,6 +150,8 @@ function ensureDesktopAddSearchStyle() {
     @media (min-width: 900px) {
       .mobile-command-bar {
         padding-inline: 10px;
+        background: var(--cgb-navy-950, #010133);
+        border-bottom-color: rgba(255, 255, 255, .14);
       }
 
       #mobile-list-button,
@@ -159,7 +161,7 @@ function ensureDesktopAddSearchStyle() {
         border: 0 !important;
         border-radius: 0 !important;
         background: transparent !important;
-        color: var(--cgb-ink-500, #657083);
+        color: rgba(255, 255, 255, .62);
         font-size: .7rem;
         font-weight: 780;
       }
@@ -174,13 +176,13 @@ function ensureDesktopAddSearchStyle() {
       #mobile-list-button:focus-visible,
       #mobile-map-button:focus-visible {
         background: transparent !important;
-        color: var(--cgb-navy-950, #010133);
+        color: var(--cgb-white, #fff);
       }
 
       #mobile-list-button[aria-current="page"],
       #mobile-map-button[aria-current="page"] {
         background: transparent !important;
-        color: var(--cgb-navy-950, #010133);
+        color: var(--cgb-white, #fff);
         font-weight: 850;
       }
 
@@ -202,15 +204,31 @@ function ensureDesktopAddSearchStyle() {
 
       #mobile-add-button:hover,
       #mobile-add-button:focus-visible {
-        color: var(--cgb-navy-950, #010133) !important;
+        color: var(--cgb-white, #fff) !important;
         background: transparent !important;
-        text-decoration: underline;
-        text-decoration-color: var(--cgb-gold-400, #fdb515);
-        text-underline-offset: .22em;
+        border-color: var(--cgb-gold-400, #fdb515) !important;
+        text-decoration: none;
       }
 
       #tray-list .tray-list__header {
         padding-bottom: 14px !important;
+        color: var(--cgb-white, #fff);
+        background: var(--cgb-navy-950, #010133) !important;
+        border-bottom-color: rgba(255, 255, 255, .14) !important;
+      }
+
+      #tray-list .tray-list__header .eyebrow {
+        color: var(--cgb-gold-400, #fdb515) !important;
+        font-family: var(--font-condensed, sans-serif);
+      }
+
+      #tray-list .tray-list__header h2 {
+        color: var(--cgb-white, #fff) !important;
+        font-family: var(--font-display);
+      }
+
+      #tray-list .tray-list__intro {
+        color: rgba(255, 255, 255, .72) !important;
       }
 
       #tray-list .tray-list__toolbar {
