@@ -117,13 +117,13 @@ function installMobileWhatToKnowStyles(documentObject) {
   style.id = MOBILE_WHAT_TO_KNOW_STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .selected-card__what-to-know {
+      html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__what-to-know {
         grid-row: auto !important;
         margin: 2px 0 12px;
         padding: 0;
       }
 
-      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .bear-count {
+      html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count {
         grid-row: auto !important;
       }
 
@@ -209,6 +209,8 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
   if (!card || !header) return null;
   const eventBlocks = [...card.querySelectorAll(':scope > .party-module, :scope > .selected-card__plan-party')];
   const eventAnchor = eventBlocks[eventBlocks.length - 1] || header;
+  const actionRow = card.querySelector(':scope > .action-row');
+  const informationAnchor = actionRow || eventAnchor;
 
   installMobileWhatToKnowStyles(documentObject);
   const section = documentObject.createElement('section');
@@ -256,7 +258,7 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
     section.append(empty);
   }
 
-  eventAnchor.after(section);
+  informationAnchor.after(section);
   return section;
 }
 
