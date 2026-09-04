@@ -61,11 +61,11 @@ function createWatchPartySection(documentObject, { href, onActivate }) {
 
   const promptLead = documentObject.createElement('span');
   promptLead.className = 'detail-watch-party-cta__prompt-lead';
-  promptLead.textContent = 'No Watch Party listed for this game. Organizing or know of one? ';
+  promptLead.textContent = 'No Watch Party listed for this game. Organizing or know of one?';
 
   const promptTail = documentObject.createElement('span');
   promptTail.className = 'detail-watch-party-cta__prompt-tail';
-  promptTail.textContent = ' so other Bears can find it.';
+  promptTail.textContent = 'so other Bears can find it.';
 
   const link = documentObject.createElement('a');
   link.className = 'detail-watch-party-cta__action';
