@@ -79,6 +79,7 @@ function createAttendance(state, game, venue, documentObject, { hero = false } =
       count.append(icon, prompt);
     }
   } else {
+    count.classList.add('bear-count--positive');
     const numeral = documentObject.createElement('span');
     numeral.className = 'bear-count__number';
     numeral.textContent = String(view.number);
