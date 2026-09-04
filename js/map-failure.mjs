@@ -39,6 +39,9 @@ function ensureFallbackStyles(documentObject) {
     }
 
     .map-fallback--loading {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
       opacity: 1;
       transition: opacity ${LOADING_FADE_MS}ms ease;
     }
