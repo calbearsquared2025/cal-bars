@@ -64,6 +64,7 @@ test('desktop CGB Says and You Say share a row when both exist', () => {
 
 test('fan experience quotes do not publish name or year attribution in the profile', () => {
   const createQuoteSource = fanExperiencesSource.match(/function createQuote\([\s\S]*?\n}\n\nfunction placeSection/)?.[0] || '';
+  assert.ok(createQuoteSource, 'Expected createQuote renderer to be present.');
   assert.doesNotMatch(createQuoteSource, /display_name|\.year|detail-fan-experiences__attribution/);
 });
 
