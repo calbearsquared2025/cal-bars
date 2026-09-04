@@ -104,6 +104,7 @@ function installStyles(documentObject = document) {
         color: rgba(255, 255, 255, .78) !important;
       }
 
+      /* Match the full profile's oversized attendance numeral while keeping the mini card narrow. */
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__count {
         width: max-content !important;
         max-width: 68px !important;
