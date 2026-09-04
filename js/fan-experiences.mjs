@@ -118,13 +118,10 @@ function installMobileWhatToKnowStyles(documentObject) {
   style.textContent = `
     @media (max-width: 899px) {
       html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__what-to-know {
+        grid-column: 1 / -1 !important;
         grid-row: auto !important;
         margin: 2px 0 12px;
         padding: 0;
-      }
-
-      html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count {
-        grid-row: auto !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-header {
