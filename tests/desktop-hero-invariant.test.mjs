@@ -20,26 +20,44 @@ test('desktop selected profiles always use the universal hero treatment', () => 
   );
 });
 
-test('desktop opening keeps attendance to the right of What to Know', () => {
+test('desktop opening puts Watch Party ahead of What to Know and attendance', () => {
   assert.match(
     source,
-    /desktopProfileArrangement = 'identity-what-to-know-attendance-party-editorial-community-photo-contribution'/,
-    'Desktop profile arrangement should pair attendance with What to Know before Watch Party.'
+    /desktopProfileArrangement = 'identity-party-what-to-know-attendance-editorial-community-photo-contribution'/,
+    'Desktop profile arrangement should prioritize selected-game Watch Party information before persistent venue context.'
   );
   assert.match(
     source,
-    /cursor = placeAfter\(cursor, whatToKnow\);\s*cursor = placeAfter\(cursor, activity\);\s*parties\.forEach/,
-    'DOM order should keep What to Know and attendance adjacent before Watch Party.'
+    /let cursor = hero;\s*parties\.forEach[\s\S]*?cursor = placeAfter\(cursor, whatToKnow\);\s*cursor = placeAfter\(cursor, activity\);/,
+    'DOM order should place Watch Party content before the What to Know and attendance row.'
   );
   assert.match(
     firstPaintCss,
     /\.detail-what-to-know \{\s*grid-column: 1 \/ 8 !important;/,
-    'What to Know should occupy the left side of the opening information row.'
+    'What to Know should occupy the left side of its information row.'
   );
   assert.match(
     firstPaintCss,
     /> \.activity-card \{\s*grid-column: 8 \/ 13 !important;/,
-    'Attendance should occupy the right side of the same opening information row.'
+    'Attendance should occupy the right side of the same information row.'
+  );
+});
+
+test('desktop CGB Says and You Say share a row when both exist', () => {
+  assert.match(
+    firstPaintCss,
+    /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial \{[\s\S]*?grid-column: 1 \/ 6 !important;/,
+    'CGB Says should use the narrower left column when both voice sections exist.'
+  );
+  assert.match(
+    firstPaintCss,
+    /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-fan-experiences \{[\s\S]*?grid-column: 6 \/ 13 !important;/,
+    'You Say should use the broader right column when both voice sections exist.'
+  );
+  assert.match(
+    firstPaintCss,
+    /\.detail-fan-experiences \{[\s\S]*?align-self: stretch !important;[\s\S]*?margin: 0 !important;[\s\S]*?border-top: 1px solid var\(--cgb-neutral-200\) !important;/,
+    'The paired You Say column should align cleanly with CGB Says without the stacked-section offset.'
   );
 });
 
