@@ -252,6 +252,13 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     border-left: 1px solid var(--cgb-neutral-200) !important;
   }
 
+  /* Empty attendance remains centered by the activity cell itself, regardless of
+     where that information row sits in the desktop profile hierarchy. */
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card:has(> strong.bear-count.bear-count--empty) {
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count:not(.bear-count--empty) {
     width: 100% !important;
     min-height: 56px !important;
@@ -325,10 +332,10 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty {
-    width: 100% !important;
-    min-height: 56px;
+    width: auto !important;
+    min-height: 0 !important;
+    max-width: none !important;
     display: inline-flex !important;
-    align-self: stretch !important;
     align-items: center;
     justify-content: center;
     gap: 5px;
