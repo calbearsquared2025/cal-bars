@@ -59,7 +59,8 @@ test('selected venue camera focuses once through the shared mobile refinement pa
 test('mobile Locate me control follows the live selected tray edge', async () => {
   const refinement = await read('js/map-mobile-refinement.mjs');
 
-  assert.match(refinement, /function syncLocateControlPosition\(\)[\s\S]*?state\?\.trayState === 'selected'/);
+  assert.match(refinement, /function syncLocateControlPosition\(\)[\s\S]*?Boolean\(state\?\.selectedVenueId\)[\s\S]*?tray\?\.dataset\.state === 'selected'/);
+  assert.doesNotMatch(refinement, /function syncLocateControlPosition\(\)[\s\S]*?state\?\.trayState === 'selected'/);
   assert.match(refinement, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
   assert.match(refinement, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
   assert.match(refinement, /selectedTrayResizeObserver = new ResizeObserver\(\(\) => \{[\s\S]*?scheduleLocateControlPosition\(\);[\s\S]*?\}\);/);
