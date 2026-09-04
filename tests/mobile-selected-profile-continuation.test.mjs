@@ -6,6 +6,7 @@ import { shouldRenderContinuousProfile } from '../js/mobile-selected-profile-con
 
 const continuationSource = readFileSync(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8');
 const fanExperiencesSource = readFileSync(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8');
+const selectedProfileSource = readFileSync(new URL('../js/selected-profile-renderer.mjs', import.meta.url), 'utf8');
 
 test('continuous profile renders only for the mobile selected map tray', () => {
   assert.equal(shouldRenderContinuousProfile({
@@ -51,26 +52,31 @@ test('continuous profile requires a selected venue', () => {
   }), false);
 });
 
-test('mobile selected profile puts Watch Party before What to Know and attendance', () => {
+test('mobile selected profile keeps primary actions immediately below Watch Party', () => {
   assert.match(
-    fanExperiencesSource,
-    /querySelectorAll\(':scope > \.party-module, :scope > \.selected-card__plan-party'\)/,
-    'What to Know should anchor after the selected-game event block.'
+    selectedProfileSource,
+    /if \(parties\.length\) \{[\s\S]*?card\.append\(createPlanWatchPartyAction\(documentObject\)\);[\s\S]*?card\.append\(createSelectedActionRow\([\s\S]*?const attendance = createAttendance\(/,
+    'The selected card should render the I’ll be here/share row after the Watch Party block and before attendance.'
   );
   assert.match(
     fanExperiencesSource,
-    /const eventAnchor = eventBlocks\[eventBlocks\.length - 1\] \|\| header;[\s\S]*?eventAnchor\.after\(section\);/,
-    'What to Know should follow the Watch Party or no-Watch-Party block.'
+    /const actionRow = card\.querySelector\(':scope > \.action-row'\);\s*const informationAnchor = actionRow \|\| eventAnchor;/,
+    'What to Know should anchor after the primary action row when it exists.'
   );
   assert.match(
     fanExperiencesSource,
-    /\.selected-card__what-to-know \{[\s\S]*?grid-row: auto !important;/,
-    'What to Know should use flow order after the Watch Party.'
+    /informationAnchor\.after\(section\);/,
+    'What to Know should follow I’ll be here/share rather than interrupting the selected-game decision flow.'
   );
   assert.match(
     fanExperiencesSource,
-    /> \.bear-count \{[\s\S]*?grid-row: auto !important;/,
-    'Attendance should share the auto-placed row with What to Know.'
+    /#map-view > #venue-tray\.venue-tray\.tray--selected #tray-selected > \.selected-card > \.selected-card__what-to-know \{[\s\S]*?grid-row: auto !important;/,
+    'What to Know should use flow order after the primary actions.'
+  );
+  assert.match(
+    fanExperiencesSource,
+    /#map-view > #venue-tray\.venue-tray\.tray--selected #tray-selected > \.selected-card > \.bear-count \{[\s\S]*?grid-row: auto !important;/,
+    'Attendance should share the auto-placed information row with What to Know.'
   );
 });
 
