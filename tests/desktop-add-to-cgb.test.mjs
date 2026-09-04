@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
+const appSource = readFileSync(new URL('../js/app.js', import.meta.url), 'utf8');
 const refinementSource = readFileSync(new URL('../js/search-map-refinement.mjs', import.meta.url), 'utf8');
 const cohesionSource = readFileSync(new URL('../js/desktop-visual-cohesion.mjs', import.meta.url), 'utf8');
 const shellSource = readFileSync(new URL('../js/shell-controls.mjs', import.meta.url), 'utf8');
@@ -77,9 +78,11 @@ test('desktop contribution copy explains existing and unlisted location paths', 
   assert.match(shellSource, /add: 'Add'/);
 });
 
-test('normal desktop Search still uses the contextual helper only after typing', () => {
-  assert.match(refinementSource, /const showSearchHelper = existingMode && desktopSearchEngaged && Boolean\(query\)/);
-  assert.match(refinementSource, /button\.hidden = !showSearchHelper/);
+test('normal desktop Search uses the canonical settled-input helper state', () => {
+  assert.match(appSource, /const SEARCH_HELPER_DEBOUNCE_MS = 600;/);
+  assert.match(appSource, /state\.searchMode === 'existing' && searchHelperReady && Boolean\(query\)/);
+  assert.match(refinementSource, /const showSearchHelper = existingMode && Boolean\(query\) && !button\.hidden/);
+  assert.doesNotMatch(refinementSource, /desktopSearchEngaged/);
   assert.match(refinementSource, /Search for another location\./);
   assert.match(refinementSource, /#search-add-location-button/);
 });
