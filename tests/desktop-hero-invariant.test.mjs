@@ -66,6 +66,7 @@ test('fan experience quotes do not publish name or year attribution in the profi
   const createQuoteSource = fanExperiencesSource.match(/function createQuote\([\s\S]*?\n}\n\nfunction placeSection/)?.[0] || '';
   assert.ok(createQuoteSource, 'Expected createQuote renderer to be present.');
   assert.doesNotMatch(createQuoteSource, /display_name|\.year|detail-fan-experiences__attribution/);
+  assert.doesNotMatch(fanExperiencesSource, /fanExperienceYear|display_name:|year:/);
 });
 
 test('desktop Bear attendance matches the mobile compact count treatment', () => {
