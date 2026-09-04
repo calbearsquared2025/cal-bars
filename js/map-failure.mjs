@@ -123,8 +123,8 @@ function setFallbackMode(fallback, mode) {
     FALLBACK_MODE_CLASSES.every((className) => !fallback.classList.contains(className));
   if (alreadyStable || alreadyClear) return false;
 
-  fallback.classList.remove(...FALLBACK_MODE_CLASSES);
-  if (nextClass) fallback.classList.add(nextClass);
+  fallback.classList.remove?.(...FALLBACK_MODE_CLASSES);
+  if (nextClass) fallback.classList.add?.(nextClass);
   return true;
 }
 
