@@ -66,7 +66,11 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     grid-row: auto !important;
     width: 100% !important;
     min-height: 0 !important;
-    display: block !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 3fr) minmax(170px, 2fr) !important;
+    grid-template-rows: auto auto auto auto !important;
+    align-items: start !important;
+    column-gap: 24px !important;
     margin: 0 !important;
     padding: 18px 20px 17px !important;
     color: var(--cgb-white) !important;
@@ -84,6 +88,30 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-photo,
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-description {
     display: none !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .venue-badges {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    min-width: 0 !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > h1 {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    min-width: 0 !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    min-width: 0 !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .detail-address-actions {
+    grid-column: 1 !important;
+    grid-row: 4 !important;
+    min-width: 0 !important;
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero h1 {
@@ -154,15 +182,14 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     color: var(--cgb-gold-300) !important;
   }
 
-  /* The base renderer still creates legacy body children before enrichment. Keep
-     them out of the paint until WHAT TO KNOW exists; the enrichment pass inserts
-     and reorders everything synchronously in the same task. */
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"]:not(:has(> .detail-what-to-know)) > :not(.detail-hero) {
+  /* Keep the whole desktop profile out of the paint until WHAT TO KNOW exists.
+     Its tags and the rest of the enriched hierarchy then appear in one paint. */
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"]:not(:has(> .detail-what-to-know)) > * {
     visibility: hidden !important;
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know {
-    grid-column: 1 / 8 !important;
+    grid-column: 1 / -1 !important;
     grid-row: auto !important;
     align-self: stretch !important;
     margin: 0 !important;
@@ -236,32 +263,27 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     display: none !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card {
-    grid-column: 8 / 13 !important;
-    grid-row: auto !important;
-    align-self: stretch !important;
-    min-height: 56px !important;
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card {
+    grid-column: 2 !important;
+    grid-row: 1 / 5 !important;
+    align-self: center !important;
+    justify-self: stretch !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     margin: 0 !important;
-    padding: 0 18px !important;
-    background: var(--cgb-white) !important;
+    padding: 2px 0 2px 22px !important;
+    color: var(--cgb-white) !important;
+    background: transparent !important;
     border: 0 !important;
-    border-top: 1px solid var(--cgb-neutral-200) !important;
-    border-left: 1px solid var(--cgb-neutral-200) !important;
+    border-left: 1px solid rgba(255, 255, 255, .18) !important;
   }
 
-  /* Empty attendance remains centered by the activity cell itself, regardless of
-     where that information row sits in the desktop profile hierarchy. */
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card:has(> strong.bear-count.bear-count--empty) {
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count:not(.bear-count--empty) {
-    width: 100% !important;
-    min-height: 56px !important;
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count:not(.bear-count--empty) {
+    width: fit-content !important;
+    min-height: 0 !important;
     display: grid !important;
     grid-template-columns: auto auto !important;
     grid-template-rows: auto auto auto !important;
@@ -273,26 +295,26 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     row-gap: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
-    color: var(--cgb-navy-950) !important;
+    color: var(--cgb-white) !important;
     background: transparent !important;
     border: 0 !important;
     font-family: var(--font-ui) !important;
     text-align: left !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__number {
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__number {
     grid-column: 1 !important;
     grid-row: 1 / 4 !important;
-    align-self: start !important;
+    align-self: center !important;
     justify-self: end !important;
     font-family: var(--font-ui) !important;
-    font-size: 2.15rem !important;
-    font-weight: 850 !important;
+    font-size: 2.25rem !important;
+    font-weight: 900 !important;
     letter-spacing: -.055em !important;
-    line-height: .84 !important;
+    line-height: .82 !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__label {
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__label {
     grid-column: 2 !important;
     grid-row: 1 !important;
     align-self: start !important;
@@ -300,64 +322,63 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     padding-top: 0 !important;
     margin: 0 !important;
     font-family: var(--font-ui) !important;
-    font-size: .75rem !important;
-    font-weight: 850 !important;
-    letter-spacing: .025em !important;
+    font-size: .72rem !important;
+    font-weight: 900 !important;
+    letter-spacing: .03em !important;
     line-height: .95 !important;
     white-space: nowrap !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__attending,
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__context {
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__attending,
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__context {
     grid-column: 2 !important;
     justify-self: start !important;
     margin: 0 !important;
     font-family: var(--font-ui) !important;
     font-weight: 800 !important;
-    letter-spacing: .045em !important;
-    line-height: .98 !important;
+    letter-spacing: .05em !important;
+    line-height: .96 !important;
     text-align: left !important;
     white-space: nowrap !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__attending {
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__attending {
     grid-row: 2 !important;
     margin-top: 0 !important;
-    font-size: .62rem !important;
-  }
-
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count .bear-count__context {
-    grid-row: 3 !important;
     font-size: .6rem !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty {
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__context {
+    grid-row: 3 !important;
+    color: rgba(255, 255, 255, .82) !important;
+    font-size: .58rem !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count.bear-count--empty {
     width: auto !important;
     min-height: 0 !important;
     max-width: none !important;
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    margin: 0;
-    text-align: left;
-    white-space: nowrap;
+    display: block !important;
+    margin: 0 !important;
+    color: var(--cgb-gold-300) !important;
+    text-align: left !important;
+    white-space: nowrap !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty .bear-count__icon {
-    width: 20px;
-    height: 20px;
-    color: var(--cgb-gold-500);
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count.bear-count--empty .bear-count__prompt {
+    display: block !important;
+    max-width: none !important;
+    margin: 0 !important;
+    color: var(--cgb-gold-300) !important;
+    font-family: var(--font-ui) !important;
+    font-size: .76rem !important;
+    font-weight: 900 !important;
+    letter-spacing: .055em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
   }
 
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty .bear-count__prompt {
-    color: var(--cgb-navy-950);
-    font-size: .7rem;
-    font-weight: 750;
-    line-height: 1.16;
-  }
-
-  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > p {
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > p {
     display: none !important;
   }
 

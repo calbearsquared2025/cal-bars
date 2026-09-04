@@ -138,5 +138,7 @@ test('map failure reserves social-card space before the image loads', () => {
   assert.match(style.textContent, /aspect-ratio:\s*1200\s*\/\s*630/);
   assert.match(style.textContent, /opacity:\s*0/);
   assert.match(style.textContent, /map-fallback__card--loaded/);
+  assert.match(style.textContent, /\.map-view:has\(#map-fallback:not\(\[hidden\]\)\) > \.map-actions\s*\{[\s\S]*?z-index:\s*49 !important;/);
+  assert.match(style.textContent, /\.map-fallback\s*\{[\s\S]*?z-index:\s*50;/);
   assert.doesNotMatch(style.textContent, /gradient/i);
 });

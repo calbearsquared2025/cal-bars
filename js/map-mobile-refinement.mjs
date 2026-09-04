@@ -495,7 +495,7 @@ function syncLocateControlPosition() {
   const selectedProfileVisible = isMobile() &&
     document.body.dataset.view === 'map' &&
     document.body.dataset.commandSurface === 'map' &&
-    state?.trayState === 'selected' &&
+    Boolean(state?.selectedVenueId) &&
     tray?.dataset.state === 'selected' &&
     map && nearMe;
 

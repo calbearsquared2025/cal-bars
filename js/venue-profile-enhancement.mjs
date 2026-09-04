@@ -161,8 +161,9 @@ function moveEditorialDescription(detail, hero, documentObject) {
   }
   description.className = 'detail-editorial__copy';
   section.append(description);
-  const activity = detail.querySelector(':scope > .activity-card');
-  (activity || hero).after(section);
+  const activity = detail.querySelector(':scope > .activity-card') ||
+    hero.querySelector(':scope > .activity-card');
+  (activity?.parentElement === detail ? activity : hero).after(section);
   return true;
 }
 
@@ -297,7 +298,8 @@ export function arrangeDesktopVenueMedia({
   if (!detail || !hero || !venue) return false;
 
   const media = profileMedia(detail, hero);
-  const activity = detail.querySelector(':scope > .activity-card');
+  const activity = detail.querySelector(':scope > .activity-card') ||
+    hero.querySelector(':scope > .activity-card');
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const fanExperiences = detail.querySelector(':scope > .detail-fan-experiences');
   const parties = [...detail.querySelectorAll(':scope > .party-module')];
@@ -307,6 +309,7 @@ export function arrangeDesktopVenueMedia({
   if (!desktop) {
     detail.removeAttribute('data-desktop-profile-arrangement');
     if (activity) {
+      if (activity.parentElement === hero) hero.after(activity);
       parties.forEach((party) => detail.insertBefore(party, activity));
       if (editorial) activity.after(editorial);
       if (fanExperiences) (editorial || activity).after(fanExperiences);
@@ -328,7 +331,7 @@ export function arrangeDesktopVenueMedia({
     cursor.after(party);
     cursor = party;
   });
-  if (activity) {
+  if (activity && activity.parentElement !== hero) {
     cursor.after(activity);
     cursor = activity;
   }

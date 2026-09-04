@@ -22,26 +22,31 @@ test('desktop selected profiles always use the universal hero treatment', () => 
   );
 });
 
-test('desktop opening puts Watch Party ahead of What to Know and attendance', () => {
+test('desktop hero mirrors the mobile 60/40 identity and attendance hierarchy', () => {
   assert.match(
     source,
-    /desktopProfileArrangement = 'identity-party-what-to-know-attendance-editorial-community-photo-contribution'/,
-    'Desktop profile arrangement should prioritize selected-game Watch Party information before persistent venue context.'
+    /desktopProfileArrangement = 'identity-attendance-party-what-to-know-editorial-community-photo-contribution'/,
+    'Desktop profile arrangement should keep attendance with venue identity before selected-game content.'
   );
   assert.match(
     source,
-    /let cursor = hero;\s*parties\.forEach[\s\S]*?cursor = placeAfter\(cursor, whatToKnow\);\s*cursor = placeAfter\(cursor, activity\);/,
-    'DOM order should place Watch Party content before the What to Know and attendance row.'
+    /if \(activity && activity\.parentElement !== hero\) hero\.append\(activity\);[\s\S]*?let cursor = hero;\s*parties\.forEach[\s\S]*?cursor = placeAfter\(cursor, whatToKnow\);/,
+    'Attendance should move into the hero before Watch Party and What to Know are placed below it.'
   );
   assert.match(
     firstPaintCss,
-    /\.detail-what-to-know \{\s*grid-column: 1 \/ 8 !important;/,
-    'What to Know should occupy the left side of its information row.'
+    /> \.detail-hero \{[\s\S]*?grid-template-columns: minmax\(0, 3fr\) minmax\(170px, 2fr\) !important;/,
+    'Desktop hero should use the same approximate 60/40 identity/attendance split as mobile.'
   );
   assert.match(
     firstPaintCss,
-    /> \.activity-card \{\s*grid-column: 8 \/ 13 !important;/,
-    'Attendance should occupy the right side of the same information row.'
+    /> \.detail-hero > \.activity-card \{[\s\S]*?grid-column: 2 !important;[\s\S]*?grid-row: 1 \/ 5 !important;/,
+    'Desktop attendance should occupy the centered right side of the navy hero.'
+  );
+  assert.match(
+    firstPaintCss,
+    /\.detail-what-to-know \{\s*grid-column: 1 \/ -1 !important;/,
+    'What to Know should return to full width now that attendance lives in the hero.'
   );
 });
 
@@ -70,33 +75,25 @@ test('fan experience quotes do not publish name or year attribution in the profi
   assert.doesNotMatch(fanExperiencesSource, /fanExperienceYear|display_name:|year:/);
 });
 
-test('desktop Bear attendance matches the mobile compact count treatment', () => {
-  assert.match(firstPaintCss, /\.activity-card > strong\.bear-count:not\(\.bear-count--empty\) \{[\s\S]*?grid-template-columns: auto auto !important;[\s\S]*?grid-template-rows: auto auto auto !important;[\s\S]*?justify-content: center !important;/);
-  assert.match(firstPaintCss, /\.bear-count__number \{[\s\S]*?grid-row: 1 \/ 4 !important;[\s\S]*?font-size: 2\.15rem !important;/);
-  assert.match(firstPaintCss, /\.bear-count__label \{[\s\S]*?grid-row: 1 !important;[\s\S]*?font-size: \.75rem !important;/);
-  assert.match(firstPaintCss, /\.bear-count__attending \{[\s\S]*?grid-row: 2 !important;[\s\S]*?font-size: \.62rem !important;/);
-  assert.match(firstPaintCss, /\.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.6rem !important;/);
+test('desktop Bear attendance matches the mobile compact hero treatment', () => {
+  assert.match(firstPaintCss, /> \.detail-hero > \.activity-card > strong\.bear-count:not\(\.bear-count--empty\) \{[\s\S]*?grid-template-columns: auto auto !important;[\s\S]*?grid-template-rows: auto auto auto !important;[\s\S]*?color: var\(--cgb-white\) !important;/);
+  assert.match(firstPaintCss, /> \.detail-hero > \.activity-card > strong\.bear-count \.bear-count__number \{[\s\S]*?grid-row: 1 \/ 4 !important;[\s\S]*?font-size: 2\.25rem !important;/);
+  assert.match(firstPaintCss, /> \.detail-hero > \.activity-card > strong\.bear-count \.bear-count__label \{[\s\S]*?grid-row: 1 !important;[\s\S]*?font-size: \.72rem !important;/);
+  assert.match(firstPaintCss, /> \.detail-hero > \.activity-card > strong\.bear-count \.bear-count__attending \{[\s\S]*?grid-row: 2 !important;[\s\S]*?font-size: \.6rem !important;/);
+  assert.match(firstPaintCss, /> \.detail-hero > \.activity-card > strong\.bear-count \.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.58rem !important;/);
 });
 
-test('desktop zero attendance is centered by the activity cell rather than a stretched child', () => {
+test('desktop zero attendance mirrors the text-only mobile hero state', () => {
+  assert.match(source, /if \(view\.kind === 'empty'\) \{[\s\S]*?prompt\.textContent = 'BE THE FIRST\.';[\s\S]*?current\.replaceChildren\(prompt\);/);
+  assert.doesNotMatch(source, /createIcon\('users'/);
   assert.match(
     firstPaintCss,
-    /> \.activity-card:has\(> strong\.bear-count\.bear-count--empty\) \{[\s\S]*?align-items: center !important;[\s\S]*?justify-content: center !important;/,
-    'The semantic attendance cell should own empty-state centering even if its profile row moves.'
-  );
-  const emptyRule = firstPaintCss.match(/\.activity-card > strong\.bear-count\.bear-count--empty \{[\s\S]*?\n  }/)?.[0] || '';
-  assert.ok(emptyRule, 'Expected the desktop empty-attendance rule to be present.');
-  assert.match(emptyRule, /width: auto !important;/);
-  assert.match(emptyRule, /min-height: 0 !important;/);
-  assert.match(emptyRule, /max-width: none !important;/);
-  assert.doesNotMatch(
-    emptyRule,
-    /width: 100% !important|align-self: stretch !important/,
-    'The previous child-stretch centering attempt should be removed.'
+    /> \.detail-hero > \.activity-card > strong\.bear-count\.bear-count--empty \.bear-count__prompt \{[\s\S]*?color: var\(--cgb-gold-300\) !important;[\s\S]*?font-size: \.76rem !important;[\s\S]*?font-weight: 900 !important;/,
+    'Zero attendance should use the same bold gold invitation as the mobile hero.'
   );
 });
 
-test('desktop first paint never exposes the legacy profile presentation', () => {
+test('desktop first paint never exposes a partial enriched profile', () => {
   assert.match(
     watchPartyFormCss,
     /@import url\('\.\/profile-first-paint\.css'\);/,
@@ -105,12 +102,12 @@ test('desktop first paint never exposes the legacy profile presentation', () => 
   assert.match(
     firstPaintCss,
     /#venue-detail\[data-profile-presentation="desktop"\] > \.detail-hero \{[\s\S]*?background: var\(--cgb-navy-950\) !important;[\s\S]*?border-bottom: 3px solid var\(--cgb-gold-400\) !important;/,
-    'The universal navy hero must be available on first paint.'
+    'The universal navy hero must be available in the static profile stylesheet.'
   );
   assert.match(
     firstPaintCss,
-    /:not\(:has\(> \.detail-what-to-know\)\) > :not\(\.detail-hero\) \{[\s\S]*?visibility: hidden !important;/,
-    'Legacy body children must stay out of the paint until the final opening hierarchy exists.'
+    /:not\(:has\(> \.detail-what-to-know\)\) > \* \{[\s\S]*?visibility: hidden !important;/,
+    'The hero and body must remain in the same paint boundary until What to Know and its tags exist.'
   );
 });
 

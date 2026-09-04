@@ -58,21 +58,26 @@ export function selectedAttendanceViewModel({ state, game, venue } = {}) {
   };
 }
 
-function createAttendance(state, game, venue, documentObject) {
+function createAttendance(state, game, venue, documentObject, { hero = false } = {}) {
   const view = selectedAttendanceViewModel({ state, game, venue });
   const count = documentObject.createElement('p');
   count.className = 'bear-count';
+  if (hero) count.classList.add('bear-count--hero');
   count.setAttribute('aria-label', view.ariaLabel);
 
   if (view.kind === 'completed') {
     count.textContent = view.primary;
   } else if (view.kind === 'empty') {
     count.classList.add('bear-count--empty');
-    const icon = createIcon('users', { className: 'ui-icon bear-count__icon', documentObject });
     const prompt = documentObject.createElement('strong');
     prompt.className = 'bear-count__prompt';
-    prompt.textContent = 'Be the first.';
-    count.append(icon, prompt);
+    prompt.textContent = hero ? 'BE THE FIRST.' : 'Be the first.';
+    if (hero) {
+      count.append(prompt);
+    } else {
+      const icon = createIcon('users', { className: 'ui-icon bear-count__icon', documentObject });
+      count.append(icon, prompt);
+    }
   } else {
     const numeral = documentObject.createElement('span');
     numeral.className = 'bear-count__number';
@@ -190,6 +195,7 @@ export function createSelectedVenueCard({
   documentObject = document
 }) {
   const parties = getWatchPartiesForVenueGame(state.snapshot, state.gameId, venue.venue_id);
+  const attendance = createAttendance(state, game, venue, documentObject, { hero: mobile });
   const card = documentObject.createElement('article');
   card.className = 'selected-card';
   card.dataset.venueId = venue.venue_id;
@@ -211,25 +217,25 @@ export function createSelectedVenueCard({
     const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
     if (street) location.append(documentObject.createTextNode(street));
     if (street && locality) location.append(documentObject.createElement('br'));
-    if (locality) location.append(documentObject.createTextNode(locality));
+    if (locality) {
+      location.append(
+        documentObject.createTextNode(locality),
+        documentObject.createTextNode(' · '),
+        createDirectionsLink(directionsHref, documentObject)
+      );
+    } else if (directionsHref) {
+      if (street) location.append(documentObject.createElement('br'));
+      location.append(createDirectionsLink(directionsHref, documentObject));
+    }
   } else {
     location.textContent = [compactLocation, distanceCopy].filter(Boolean).join(' · ');
+    location.append(documentObject.createTextNode(' '), createDirectionsLink(directionsHref, documentObject));
   }
   heading.append(location);
 
   if (mobile) {
-    const proximity = documentObject.createElement('div');
-    proximity.className = 'selected-card__proximity-row';
-    if (distanceCopy) {
-      const distanceElement = documentObject.createElement('span');
-      distanceElement.className = 'selected-card__distance';
-      distanceElement.textContent = distanceCopy;
-      proximity.append(distanceElement);
-    }
-    proximity.append(createDirectionsLink(directionsHref, documentObject));
-    heading.append(proximity);
-  } else {
-    location.append(documentObject.createTextNode(' '), createDirectionsLink(directionsHref, documentObject));
+    heading.append(attendance.count);
+    if (attendance.history) heading.append(attendance.history);
   }
 
   header.append(heading);
@@ -263,9 +269,9 @@ export function createSelectedVenueCard({
     documentObject
   }));
 
-  const attendance = createAttendance(state, game, venue, documentObject);
-  card.append(attendance.count);
-
-  if (attendance.history) card.append(attendance.history);
+  if (!mobile) {
+    card.append(attendance.count);
+    if (attendance.history) card.append(attendance.history);
+  }
   return card;
 }

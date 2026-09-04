@@ -3,7 +3,6 @@ import {
   resolveCalBarNominationVenue
 } from './cal-bar-nomination-core.mjs';
 import { venueTagsForVenue } from './fan-experiences.mjs';
-import { createIcon } from './icons.mjs';
 import { selectedAttendanceViewModel } from './selected-profile-renderer.mjs';
 
 const DESKTOP_QUERY = '(min-width: 900px)';
@@ -94,7 +93,8 @@ function syncWhatToKnow({ detail, state, venue, documentObject }) {
 }
 
 function syncAttendance({ detail, state, venue, documentObject }) {
-  const current = detail.querySelector(':scope > .activity-card > strong');
+  const current = detail.querySelector(':scope > .activity-card > strong') ||
+    detail.querySelector(':scope > .detail-hero > .activity-card > strong');
   const game = state.snapshot?.games?.find((item) => clean(item?.game_id) === clean(state.gameId));
   if (!current || !game) return;
 
@@ -110,11 +110,10 @@ function syncAttendance({ detail, state, venue, documentObject }) {
   }
 
   if (view.kind === 'empty') {
-    const icon = createIcon('users', { className: 'ui-icon bear-count__icon', documentObject });
     const prompt = documentObject.createElement('span');
     prompt.className = 'bear-count__prompt';
-    prompt.textContent = 'Be the first.';
-    current.replaceChildren(icon, prompt);
+    prompt.textContent = 'BE THE FIRST.';
+    current.replaceChildren(prompt);
     return;
   }
 
@@ -151,7 +150,8 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   const hero = detail.querySelector(':scope > .detail-hero');
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const parties = [...detail.querySelectorAll(':scope > .party-module, :scope > [data-watch-party-form-section]')];
-  const activity = detail.querySelector(':scope > .activity-card');
+  const activity = detail.querySelector(':scope > .activity-card') ||
+    hero?.querySelector(':scope > .activity-card');
   const community = detail.querySelector(':scope > .detail-fan-experiences');
   const photo = detail.querySelector(':scope > .detail-photo');
   const contribution = detail.querySelector(':scope > .detail-contribution');
@@ -161,12 +161,13 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   delete detail.dataset.desktopPhotoForward;
   delete detail.dataset.desktopBalancedOpening;
   delete detail.dataset.desktopFallbackMap;
-  detail.dataset.desktopProfileArrangement = 'identity-party-what-to-know-attendance-editorial-community-photo-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-attendance-party-what-to-know-editorial-community-photo-contribution';
+
+  if (activity && activity.parentElement !== hero) hero.append(activity);
 
   let cursor = hero;
   parties.forEach((party) => { cursor = placeAfter(cursor, party); });
   cursor = placeAfter(cursor, whatToKnow);
-  cursor = placeAfter(cursor, activity);
   cursor = placeAfter(cursor, editorial);
   cursor = placeAfter(cursor, community);
   if (photo) {

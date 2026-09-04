@@ -7,6 +7,8 @@ import { shouldRenderContinuousProfile } from '../js/mobile-selected-profile-con
 const continuationSource = readFileSync(new URL('../js/mobile-selected-profile-continuation.mjs', import.meta.url), 'utf8');
 const fanExperiencesSource = readFileSync(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8');
 const selectedProfileSource = readFileSync(new URL('../js/selected-profile-renderer.mjs', import.meta.url), 'utf8');
+const fanIntentCss = readFileSync(new URL('../css/fan-intent.css', import.meta.url), 'utf8');
+const mapProfileFinalPassSource = readFileSync(new URL('../js/map-profile-final-pass.mjs', import.meta.url), 'utf8');
 
 test('continuous profile renders only for the mobile selected map tray', () => {
   assert.equal(shouldRenderContinuousProfile({
@@ -55,8 +57,8 @@ test('continuous profile requires a selected venue', () => {
 test('mobile selected profile keeps primary actions immediately below Watch Party', () => {
   assert.match(
     selectedProfileSource,
-    /if \(parties\.length\) \{[\s\S]*?card\.append\(createPlanWatchPartyAction\(documentObject\)\);[\s\S]*?card\.append\(createSelectedActionRow\([\s\S]*?const attendance = createAttendance\(/,
-    'The selected card should render the I’ll be here/share row after the Watch Party block and before attendance.'
+    /if \(parties\.length\) \{[\s\S]*?card\.append\(createPlanWatchPartyAction\(documentObject\)\);[\s\S]*?card\.append\(createSelectedActionRow\(/,
+    'The selected card should render the I’ll be here/share row immediately after the Watch Party block.'
   );
   assert.match(
     fanExperiencesSource,
@@ -70,13 +72,72 @@ test('mobile selected profile keeps primary actions immediately below Watch Part
   );
   assert.match(
     fanExperiencesSource,
-    /#map-view > #venue-tray\.venue-tray\.tray--selected #tray-selected > \.selected-card > \.selected-card__what-to-know \{[\s\S]*?grid-row: auto !important;/,
-    'What to Know should use flow order after the primary actions.'
+    /selected-card__what-to-know \{[\s\S]*?grid-column: 1 \/ -1 !important;[\s\S]*?grid-row: auto !important;/,
+    'What to Know should continue full width below the primary actions.'
+  );
+});
+
+test('mobile selected profile renders attendance inside the hero only', () => {
+  assert.match(
+    selectedProfileSource,
+    /const attendance = createAttendance\(state, game, venue, documentObject, \{ hero: mobile \}\);/,
+    'The selected renderer should explicitly request the hero attendance treatment on mobile.'
   );
   assert.match(
-    fanExperiencesSource,
-    /#map-view > #venue-tray\.venue-tray\.tray--selected #tray-selected > \.selected-card > \.bear-count \{[\s\S]*?grid-row: auto !important;/,
-    'Attendance should share the auto-placed information row with What to Know.'
+    selectedProfileSource,
+    /if \(mobile\) \{\s*heading\.append\(attendance\.count\);[\s\S]*?header\.append\(heading\);/,
+    'Mobile attendance should be appended to the selected-profile heading before the hero closes.'
+  );
+  assert.match(
+    selectedProfileSource,
+    /if \(!mobile\) \{\s*card\.append\(attendance\.count\);/,
+    'Only the non-mobile renderer should append attendance as a separate card block.'
+  );
+  assert.equal(
+    selectedProfileSource.match(/card\.append\(attendance\.count\);/g)?.length,
+    1,
+    'Attendance should have only the guarded non-mobile separate-card append.'
+  );
+  assert.match(
+    fanIntentCss,
+    /selected-card__header \.bear-count--hero:not\(\.bear-count--empty\) \{[\s\S]*?grid-template-columns: auto auto !important;/,
+    'Positive mobile attendance should use the compact numeral/label hero treatment.'
+  );
+});
+
+test('zero mobile attendance uses BE THE FIRST without the legacy users icon', () => {
+  assert.match(
+    selectedProfileSource,
+    /prompt\.textContent = hero \? 'BE THE FIRST\.' : 'Be the first\.';/,
+    'The hero zero state should render the approved BE THE FIRST. copy.'
+  );
+  assert.match(
+    selectedProfileSource,
+    /if \(hero\) \{\s*count\.append\(prompt\);\s*\} else \{\s*const icon = createIcon\('users'/,
+    'The users icon should remain available only for the non-hero empty state.'
+  );
+  assert.match(
+    fanIntentCss,
+    /bear-count--hero\.bear-count--empty \.bear-count__prompt \{[\s\S]*?text-transform: uppercase !important;/,
+    'The zero hero state should share the bold compact attendance visual language.'
+  );
+});
+
+test('mobile hero address renders locality and inline Directions on the same line', () => {
+  assert.match(
+    selectedProfileSource,
+    /documentObject\.createTextNode\(locality\),\s*documentObject\.createTextNode\(' · '\),\s*createDirectionsLink\(directionsHref, documentObject\)/,
+    'The mobile address should render City, ST · Directions inline.'
+  );
+  assert.doesNotMatch(
+    selectedProfileSource,
+    /selected-card__proximity-row|selected-card__distance/,
+    'The old separate mobile proximity row should be removed.'
+  );
+  assert.doesNotMatch(
+    mapProfileFinalPassSource,
+    /selected-card__proximity-row|selected-card__distance/,
+    'Obsolete proximity-row CSS should be removed with the renderer.'
   );
 });
 
