@@ -68,6 +68,7 @@ function parseJoinExternalVenuePayload_(payload) {
   const source = cleanExternalText_(place.source, 40).toLowerCase();
   const placeId = cleanExternalText_(place.placeId, 200);
   const name = cleanExternalText_(place.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
+  const submittedAddress = cleanExternalText_(place.submittedAddress, CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
 
   if (!CGB_BROWSER_ID_PATTERN.test(browserId)) throw fanIntentError_('invalid_browser_id');
   if (!isSafeCanonicalId_(gameId)) throw fanIntentError_('invalid_game_id');
@@ -81,7 +82,8 @@ function parseJoinExternalVenuePayload_(payload) {
     externalPlace: {
       source: source,
       placeId: placeId,
-      name: name
+      name: name,
+      submittedAddress: submittedAddress
     }
   };
 }
@@ -262,9 +264,93 @@ function mapTilerVerificationQueries_(feature) {
   return queries;
 }
 
+function submittedExternalAddressParts_(value) {
+  const parts = cleanExternalText_(value, CGB_EXTERNAL_MAX_ADDRESS_LENGTH)
+    .split(',')
+    .map(function(part) { return cleanExternalText_(part, 220); })
+    .filter(Boolean);
+  const streetLine = parts[0] || '';
+  const city = parts.length > 1 ? parts[1] : '';
+  const regionPart = parts.length > 2 ? parts[parts.length - 1] : '';
+  const regionMatch = regionPart.match(/\b([A-Za-z]{2})\b/);
+  return {
+    streetLine: streetLine,
+    city: city,
+    region: regionMatch ? regionMatch[1].toUpperCase() : ''
+  };
+}
+
+function normalizeExternalStreetForMatch_(value) {
+  return normalizeExternalComparableText_(value)
+    .replace(/^\d+[a-z]?(?:\s*-\s*\d+[a-z]?)?\s+/, '')
+    .replace(/\b(street)\b/g, 'st')
+    .replace(/\b(avenue)\b/g, 'ave')
+    .replace(/\b(boulevard)\b/g, 'blvd')
+    .replace(/\b(road)\b/g, 'rd')
+    .replace(/\b(drive)\b/g, 'dr')
+    .replace(/\b(lane)\b/g, 'ln')
+    .replace(/\b(highway)\b/g, 'hwy')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function verifySubmittedAddressWithMapTiler_(clientPlace, key) {
+  const submittedAddress = cleanExternalText_(clientPlace && clientPlace.submittedAddress, CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
+  const submitted = submittedExternalAddressParts_(submittedAddress);
+  const submittedStreet = normalizeExternalStreetForMatch_(submitted.streetLine);
+  if (!submittedAddress || !submitted.streetLine || !submittedStreet) {
+    throw externalVenueError_('invalid_external_place');
+  }
+
+  const features = fetchMapTilerFeatures_(
+    submittedAddress,
+    key,
+    '&limit=10&autocomplete=false&fuzzyMatch=false&country=us&types=address'
+  );
+
+  let verified = null;
+  for (let index = 0; index < features.length && !verified; index += 1) {
+    const candidate = normalizeMapTilerFeatureForPublication_(features[index]);
+    if (!candidate) continue;
+    if (normalizeExternalStreetForMatch_(candidate.addressLine1) !== submittedStreet) continue;
+    if (submitted.city && normalizeExternalComparableText_(candidate.city) !== normalizeExternalComparableText_(submitted.city)) continue;
+    if (submitted.region && String(candidate.region || '').toUpperCase() !== submitted.region) continue;
+    verified = candidate;
+  }
+  if (!verified) throw externalVenueError_('external_venue_unavailable');
+
+  const normalizedAddress = normalizeExternalAddressParts_({
+    address_line_1: submitted.streetLine,
+    address_line_2: '',
+    city: verified.city,
+    region: verified.region,
+    postal_code: verified.postalCode,
+    country_code: verified.countryCode
+  });
+  if (!normalizedAddress) throw externalVenueError_('external_venue_unavailable');
+
+  return Object.assign({}, verified, {
+    source: '',
+    placeId: '',
+    addressLine1: submitted.streetLine,
+    address: cleanExternalText_([
+      submitted.streetLine,
+      verified.city,
+      [verified.region, verified.postalCode].filter(Boolean).join(' '),
+      verified.countryCode
+    ].filter(Boolean).join(', '), CGB_EXTERNAL_MAX_ADDRESS_LENGTH),
+    normalizedAddress: normalizedAddress,
+    submittedAddress: submittedAddress
+  });
+}
+
 function verifyExternalPlaceWithMapTiler_(clientPlace) {
   const key = mapTilerVerificationKey_();
   if (!key) throw externalVenueError_('external_venue_unavailable');
+
+  if (cleanExternalText_(clientPlace && clientPlace.submittedAddress, CGB_EXTERNAL_MAX_ADDRESS_LENGTH)) {
+    return verifySubmittedAddressWithMapTiler_(clientPlace, key);
+  }
 
   const features = fetchMapTilerFeatures_(clientPlace.placeId, key);
   const exactFeature = features.find(function(candidate) {
@@ -455,15 +541,21 @@ function applyRequestedExternalVenueName_(verifiedPlace, clientPlace) {
   if (!verifiedPlace || !clientPlace) return verifiedPlace;
   const requestedName = cleanExternalText_(clientPlace.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
   const placeId = cleanExternalText_(verifiedPlace.placeId, 200).toLowerCase();
-  if (!requestedName || placeId.indexOf('address.') !== 0) return verifiedPlace;
+  const manualAddress = cleanExternalText_(clientPlace.submittedAddress, CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
+  if (!requestedName || (!manualAddress && placeId.indexOf('address.') !== 0)) return verifiedPlace;
   return Object.assign({}, verifiedPlace, { name: requestedName });
 }
 
 function findCanonicalExternalVenue_(rows, place) {
-  const externalMatch = rows.find(function(record) {
-    return String(record.object.external_source || '').toLowerCase() === place.source &&
-      String(record.object.external_place_id || '') === place.placeId;
-  });
+  const submittedAddress = cleanExternalText_(place && place.submittedAddress, CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
+  const source = cleanExternalText_(place && place.source, 40).toLowerCase();
+  const placeId = cleanExternalText_(place && place.placeId, 200);
+  const externalMatch = !submittedAddress && source && placeId
+    ? rows.find(function(record) {
+      return String(record.object.external_source || '').toLowerCase() === source &&
+        String(record.object.external_place_id || '') === placeId;
+    })
+    : null;
   if (externalMatch) return externalMatch;
   if (!place.normalizedAddress) return null;
 
