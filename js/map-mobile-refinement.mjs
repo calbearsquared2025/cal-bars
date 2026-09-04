@@ -352,10 +352,12 @@ function updatePreviewIntent() {
   }
 
   const { venue, party, fanCount, distance, mode } = candidate;
-  const typeLabels = [party ? 'WATCH PARTY' : null, venueTypeLabel(venue)].filter(Boolean);
+  const typeLabel = party
+    ? 'WATCH PARTY'
+    : venue?.venue_type === 'cal_bar' ? venueTypeLabel(venue) : null;
   eyebrow.textContent = mode === 'selected' ? 'Selected' : 'Near you';
   title.textContent = venue.name;
-  copy.textContent = [...typeLabels, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
+  copy.textContent = [typeLabel, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   count.textContent = Number(fanCount) > 0 ? bearCountCopy(fanCount) : '';
   marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
   button.dataset.previewMode = mode;
