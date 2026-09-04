@@ -91,6 +91,54 @@ function installStyles(documentObject) {
         box-shadow: none !important;
       }
 
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) {
+        display: grid !important;
+        grid-template-columns: minmax(0, 48fr) minmax(0, 52fr) !important;
+        column-gap: 0 !important;
+        row-gap: 0 !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-hero {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        min-width: 0 !important;
+        align-self: stretch !important;
+        margin: 0 !important;
+        padding: 14px 10px 14px 30px !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-fan-experiences {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        min-width: 0 !important;
+        align-self: stretch !important;
+        margin: 0 !important;
+        padding: 14px 12px 14px 30px !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial::before,
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-fan-experiences::before {
+        left: 11px !important;
+        width: 3px !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial + .detail-fan-experiences {
+        margin-top: 0 !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-photo,
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-contribution {
+        grid-column: 1 / -1 !important;
+      }
+
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero {
         height: 0 !important;
         min-height: 0 !important;
