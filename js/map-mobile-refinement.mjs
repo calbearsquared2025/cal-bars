@@ -324,6 +324,27 @@ function formatDistance(distance) {
   return `${value < 10 ? value.toFixed(1) : Math.round(value)} mi`;
 }
 
+function renderPreviewAttendance(countElement, fanCount) {
+  const total = Number(fanCount);
+  countElement.replaceChildren();
+  if (!(total > 0)) return '';
+
+  const numeral = document.createElement('span');
+  numeral.className = 'tray-summary__count-number';
+  numeral.textContent = String(total);
+
+  const label = document.createElement('span');
+  label.className = 'tray-summary__count-label';
+  [total === 1 ? 'Bear' : 'Bears', 'attending', 'on CGB'].forEach((text) => {
+    const line = document.createElement('span');
+    line.textContent = text;
+    label.append(line);
+  });
+
+  countElement.append(numeral, label);
+  return bearCountCopy(total);
+}
+
 function updatePreviewIntent() {
   const state = appState();
   const button = document.querySelector('#browse-locations-button');
@@ -343,7 +364,7 @@ function updatePreviewIntent() {
     copy.textContent = usingLocation
       ? `No mapped locations within ${NEARBY_RADIUS_MILES} miles.`
       : TRAY_GUIDANCE_COPY;
-    count.textContent = '';
+    count.replaceChildren();
     marker.dataset.kind = 'fan-added';
     button.dataset.previewMode = usingLocation ? 'nearby-empty' : 'guidance';
     button.removeAttribute('data-direct-venue-id');
@@ -352,15 +373,17 @@ function updatePreviewIntent() {
   }
 
   const { venue, party, fanCount, distance, mode } = candidate;
-  const typeLabels = [party ? 'WATCH PARTY' : null, venueTypeLabel(venue)].filter(Boolean);
+  const typeLabel = party
+    ? 'WATCH PARTY'
+    : venue?.venue_type === 'cal_bar' ? venueTypeLabel(venue) : null;
+  const attendanceCopy = renderPreviewAttendance(count, fanCount);
   eyebrow.textContent = mode === 'selected' ? 'Selected' : 'Near you';
   title.textContent = venue.name;
-  copy.textContent = [...typeLabels, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
-  count.textContent = Number(fanCount) > 0 ? bearCountCopy(fanCount) : '';
+  copy.textContent = [typeLabel, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
   marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
   button.dataset.previewMode = mode;
   button.dataset.directVenueId = venue.venue_id;
-  button.setAttribute('aria-label', `Open ${venue.name}`);
+  button.setAttribute('aria-label', [`Open ${venue.name}`, attendanceCopy].filter(Boolean).join('. '));
 }
 
 function openPreviewVenue(event) {
