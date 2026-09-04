@@ -118,9 +118,9 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero .venue-badge.badge--fan-added {
-    color: var(--cgb-gold-300, #ffd15a) !important;
-    background: transparent !important;
-    border: 1px solid var(--cgb-gold-400) !important;
+    color: var(--cgb-navy-950, #010133) !important;
+    background: var(--cgb-white, #fff) !important;
+    border: 1px solid var(--cgb-white, #fff) !important;
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero .venue-badge.badge--fan-added::before {
