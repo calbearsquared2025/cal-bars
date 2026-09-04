@@ -22,6 +22,10 @@ function ensureFallbackStyles(documentObject) {
       background: #06152f;
     }
 
+    .map-view > .map-actions {
+      z-index: 49 !important;
+    }
+
     .map-fallback {
       position: absolute;
       inset: 0;
