@@ -161,7 +161,7 @@ function ensureDesktopAddSearchStyle() {
         border: 0 !important;
         border-radius: 0 !important;
         background: transparent !important;
-        color: rgba(255, 255, 255, .62);
+        color: rgba(255, 255, 255, .62) !important;
         font-size: .7rem;
         font-weight: 780;
       }
@@ -176,13 +176,13 @@ function ensureDesktopAddSearchStyle() {
       #mobile-list-button:focus-visible,
       #mobile-map-button:focus-visible {
         background: transparent !important;
-        color: var(--cgb-white, #fff);
+        color: var(--cgb-white, #fff) !important;
       }
 
       #mobile-list-button[aria-current="page"],
       #mobile-map-button[aria-current="page"] {
         background: transparent !important;
-        color: var(--cgb-white, #fff);
+        color: var(--cgb-white, #fff) !important;
         font-weight: 850;
       }
 
