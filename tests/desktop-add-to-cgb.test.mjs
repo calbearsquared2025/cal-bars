@@ -31,7 +31,8 @@ test('desktop Locations and Selected navigation sit on one navy identity surface
   assert.match(refinementSource, /#mobile-list-button\[aria-current="page"\],[\s\S]*?#mobile-map-button\[aria-current="page"\] \{[\s\S]*?color: var\(--cgb-white/);
   assert.match(refinementSource, /\[aria-current="page"\]::after[\s\S]*?background: var\(--cgb-gold-400/);
   assert.match(refinementSource, /#mobile-add-button:hover,[\s\S]*?#mobile-add-button:focus-visible \{[\s\S]*?background: transparent !important;[\s\S]*?border-color: var\(--cgb-gold-400/);
-  assert.doesNotMatch(cohesionSource, /\.mobile-command-bar #mobile-add-button/);
+  assert.match(cohesionSource, /\.mobile-command-bar #mobile-add-button \{[\s\S]*?background: rgba\(255, 255, 255, \.055\) !important;[\s\S]*?inset 0 -2px 0 rgba\(0, 0, 0, \.20\)/);
+  assert.match(cohesionSource, /\.mobile-command-bar #mobile-add-button:hover,[\s\S]*?\.mobile-command-bar #mobile-add-button:focus-visible \{[\s\S]*?background: rgba\(255, 255, 255, \.08\) !important;/);
 });
 
 test('desktop Browse header uses navy identity styling without restyling result rows', () => {
