@@ -138,6 +138,18 @@
     margin-left: 0;
   }
 
+  /* The selected profile is the only mobile scrollport. Watch Party content stays in
+     normal flow so dragging anywhere on the card continues scrolling the profile. */
+  #venue-tray .selected-card > .party-module.party-module--multiple {
+    max-height: none;
+    overflow: visible;
+    overscroll-behavior: auto;
+  }
+
+  #venue-tray .selected-card > .party-module.party-module--multiple .party-module__title {
+    position: static;
+  }
+
   /* iOS rubber-band exposes the selected tray scrollport itself. Paint the top of
      that scrollport navy while keeping the lower overscroll surface white. */
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected {
