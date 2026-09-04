@@ -4,6 +4,8 @@ const APP_CONNECT_MAX_ATTEMPTS = 1200;
 
 let appConnected = false;
 let appConnectAttempts = 0;
+let initialSelectionCaptured = false;
+let initialSelectedVenueId = '';
 const initialSelectedCameraMaps = new WeakSet();
 const coordinatedMaps = new WeakSet();
 
@@ -33,13 +35,30 @@ function centerCoordinates(center) {
   return [Number(center?.lng), Number(center?.lat)];
 }
 
+function captureInitialSelection(state = appState()) {
+  if (initialSelectionCaptured || !state?.snapshot) return false;
+  initialSelectionCaptured = true;
+  initialSelectedVenueId = state.selectedVenueId || '';
+  return true;
+}
+
 function applyInitialSelectedCamera() {
   const state = appState();
+  captureInitialSelection(state);
   const map = state?.map;
   if (!map || initialSelectedCameraMaps.has(map) || !state.selectedVenueId) return false;
 
-  // Seed direct-selected routes before their first visible map load. Once the map
-  // is interactive, ordinary selection is owned by the normal selected camera.
+  // Seed only a venue that was already selected on the initial route. A user can
+  // choose a list row before the map finishes loading; that interaction must stay
+  // on the ordinary animated selected-camera path used after map load.
+  if (!initialSelectedVenueId || state.selectedVenueId !== initialSelectedVenueId) {
+    initialSelectedCameraMaps.add(map);
+    return false;
+  }
+
+  // This jump exists only to seed a direct-selected route before the map's first
+  // visible load. Once the map is already interactive, the normal selection
+  // camera owns the move; jumping here would create a second visible motion.
   if (typeof map.loaded === 'function' && map.loaded()) {
     initialSelectedCameraMaps.add(map);
     return false;
@@ -107,6 +126,8 @@ function coordinateSelectedCamera() {
 }
 
 function sync() {
+  const state = appState();
+  captureInitialSelection(state);
   coordinateSelectedCamera();
   applyInitialSelectedCamera();
 }
