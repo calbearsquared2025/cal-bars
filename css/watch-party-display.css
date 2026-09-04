@@ -212,107 +212,11 @@
     content: none !important;
   }
 
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-location,
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .selected-card__proximity-row {
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-location {
     color: rgba(255, 255, 255, .86) !important;
   }
 
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .selected-card__directions-inline {
     color: var(--cgb-gold-300) !important;
-  }
-
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__what-to-know {
-    grid-column: 1 !important;
-    grid-row: 2 !important;
-    align-self: start !important;
-    margin: 4px 12px 0 0 !important;
-    padding-top: 10px !important;
-  }
-
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count {
-    grid-column: 2 !important;
-    grid-row: 2 !important;
-    align-self: center !important;
-    margin: 0 14px 0 0 !important;
-  }
-
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count:not(.bear-count--empty) {
-    min-height: 64px !important;
-    display: grid !important;
-    grid-template-columns: auto minmax(0, 1fr) !important;
-    grid-template-rows: repeat(3, auto) !important;
-    column-gap: 7px !important;
-    row-gap: 0 !important;
-    align-content: center !important;
-    padding: 7px 0 5px 12px !important;
-    border-left: 1px solid var(--cgb-neutral-200) !important;
-  }
-
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
-    grid-column: 1 !important;
-    grid-row: 1 / span 3 !important;
-    align-self: center !important;
-    font-size: clamp(2.65rem, 11vw, 3.5rem) !important;
-    font-weight: 900 !important;
-    line-height: .8 !important;
-  }
-}
-
-@media (min-width: 900px) {
-  .party-module--multiple {
-    max-height: 24rem;
-  }
-
-  #tray-selected > #venue-detail > .party-module.party-module--multiple {
-    max-height: none;
-    overflow: visible;
-    overscroll-behavior: auto;
-  }
-
-  #tray-selected > #venue-detail > .party-module.party-module--multiple .party-module__title {
-    position: static;
-  }
-
-  #tray-selected > #venue-detail > .party-module .party-module__report {
-    font-size: .65rem;
-  }
-
-  /* Desktop Locations list: keep the event signal warm and give host metadata room to breathe. */
-  #tray-list .location-card .badge--party,
-  #venue-tray .selected-card .badge--party,
-  #tray-selected > #venue-detail.venue-detail .badge--party,
-  body[data-view="detail"] #venue-detail.venue-detail .badge--party {
-    color: var(--cgb-navy-950, #010133) !important;
-    background: #f3c24f !important;
-    border-color: var(--cgb-gold-500, #e6a411) !important;
-  }
-
-  /* Keep the selected venue surfaces on the same compact badge component as Locations. */
-  #venue-tray .selected-card .venue-badges,
-  #tray-selected > #venue-detail.venue-detail .venue-badges,
-  body[data-view="detail"] #venue-detail.venue-detail .venue-badges {
-    gap: 4px !important;
-  }
-
-  #venue-tray .selected-card .venue-badge,
-  #tray-selected > #venue-detail.venue-detail .venue-badge,
-  body[data-view="detail"] #venue-detail.venue-detail .venue-badge {
-    min-height: 19px !important;
-    padding: 2px 7px !important;
-    font-size: .54rem !important;
-    letter-spacing: .07em !important;
-    clip-path: polygon(0 0, calc(100% - .2rem) 0, 100% .2rem, 100% 100%, .2rem 100%, 0 calc(100% - .2rem)) !important;
-  }
-
-  #venue-tray .selected-card .badge--cal,
-  #tray-selected > #venue-detail.venue-detail .badge--cal,
-  body[data-view="detail"] #venue-detail.venue-detail .badge--cal {
-    color: var(--cgb-white, #fff) !important;
-    background: var(--cgb-navy-700, #153f75) !important;
-    border-color: var(--cgb-navy-900, #071e41) !important;
-  }
-
-  #tray-list .location-card__party {
-    margin-top: 3px !important;
   }
 }
