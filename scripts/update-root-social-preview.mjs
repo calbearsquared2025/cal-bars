@@ -64,6 +64,18 @@ function updateIndexMetadata(html, block) {
   return html.replace(legacyPattern, `  ${block}`);
 }
 
+function updateLoadingCover(html, entry) {
+  const imagePath = escapeHtml(entry.image);
+  const preloadPattern = /(<link\b[^>]*\bid="cgb-loading-cover-preload"[^>]*\bhref=")[^"]*(")/i;
+  const imagePattern = /(<img\b[^>]*\bid="map-fallback-card"[^>]*\bsrc=")[^"]*(")/i;
+  if (!preloadPattern.test(html) || !imagePattern.test(html)) {
+    throw new Error('Could not find the current-game loading cover hooks in index.html.');
+  }
+  return html
+    .replace(preloadPattern, `$1${imagePath}$2`)
+    .replace(imagePattern, `$1${imagePath}$2`);
+}
+
 export async function updateRootSocialPreview() {
   const [html, manifestText] = await Promise.all([
     readFile(indexPath, 'utf8'),
@@ -78,7 +90,8 @@ export async function updateRootSocialPreview() {
   const entry = (manifest.games || []).find((item) => item?.slug === slug);
   if (!entry) throw new Error(`Generated social-card manifest has no entry for current game: ${slug}`);
 
-  const updated = updateIndexMetadata(html, socialMetadataBlock(entry));
+  const metadataUpdated = updateIndexMetadata(html, socialMetadataBlock(entry));
+  const updated = updateLoadingCover(metadataUpdated, entry);
   if (updated !== html) await writeFile(indexPath, updated, 'utf8');
   console.log(`Root social preview now uses ${entry.title}.`);
 }

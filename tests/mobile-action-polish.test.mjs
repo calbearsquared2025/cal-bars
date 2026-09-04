@@ -18,3 +18,7 @@ test('mobile Venue Profile shortens the visible Watch Party share label without 
   assert.match(profileSource, /share\.setAttribute\('aria-label', label\);/);
   assert.match(profileSource, /getWatchParty\(snapshot, gameId, venueId\) \? 'Share Watch Party' : 'Share'/);
 });
+
+test('selected mobile tray hides the decorative handle line', () => {
+  assert.match(fanIntentCss, /tray--peek:has\(#browse-locations-button\[data-preview-mode="selected"\]\) \.tray-handle span,[\s\S]*?tray--selected \.tray-handle span \{[\s\S]*?display: none !important;/);
+});

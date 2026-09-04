@@ -209,6 +209,11 @@
     letter-spacing: 0 !important;
     opacity: .68 !important;
   }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:has(#browse-locations-button[data-preview-mode="selected"]) .tray-handle span,
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle span {
+    display: none !important;
+  }
 }
 
 @media (max-width: 359px) {

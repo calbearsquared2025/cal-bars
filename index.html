@@ -50,6 +50,7 @@
   <meta name="twitter:description" content="Find your Cal crowd. Join a nearby Watch Party, or plan one of your own.">
   <meta name="twitter:image" content="https://calgoldenbars.com/assets/social-cards/ucla.png">
   <!-- CGB current-game social metadata: end -->
+  <link id="cgb-loading-cover-preload" rel="preload" as="image" href="assets/social-cards/ucla.png" fetchpriority="high">
   <title>Cal Golden Bars | Find Cal Bars &amp; Watch Parties</title>
   <script type="application/ld+json">
     {
@@ -87,10 +88,47 @@
       height: calc(100dvh - var(--header-height) - var(--footer-height));
     }
 
+    #map-fallback.map-fallback--loading {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex !important;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(18px, 3vh, 30px);
+      padding: clamp(18px, 4vw, 48px);
+      overflow: hidden;
+      background: #06152f;
+      color: #ffffff;
+      text-align: center;
+      opacity: 1;
+      transition: opacity 240ms ease;
+    }
+
+    #map-fallback.map-fallback--loading.map-fallback--leaving {
+      opacity: 0;
+    }
+
+    #map-fallback.map-fallback--loading .map-fallback__card {
+      display: block;
+      width: min(92%, 960px);
+      height: auto;
+      max-height: 100%;
+      aspect-ratio: 1200 / 630;
+      object-fit: contain;
+    }
+
     @supports not (height: 100dvh) {
       .map-view,
       .map {
         height: calc(100vh - var(--header-height) - var(--footer-height));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #map-fallback.map-fallback--loading {
+        transition: none;
       }
     }
   </style>
@@ -170,9 +208,17 @@
       </div>
 
       <div id="map" class="map" role="region" aria-label="Map of Cal gathering locations">
-        <div id="map-fallback" class="map-fallback" hidden>
-          <strong>Map unavailable</strong>
-          <span>The location list remains available.</span>
+        <div id="map-fallback" class="map-fallback map-fallback--loading">
+          <img
+            id="map-fallback-card"
+            class="map-fallback__card map-fallback__card--loaded"
+            src="assets/social-cards/ucla.png"
+            alt=""
+            width="1200"
+            height="630"
+            decoding="async"
+            fetchpriority="high"
+          >
         </div>
       </div>
 
