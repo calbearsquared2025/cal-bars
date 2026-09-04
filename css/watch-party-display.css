@@ -227,7 +227,7 @@
     grid-column: 2 !important;
     grid-row: 2 !important;
     align-self: center !important;
-    margin: 0 !important;
+    margin: 0 14px 0 0 !important;
   }
 
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count:not(.bear-count--empty) {
