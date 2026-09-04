@@ -30,6 +30,7 @@ const PRIVATE_RESPONSE_KEYS = new Set([
   'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
   'reviewer_note', 'submitter_email', 'submitter_name'
 ]);
+const VENUE_NAME_CONNECTOR_TOKENS = new Set(['a', 'an', 'and', 'at', 'in', 'of', 'on', 'the']);
 
 function cleanText(value, maximum = 300) {
   return String(value ?? '')
@@ -53,6 +54,10 @@ function comparableTokens(value) {
   return normalizeComparable(value)
     .split(' ')
     .filter((token) => token && (token.length > 1 || /^\d+$/.test(token)));
+}
+
+function comparableVenueNameTokens(value) {
+  return comparableTokens(value).filter((token) => !VENUE_NAME_CONNECTOR_TOKENS.has(token));
 }
 
 function featureTypes(feature) {
@@ -242,18 +247,35 @@ export function normalizeUserLocationProximity(origin) {
 }
 
 function venueNameCoverage(place, query) {
-  const nameTokens = comparableTokens(place?.name);
-  const queryTokens = comparableTokens(query);
+  const nameTokens = comparableVenueNameTokens(place?.name);
+  const queryTokens = comparableVenueNameTokens(query);
   if (!nameTokens.length || !queryTokens.length) return 0;
   const querySet = new Set(queryTokens);
   return nameTokens.filter((token) => querySet.has(token)).length / nameTokens.length;
 }
 
+function hasMeaningfulVenueNameOverlap(place, query) {
+  const normalizedQuery = normalizeComparable(query);
+  const normalizedName = normalizeComparable(place?.name);
+  if (normalizedName && normalizedQuery === normalizedName) return true;
+
+  const rawNameTokens = comparableTokens(place?.name);
+  const rawQueryTokens = comparableTokens(query);
+  const nameTokens = comparableVenueNameTokens(place?.name);
+  const queryTokens = comparableVenueNameTokens(query);
+  if (!nameTokens.length) {
+    return rawNameTokens.length === 1 && rawQueryTokens[0] === rawNameTokens[0];
+  }
+  if (!queryTokens.length) return false;
+  const querySet = new Set(queryTokens);
+  return nameTokens.some((token) => querySet.has(token));
+}
+
 function mapTilerResultScore(place, query, providerRelevance = 0) {
   const normalizedQuery = normalizeComparable(query);
   const normalizedName = normalizeComparable(place?.name);
-  const nameTokens = comparableTokens(place?.name);
-  const queryTokens = comparableTokens(query);
+  const nameTokens = comparableVenueNameTokens(place?.name);
+  const queryTokens = comparableVenueNameTokens(query);
   const querySet = new Set(queryTokens);
   const overlapCount = nameTokens.filter((token) => querySet.has(token)).length;
   const nameCoverage = nameTokens.length ? overlapCount / nameTokens.length : 0;
@@ -305,7 +327,9 @@ export function rankMapTilerResults(payloads, query, { maximum = 6, filterWeak =
   }
 
   const minimumScore = filterWeak && queryTokenCount >= 3 ? 50 : -Infinity;
+  const requireMeaningfulNameOverlap = filterWeak && queryTokenCount > 1;
   return [...byPlaceId.values()]
+    .filter((entry) => !requireMeaningfulNameOverlap || hasMeaningfulVenueNameOverlap(entry.place, query))
     .filter((entry) => entry.score >= minimumScore)
     .sort((a, b) =>
       b.score - a.score ||
