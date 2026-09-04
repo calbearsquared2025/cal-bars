@@ -5,10 +5,11 @@ import test from 'node:test';
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), 'utf8');
 
 test('search helper waits for settled user input instead of focus or first paint', async () => {
-  const [appSource, refinementSource, iconSource] = await Promise.all([
+  const [appSource, refinementSource, iconSource, shellSource] = await Promise.all([
     read('js/app.js'),
     read('js/search-map-refinement.mjs'),
-    read('js/icon-upgrade.mjs')
+    read('js/icon-upgrade.mjs'),
+    read('js/shell-controls.mjs')
   ]);
 
   assert.match(appSource, /const SEARCH_HELPER_DEBOUNCE_MS = 600;/);
@@ -19,4 +20,6 @@ test('search helper waits for settled user input instead of focus or first paint
   assert.match(appSource, /dom\.searchForm\.addEventListener\('focusout'/);
   assert.doesNotMatch(refinementSource, /desktopSearchEngaged/);
   assert.doesNotMatch(iconSource, /MOBILE_SEARCH_HELPER_STYLE_ID|placeholder-shown/);
+  assert.doesNotMatch(shellSource, /dom\.addLocationSearch\.hidden = mode !== 'existing'/);
+  assert.match(shellSource, /if \(mode !== 'existing'\) dom\.addLocationSearch\.hidden = true;/);
 });
