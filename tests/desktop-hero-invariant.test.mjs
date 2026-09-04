@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const source = await readFile(new URL('../js/desktop-photo-forward-profile.mjs', import.meta.url), 'utf8');
 const fanExperiencesSource = await readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8');
+const fanIntentCss = await readFile(new URL('../css/fan-intent.css', import.meta.url), 'utf8');
 const firstPaintCss = await readFile(new URL('../css/profile-first-paint.css', import.meta.url), 'utf8');
 const watchPartyFormCss = await readFile(new URL('../css/watch-party-form.css', import.meta.url), 'utf8');
 const watchPartyFormSource = await readFile(new URL('../js/watch-party-form.js', import.meta.url), 'utf8');
@@ -123,6 +124,19 @@ test('desktop profile styling has one static owner', () => {
     watchPartyFormSource,
     /syncDesktopProfileFinalBalance|desktop-profile-final-balance/,
     'Watch Party rendering must not trigger a second desktop attendance restyle pass.'
+  );
+});
+
+test('desktop action buttons gain subtle depth without changing the game selector', () => {
+  assert.match(
+    fanIntentCss,
+    /@media \(min-width: 900px\) \{[\s\S]*?#tray-selected \.action-row > \.primary-button,[\s\S]*?#tray-selected \.action-row > \.secondary-button \{[\s\S]*?0 2px 5px rgba\(1, 1, 51, \.11\);/,
+    'Desktop selected-profile actions should have restrained tactile depth.'
+  );
+  assert.doesNotMatch(
+    fanIntentCss,
+    /\.game-button/,
+    'Fan Intent button styling must not alter the header game selector.'
   );
 });
 
