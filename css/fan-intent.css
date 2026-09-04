@@ -209,6 +209,94 @@
     letter-spacing: 0 !important;
     opacity: .68 !important;
   }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero {
+    width: fit-content !important;
+    min-height: 0 !important;
+    margin: 9px 0 0 !important;
+    padding: 0 !important;
+    color: var(--cgb-white) !important;
+    background: transparent !important;
+    border: 0 !important;
+    text-align: left !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero:not(.bear-count--empty) {
+    display: grid !important;
+    grid-template-columns: auto auto !important;
+    grid-template-rows: auto auto auto !important;
+    align-items: start !important;
+    justify-items: start !important;
+    column-gap: 6px !important;
+    row-gap: 0 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero .bear-count__number {
+    grid-column: 1 !important;
+    grid-row: 1 / 4 !important;
+    align-self: center !important;
+    font-family: var(--font-ui) !important;
+    font-size: 2.25rem !important;
+    font-weight: 900 !important;
+    letter-spacing: -.055em !important;
+    line-height: .82 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero .bear-count__label {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    font-family: var(--font-ui) !important;
+    font-size: .72rem !important;
+    font-weight: 900 !important;
+    letter-spacing: .03em !important;
+    line-height: .95 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero .bear-count__attending,
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero .bear-count__context {
+    grid-column: 2 !important;
+    font-family: var(--font-ui) !important;
+    font-weight: 800 !important;
+    letter-spacing: .05em !important;
+    line-height: .96 !important;
+    white-space: nowrap !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero .bear-count__attending {
+    grid-row: 2 !important;
+    font-size: .6rem !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero .bear-count__context {
+    grid-row: 3 !important;
+    font-size: .58rem !important;
+    color: rgba(255, 255, 255, .82) !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero.bear-count--empty {
+    display: block !important;
+    margin-top: 10px !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero.bear-count--empty .bear-count__prompt {
+    display: block !important;
+    max-width: none !important;
+    margin: 0 !important;
+    color: var(--cgb-gold-300) !important;
+    font-family: var(--font-ui) !important;
+    font-size: .76rem !important;
+    font-weight: 900 !important;
+    letter-spacing: .055em !important;
+    line-height: 1 !important;
+    text-transform: uppercase !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .venue-activity-history {
+    margin: 5px 0 0 !important;
+    color: rgba(255, 255, 255, .68) !important;
+    font-size: .62rem !important;
+    line-height: 1.2 !important;
+  }
 }
 
 @media (max-width: 359px) {
@@ -232,6 +320,10 @@
 
   #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
     font-size: .56rem !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero .bear-count__number {
+    font-size: 2.05rem !important;
   }
 }
 
