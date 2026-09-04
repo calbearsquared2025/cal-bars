@@ -26,3 +26,14 @@ test('mobile keeps the trailing watch party star beside the title', () => {
     /@media \(max-width: 899px\) \{[\s\S]*\.party-module__date \{[\s\S]*margin-left: 0;/
   );
 });
+
+test('mobile selected profile keeps Watch Party content in the profile scrollport', () => {
+  assert.match(
+    styles,
+    /@media \(max-width: 899px\) \{[\s\S]*#venue-tray \.selected-card > \.party-module\.party-module--multiple \{[\s\S]*max-height: none;[\s\S]*overflow: visible;[\s\S]*overscroll-behavior: auto;/
+  );
+  assert.match(
+    styles,
+    /#venue-tray \.selected-card > \.party-module\.party-module--multiple \.party-module__title \{[\s\S]*position: static;/
+  );
+});
