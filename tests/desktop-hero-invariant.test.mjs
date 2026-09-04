@@ -98,4 +98,19 @@ test('What to Know action and profile badges match the approved guide', () => {
     /\.venue-badge\.badge--party[^{]*\{[\s\S]*?color: var\(--cgb-navy-950[\s\S]*?background: var\(--cgb-gold-400/,
     'Watch Party badges should be filled gold with navy text.'
   );
+  assert.match(
+    firstPaintCss,
+    /> \.detail-hero \.venue-badge \{[\s\S]*?color: var\(--cgb-gold-300, #ffd15a\) !important;/,
+    'Desktop hero badges must use a valid gold fallback instead of inheriting white text.'
+  );
+  assert.match(
+    firstPaintCss,
+    /> \.detail-hero \.venue-badge\.badge--fan-added \{[\s\S]*?border: 1px solid var\(--cgb-gold-400\) !important;/,
+    'Fan-Added must own its visible gold outline in the navy hero.'
+  );
+  assert.match(
+    firstPaintCss,
+    /\.venue-badge\.badge--fan-added::before \{[\s\S]*?content: none !important;/,
+    'The legacy Fan-Added inset pseudo-element must not cover the desktop hero badge.'
+  );
 });
