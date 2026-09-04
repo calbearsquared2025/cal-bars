@@ -110,6 +110,37 @@ test('initial HTML presents and preloads the current-game cover before app chrom
   assert.match(socialPreviewUpdater, /map-fallback-card/);
 });
 
+test('runtime adopts the visible first-paint cover without toggling its loading mode off and on', () => {
+  const { fallback, documentObject } = fixture();
+  const state = {
+    gameId: 'game_ucla',
+    snapshot: { games: [{ game_id: 'game_ucla', opponent_name: 'UCLA' }] }
+  };
+  const app = { getState: () => state };
+
+  fallback.hidden = false;
+  fallback.classList.add('map-fallback--loading');
+
+  const removed = [];
+  const added = [];
+  const remove = fallback.classList.remove;
+  const add = fallback.classList.add;
+  fallback.classList.remove = (...names) => {
+    removed.push(...names);
+    remove(...names);
+  };
+  fallback.classList.add = (...names) => {
+    added.push(...names);
+    add(...names);
+  };
+
+  assert.equal(showMapLoading({ app, documentObject }), true);
+  assert.equal(fallback.hidden, false);
+  assert.deepEqual(removed, [], 'the initial loading class must never be removed during startup adoption');
+  assert.deepEqual(added, [], 'the same loading class must not be redundantly re-added during startup adoption');
+  assert.equal(fallback.classList.contains('map-fallback--loading'), true);
+});
+
 test('normal map loading shows only the branded game artwork, without unavailable copy', () => {
   const { map, fallback, head, documentObject } = fixture();
   const state = {

@@ -5,6 +5,11 @@ const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
 const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
 const LOADING_FADE_MS = 240;
+const FALLBACK_MODE_CLASSES = Object.freeze([
+  'map-fallback--loading',
+  'map-fallback--failure',
+  'map-fallback--leaving'
+]);
 
 function element(documentObject, selector) {
   return documentObject?.querySelector?.(selector) || null;
@@ -108,8 +113,19 @@ function markCardLoaded(image, loaded) {
 }
 
 function setFallbackMode(fallback, mode) {
-  fallback?.classList?.remove?.('map-fallback--loading', 'map-fallback--failure', 'map-fallback--leaving');
-  if (mode) fallback?.classList?.add?.(`map-fallback--${mode}`);
+  if (!fallback?.classList) return false;
+  const nextClass = mode ? `map-fallback--${mode}` : '';
+  const alreadyStable = nextClass &&
+    fallback.classList.contains(nextClass) &&
+    FALLBACK_MODE_CLASSES.every((className) =>
+      className === nextClass || !fallback.classList.contains(className));
+  const alreadyClear = !nextClass &&
+    FALLBACK_MODE_CLASSES.every((className) => !fallback.classList.contains(className));
+  if (alreadyStable || alreadyClear) return false;
+
+  fallback.classList.remove?.(...FALLBACK_MODE_CLASSES);
+  if (nextClass) fallback.classList.add?.(nextClass);
+  return true;
 }
 
 function createFailureMessage(documentObject) {
@@ -203,7 +219,7 @@ export function showMapLoading({
   const state = app?.getState?.();
   ensureFallbackContent({ fallback, state, documentObject, includeMessage: false });
   setFallbackMode(fallback, 'loading');
-  fallback.hidden = false;
+  if (fallback.hidden) fallback.hidden = false;
   mapContainer.classList?.remove?.('map--fallback');
   mapContainer.classList?.add?.('map--loading');
   return true;
