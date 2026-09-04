@@ -210,10 +210,43 @@
     opacity: .68 !important;
   }
 
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div:first-child {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) !important;
+    grid-template-rows: auto auto auto auto !important;
+    align-items: start !important;
+    column-gap: 12px !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div:first-child > .venue-badges,
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div:first-child > h2,
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div:first-child > .venue-location {
+    grid-column: 1 !important;
+    min-width: 0 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div:first-child > .venue-badges {
+    grid-row: 1 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div:first-child > h2 {
+    grid-row: 2 !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > div:first-child > .venue-location {
+    grid-row: 3 !important;
+  }
+
   body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero {
+    grid-column: 2 !important;
+    grid-row: 1 / 4 !important;
+    align-self: center !important;
+    justify-self: center !important;
     width: fit-content !important;
     min-height: 0 !important;
-    margin: 9px 0 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
     color: var(--cgb-white) !important;
     background: transparent !important;
@@ -275,7 +308,7 @@
 
   body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero.bear-count--empty {
     display: block !important;
-    margin-top: 10px !important;
+    margin: 0 !important;
   }
 
   body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .bear-count--hero.bear-count--empty .bear-count__prompt {
@@ -292,10 +325,15 @@
   }
 
   body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header .venue-activity-history {
+    grid-column: 2 !important;
+    grid-row: 4 !important;
+    justify-self: center !important;
+    max-width: 100% !important;
     margin: 5px 0 0 !important;
     color: rgba(255, 255, 255, .68) !important;
     font-size: .62rem !important;
     line-height: 1.2 !important;
+    text-align: center !important;
   }
 }
 
