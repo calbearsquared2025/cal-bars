@@ -151,6 +151,7 @@ textarea {
 
 /* ---------- Branded shell ---------- */
 .site-header {
+  --cgb-header-safe-area-blend: linear-gradient(transparent, transparent);
   position: relative;
   z-index: 50;
   height: var(--header-height);
@@ -162,10 +163,24 @@ textarea {
   padding: calc(env(safe-area-inset-top, 0px) + 10px) max(16px, env(safe-area-inset-right)) 19px max(16px, env(safe-area-inset-left));
   color: var(--cgb-white);
   background:
+    var(--cgb-header-safe-area-blend),
     radial-gradient(circle at 18% -35%, rgba(253, 181, 21, .16), transparent 43%),
     linear-gradient(150deg, var(--cgb-navy-950) 0%, var(--cgb-navy-900) 72%, #00358c 100%);
   border: 0;
   overflow: visible;
+}
+
+@media (max-width: 899px) {
+  .site-header {
+    --cgb-header-safe-area-blend:
+      linear-gradient(
+        180deg,
+        #06152f 0 12px,
+        rgba(6, 21, 47, .92) 32px,
+        rgba(6, 21, 47, .45) 58px,
+        transparent 82px
+      );
+  }
 }
 
 .site-header__brand-row {
