@@ -133,6 +133,7 @@ function ensureFallbackContent({ fallback, state, documentObject, includeMessage
     image.className = 'map-fallback__card';
     image.alt = '';
     image.decoding = 'async';
+    image.fetchPriority = 'high';
     image.width = 1200;
     image.height = 630;
     fallback.replaceChildren(image);
@@ -150,8 +151,7 @@ function ensureFallbackContent({ fallback, state, documentObject, includeMessage
   const game = selectedGame(state);
   const slug = gameRouteParam(game);
   if (!slug) {
-    markCardLoaded(image, false);
-    image.removeAttribute?.('src');
+    if (image.complete && image.naturalWidth > 0) markCardLoaded(image, true);
     return;
   }
 
@@ -165,6 +165,27 @@ function ensureFallbackContent({ fallback, state, documentObject, includeMessage
   } else if (image.complete && image.naturalWidth > 0) {
     markCardLoaded(image, true);
   }
+}
+
+function afterLoadingCardSettles(fallback, callback) {
+  const image = fallback?.querySelector?.('#map-fallback-card') || null;
+  if (!image || image.complete) {
+    callback();
+    return;
+  }
+
+  const previousLoad = image.onload;
+  const previousError = image.onerror;
+  let settled = false;
+  const settle = (previous, event) => {
+    if (typeof previous === 'function') previous.call(image, event);
+    if (settled) return;
+    settled = true;
+    callback();
+  };
+
+  image.onload = (event) => settle(previousLoad, event);
+  image.onerror = (event) => settle(previousError, event);
 }
 
 export function showMapLoading({
@@ -200,13 +221,16 @@ export function hideMapLoading({
     setFallbackMode(fallback, null);
   };
 
-  if (windowObject?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
-    finish();
-    return true;
-  }
+  const reveal = () => {
+    if (windowObject?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
+      finish();
+      return;
+    }
+    fallback.classList?.add?.('map-fallback--leaving');
+    windowObject?.setTimeout?.(finish, LOADING_FADE_MS);
+  };
 
-  fallback.classList?.add?.('map-fallback--leaving');
-  windowObject?.setTimeout?.(finish, LOADING_FADE_MS);
+  afterLoadingCardSettles(fallback, reveal);
   return true;
 }
 
@@ -263,7 +287,8 @@ export function attachMapFailureFallback({
   observedMaps.add(map);
 
   let loaded = Boolean(map.loaded?.());
-  if (!loaded) showMapLoading({ app, documentObject });
+  if (loaded) hideMapLoading({ documentObject, windowObject });
+  else showMapLoading({ app, documentObject });
 
   map.on('load', () => {
     loaded = true;
