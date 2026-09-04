@@ -93,10 +93,10 @@ test('mobile selected profile renders attendance inside the hero only', () => {
     /if \(!mobile\) \{\s*card\.append\(attendance\.count\);/,
     'Only the non-mobile renderer should append attendance as a separate card block.'
   );
-  assert.doesNotMatch(
-    selectedProfileSource,
-    /card\.append\(attendance\.count\);\s*\n\s*if \(attendance\.history\)/,
-    'The old unconditional opening attendance block should be removed.'
+  assert.equal(
+    selectedProfileSource.match(/card\.append\(attendance\.count\);/g)?.length,
+    1,
+    'Attendance should have only the guarded non-mobile separate-card append.'
   );
   assert.match(
     fanIntentCss,
