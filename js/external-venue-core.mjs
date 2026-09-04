@@ -31,6 +31,11 @@ const PRIVATE_RESPONSE_KEYS = new Set([
   'reviewer_note', 'submitter_email', 'submitter_name'
 ]);
 const VENUE_NAME_CONNECTOR_TOKENS = new Set(['a', 'an', 'and', 'at', 'in', 'of', 'on', 'the']);
+const CITY_PLACE_DESIGNATIONS = new Set(['city', 'town', 'village']);
+const NON_CITY_PLACE_DESIGNATIONS = new Set([
+  'borough', 'district', 'hamlet', 'isolated_dwelling', 'neighborhood', 'neighbourhood',
+  'quarter', 'suburb'
+]);
 
 function cleanText(value, maximum = 300) {
   return String(value ?? '')
@@ -96,6 +101,10 @@ function hierarchyText(feature, prefixes) {
   return cleanText(item?.text || item?.place_name || item?.name, 160);
 }
 
+function placeDesignation(item) {
+  return cleanText(item?.place_designation || item?.properties?.place_designation, 40).toLowerCase();
+}
+
 function countryCode(feature) {
   const country = hierarchyMatch(feature, ['country']);
   const raw = cleanText(
@@ -108,10 +117,11 @@ function countryCode(feature) {
 }
 
 function cityFor(feature, code) {
+  const items = hierarchyItems(feature);
   const cityLikeTypes = ['municipality', 'joint_municipality', 'place', 'locality'];
-  const designated = hierarchyItems(feature).find((item) => {
-    const designation = cleanText(item?.place_designation || item?.properties?.place_designation, 40).toLowerCase();
-    return ['city', 'town', 'village'].includes(designation) &&
+  const designated = items.find((item) => {
+    const designation = placeDesignation(item);
+    return CITY_PLACE_DESIGNATIONS.has(designation) &&
       cityLikeTypes.some((type) => hierarchyItemMatches(item, type));
   });
   if (designated) return cleanText(designated.text || designated.place_name || designated.name, 160);
@@ -119,7 +129,19 @@ function cityFor(feature, code) {
   const priorities = code === 'US'
     ? ['municipality', 'joint_municipality', 'place', 'locality']
     : ['place', 'municipality', 'joint_municipality', 'locality'];
-  return hierarchyText(feature, priorities);
+  for (const prefix of priorities) {
+    const fallback = items.find((item) => {
+      if (!hierarchyItemMatches(item, prefix)) return false;
+      const designation = placeDesignation(item);
+      if (NON_CITY_PLACE_DESIGNATIONS.has(designation)) return false;
+      if ((prefix === 'place' || prefix === 'locality') && designation && !CITY_PLACE_DESIGNATIONS.has(designation)) {
+        return false;
+      }
+      return true;
+    });
+    if (fallback) return cleanText(fallback.text || fallback.place_name || fallback.name, 160);
+  }
+  return '';
 }
 
 function regionFor(feature, code) {

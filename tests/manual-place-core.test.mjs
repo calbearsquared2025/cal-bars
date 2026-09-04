@@ -8,15 +8,15 @@ import {
   resolvedManualPlace
 } from '../js/manual-place-core.mjs';
 
-function addressPayload() {
+function addressPayload({ houseNumber = '2123', street = 'N Bellflower Blvd' } = {}) {
   return {
     features: [{
       id: 'address.12345',
       place_type: ['address'],
       center: [-118.1258, 33.7765],
-      address: '2123',
-      text: 'N Bellflower Blvd',
-      place_name: '2123 N Bellflower Blvd, Long Beach, California 90815, United States',
+      address: houseNumber,
+      text: street,
+      place_name: `${houseNumber} ${street}, Long Beach, California 90815, United States`,
       context: [
         { id: 'municipality.1', place_type: ['municipality'], text: 'Long Beach', place_designation: 'city' },
         { id: 'region.1', place_type: ['region'], text: 'California' },
@@ -27,7 +27,7 @@ function addressPayload() {
   };
 }
 
-test('manual address search restricts MapTiler to address results while preserving proximity bias', () => {
+test('manual address search restricts MapTiler to exact address geocoding while preserving optional proximity support', () => {
   const url = new URL(buildMapTilerAddressSearchUrl(
     '2123 N Bellflower Blvd, Long Beach, CA 90815',
     'test-key',
@@ -37,6 +37,7 @@ test('manual address search restricts MapTiler to address results while preservi
   assert.match(url.pathname, /geocoding\/2123%20N%20Bellflower%20Blvd%2C%20Long%20Beach%2C%20CA%2090815\.json$/);
   assert.equal(url.searchParams.get('types'), 'address');
   assert.equal(url.searchParams.get('autocomplete'), 'false');
+  assert.equal(url.searchParams.get('fuzzyMatch'), 'false');
   assert.equal(url.searchParams.get('country'), 'us');
   assert.equal(url.searchParams.get('proximity'), '-118.12,33.77');
 });
@@ -59,6 +60,30 @@ test('resolved manual place keeps the user-entered venue name instead of the Map
   assert.equal(place.city, 'Long Beach');
   assert.equal(place.region, 'CA');
   assert.equal(place.placeType, 'address');
+});
+
+test('typed manual address remains authoritative when MapTiler returns another house number on the same street', () => {
+  const place = resolvedManualPlace(
+    addressPayload({ houseNumber: '451', street: 'Example Drive' }),
+    'Example Venue',
+    '410 Example Drive, Long Beach, CA 90815'
+  );
+
+  assert.ok(place);
+  assert.equal(place.addressLine1, '410 Example Drive');
+  assert.equal(place.address, '410 Example Drive, Long Beach, CA 90815, US');
+  assert.equal(place.submittedAddress, '410 Example Drive, Long Beach, CA 90815');
+  assert.equal(place.latitude, 33.7765);
+  assert.equal(place.longitude, -118.1258);
+});
+
+test('typed manual address rejects a geocode on a different street', () => {
+  const place = resolvedManualPlace(
+    addressPayload({ houseNumber: '451', street: 'Different Road' }),
+    'Example Venue',
+    '410 Example Drive, Long Beach, CA 90815'
+  );
+  assert.equal(place, null);
 });
 
 test('manual venue names are trimmed, normalized, and bounded', () => {

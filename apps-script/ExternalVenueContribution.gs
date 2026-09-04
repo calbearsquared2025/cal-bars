@@ -29,6 +29,7 @@ function parseAddExternalVenuePayload_(payload) {
   const source = cleanExternalText_(place.source, 40).toLowerCase();
   const placeId = cleanExternalText_(place.placeId, 200);
   const name = cleanExternalText_(place.name, CGB_EXTERNAL_MAX_NAME_LENGTH);
+  const submittedAddress = cleanExternalText_(place.submittedAddress, CGB_EXTERNAL_MAX_ADDRESS_LENGTH);
 
   if (!isSafeCanonicalId_(gameId)) throw fanIntentError_('invalid_game_id');
   if (source !== CGB_EXTERNAL_SOURCE) throw externalVenueError_('unsupported_external_source');
@@ -40,7 +41,8 @@ function parseAddExternalVenuePayload_(payload) {
     externalPlace: {
       source: source,
       placeId: placeId,
-      name: name
+      name: name,
+      submittedAddress: submittedAddress
     }
   };
 }
