@@ -28,9 +28,13 @@ test('mobile tray handle remains visible and inverts between navy and white tray
   assert.match(heroCapSource, /data-profile-hero-passed="true"\] \.tray-handle span \{[\s\S]*?background: var\(--cgb-navy-950\) !important;/);
 });
 
-test('mobile selected attendance keeps a right inset matching the profile content gutter', () => {
+test('mobile hero attendance stays inside the selected-profile content gutter', () => {
   assert.match(
     watchPartyCss,
-    /> \.selected-card > \.bear-count \{[\s\S]*?margin: 0 14px 0 0 !important;/
+    /selected-card__header \{[\s\S]*?padding: 12px 14px 13px !important;/
+  );
+  assert.match(
+    fanIntentCss,
+    /selected-card__header \.bear-count--hero \{[\s\S]*?margin: 9px 0 0 !important;/
   );
 });
