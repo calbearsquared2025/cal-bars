@@ -183,6 +183,22 @@
   to { transform: rotate(360deg); }
 }
 
+@media (max-width: 899px) {
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .intent-button__main {
+    gap: 5px !important;
+  }
+
+  body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card .intent-button__undo {
+    margin-left: 3px !important;
+    padding-left: 3px !important;
+    border-left-color: rgba(1, 1, 51, .18) !important;
+    font-size: .58rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    opacity: .68 !important;
+  }
+}
+
 @media (max-width: 359px) {
   .selected-card__share-label-full {
     display: none;
