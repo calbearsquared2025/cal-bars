@@ -161,12 +161,12 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   delete detail.dataset.desktopPhotoForward;
   delete detail.dataset.desktopBalancedOpening;
   delete detail.dataset.desktopFallbackMap;
-  detail.dataset.desktopProfileArrangement = 'identity-what-to-know-attendance-party-editorial-community-photo-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-party-what-to-know-attendance-editorial-community-photo-contribution';
 
   let cursor = hero;
+  parties.forEach((party) => { cursor = placeAfter(cursor, party); });
   cursor = placeAfter(cursor, whatToKnow);
   cursor = placeAfter(cursor, activity);
-  parties.forEach((party) => { cursor = placeAfter(cursor, party); });
   cursor = placeAfter(cursor, editorial);
   cursor = placeAfter(cursor, community);
   if (photo) {
