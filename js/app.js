@@ -359,7 +359,7 @@ function initMap() {
     navigationControl: false,
     geolocateControl: false,
     maptilerLogo: false,
-    attributionControl: { compact: false },
+    attributionControl: { compact: 'auto' },
     fadeDuration: 100
   });
   if (!bounds.isEmpty()) {
