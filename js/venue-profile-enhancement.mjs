@@ -353,7 +353,8 @@ function syncDetailShareLabel(detail, state, venue) {
     gameId: state.gameId,
     venueId: venue.venue_id
   });
-  share.textContent = label;
+  const mobile = globalThis.window?.matchMedia?.('(max-width: 899px)')?.matches === true;
+  share.textContent = mobile ? 'Share' : label;
   share.setAttribute('aria-label', label);
   return true;
 }
