@@ -165,7 +165,7 @@ function installStyles(documentObject = document) {
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-profile-hero-passed="true"] .tray-handle span {
-        background: #000 !important;
+        background: var(--cgb-navy-950) !important;
       }
     }
 
