@@ -6,7 +6,6 @@ import { enhanceVenueProfile } from './venue-profile-enhancement.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-selected-profile-continuation';
-const PHOTO_VIEWER_SELECTOR = 'dialog[data-mobile-photo-viewer]';
 const BASE_TRAY_VIEWPORT_RATIO = 0.58;
 const BASE_TRAY_MAX_PX = 520;
 const REVEAL_TRAY_VIEWPORT_RATIO = 0.66;
@@ -92,6 +91,54 @@ function installStyles(documentObject) {
         box-shadow: none !important;
       }
 
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) {
+        display: grid !important;
+        grid-template-columns: minmax(0, 48fr) minmax(0, 52fr) !important;
+        column-gap: 0 !important;
+        row-gap: 0 !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-hero {
+        grid-column: 1 / -1 !important;
+        grid-row: 1 !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        min-width: 0 !important;
+        align-self: stretch !important;
+        margin: 0 !important;
+        padding: 14px 10px 14px 30px !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-fan-experiences {
+        grid-column: 2 !important;
+        grid-row: 2 !important;
+        min-width: 0 !important;
+        align-self: stretch !important;
+        margin: 0 !important;
+        padding: 14px 12px 14px 30px !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial::before,
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-fan-experiences::before {
+        left: 11px !important;
+        width: 3px !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial + .detail-fan-experiences {
+        margin-top: 0 !important;
+        border-top: 1px solid var(--cgb-neutral-200) !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-photo,
+      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-contribution {
+        grid-column: 1 / -1 !important;
+      }
+
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-hero {
         height: 0 !important;
         min-height: 0 !important;
@@ -114,15 +161,6 @@ function installStyles(documentObject) {
         border-radius: 12px !important;
       }
 
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-photo--supporting .detail-photo__frame[data-mobile-photo-expandable="true"] {
-        cursor: zoom-in;
-      }
-
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-photo--supporting .detail-photo__frame[data-mobile-photo-expandable="true"]:focus-visible {
-        outline: 2px solid var(--cgb-gold-500);
-        outline-offset: 2px;
-      }
-
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-photo__image {
         width: 100% !important;
         height: 100% !important;
@@ -141,69 +179,6 @@ function installStyles(documentObject) {
         color: var(--cgb-ink-500) !important;
         font-size: .6rem !important;
         line-height: 1.25 !important;
-      }
-
-      .detail-photo-viewer {
-        width: min(94vw, 720px);
-        max-width: 94vw;
-        max-height: 88dvh;
-        margin: auto;
-        padding: 0;
-        background: transparent;
-        border: 0;
-        overflow: visible;
-      }
-
-      .detail-photo-viewer::backdrop {
-        background: rgba(1, 1, 20, .78);
-      }
-
-      .detail-photo-viewer__surface {
-        position: relative;
-        max-height: 88dvh;
-        display: grid;
-        gap: 0;
-        background: var(--cgb-white);
-        border-radius: 14px;
-        box-shadow: 0 18px 48px rgba(1, 1, 51, .28);
-        overflow: hidden;
-      }
-
-      .detail-photo-viewer__image {
-        width: 100%;
-        max-height: 74dvh;
-        display: block;
-        object-fit: contain;
-        background: var(--cgb-navy-950);
-      }
-
-      .detail-photo-viewer__metadata {
-        padding: 9px 12px 10px;
-      }
-
-      .detail-photo-viewer__metadata-line {
-        margin: 0;
-        color: var(--cgb-ink-600);
-        font-size: .7rem;
-        line-height: 1.35;
-      }
-
-      .detail-photo-viewer__close {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 34px;
-        height: 34px;
-        display: grid;
-        place-items: center;
-        padding: 0;
-        color: var(--cgb-navy-950);
-        background: rgba(255, 255, 255, .94);
-        border: 1px solid rgba(1, 1, 51, .14);
-        border-radius: 999px;
-        box-shadow: 0 2px 8px rgba(1, 1, 51, .14);
-        font-size: 1.25rem;
-        line-height: 1;
       }
     }
   `;
@@ -248,114 +223,6 @@ function removeGateway(documentObject) {
   documentObject.querySelectorAll('#tray-selected .selected-card__details').forEach((link) => link.remove());
 }
 
-function closeMobilePhotoViewer(documentObject) {
-  const dialog = documentObject?.querySelector?.(PHOTO_VIEWER_SELECTOR);
-  if (!dialog) return false;
-  try {
-    if (dialog.open && typeof dialog.close === 'function') dialog.close();
-  } catch (_) {}
-  dialog.remove();
-  return true;
-}
-
-function createMobilePhotoViewer(documentObject, figure) {
-  const sourceImage = figure?.querySelector?.('.detail-photo__image');
-  if (!sourceImage?.src) return null;
-
-  const dialog = documentObject.createElement('dialog');
-  dialog.className = 'detail-photo-viewer';
-  dialog.dataset.mobilePhotoViewer = 'true';
-  dialog.setAttribute('aria-label', sourceImage.alt || 'Venue photo');
-
-  const surface = documentObject.createElement('div');
-  surface.className = 'detail-photo-viewer__surface';
-
-  const image = documentObject.createElement('img');
-  image.className = 'detail-photo-viewer__image';
-  image.src = sourceImage.currentSrc || sourceImage.src;
-  image.alt = sourceImage.alt;
-  image.decoding = 'async';
-  surface.append(image);
-
-  const sourceMetadata = figure.querySelector(':scope > .detail-photo__metadata');
-  const sourceCaption = sourceMetadata?.querySelector('.detail-photo__caption');
-  const sourceCredit = sourceMetadata?.querySelector('.detail-photo__credit');
-  if (sourceCaption || sourceCredit) {
-    const metadata = documentObject.createElement('div');
-    metadata.className = 'detail-photo-viewer__metadata';
-    const line = documentObject.createElement('p');
-    line.className = 'detail-photo-viewer__metadata-line';
-
-    const captionText = clean(sourceCaption?.textContent);
-    if (captionText) line.append(documentObject.createTextNode(captionText));
-
-    const creditIdentity = sourceCredit?.querySelector('a, span');
-    if (creditIdentity) {
-      line.append(documentObject.createTextNode(captionText ? ' · Photo: ' : 'Photo: '));
-      line.append(creditIdentity.cloneNode(true));
-    }
-
-    if (line.childNodes.length) {
-      metadata.append(line);
-      surface.append(metadata);
-    }
-  }
-
-  const close = documentObject.createElement('button');
-  close.type = 'button';
-  close.className = 'detail-photo-viewer__close';
-  close.setAttribute('aria-label', 'Close photo');
-  close.textContent = '×';
-  close.addEventListener('click', () => {
-    if (typeof dialog.close === 'function') dialog.close();
-    else dialog.remove();
-  });
-  surface.append(close);
-
-  dialog.addEventListener('click', (event) => {
-    if (event.target !== dialog) return;
-    if (typeof dialog.close === 'function') dialog.close();
-    else dialog.remove();
-  });
-  dialog.addEventListener('close', () => dialog.remove(), { once: true });
-  dialog.append(surface);
-  return dialog;
-}
-
-function openMobilePhotoViewer(figure, documentObject, windowObject) {
-  if (windowObject?.matchMedia?.(MOBILE_QUERY)?.matches !== true) return false;
-  closeMobilePhotoViewer(documentObject);
-  const dialog = createMobilePhotoViewer(documentObject, figure);
-  if (!dialog || !documentObject?.body) return false;
-  documentObject.body.append(dialog);
-  if (typeof dialog.showModal === 'function') dialog.showModal();
-  else dialog.setAttribute('open', '');
-  return true;
-}
-
-function enableMobilePhotoViewer(media, documentObject, windowObject) {
-  if (!media?.classList?.contains('detail-photo--supporting')) return false;
-  const frame = media.querySelector(':scope > .detail-photo__frame');
-  if (!frame || frame.dataset.mobilePhotoExpandable === 'true') return Boolean(frame);
-
-  frame.dataset.mobilePhotoExpandable = 'true';
-  frame.setAttribute('role', 'button');
-  frame.setAttribute('tabindex', '0');
-  frame.setAttribute('aria-haspopup', 'dialog');
-  frame.setAttribute('aria-label', 'Expand venue photo');
-
-  const activate = (event) => {
-    event.preventDefault();
-    openMobilePhotoViewer(media, documentObject, windowObject);
-  };
-  frame.addEventListener('click', activate);
-  frame.addEventListener('keydown', (event) => {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    activate(event);
-  });
-  return true;
-}
-
 function clearLegacyOpeningMedia(card) {
   card?.querySelector?.(':scope > .detail-photo--mobile-opening')?.remove();
   card?.querySelector?.(':scope > .detail-local-map--mobile-opening')?.remove();
@@ -391,7 +258,6 @@ function syncContinuationRevealHeight(venueTray, selectedCard, windowObject) {
 }
 
 function clearContinuation(documentObject) {
-  closeMobilePhotoViewer(documentObject);
   clearLegacyOpeningMedia(documentObject?.querySelector?.('#tray-selected > .selected-card'));
   if (cachedVenueDetail?.dataset.profilePresentation === 'mobile-continuation') {
     cachedVenueDetail.classList.remove('venue-detail--selected-continuation');
@@ -437,7 +303,6 @@ export function renderMobileSelectedProfileContinuation({
   removeGateway(documentObject);
   clearLegacyOpeningMedia(selectedCard);
   const changedVenue = lastContinuationVenueId !== venue.venue_id;
-  if (changedVenue) closeMobilePhotoViewer(documentObject);
   lastContinuationVenueId = venue.venue_id;
 
   cachedVenueDetail.replaceChildren();
@@ -466,11 +331,6 @@ export function renderMobileSelectedProfileContinuation({
   renderPhotoFormEntry({ app: continuationApp, documentObject });
   renderListingUpdateEntry({ app: continuationApp, documentObject });
   placeSupportingPhoto(cachedVenueDetail);
-  enableMobilePhotoViewer(
-    cachedVenueDetail.querySelector(':scope > .detail-photo--supporting'),
-    documentObject,
-    windowObject
-  );
 
   syncContinuationRevealHeight(venueTray, selectedCard, windowObject);
   windowObject.requestAnimationFrame?.(() => syncContinuationRevealHeight(venueTray, selectedCard, windowObject));

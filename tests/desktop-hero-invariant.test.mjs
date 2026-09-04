@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 const source = await readFile(new URL('../js/desktop-photo-forward-profile.mjs', import.meta.url), 'utf8');
+const fanExperiencesSource = await readFile(new URL('../js/fan-experiences.mjs', import.meta.url), 'utf8');
+const fanIntentCss = await readFile(new URL('../css/fan-intent.css', import.meta.url), 'utf8');
 const firstPaintCss = await readFile(new URL('../css/profile-first-paint.css', import.meta.url), 'utf8');
 const watchPartyFormCss = await readFile(new URL('../css/watch-party-form.css', import.meta.url), 'utf8');
 const watchPartyFormSource = await readFile(new URL('../js/watch-party-form.js', import.meta.url), 'utf8');
@@ -20,27 +22,52 @@ test('desktop selected profiles always use the universal hero treatment', () => 
   );
 });
 
-test('desktop opening keeps attendance to the right of What to Know', () => {
+test('desktop opening puts Watch Party ahead of What to Know and attendance', () => {
   assert.match(
     source,
-    /desktopProfileArrangement = 'identity-what-to-know-attendance-party-editorial-community-photo-contribution'/,
-    'Desktop profile arrangement should pair attendance with What to Know before Watch Party.'
+    /desktopProfileArrangement = 'identity-party-what-to-know-attendance-editorial-community-photo-contribution'/,
+    'Desktop profile arrangement should prioritize selected-game Watch Party information before persistent venue context.'
   );
   assert.match(
     source,
-    /cursor = placeAfter\(cursor, whatToKnow\);\s*cursor = placeAfter\(cursor, activity\);\s*parties\.forEach/,
-    'DOM order should keep What to Know and attendance adjacent before Watch Party.'
+    /let cursor = hero;\s*parties\.forEach[\s\S]*?cursor = placeAfter\(cursor, whatToKnow\);\s*cursor = placeAfter\(cursor, activity\);/,
+    'DOM order should place Watch Party content before the What to Know and attendance row.'
   );
   assert.match(
     firstPaintCss,
     /\.detail-what-to-know \{\s*grid-column: 1 \/ 8 !important;/,
-    'What to Know should occupy the left side of the opening information row.'
+    'What to Know should occupy the left side of its information row.'
   );
   assert.match(
     firstPaintCss,
     /> \.activity-card \{\s*grid-column: 8 \/ 13 !important;/,
-    'Attendance should occupy the right side of the same opening information row.'
+    'Attendance should occupy the right side of the same information row.'
   );
+});
+
+test('desktop CGB Says and You Say share a row when both exist', () => {
+  assert.match(
+    firstPaintCss,
+    /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-editorial \{[\s\S]*?grid-column: 1 \/ 6 !important;/,
+    'CGB Says should use the narrower left column when both voice sections exist.'
+  );
+  assert.match(
+    firstPaintCss,
+    /:has\(> \.detail-editorial\):has\(> \.detail-fan-experiences\) > \.detail-fan-experiences \{[\s\S]*?grid-column: 6 \/ 13 !important;/,
+    'You Say should use the broader right column when both voice sections exist.'
+  );
+  assert.match(
+    firstPaintCss,
+    /\.detail-fan-experiences \{[\s\S]*?align-self: stretch !important;[\s\S]*?margin: 0 !important;[\s\S]*?border-top: 1px solid var\(--cgb-neutral-200\) !important;/,
+    'The paired You Say column should align cleanly with CGB Says without the stacked-section offset.'
+  );
+});
+
+test('fan experience quotes do not publish name or year attribution in the profile', () => {
+  const createQuoteSource = fanExperiencesSource.match(/function createQuote\([\s\S]*?\n}\n\nfunction placeSection/)?.[0] || '';
+  assert.ok(createQuoteSource, 'Expected createQuote renderer to be present.');
+  assert.doesNotMatch(createQuoteSource, /display_name|\.year|detail-fan-experiences__attribution/);
+  assert.doesNotMatch(fanExperiencesSource, /fanExperienceYear|display_name:|year:/);
 });
 
 test('desktop Bear attendance matches the mobile compact count treatment', () => {
@@ -51,11 +78,21 @@ test('desktop Bear attendance matches the mobile compact count treatment', () =>
   assert.match(firstPaintCss, /\.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.6rem !important;/);
 });
 
-test('desktop zero attendance is vertically centered in its activity cell', () => {
+test('desktop zero attendance is centered by the activity cell rather than a stretched child', () => {
   assert.match(
     firstPaintCss,
-    /strong\.bear-count\.bear-count--empty \{[\s\S]*?width: 100% !important;[\s\S]*?display: inline-flex !important;[\s\S]*?align-self: stretch !important;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;/,
-    'The empty attendance row should fill the desktop activity cell and center its prompt vertically.'
+    /> \.activity-card:has\(> strong\.bear-count\.bear-count--empty\) \{[\s\S]*?align-items: center !important;[\s\S]*?justify-content: center !important;/,
+    'The semantic attendance cell should own empty-state centering even if its profile row moves.'
+  );
+  const emptyRule = firstPaintCss.match(/\.activity-card > strong\.bear-count\.bear-count--empty \{[\s\S]*?\n  }/)?.[0] || '';
+  assert.ok(emptyRule, 'Expected the desktop empty-attendance rule to be present.');
+  assert.match(emptyRule, /width: auto !important;/);
+  assert.match(emptyRule, /min-height: 0 !important;/);
+  assert.match(emptyRule, /max-width: none !important;/);
+  assert.doesNotMatch(
+    emptyRule,
+    /width: 100% !important|align-self: stretch !important/,
+    'The previous child-stretch centering attempt should be removed.'
   );
 });
 
@@ -90,6 +127,19 @@ test('desktop profile styling has one static owner', () => {
   );
 });
 
+test('desktop action buttons gain subtle depth without changing the game selector', () => {
+  assert.match(
+    fanIntentCss,
+    /@media \(min-width: 900px\) \{[\s\S]*?#tray-selected \.action-row > \.primary-button,[\s\S]*?#tray-selected \.action-row > \.secondary-button \{[\s\S]*?0 2px 5px rgba\(1, 1, 51, \.11\);/,
+    'Desktop selected-profile actions should have restrained tactile depth.'
+  );
+  assert.doesNotMatch(
+    fanIntentCss,
+    /\.game-button/,
+    'Fan Intent button styling must not alter the header game selector.'
+  );
+});
+
 test('What to Know action and profile badges match the approved guide', () => {
   assert.match(
     firstPaintCss,
@@ -109,12 +159,12 @@ test('What to Know action and profile badges match the approved guide', () => {
   assert.match(
     firstPaintCss,
     /> \.detail-hero \.venue-badge \{[\s\S]*?color: var\(--cgb-gold-300, #ffd15a\) !important;/,
-    'Desktop hero badges must use a valid gold fallback instead of inheriting white text.'
+    'Desktop hero badges keep the existing gold treatment unless a badge type overrides it.'
   );
   assert.match(
     firstPaintCss,
-    /> \.detail-hero \.venue-badge\.badge--fan-added \{[\s\S]*?border: 1px solid var\(--cgb-gold-400\) !important;/,
-    'Fan-Added must own its visible gold outline in the navy hero.'
+    /> \.detail-hero \.venue-badge\.badge--fan-added \{[\s\S]*?color: var\(--cgb-white, #fff\) !important;[\s\S]*?background: transparent !important;[\s\S]*?border: 1px solid var\(--cgb-white, #fff\) !important;/,
+    'Fan-Added should be white hollow in the desktop navy hero.'
   );
   assert.match(
     firstPaintCss,

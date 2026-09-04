@@ -118,9 +118,9 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero .venue-badge.badge--fan-added {
-    color: var(--cgb-gold-300, #ffd15a) !important;
+    color: var(--cgb-white, #fff) !important;
     background: transparent !important;
-    border: 1px solid var(--cgb-gold-400) !important;
+    border: 1px solid var(--cgb-white, #fff) !important;
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero .venue-badge.badge--fan-added::before {
@@ -252,6 +252,13 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     border-left: 1px solid var(--cgb-neutral-200) !important;
   }
 
+  /* Empty attendance remains centered by the activity cell itself, regardless of
+     where that information row sits in the desktop profile hierarchy. */
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .activity-card:has(> strong.bear-count.bear-count--empty) {
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count:not(.bear-count--empty) {
     width: 100% !important;
     min-height: 56px !important;
@@ -325,10 +332,10 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty {
-    width: 100% !important;
-    min-height: 56px;
+    width: auto !important;
+    min-height: 0 !important;
+    max-width: none !important;
     display: inline-flex !important;
-    align-self: stretch !important;
     align-items: center;
     justify-content: center;
     gap: 5px;
@@ -372,6 +379,21 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     width: auto !important;
     margin: 0 !important;
     padding: 16px 18px 16px 40px !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial {
+    grid-column: 1 / 6 !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-fan-experiences {
+    grid-column: 6 / 13 !important;
+    grid-row: auto !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+    margin: 0 !important;
     border-top: 1px solid var(--cgb-neutral-200) !important;
   }
 

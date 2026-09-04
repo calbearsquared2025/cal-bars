@@ -27,11 +27,6 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
-function fanExperienceYear(value) {
-  const year = Number(value);
-  return Number.isInteger(year) && year >= 2000 && year <= 2100 ? year : null;
-}
-
 function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
@@ -79,9 +74,7 @@ export function fanExperiencesForVenue(snapshot, venueId) {
     .filter((item) => clean(item?.venue_id) === resolvedVenueId && clean(item?.text))
     .map((item) => Object.freeze({
       venue_id: resolvedVenueId,
-      text: clean(item.text),
-      display_name: clean(item.display_name),
-      year: fanExperienceYear(item.year)
+      text: clean(item.text)
     }));
 }
 
@@ -124,9 +117,14 @@ function installMobileWhatToKnowStyles(documentObject) {
   style.id = MOBILE_WHAT_TO_KNOW_STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card > .selected-card__what-to-know {
+      html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__what-to-know {
+        grid-row: auto !important;
         margin: 2px 0 12px;
         padding: 0;
+      }
+
+      html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .bear-count {
+        grid-row: auto !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-header {
@@ -209,6 +207,10 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
   const card = documentObject.querySelector('#tray-selected > .selected-card');
   const header = card?.querySelector(':scope > .selected-card__header');
   if (!card || !header) return null;
+  const eventBlocks = [...card.querySelectorAll(':scope > .party-module, :scope > .selected-card__plan-party')];
+  const eventAnchor = eventBlocks[eventBlocks.length - 1] || header;
+  const actionRow = card.querySelector(':scope > .action-row');
+  const informationAnchor = actionRow || eventAnchor;
 
   installMobileWhatToKnowStyles(documentObject);
   const section = documentObject.createElement('section');
@@ -256,7 +258,7 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
     section.append(empty);
   }
 
-  header.after(section);
+  informationAnchor.after(section);
   return section;
 }
 
@@ -276,26 +278,6 @@ function createQuote(documentObject, item) {
   quoteRow.append(mark, quote);
 
   experience.append(quoteRow);
-
-  if (item.display_name || item.year) {
-    const attribution = documentObject.createElement('p');
-    attribution.className = 'detail-fan-experiences__attribution';
-    if (item.display_name) {
-      const name = documentObject.createElement('strong');
-      name.className = 'detail-fan-experiences__name';
-      name.textContent = item.display_name;
-      attribution.append(name);
-    }
-    if (item.year) {
-      if (item.display_name) attribution.append(documentObject.createTextNode(' · '));
-      const year = documentObject.createElement('span');
-      year.className = 'detail-fan-experiences__year';
-      year.textContent = String(item.year);
-      attribution.append(year);
-    }
-    experience.append(attribution);
-  }
-
   return experience;
 }
 

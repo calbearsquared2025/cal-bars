@@ -202,6 +202,12 @@
     clip-path: none !important;
   }
 
+  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-badge.badge--fan-added {
+    color: var(--cgb-white, #fff) !important;
+    background: transparent !important;
+    border: 1px solid var(--cgb-white, #fff) !important;
+  }
+
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-badge.badge--fan-added::before {
     content: none !important;
   }
