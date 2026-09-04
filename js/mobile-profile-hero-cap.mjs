@@ -127,6 +127,12 @@ function installStyles(documentObject = document) {
       }
     }
 
+    @media (max-width: 899px) and (orientation: portrait) {
+      body[data-view="map"][data-command-surface="map"]:has(#map-view > #venue-tray.venue-tray.tray--selected) {
+        --header-height: calc(82px + env(safe-area-inset-top, 0px));
+      }
+    }
+
     @media (max-width: 899px) and (prefers-reduced-motion: reduce) {
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle,
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle span,
