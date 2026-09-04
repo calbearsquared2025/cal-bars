@@ -28,7 +28,12 @@ function smokePage(response, requestUrl) {
   const prelude = `<script>
     (() => {
       const snapshot = ${snapshotJson};
-      const efficiencyMode = new URLSearchParams(location.search).get('__cgb_smoke') === 'external-search-efficiency';
+      const smokeMode = new URLSearchParams(location.search).get('__cgb_smoke') || 'mobile';
+      const efficiencyMode = smokeMode === 'external-search-efficiency';
+      if (smokeMode === 'mobile' && snapshot.venues?.[0]) {
+        snapshot.venues[0].photo_url = location.origin + '/tests/fixtures/venue-photo-synthetic.svg';
+        snapshot.venues[0].photo_caption = 'Synthetic supporting venue photo';
+      }
       const hierarchy = [
         { id: 'municipality.1', place_type: ['municipality'], text: 'Long Beach', place_designation: 'city' },
         { id: 'region.1', place_type: ['region'], text: 'California' },
@@ -126,6 +131,9 @@ function smokePage(response, requestUrl) {
           if (normalized === 'weak venue long beach') return json({ features: [poiFeature('Pizza Hut', 'poi.weak', 'Oakland')] });
           return json({ features: [] });
         }
+        if (url.origin !== location.origin) {
+          throw new Error('Unexpected external network request in browser smoke: ' + url.href);
+        }
         return nativeFetch(input, init);
       };
     })();
@@ -137,7 +145,10 @@ function smokePage(response, requestUrl) {
       : '/tests/browser/smoke-runtime-harness.mjs';
   const driver = `<output id="cgb-smoke-result">CGB_SMOKE_RUNNING</output><script type="module" src="${harness}"></script>`;
   const html = productionIndex
-    .replace('<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
+    .replace('<link rel="preconnect" href="https://cdn.maptiler.com">', '')
+    .replace('<link rel="preconnect" href="https://api.maptiler.com">', '')
+    .replace('<link href="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css" rel="stylesheet">', '')
+    .replace('<script src="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.umd.min.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
     .replace('</head>', `${prelude}\n</head>`)
     .replace('</body>', `${driver}\n</body>`);
   response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -173,6 +184,7 @@ async function run({ mode, marker, windowSize, label = mode, virtualTimeBudget =
     '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
     '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
     '--disable-sync', '--metrics-recording-only', '--no-first-run', `--user-data-dir=${profile}`,
+    '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
     `--window-size=${windowSize}`, `--virtual-time-budget=${virtualTimeBudget}`, '--dump-dom', url
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = '';

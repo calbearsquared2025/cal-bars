@@ -27,7 +27,7 @@ function installStyles() {
       line-height: 1.1 !important;
     }
 
-    #map-view > #venue-tray.venue-tray.tray--selected .selected-card:not([data-mobile-media-forward="true"]) > .bear-count {
+    #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count {
       grid-column: 2 !important;
       grid-row: 1 !important;
       align-self: center !important;
@@ -77,18 +77,13 @@ function installStyles() {
         --cgb-selected-card-column-gap: 14px;
         grid-template-columns: minmax(0, 1fr) var(--cgb-selected-card-aside-width) !important;
         gap: var(--cgb-selected-card-row-gap) var(--cgb-selected-card-column-gap) !important;
-        padding: 0 14px 12px !important;
+        padding: 0 14px 14px !important;
+        overflow: hidden !important;
+        background: var(--cgb-white) !important;
         border-bottom: 0 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] {
-        --cgb-selected-card-aside-width: minmax(124px, 40%);
-        --cgb-selected-card-row-gap: 8px;
-        --cgb-selected-card-column-gap: 12px;
-        align-items: start;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card:not([data-mobile-media-forward="true"]) > .selected-card__header {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .selected-card__header {
         grid-column: 1 !important;
         grid-row: 1 !important;
         margin: 0 !important;
@@ -98,112 +93,7 @@ function installStyles() {
         border-bottom: 0 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__header {
-        grid-column: 1;
-        grid-row: 1;
-        min-width: 0;
-        margin: 0;
-        padding: 8px 0 0;
-        background: transparent;
-        border-left: 0;
-        border-bottom: 0;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .selected-card__what-to-know {
-        grid-column: 1;
-        grid-row: 2;
-        align-self: start;
-        margin: 2px 0 0;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-photo--mobile-opening,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening {
-        grid-column: 2;
-        grid-row: 1;
-        align-self: start;
-        width: 100%;
-        max-width: none;
-        margin: 8px 0 0;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening {
-        position: relative;
-        z-index: 0;
-        aspect-ratio: 3 / 2;
-        min-height: 0;
-        overflow: hidden;
-        background: var(--cgb-neutral-100);
-        border: 1px solid var(--cgb-neutral-200);
-        border-radius: 12px;
-        clip-path: none;
-        visibility: hidden;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening.is-ready {
-        visibility: visible;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening canvas {
-        cursor: default;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening .maplibregl-control-container {
-        display: none;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening .detail-local-map__marker {
-        pointer-events: none;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .detail-local-map--mobile-opening .detail-local-map__photo-action {
-        position: absolute;
-        z-index: 4;
-        right: 6px;
-        bottom: 6px;
-        min-height: 26px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 4px 7px;
-        color: var(--cgb-navy-900);
-        background: rgba(255, 255, 255, .96);
-        border: 1px solid var(--cgb-gold-500);
-        border-radius: 8px;
-        box-shadow: var(--shadow-xs);
-        font-family: var(--font-condensed);
-        font-size: .62rem;
-        font-weight: 800;
-        line-height: 1;
-        text-decoration: none;
-        white-space: nowrap;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count {
-        grid-column: 2;
-        grid-row: 2;
-        align-self: center;
-        margin: 0;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) {
-        min-height: 64px;
-        padding: 0;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count:not(.bear-count--empty) .bear-count__number {
-        font-size: 2rem;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .bear-count.bear-count--empty {
-        min-height: 64px;
-        padding: 0;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] > .venue-activity-history {
-        grid-column: 1 / -1;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card:not([data-mobile-media-forward="true"]) h2 {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card h2 {
         display: block !important;
         margin: 4px 0 3px !important;
         overflow: visible !important;
@@ -211,16 +101,6 @@ function installStyles() {
         line-height: 1.08 !important;
         -webkit-box-orient: initial !important;
         -webkit-line-clamp: unset !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] h2 {
-        display: block;
-        margin: 4px 0 3px;
-        overflow: visible;
-        font-size: clamp(1.2rem, 5.25vw, 1.5rem);
-        line-height: 1.08;
-        -webkit-box-orient: initial;
-        -webkit-line-clamp: unset;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-location {
@@ -298,12 +178,11 @@ function installStyles() {
         display: grid !important;
         gap: 4px !important;
         margin: 0 !important;
-        padding: 10px 12px 9px !important;
+        padding: 14px 13px 12px !important;
         color: var(--cgb-navy-950) !important;
-        background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 78%) !important;
-        border: 1px solid var(--cgb-gold-300, #f2cc67) !important;
-        border-left: 4px solid var(--cgb-gold-400) !important;
-        border-radius: 14px !important;
+        background: var(--cgb-gold-300, #ffd15a) !important;
+        border: 1px solid var(--cgb-gold-500) !important;
+        border-radius: 12px !important;
         clip-path: none !important;
         box-shadow: none !important;
       }
@@ -313,12 +192,15 @@ function installStyles() {
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title strong {
-        font-weight: 850 !important;
+        font-family: var(--font-condensed, var(--font-display)) !important;
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
+        letter-spacing: .02em !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p {
         margin: 0 !important;
-        color: var(--cgb-ink-700) !important;
+        color: var(--cgb-navy-950) !important;
         font-size: .74rem !important;
         line-height: 1.27 !important;
       }
@@ -368,7 +250,7 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {
         display: grid !important;
-        grid-template-columns: minmax(0, 2fr) minmax(96px, 1fr) !important;
+        grid-template-columns: minmax(0, 1.6fr) minmax(128px, 1fr) !important;
         gap: 8px !important;
         margin-top: 0 !important;
         margin-inline: 4px;
@@ -379,10 +261,14 @@ function installStyles() {
         grid-row: 1 !important;
         min-height: 50px !important;
         margin: 0 !important;
-        color: var(--cgb-navy-950) !important;
-        background: linear-gradient(135deg, var(--cgb-gold-400), var(--cgb-gold-300, #ffd15a)) !important;
-        border-color: var(--cgb-gold-500) !important;
+        color: var(--cgb-white) !important;
+        background: var(--cgb-navy-950) !important;
+        border-color: var(--cgb-navy-950) !important;
+        font-family: var(--font-condensed, var(--font-display)) !important;
         font-size: 1rem !important;
+        font-weight: 900 !important;
+        letter-spacing: .015em !important;
+        text-transform: uppercase !important;
       }
 
       .intent-button__main {
@@ -418,7 +304,9 @@ function installStyles() {
         border: 1px solid var(--cgb-neutral-300) !important;
         border-radius: 11px !important;
         font-size: .78rem !important;
-        font-weight: 700 !important;
+        font-weight: 800 !important;
+        line-height: 1.05 !important;
+        text-transform: uppercase !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon {
@@ -441,10 +329,6 @@ function installStyles() {
           --cgb-selected-card-row-gap: 7px;
           --cgb-selected-card-column-gap: 9px;
           padding-inline: 10px !important;
-        }
-
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card[data-mobile-media-forward="true"] {
-          --cgb-selected-card-aside-width: 116px;
         }
 
         body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .bear-count--empty {

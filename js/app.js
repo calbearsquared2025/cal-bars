@@ -51,6 +51,16 @@ const dom = {};
 let previousMobileLayout = MOBILE_MEDIA.matches;
 let lastExpandedTrayState = null;
 
+function configureMapTilerSdk() {
+  const sdk = window.maptilersdk;
+  if (!sdk?.config) return false;
+  sdk.config.apiKey = MAPTILER_KEY;
+  sdk.config.session = true;
+  return true;
+}
+
+configureMapTilerSdk();
+
 function isMobileLayout() {
   return MOBILE_MEDIA.matches;
 }
@@ -309,7 +319,13 @@ function markerElement(venue) {
 
 function initMap() {
   if ((state.detailMode && isMobileLayout()) || state.map || !dom.map) return;
-  if (!window.maplibregl) {
+  if (!configureMapTilerSdk()) {
+    dom.mapFallback.hidden = false;
+    dom.map.classList.add('map--fallback');
+    return;
+  }
+  const sdk = window.maptilersdk;
+  if (!sdk?.Map || !sdk?.Marker || !sdk?.LngLatBounds || !sdk?.NavigationControl) {
     dom.mapFallback.hidden = false;
     dom.map.classList.add('map--fallback');
     return;
@@ -332,22 +348,24 @@ function initMap() {
     return;
   }
 
-  const bounds = new maplibregl.LngLatBounds();
+  const bounds = new sdk.LngLatBounds();
   state.snapshot.venues.forEach((venue) => bounds.extend([Number(venue.longitude), Number(venue.latitude)]));
 
-  state.map = new maplibregl.Map({
+  state.map = new sdk.Map({
     container: dom.map,
     style: MAPTILER_STYLE,
     center: [-98.5795, 39.8283],
     zoom: 3.2,
-    attributionControl: false,
+    navigationControl: false,
+    geolocateControl: false,
+    maptilerLogo: false,
+    attributionControl: { compact: 'auto' },
     fadeDuration: 100
   });
   if (!bounds.isEmpty()) {
     state.map.fitBounds(bounds, { padding: 56, maxZoom: 7, duration: 0 });
   }
-  state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
-  state.map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
+  state.map.addControl(new sdk.NavigationControl({ showCompass: false }), 'top-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
   state.map.on('load', () => {
     renderMarkers();
@@ -404,13 +422,14 @@ function focusLocation(origin, nearby) {
 }
 
 function renderMarkers() {
-  if (!state.map) return;
+  const sdk = window.maptilersdk;
+  if (!state.map || !sdk?.Marker) return;
   state.markers.forEach((marker) => marker.remove());
   state.markers.clear();
   rankedMapVenues().forEach(({ venue }) => {
     const element = markerElement(venue);
     element.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
-    const marker = new maplibregl.Marker({ element, anchor: 'bottom' })
+    const marker = new sdk.Marker({ element, anchor: 'bottom' })
       .setLngLat([Number(venue.longitude), Number(venue.latitude)])
       .addTo(state.map);
     state.markers.set(venue.venue_id, marker);
@@ -419,14 +438,15 @@ function renderMarkers() {
 }
 
 function renderUserMarker() {
-  if (!state.map) return;
+  const sdk = window.maptilersdk;
+  if (!state.map || !sdk?.Marker) return;
   state.userMarker?.remove();
   state.userMarker = null;
   if (!state.origin) return;
   const dot = document.createElement('div');
   dot.className = 'user-marker';
   dot.setAttribute('aria-label', 'Your search location');
-  state.userMarker = new maplibregl.Marker({ element: dot, anchor: 'center' })
+  state.userMarker = new sdk.Marker({ element: dot, anchor: 'center' })
     .setLngLat([state.origin.lon, state.origin.lat])
     .addTo(state.map);
 }

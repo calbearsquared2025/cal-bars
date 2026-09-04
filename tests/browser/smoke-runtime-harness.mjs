@@ -63,6 +63,13 @@ async function ready(desktop) {
   desktop ? 'desktop app' : 'mobile app');
 }
 
+function validateMapTilerRuntime() {
+  check(Boolean(window.maptilersdk?.Map), 'MapTiler SDK-compatible Map constructor should be available');
+  check(window.maptilersdk?.config?.session === true, 'Application should explicitly enable MapTiler SDK session mode');
+  check(Boolean(window.maptilersdk?.config?.apiKey), 'Application should configure the public MapTiler key on the SDK mock');
+  check((window.CGBMapLibreRuntimeMock?.maps?.length || 0) > 0, 'Map should initialize through the MapTiler SDK-compatible mock');
+}
+
 function firstVenueCard() {
   return element('#location-list .location-card[data-venue-id]');
 }
@@ -75,6 +82,28 @@ async function selectFirstVenue() {
   card.click();
   await waitFor(() => state()?.selectedVenueId === venueId && visible('#tray-selected'), 'selected venue profile');
   check((element('#tray-selected')?.textContent || '').trim().length > 0, 'Selected venue profile should contain venue content');
+}
+
+async function validateMobileSupportingPhoto() {
+  const selectedCard = element('#tray-selected > .selected-card');
+  const continuation = element('#tray-selected > #venue-detail.venue-detail--selected-continuation');
+  await waitFor(() => Boolean(continuation?.querySelector(':scope > .detail-photo.detail-photo--supporting')), 'mobile supporting venue photo');
+  const photo = continuation?.querySelector(':scope > .detail-photo.detail-photo--supporting');
+  const frame = photo?.querySelector('.detail-photo__frame');
+  const image = photo?.querySelector('.detail-photo__image');
+  check(Boolean(selectedCard?.querySelector(':scope > .selected-card__header')), 'Mobile selected profile should keep its identity header');
+  check(Boolean(photo), 'Approved mobile photo should render as supporting profile content');
+  check(!selectedCard?.contains(photo), 'Supporting photo should not be inserted into the collapsed selected-card opening');
+  check(!continuation?.querySelector(':scope > .detail-hero > .detail-photo'), 'Supporting photo should not be owned by the collapsed legacy detail hero');
+  if (frame) {
+    const rect = frame.getBoundingClientRect();
+    const ratio = rect.height > 0 ? rect.width / rect.height : 0;
+    check(Math.abs(ratio - 1.5) < 0.08, 'Supporting mobile photo should render at approximately 3:2');
+  }
+  if (!image) return;
+  image.src = '/tests/fixtures/does-not-exist.svg';
+  await waitFor(() => !element('#tray-selected > #venue-detail.venue-detail--selected-continuation > .detail-photo'), 'failed supporting photo removal');
+  check(!element('#tray-selected > #venue-detail.venue-detail--selected-continuation > .detail-local-map'), 'Failed mobile photo should not create a local-map replacement');
 }
 
 function validateMobileNavigationGeometry() {
@@ -111,6 +140,7 @@ async function openMobileSurface(buttonSelector, surfaceSelector, surfaceName) {
 async function runMobile() {
   await ready(false);
   check(visible('#map-view') && visible('#map'), 'Mobile map surface should render');
+  validateMapTilerRuntime();
   validateMobileNavigationGeometry();
   await validateLongGameLabel();
 
@@ -137,6 +167,7 @@ async function runMobile() {
   element('#mobile-list-button')?.click();
   await waitFor(() => visible('#tray-list'), 'mobile location list reopened');
   await selectFirstVenue();
+  await validateMobileSupportingPhoto();
 
   element('#mobile-map-button')?.click();
   await waitFor(() => document.body.dataset.commandSurface === 'map' && visible('#map-view'), 'mobile map navigation');
@@ -281,6 +312,7 @@ async function validateDesktopContributionEntry() {
 async function runDesktop() {
   await ready(true);
   check(visible('#map-view') && visible('#map'), 'Desktop map surface should render');
+  validateMapTilerRuntime();
   check(visible('#tray-list'), 'Desktop venue list should render');
   await validateDesktopSearchHelper();
   await validateDesktopContributionWithoutSelection();

@@ -45,10 +45,13 @@ function renderApplication(windowObject) {
 }
 
 function externalPlacePayload(selected) {
-  return {
+  const payload = {
     source: selected.source,
-    placeId: selected.placeId
+    placeId: selected.placeId,
+    name: selected.name
   };
+  if (selected.submittedAddress) payload.submittedAddress = selected.submittedAddress;
+  return payload;
 }
 
 async function postAddExternalVenue(selected, documentObject, windowObject) {

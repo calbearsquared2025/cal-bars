@@ -23,6 +23,7 @@ const mimeTypes = new Map([
 const standardViewports = [
   { label: '1024', width: 1024, height: 800 },
   { label: '1280', width: 1280, height: 900 },
+  { label: '1440-locations', width: 1440, height: 1000, reviewMode: 'locations' },
   { label: '1440', width: 1440, height: 1000 },
   { label: 'mobile-390', width: 390, height: 844 },
   { label: 'mobile-390-bears-say', width: 390, height: 844, reviewMode: 'bears-say' }
@@ -131,6 +132,11 @@ function reviewPage(root, response) {
           await waitFor(() => visible(document.querySelector('#tray-list')));
         }
 
+        if (!mobile && reviewMode === 'locations') {
+          document.body.dataset.reviewReady = 'true';
+          return;
+        }
+
         if (trayReview && reviewMode === 'tray-full') {
           document.body.dataset.reviewReady = 'true';
           return;
@@ -149,7 +155,7 @@ function reviewPage(root, response) {
     })();
   </script>`;
   const html = productionIndex
-    .replace('<script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
+    .replace('<script src="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.umd.min.js" defer></script>', '<script src="/tests/browser/maplibre-runtime-mock.js" defer></script>')
     .replace('</head>', `${prelude}\n</head>`)
     .replace('</body>', `${driver}\n</body>`);
   response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });

@@ -38,15 +38,19 @@ export function connectFooterPopover({
 
     const buttonRect = button.getBoundingClientRect();
     const trayRect = tray?.getBoundingClientRect();
+    const footerRect = button.closest?.('.site-footer')?.getBoundingClientRect?.();
     const popoverWidth = Math.min(width, window.innerWidth - (VIEWPORT_INSET * 2));
     const fallbackLeft = buttonRect.left + (buttonRect.width / 2) - (popoverWidth / 2);
     const left = Math.min(
       Math.max(VIEWPORT_INSET, trayRect ? trayRect.left - popoverWidth - gap : fallbackLeft),
       window.innerWidth - popoverWidth - VIEWPORT_INSET
     );
+    const bottom = footerRect
+      ? Math.max(VIEWPORT_INSET, window.innerHeight - footerRect.top + gap)
+      : VIEWPORT_INSET;
 
     dialog.style.setProperty('--about-popover-left', `${Math.round(left)}px`);
-    dialog.style.setProperty('--about-popover-bottom', `${VIEWPORT_INSET}px`);
+    dialog.style.setProperty('--about-popover-bottom', `${Math.round(bottom)}px`);
     dialog.classList.add('about-dialog--footer-popover');
     dialog.show();
     return true;

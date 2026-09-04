@@ -16,6 +16,31 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         text-transform: uppercase;
       }
 
+      .mobile-command-bar #mobile-add-button {
+        background: rgba(255, 255, 255, .055) !important;
+        border-color: rgba(255, 255, 255, .42) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, .16),
+          inset 0 -2px 0 rgba(0, 0, 0, .20),
+          0 1px 2px rgba(0, 0, 0, .14) !important;
+      }
+
+      .mobile-command-bar #mobile-add-button:hover,
+      .mobile-command-bar #mobile-add-button:focus-visible {
+        background: rgba(255, 255, 255, .08) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, .20),
+          inset 0 -2px 0 rgba(0, 0, 0, .22),
+          0 1px 2px rgba(0, 0, 0, .16) !important;
+      }
+
+      #tray-selected #venue-detail .detail-editorial h2,
+      #tray-selected #venue-detail .detail-fan-experiences h2,
+      body[data-view="detail"] #venue-detail .detail-editorial h2,
+      body[data-view="detail"] #venue-detail .detail-fan-experiences h2 {
+        font-family: var(--font-condensed, sans-serif) !important;
+      }
+
       #add-surface > .command-surface__shell {
         background: var(--cgb-warm-50, #f7f6f2) !important;
       }
@@ -29,28 +54,22 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         bottom: 16px !important;
       }
 
+      .maplibregl-ctrl-top-right {
+        bottom: 44px !important;
+      }
+
+      .map-actions {
+        bottom: 142px !important;
+      }
+
       .maplibregl-ctrl-bottom-right {
-        right: auto !important;
+        right: calc(min(390px, 34vw) + 26px) !important;
         bottom: 16px !important;
-        left: 90px !important;
+        left: auto !important;
       }
 
-      .mobile-command-bar #mobile-add-button {
-        width: 100% !important;
-        min-width: 0 !important;
-        justify-self: stretch !important;
-        padding-inline: 10px !important;
-        background: var(--cgb-white, #fff) !important;
-        border: 1px solid var(--cgb-neutral-300, #cbd0d6) !important;
-        border-radius: 8px !important;
-        box-shadow: none !important;
-      }
-
-      .mobile-command-bar #mobile-add-button:hover,
-      .mobile-command-bar #mobile-add-button:focus-visible {
-        background: var(--cgb-gold-50, #fff8e6) !important;
-        border-color: var(--cgb-gold-400, #fdb515) !important;
-        text-decoration: none !important;
+      body[data-view="map"] .map-view:has(> #venue-tray.venue-tray.tray--selected) .maplibregl-ctrl-bottom-right {
+        right: calc(clamp(500px, 52vw, 620px) + 26px) !important;
       }
 
       #tray-selected #venue-detail .detail-local-map {

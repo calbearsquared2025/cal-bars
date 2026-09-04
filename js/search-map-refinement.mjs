@@ -1,5 +1,11 @@
 import { clearSelectedMapVenue } from './app-state.mjs';
-import { getFanCount, getWatchParty, rankVenues } from './core.mjs';
+import {
+  NEARBY_RADIUS_MILES,
+  getFanCount,
+  getWatchParty,
+  rankNearbyVenues,
+  rankVenues
+} from './core.mjs';
 import { compactListFanCountCopy } from './fan-intent-core.mjs';
 import {
   applyDesktopReviewPreview,
@@ -10,9 +16,12 @@ import {
 const desktopReviewPreviewActive = applyDesktopReviewPreview();
 const MOBILE_QUERY = '(max-width: 899px)';
 const DESKTOP_ADD_SEARCH_STYLE_ID = 'cgb-desktop-add-inline-search-style';
+const AREA_FOCUS_MAX_ATTEMPTS = 12;
 let desktopSearchEngaged = false;
 let preserveQueryForNextDesktopAdd = false;
 let desktopAddObserver = null;
+let lastAreaFocusKey = '';
+let areaFocusFrame = 0;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -113,10 +122,10 @@ function syncDesktopContributionEntry() {
     gap: '4px',
     margin: '0',
     padding: '0',
-    color: 'var(--cgb-navy-800, #0b2856)',
+    color: 'var(--cgb-white, #fff)',
     background: 'transparent',
-    border: '0',
-    borderRadius: '0',
+    border: '1px solid rgba(255, 255, 255, .38)',
+    borderRadius: 'var(--radius-sm, 8px)',
     boxShadow: 'none',
     fontSize: '.7rem',
     fontWeight: '800',
@@ -150,6 +159,8 @@ function ensureDesktopAddSearchStyle() {
     @media (min-width: 900px) {
       .mobile-command-bar {
         padding-inline: 10px;
+        background: var(--cgb-navy-950, #010133);
+        border-bottom-color: rgba(255, 255, 255, .14);
       }
 
       #mobile-list-button,
@@ -159,7 +170,7 @@ function ensureDesktopAddSearchStyle() {
         border: 0 !important;
         border-radius: 0 !important;
         background: transparent !important;
-        color: var(--cgb-ink-500, #657083);
+        color: rgba(255, 255, 255, .62) !important;
         font-size: .7rem;
         font-weight: 780;
       }
@@ -174,13 +185,13 @@ function ensureDesktopAddSearchStyle() {
       #mobile-list-button:focus-visible,
       #mobile-map-button:focus-visible {
         background: transparent !important;
-        color: var(--cgb-navy-950, #010133);
+        color: var(--cgb-white, #fff) !important;
       }
 
       #mobile-list-button[aria-current="page"],
       #mobile-map-button[aria-current="page"] {
         background: transparent !important;
-        color: var(--cgb-navy-950, #010133);
+        color: var(--cgb-white, #fff) !important;
         font-weight: 850;
       }
 
@@ -202,15 +213,31 @@ function ensureDesktopAddSearchStyle() {
 
       #mobile-add-button:hover,
       #mobile-add-button:focus-visible {
-        color: var(--cgb-navy-950, #010133) !important;
+        color: var(--cgb-white, #fff) !important;
         background: transparent !important;
-        text-decoration: underline;
-        text-decoration-color: var(--cgb-gold-400, #fdb515);
-        text-underline-offset: .22em;
+        border-color: var(--cgb-gold-400, #fdb515) !important;
+        text-decoration: none;
       }
 
       #tray-list .tray-list__header {
         padding-bottom: 14px !important;
+        color: var(--cgb-white, #fff);
+        background: var(--cgb-navy-950, #010133) !important;
+        border-bottom-color: rgba(255, 255, 255, .14) !important;
+      }
+
+      #tray-list .tray-list__header .eyebrow {
+        color: var(--cgb-gold-400, #fdb515) !important;
+        font-family: var(--font-condensed, sans-serif);
+      }
+
+      #tray-list .tray-list__header h2 {
+        color: var(--cgb-white, #fff) !important;
+        font-family: var(--font-display);
+      }
+
+      #tray-list .tray-list__intro {
+        color: rgba(255, 255, 255, .72) !important;
       }
 
       #tray-list .tray-list__toolbar {
@@ -515,6 +542,77 @@ function desktopMatchCount(query, state = appState()) {
   return rankVenues(state.snapshot, state.gameId, state.origin, query).length;
 }
 
+function areaSearchOrigin(state = appState()) {
+  const origin = state?.origin;
+  const latitude = Number(origin?.lat);
+  const longitude = Number(origin?.lon);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  if (origin?.label === 'your location' || state?.selectedVenueId || state?.listQuery) return null;
+  return { lat: latitude, lon: longitude, label: String(origin?.label || '') };
+}
+
+function syncAreaSearchCamera(attempt = 0) {
+  const state = appState();
+  const origin = areaSearchOrigin(state);
+  if (!origin) {
+    lastAreaFocusKey = '';
+    return false;
+  }
+
+  const key = `${state.gameId || ''}|${origin.lon.toFixed(5)},${origin.lat.toFixed(5)}`;
+  if (key === lastAreaFocusKey) return true;
+  const map = state?.map;
+  if (!map) {
+    if (attempt < AREA_FOCUS_MAX_ATTEMPTS) {
+      areaFocusFrame = requestAnimationFrame(() => {
+        areaFocusFrame = 0;
+        syncAreaSearchCamera(attempt + 1);
+      });
+    }
+    return false;
+  }
+
+  const nearby = rankNearbyVenues(state.snapshot, state.gameId, origin, NEARBY_RADIUS_MILES);
+  const points = [
+    [origin.lon, origin.lat],
+    ...nearby.map(({ venue }) => [Number(venue.longitude), Number(venue.latitude)])
+  ].filter(([lon, lat]) => Number.isFinite(lon) && Number.isFinite(lat));
+
+  map.stop?.();
+  if (points.length > 1 && typeof map.fitBounds === 'function') {
+    const longitudes = points.map(([lon]) => lon);
+    const latitudes = points.map(([, lat]) => lat);
+    map.fitBounds([
+      [Math.min(...longitudes), Math.min(...latitudes)],
+      [Math.max(...longitudes), Math.max(...latitudes)]
+    ], {
+      padding: isMobile()
+        ? { top: 72, right: 54, bottom: 148, left: 54 }
+        : { top: 56, right: 56, bottom: 56, left: 56 },
+      maxZoom: 11,
+      duration: 500,
+      essential: true
+    });
+  } else {
+    map.easeTo?.({
+      center: [origin.lon, origin.lat],
+      zoom: 10,
+      duration: 500,
+      essential: true
+    });
+  }
+  lastAreaFocusKey = key;
+  return true;
+}
+
+function scheduleAreaSearchCamera() {
+  if (areaFocusFrame) cancelAnimationFrame(areaFocusFrame);
+  areaFocusFrame = requestAnimationFrame(() => {
+    areaFocusFrame = 0;
+    syncAreaSearchCamera();
+  });
+}
+
 function syncDesktopSearchUi() {
   preserveDesktopReviewPreviewUrl();
   syncDesktopContributionEntry();
@@ -557,6 +655,11 @@ function syncDesktopSearchUi() {
   }
 }
 
+function syncSearchMapExperience() {
+  syncDesktopSearchUi();
+  scheduleAreaSearchCamera();
+}
+
 function handleDesktopMapDeselect(event) {
   if (isMobile() || document.body.dataset.commandSurface !== 'map') return;
   const map = event.target.closest?.('#map');
@@ -596,11 +699,11 @@ function initialize() {
   document.addEventListener('click', handleDesktopMapDeselect);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => {
     desktopSearchEngaged = false;
-    syncDesktopSearchUi();
+    syncSearchMapExperience();
   });
-  window.CGBApp?.subscribe?.('rendered', syncDesktopSearchUi);
-  window.CGBApp?.subscribe?.('ready', syncDesktopSearchUi);
-  syncDesktopSearchUi();
+  window.CGBApp?.subscribe?.('rendered', syncSearchMapExperience);
+  window.CGBApp?.subscribe?.('ready', syncSearchMapExperience);
+  syncSearchMapExperience();
 }
 
 if (document.readyState === 'loading') {

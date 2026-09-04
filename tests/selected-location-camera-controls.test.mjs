@@ -8,12 +8,31 @@ test('selected desktop venue camera is resolved before the map load animation ca
   const coordination = await read('js/map-zoom-coordination.mjs');
 
   assert.match(coordination, /const INITIAL_SELECTED_ZOOM = 11;/);
+  assert.match(coordination, /function captureInitialSelection\(state = appState\(\)\)/);
+  assert.match(coordination, /if \(initialSelectionCaptured \|\| !state\?\.snapshot\) return false;/);
+  assert.match(coordination, /initialSelectedVenueId = state\.selectedVenueId \|\| '';/);
   assert.match(coordination, /function applyInitialSelectedCamera\(\)/);
+  assert.match(coordination, /captureInitialSelection\(state\);/);
   assert.match(coordination, /const map = state\?\.map;/);
   assert.match(coordination, /if \(!map \|\| initialSelectedCameraMaps\.has\(map\) \|\| !state\.selectedVenueId\) return false;/);
+  assert.match(coordination, /if \(!initialSelectedVenueId \|\| state\.selectedVenueId !== initialSelectedVenueId\) \{[\s\S]*?initialSelectedCameraMaps\.add\(map\);[\s\S]*?return false;/,
+    'A list selection made before map load must not be mistaken for the direct-route preload selection.');
+  assert.match(coordination, /if \(typeof map\.loaded === 'function' && map\.loaded\(\)\) \{[\s\S]*?initialSelectedCameraMaps\.add\(map\);[\s\S]*?return false;/,
+    'The preload camera must not jump again when a user selects a venue on an already-loaded map.');
   assert.match(coordination, /map\.jumpTo\(\{[\s\S]*?center,[\s\S]*?zoom: Math\.max\([\s\S]*?INITIAL_SELECTED_ZOOM\)/);
-  assert.match(coordination, /app\.subscribe\('rendered', applyInitialSelectedCamera\)/);
-  assert.match(coordination, /app\.subscribe\('ready', applyInitialSelectedCamera\)/);
+  assert.match(coordination, /app\.subscribe\('rendered', sync\)/);
+  assert.match(coordination, /app\.subscribe\('ready', sync\)/);
+});
+
+test('selected desktop venue camera suppresses the follow-up visibility pan while the focus move settles', async () => {
+  const coordination = await read('js/map-zoom-coordination.mjs');
+
+  assert.match(coordination, /const SELECTED_CAMERA_SETTLE_MS = 560;/);
+  assert.match(coordination, /function cancelSelectedVisibilityFrame/);
+  assert.match(coordination, /function suppressRedundantSelectedVisibilityPan/);
+  assert.match(coordination, /if \(isDesktopSelectedFocus\(options\)\) suppressRedundantSelectedVisibilityPan\(\);/);
+  assert.match(coordination, /queueMicrotask\(cancel\)/);
+  assert.match(coordination, /requestAnimationFrame\(cancelUntilSettled\)/);
 });
 
 test('mobile selected venue camera uses regional bounds without zooming out from a tighter user view', async () => {

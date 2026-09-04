@@ -30,6 +30,12 @@ const PRIVATE_RESPONSE_KEYS = new Set([
   'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url',
   'reviewer_note', 'submitter_email', 'submitter_name'
 ]);
+const VENUE_NAME_CONNECTOR_TOKENS = new Set(['a', 'an', 'and', 'at', 'in', 'of', 'on', 'the']);
+const CITY_PLACE_DESIGNATIONS = new Set(['city', 'town', 'village']);
+const NON_CITY_PLACE_DESIGNATIONS = new Set([
+  'borough', 'district', 'hamlet', 'isolated_dwelling', 'neighborhood', 'neighbourhood',
+  'quarter', 'suburb'
+]);
 
 function cleanText(value, maximum = 300) {
   return String(value ?? '')
@@ -53,6 +59,10 @@ function comparableTokens(value) {
   return normalizeComparable(value)
     .split(' ')
     .filter((token) => token && (token.length > 1 || /^\d+$/.test(token)));
+}
+
+function comparableVenueNameTokens(value) {
+  return comparableTokens(value).filter((token) => !VENUE_NAME_CONNECTOR_TOKENS.has(token));
 }
 
 function featureTypes(feature) {
@@ -91,6 +101,10 @@ function hierarchyText(feature, prefixes) {
   return cleanText(item?.text || item?.place_name || item?.name, 160);
 }
 
+function placeDesignation(item) {
+  return cleanText(item?.place_designation || item?.properties?.place_designation, 40).toLowerCase();
+}
+
 function countryCode(feature) {
   const country = hierarchyMatch(feature, ['country']);
   const raw = cleanText(
@@ -103,10 +117,11 @@ function countryCode(feature) {
 }
 
 function cityFor(feature, code) {
+  const items = hierarchyItems(feature);
   const cityLikeTypes = ['municipality', 'joint_municipality', 'place', 'locality'];
-  const designated = hierarchyItems(feature).find((item) => {
-    const designation = cleanText(item?.place_designation || item?.properties?.place_designation, 40).toLowerCase();
-    return ['city', 'town', 'village'].includes(designation) &&
+  const designated = items.find((item) => {
+    const designation = placeDesignation(item);
+    return CITY_PLACE_DESIGNATIONS.has(designation) &&
       cityLikeTypes.some((type) => hierarchyItemMatches(item, type));
   });
   if (designated) return cleanText(designated.text || designated.place_name || designated.name, 160);
@@ -114,7 +129,19 @@ function cityFor(feature, code) {
   const priorities = code === 'US'
     ? ['municipality', 'joint_municipality', 'place', 'locality']
     : ['place', 'municipality', 'joint_municipality', 'locality'];
-  return hierarchyText(feature, priorities);
+  for (const prefix of priorities) {
+    const fallback = items.find((item) => {
+      if (!hierarchyItemMatches(item, prefix)) return false;
+      const designation = placeDesignation(item);
+      if (NON_CITY_PLACE_DESIGNATIONS.has(designation)) return false;
+      if ((prefix === 'place' || prefix === 'locality') && designation && !CITY_PLACE_DESIGNATIONS.has(designation)) {
+        return false;
+      }
+      return true;
+    });
+    if (fallback) return cleanText(fallback.text || fallback.place_name || fallback.name, 160);
+  }
+  return '';
 }
 
 function regionFor(feature, code) {
@@ -242,18 +269,35 @@ export function normalizeUserLocationProximity(origin) {
 }
 
 function venueNameCoverage(place, query) {
-  const nameTokens = comparableTokens(place?.name);
-  const queryTokens = comparableTokens(query);
+  const nameTokens = comparableVenueNameTokens(place?.name);
+  const queryTokens = comparableVenueNameTokens(query);
   if (!nameTokens.length || !queryTokens.length) return 0;
   const querySet = new Set(queryTokens);
   return nameTokens.filter((token) => querySet.has(token)).length / nameTokens.length;
 }
 
+function hasMeaningfulVenueNameOverlap(place, query) {
+  const normalizedQuery = normalizeComparable(query);
+  const normalizedName = normalizeComparable(place?.name);
+  if (normalizedName && normalizedQuery === normalizedName) return true;
+
+  const rawNameTokens = comparableTokens(place?.name);
+  const rawQueryTokens = comparableTokens(query);
+  const nameTokens = comparableVenueNameTokens(place?.name);
+  const queryTokens = comparableVenueNameTokens(query);
+  if (!nameTokens.length) {
+    return rawNameTokens.length === 1 && rawQueryTokens[0] === rawNameTokens[0];
+  }
+  if (!queryTokens.length) return false;
+  const querySet = new Set(queryTokens);
+  return nameTokens.some((token) => querySet.has(token));
+}
+
 function mapTilerResultScore(place, query, providerRelevance = 0) {
   const normalizedQuery = normalizeComparable(query);
   const normalizedName = normalizeComparable(place?.name);
-  const nameTokens = comparableTokens(place?.name);
-  const queryTokens = comparableTokens(query);
+  const nameTokens = comparableVenueNameTokens(place?.name);
+  const queryTokens = comparableVenueNameTokens(query);
   const querySet = new Set(queryTokens);
   const overlapCount = nameTokens.filter((token) => querySet.has(token)).length;
   const nameCoverage = nameTokens.length ? overlapCount / nameTokens.length : 0;
@@ -305,7 +349,9 @@ export function rankMapTilerResults(payloads, query, { maximum = 6, filterWeak =
   }
 
   const minimumScore = filterWeak && queryTokenCount >= 3 ? 50 : -Infinity;
+  const requireMeaningfulNameOverlap = filterWeak && queryTokenCount > 1;
   return [...byPlaceId.values()]
+    .filter((entry) => !requireMeaningfulNameOverlap || hasMeaningfulVenueNameOverlap(entry.place, query))
     .filter((entry) => entry.score >= minimumScore)
     .sort((a, b) =>
       b.score - a.score ||

@@ -128,7 +128,8 @@
   }
 
   window.CGBMapLibreRuntimeMock = Object.freeze({ maps, markers });
-  window.maplibregl = {
+  window.maptilersdk = {
+    config: { apiKey: '', session: false },
     Map: MapMock,
     Marker: MarkerMock,
     LngLatBounds: LngLatBoundsMock,

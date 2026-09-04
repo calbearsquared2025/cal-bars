@@ -9,7 +9,7 @@ function clean(value) {
 
 const failedPhotoKeys = new Set();
 const DESKTOP_QUERY = '(min-width: 900px)';
-const VENUE_PHOTO_ASPECT_RATIO = '3 / 2';
+const VENUE_PHOTO_ASPECT_RATIO = 'var(--cgb-venue-media-aspect, 3 / 2)';
 const VENUE_PHOTO_OBJECT_FIT = 'cover';
 
 export function safeHttpUrl(value) {
@@ -108,7 +108,6 @@ function createPhotoFigure(documentObject, venue, presentation, onPhotoError) {
     if (!hero) return;
     hero.classList.remove('detail-hero--has-photo');
     hero.classList.add('detail-hero--no-photo');
-    ensureLocalMapFallback(hero, documentObject, venue);
     onPhotoError?.();
   }, { once: true });
   image.src = presentation.photoUrl;
@@ -167,9 +166,28 @@ function moveEditorialDescription(detail, hero, documentObject) {
   return true;
 }
 
+function isMobileContinuation(detail) {
+  return detail?.dataset?.profilePresentation === 'mobile-continuation';
+}
+
 function profileMedia(detail, hero) {
   return hero.querySelector(':scope > .detail-photo, :scope > .detail-local-map') ||
     detail.querySelector(':scope > .detail-photo, :scope > .detail-local-map');
+}
+
+function placePhotoForPresentation(detail, hero, photo) {
+  if (!photo) return false;
+  if (!isMobileContinuation(detail)) {
+    hero.prepend(photo);
+    return true;
+  }
+
+  photo.classList.remove('detail-photo--mobile-opening', 'detail-photo--mobile-deferred', 'detail-profile-media--desktop');
+  photo.classList.add('detail-photo--supporting');
+  const contribution = detail.querySelector(':scope > .detail-contribution');
+  if (contribution) detail.insertBefore(photo, contribution);
+  else detail.append(photo);
+  return true;
 }
 
 function addressLabel(venue) {
@@ -295,7 +313,7 @@ export function arrangeDesktopVenueMedia({
     }
     if (media) {
       media.classList.remove('detail-profile-media--desktop');
-      if (media.parentElement !== hero) hero.prepend(media);
+      if (!isMobileContinuation(detail) && media.parentElement !== hero) hero.prepend(media);
     }
     return syncDesktopPhotoForwardProfile({ state, documentObject, windowObject });
   }
@@ -335,7 +353,8 @@ function syncDetailShareLabel(detail, state, venue) {
     gameId: state.gameId,
     venueId: venue.venue_id
   });
-  share.textContent = label;
+  const mobile = globalThis.window?.matchMedia?.('(max-width: 899px)')?.matches === true;
+  share.textContent = mobile ? 'Share' : label;
   share.setAttribute('aria-label', label);
   return true;
 }
@@ -378,10 +397,11 @@ export function enhanceVenueProfile({
       existingPhoto?.remove();
       photo = createPhotoFigure(documentObject, venue, presentation, onPhotoError);
     }
-    if (photo) hero.prepend(photo);
+    placePhotoForPresentation(detail, hero, photo);
   } else {
     existingPhoto?.remove();
-    if (existingLocalMap) hero.prepend(existingLocalMap);
+    if (failed) existingLocalMap?.remove();
+    else if (existingLocalMap) hero.prepend(existingLocalMap);
     else if (clean(venue.photo_url)) ensureLocalMapFallback(hero, documentObject, venue);
   }
 

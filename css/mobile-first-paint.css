@@ -55,10 +55,10 @@
   }
 
   .maplibregl-ctrl-bottom-right {
-    top: 64px !important;
-    right: auto !important;
+    top: 100px !important;
+    right: max(8px, env(safe-area-inset-right, 0px)) !important;
     bottom: auto !important;
-    left: max(8px, env(safe-area-inset-left, 0px)) !important;
+    left: auto !important;
     max-width: calc(100vw - 86px) !important;
   }
 

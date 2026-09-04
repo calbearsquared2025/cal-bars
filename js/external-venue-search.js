@@ -632,11 +632,9 @@ async function resolveManualAddress(event) {
   renderManualPanel();
 
   try {
-    const url = buildMapTilerAddressSearchUrl(address, configuredMapTilerKey(), {
-      proximity: currentUserProximity()
-    });
+    const url = buildMapTilerAddressSearchUrl(address, configuredMapTilerKey());
     const payload = await fetchJson(url);
-    const place = resolvedManualPlace(payload, name);
+    const place = resolvedManualPlace(payload, name, address);
     if (!place) throw new Error('unresolved_address');
     window.gtag?.('event', 'manual_place_resolved', { method: 'address' });
     selectExternalPlace(place);
@@ -753,11 +751,13 @@ function createManualPanel() {
 }
 
 function externalPlacePayload(selected) {
-  return {
+  const payload = {
     source: selected.source,
     placeId: selected.placeId,
     name: selected.name
   };
+  if (selected.submittedAddress) payload.submittedAddress = selected.submittedAddress;
+  return payload;
 }
 
 async function postJoinExternalVenue(selected) {

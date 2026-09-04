@@ -1,4 +1,5 @@
 @import url('./venue-profile.css');
+@import url('./profile-first-paint.css');
 
 .watch-party-contribution {
   display: grid;
@@ -51,6 +52,14 @@
   color: var(--cgb-ink-700);
   font-size: var(--text-sm);
   line-height: 1.4;
+}
+
+.detail-watch-party-cta__prompt-tail {
+  margin-left: .25em;
+}
+
+.detail-watch-party-cta__action-label--desktop {
+  display: none;
 }
 
 .detail-watch-party-cta__action {
@@ -158,6 +167,26 @@
   min-height: 48px;
 }
 
+@media (max-width: 899px) {
+  .detail-watch-party-cta__prompt {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .detail-watch-party-cta__prompt-lead {
+    order: 1;
+  }
+
+  .detail-watch-party-cta__prompt-tail {
+    order: 2;
+  }
+
+  .detail-watch-party-cta__action {
+    order: 3;
+    margin-top: 9px;
+  }
+}
+
 @media (max-width: 599px) {
   .watch-party-contribution__action,
   .detail-watch-party-cta__action {
@@ -193,8 +222,37 @@
   }
 
   #tray-selected > #venue-detail .detail-watch-party-cta__action {
-    width: 100%;
-    min-height: 42px;
-    font-size: .78rem;
+    width: auto;
+    min-height: 0;
+    display: inline;
+    margin: 0 0 0 .25em;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 700;
+    line-height: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  #tray-selected > #venue-detail .detail-watch-party-cta__action:hover,
+  #tray-selected > #venue-detail .detail-watch-party-cta__action:focus-visible {
+    color: var(--cgb-navy-950);
+    background: transparent;
+    border-color: transparent;
+    text-decoration-thickness: 2px;
+  }
+
+  #tray-selected > #venue-detail .detail-watch-party-cta__action-label--desktop {
+    display: inline;
+  }
+
+  #tray-selected > #venue-detail .detail-watch-party-cta__action-label--mobile {
+    display: none;
   }
 }
