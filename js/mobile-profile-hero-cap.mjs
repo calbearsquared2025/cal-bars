@@ -77,6 +77,8 @@ function installStyles(documentObject = document) {
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button {
         min-height: 92px !important;
+        grid-template-columns: 22px minmax(0, 1fr) max-content !important;
+        gap: 8px !important;
         padding: 11px 13px 15px !important;
       }
 
@@ -102,7 +104,46 @@ function installStyles(documentObject = document) {
         color: rgba(255, 255, 255, .78) !important;
       }
 
-      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__count,
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__count {
+        width: max-content !important;
+        max-width: 68px !important;
+        display: grid !important;
+        grid-template-columns: auto auto !important;
+        align-items: center !important;
+        justify-self: end !important;
+        gap: 3px !important;
+        color: var(--cgb-white) !important;
+        font-family: var(--font-ui) !important;
+        white-space: normal !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__count-number {
+        color: var(--cgb-gold-300) !important;
+        font-family: var(--font-ui) !important;
+        font-size: 2.15rem !important;
+        font-weight: 850 !important;
+        letter-spacing: -.055em !important;
+        line-height: .84 !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__count-label {
+        display: grid !important;
+        gap: 0 !important;
+        color: var(--cgb-white) !important;
+        font-family: var(--font-ui) !important;
+        font-size: .47rem !important;
+        font-weight: 850 !important;
+        letter-spacing: .025em !important;
+        line-height: .95 !important;
+        text-align: left !important;
+        text-transform: uppercase !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__count-label > span {
+        display: block !important;
+        white-space: nowrap !important;
+      }
+
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button .tray-summary__chevron {
         color: var(--cgb-gold-300) !important;
       }
