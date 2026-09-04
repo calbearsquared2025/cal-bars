@@ -375,6 +375,21 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     border-top: 1px solid var(--cgb-neutral-200) !important;
   }
 
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-editorial {
+    grid-column: 1 / 6 !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"]:has(> .detail-editorial):has(> .detail-fan-experiences) > .detail-fan-experiences {
+    grid-column: 6 / 13 !important;
+    grid-row: auto !important;
+    min-width: 0 !important;
+    align-self: stretch !important;
+    margin: 0 !important;
+    border-top: 1px solid var(--cgb-neutral-200) !important;
+  }
+
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-editorial::before {
     position: absolute !important;
     top: 10px !important;
