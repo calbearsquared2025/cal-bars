@@ -77,11 +77,21 @@ test('desktop Bear attendance matches the mobile compact count treatment', () =>
   assert.match(firstPaintCss, /\.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.6rem !important;/);
 });
 
-test('desktop zero attendance is vertically centered in its activity cell', () => {
+test('desktop zero attendance is centered by the activity cell rather than a stretched child', () => {
   assert.match(
     firstPaintCss,
-    /strong\.bear-count\.bear-count--empty \{[\s\S]*?width: 100% !important;[\s\S]*?display: inline-flex !important;[\s\S]*?align-self: stretch !important;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;/,
-    'The empty attendance row should fill the desktop activity cell and center its prompt vertically.'
+    /> \.activity-card:has\(> strong\.bear-count\.bear-count--empty\) \{[\s\S]*?align-items: center !important;[\s\S]*?justify-content: center !important;/,
+    'The semantic attendance cell should own empty-state centering even if its profile row moves.'
+  );
+  const emptyRule = firstPaintCss.match(/\.activity-card > strong\.bear-count\.bear-count--empty \{[\s\S]*?\n  }/)?.[0] || '';
+  assert.ok(emptyRule, 'Expected the desktop empty-attendance rule to be present.');
+  assert.match(emptyRule, /width: auto !important;/);
+  assert.match(emptyRule, /min-height: 0 !important;/);
+  assert.match(emptyRule, /max-width: none !important;/);
+  assert.doesNotMatch(
+    emptyRule,
+    /width: 100% !important|align-self: stretch !important/,
+    'The previous child-stretch centering attempt should be removed.'
   );
 });
 
