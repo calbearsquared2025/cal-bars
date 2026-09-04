@@ -16,6 +16,24 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         text-transform: uppercase;
       }
 
+      .mobile-command-bar #mobile-add-button {
+        background: rgba(255, 255, 255, .055) !important;
+        border-color: rgba(255, 255, 255, .42) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, .16),
+          inset 0 -2px 0 rgba(0, 0, 0, .20),
+          0 1px 2px rgba(0, 0, 0, .14) !important;
+      }
+
+      .mobile-command-bar #mobile-add-button:hover,
+      .mobile-command-bar #mobile-add-button:focus-visible {
+        background: rgba(255, 255, 255, .08) !important;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, .20),
+          inset 0 -2px 0 rgba(0, 0, 0, .22),
+          0 1px 2px rgba(0, 0, 0, .16) !important;
+      }
+
       #tray-selected #venue-detail .detail-editorial h2,
       #tray-selected #venue-detail .detail-fan-experiences h2,
       body[data-view="detail"] #venue-detail .detail-editorial h2,
