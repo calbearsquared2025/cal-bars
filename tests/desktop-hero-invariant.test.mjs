@@ -51,6 +51,14 @@ test('desktop Bear attendance matches the mobile compact count treatment', () =>
   assert.match(firstPaintCss, /\.bear-count__context \{[\s\S]*?grid-row: 3 !important;[\s\S]*?font-size: \.6rem !important;/);
 });
 
+test('desktop zero attendance is vertically centered in its activity cell', () => {
+  assert.match(
+    firstPaintCss,
+    /strong\.bear-count\.bear-count--empty \{[\s\S]*?width: 100% !important;[\s\S]*?display: inline-flex !important;[\s\S]*?align-self: stretch !important;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;/,
+    'The empty attendance row should fill the desktop activity cell and center its prompt vertically.'
+  );
+});
+
 test('desktop first paint never exposes the legacy profile presentation', () => {
   assert.match(
     watchPartyFormCss,

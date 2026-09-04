@@ -325,8 +325,10 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] .activity-card > strong.bear-count.bear-count--empty {
+    width: 100% !important;
     min-height: 56px;
     display: inline-flex !important;
+    align-self: stretch !important;
     align-items: center;
     justify-content: center;
     gap: 5px;
