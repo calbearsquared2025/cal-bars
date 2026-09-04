@@ -28,13 +28,17 @@ test('mobile tray handle remains visible and inverts between navy and white tray
   assert.match(heroCapSource, /data-profile-hero-passed="true"\] \.tray-handle span \{[\s\S]*?background: var\(--cgb-navy-950\) !important;/);
 });
 
-test('mobile hero attendance stays inside the selected-profile content gutter', () => {
+test('mobile hero splits venue identity and attendance inside the selected-profile gutter', () => {
   assert.match(
     watchPartyCss,
     /selected-card__header \{[\s\S]*?padding: 12px 14px 13px !important;/
   );
   assert.match(
     fanIntentCss,
-    /selected-card__header \.bear-count--hero \{[\s\S]*?margin: 9px 0 0 !important;/
+    /selected-card__header > div:first-child \{[\s\S]*?grid-template-columns: minmax\(0, 3fr\) minmax\(0, 2fr\) !important;/
+  );
+  assert.match(
+    fanIntentCss,
+    /selected-card__header \.bear-count--hero \{[\s\S]*?grid-column: 2 !important;[\s\S]*?grid-row: 1 \/ 4 !important;[\s\S]*?margin: 0 !important;/
   );
 });
