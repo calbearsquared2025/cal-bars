@@ -58,7 +58,14 @@ function createWatchPartySection(documentObject, { href, onActivate }) {
 
   const prompt = documentObject.createElement('p');
   prompt.className = 'detail-watch-party-cta__prompt';
-  prompt.textContent = 'No Watch Party listed for this game. Organizing or know of one? Add it so other Bears can find it.';
+
+  const promptLead = documentObject.createElement('span');
+  promptLead.className = 'detail-watch-party-cta__prompt-lead';
+  promptLead.textContent = 'No Watch Party listed for this game. Organizing or know of one? ';
+
+  const promptTail = documentObject.createElement('span');
+  promptTail.className = 'detail-watch-party-cta__prompt-tail';
+  promptTail.textContent = ' so other Bears can find it.';
 
   const link = documentObject.createElement('a');
   link.className = 'detail-watch-party-cta__action';
@@ -67,10 +74,21 @@ function createWatchPartySection(documentObject, { href, onActivate }) {
   link.href = href;
   link.target = '_blank';
   link.rel = 'noopener noreferrer';
-  link.textContent = 'Add a Watch Party';
-  link.addEventListener('click', onActivate);
+  link.setAttribute('aria-label', 'Add a Watch Party');
 
-  section.append(title, prompt, link);
+  const desktopLabel = documentObject.createElement('span');
+  desktopLabel.className = 'detail-watch-party-cta__action-label detail-watch-party-cta__action-label--desktop';
+  desktopLabel.textContent = 'Add it';
+
+  const mobileLabel = documentObject.createElement('span');
+  mobileLabel.className = 'detail-watch-party-cta__action-label detail-watch-party-cta__action-label--mobile';
+  mobileLabel.textContent = 'Add a Watch Party';
+
+  link.append(desktopLabel, mobileLabel);
+  link.addEventListener('click', onActivate);
+  prompt.append(promptLead, link, promptTail);
+
+  section.append(title, prompt);
   return section;
 }
 
