@@ -161,11 +161,11 @@ function installStyles(documentObject = document) {
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-profile-hero-passed="true"] .tray-handle {
-        background: var(--cgb-gold-400) !important;
+        background: var(--cgb-white, #fff) !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected[data-profile-hero-passed="true"] .tray-handle span {
-        background: var(--cgb-navy-950) !important;
+        background: #000 !important;
       }
     }
 
