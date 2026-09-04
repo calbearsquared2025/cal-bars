@@ -36,13 +36,9 @@ export function prepareNewLocationMapDestination(venue, {
   if (!state || state.selectedVenueId !== venue.venue_id) return false;
 
   documentObject.querySelector('#mobile-map-button')?.click();
+  state.listQuery = '';
   app.showSelectedVenue?.();
   app.render?.();
-  app.focusLocation?.({
-    lon: venue.longitude,
-    lat: venue.latitude,
-    venueId: venue.venue_id
-  });
   return true;
 }
 
