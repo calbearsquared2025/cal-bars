@@ -1,11 +1,12 @@
-import { spawn } from 'node:child_process';
-import { createReadStream, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { execFileSync, spawn } from 'node:child_process';
+import { createReadStream, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
 const root = resolve(process.cwd());
 const outputDir = resolve(process.argv[2] || join(root, 'artifacts/mobile-selected-profile'));
+mkdirSync(outputDir, { recursive: true });
 const snapshot = JSON.parse(readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8'));
 const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');
 const productionIndex = readFileSync(join(root, 'index.html'), 'utf8');
@@ -19,12 +20,9 @@ function findBrowser() {
   const candidates = [process.env.CHROME_BIN, 'google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser'].filter(Boolean);
   for (const candidate of candidates) {
     try {
-      const result = spawn('which', [candidate]);
-      let stdout = '';
-      result.stdout?.setEncoding('utf8');
-      result.stdout?.on('data', (chunk) => { stdout += chunk; });
-      const code = awaitClose(result);
-      if (code === 0 && stdout.trim()) return stdout.trim().split(/\r?\n/)[0];
+      const located = execFileSync('which', [candidate], { encoding: 'utf8' })
+        .split(/\r?\n/).map((value) => value.trim()).find(Boolean);
+      if (located) return located;
     } catch (_) {}
   }
   throw new Error('No Chromium-compatible browser found.');
