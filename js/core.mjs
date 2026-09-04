@@ -1,6 +1,23 @@
 export const NEARBY_RADIUS_MILES = 25;
 export const TRAY_GUIDANCE_COPY = 'Explore Watch Parties, Cal Bars, and places where other Bears are planning to watch.';
 
+const US_REGION_QUERY_ALIASES = Object.freeze({
+  alabama: 'al', alaska: 'ak', arizona: 'az', arkansas: 'ar', california: 'ca',
+  colorado: 'co', connecticut: 'ct', delaware: 'de', florida: 'fl', georgia: 'ga',
+  hawaii: 'hi', idaho: 'id', illinois: 'il', indiana: 'in', iowa: 'ia', kansas: 'ks',
+  kentucky: 'ky', louisiana: 'la', maine: 'me', maryland: 'md', massachusetts: 'ma',
+  michigan: 'mi', minnesota: 'mn', mississippi: 'ms', missouri: 'mo', montana: 'mt',
+  nebraska: 'ne', nevada: 'nv', 'new hampshire': 'nh', 'new jersey': 'nj',
+  'new mexico': 'nm', 'new york': 'ny', 'north carolina': 'nc', 'north dakota': 'nd',
+  ohio: 'oh', oklahoma: 'ok', oregon: 'or', pennsylvania: 'pa', 'rhode island': 'ri',
+  'south carolina': 'sc', 'south dakota': 'sd', tennessee: 'tn', texas: 'tx',
+  utah: 'ut', vermont: 'vt', virginia: 'va', washington: 'wa',
+  'west virginia': 'wv', wisconsin: 'wi', wyoming: 'wy',
+  'district of columbia': 'dc', 'puerto rico': 'pr', guam: 'gu',
+  'american samoa': 'as', 'northern mariana islands': 'mp',
+  'united states virgin islands': 'vi', 'u s virgin islands': 'vi'
+});
+
 export function parseDateOnly(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
   const [year, month, day] = value.split('-').map(Number);
@@ -140,7 +157,8 @@ export function markerKind(snapshot, gameId, venue) {
 }
 
 export function normalizeSearchText(value) {
-  return String(value || '').trim().toLocaleLowerCase();
+  const normalized = String(value || '').trim().toLocaleLowerCase();
+  return US_REGION_QUERY_ALIASES[normalized] || normalized;
 }
 
 export function findExactVenueMatch(venues, query) {

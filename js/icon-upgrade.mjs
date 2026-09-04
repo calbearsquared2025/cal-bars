@@ -17,6 +17,7 @@ let appConnected = false;
 let appConnectAttempts = 0;
 let postRenderUpgradeQueued = false;
 let iconMutationObserver = null;
+let commandSurfaceObserver = null;
 let detailLocalMap = null;
 let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
@@ -77,6 +78,20 @@ function installAtomicStarIconUpgrade() {
   });
   iconMutationObserver.observe(document.documentElement, { childList: true, subtree: true });
   upgradeStarIcons(document);
+}
+
+function installCommandSurfaceUpgradeObserver() {
+  if (commandSurfaceObserver || !window.MutationObserver || !document.body) return;
+  commandSurfaceObserver = new MutationObserver((mutations) => {
+    const surfaceChanged = mutations.some((mutation) =>
+      mutation.type === 'attributes' && mutation.attributeName === 'data-command-surface');
+    if (!surfaceChanged || document.body.dataset.commandSurface !== 'map') return;
+    schedulePostRenderUpgrade();
+  });
+  commandSurfaceObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ['data-command-surface']
+  });
 }
 
 function prependIcon(element, iconName) {
@@ -329,6 +344,7 @@ function connectApp() {
 
 function initialize() {
   installMobileSearchHelperVisibility();
+  installCommandSurfaceUpgradeObserver();
   runRefinements();
   window.matchMedia?.(WIDE_DESKTOP_QUERY)?.addEventListener?.('change', scheduleUpgrade);
   window.matchMedia?.(REDUCED_MOTION_QUERY)?.addEventListener?.('change', scheduleUpgrade);
