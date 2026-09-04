@@ -149,8 +149,8 @@ test('What to Know action and profile badges match the approved guide', () => {
   );
   assert.match(
     firstPaintCss,
-    /> \.detail-hero \.venue-badge\.badge--fan-added \{[\s\S]*?color: var\(--cgb-navy-950, #010133\) !important;[\s\S]*?background: var\(--cgb-white, #fff\) !important;[\s\S]*?border: 1px solid var\(--cgb-white, #fff\) !important;/,
-    'Fan-Added should be a white tag with navy text in the desktop navy hero.'
+    /> \.detail-hero \.venue-badge\.badge--fan-added \{[\s\S]*?color: var\(--cgb-white, #fff\) !important;[\s\S]*?background: transparent !important;[\s\S]*?border: 1px solid var\(--cgb-white, #fff\) !important;/,
+    'Fan-Added should be white hollow in the desktop navy hero.'
   );
   assert.match(
     firstPaintCss,
