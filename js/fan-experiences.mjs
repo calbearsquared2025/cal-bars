@@ -276,26 +276,6 @@ function createQuote(documentObject, item) {
   quoteRow.append(mark, quote);
 
   experience.append(quoteRow);
-
-  if (item.display_name || item.year) {
-    const attribution = documentObject.createElement('p');
-    attribution.className = 'detail-fan-experiences__attribution';
-    if (item.display_name) {
-      const name = documentObject.createElement('strong');
-      name.className = 'detail-fan-experiences__name';
-      name.textContent = item.display_name;
-      attribution.append(name);
-    }
-    if (item.year) {
-      if (item.display_name) attribution.append(documentObject.createTextNode(' · '));
-      const year = documentObject.createElement('span');
-      year.className = 'detail-fan-experiences__year';
-      year.textContent = String(item.year);
-      attribution.append(year);
-    }
-    experience.append(attribution);
-  }
-
   return experience;
 }
 
