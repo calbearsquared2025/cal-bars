@@ -27,11 +27,6 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
-function fanExperienceYear(value) {
-  const year = Number(value);
-  return Number.isInteger(year) && year >= 2000 && year <= 2100 ? year : null;
-}
-
 function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
 }
@@ -79,9 +74,7 @@ export function fanExperiencesForVenue(snapshot, venueId) {
     .filter((item) => clean(item?.venue_id) === resolvedVenueId && clean(item?.text))
     .map((item) => Object.freeze({
       venue_id: resolvedVenueId,
-      text: clean(item.text),
-      display_name: clean(item.display_name),
-      year: fanExperienceYear(item.year)
+      text: clean(item.text)
     }));
 }
 
