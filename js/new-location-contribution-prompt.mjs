@@ -1,6 +1,7 @@
 import { buildCalBarNominationPrefillUrl } from './cal-bar-nomination-core.mjs';
 
 const DIALOG_ID = 'new-location-success-dialog';
+const MOBILE_QUERY = '(max-width: 899px)';
 
 function meta(name, documentObject = document) {
   return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
@@ -22,6 +23,27 @@ function contributionUrl(venue, documentObject = document) {
 export function canonicalVenueWasKnown(snapshot, venueId) {
   if (!venueId || !Array.isArray(snapshot?.venues)) return false;
   return snapshot.venues.some((venue) => venue?.venue_id === venueId);
+}
+
+export function prepareNewLocationMapDestination(venue, {
+  documentObject = document,
+  windowObject = documentObject?.defaultView || window
+} = {}) {
+  if (!venue?.venue_id || !windowObject?.matchMedia?.(MOBILE_QUERY)?.matches) return false;
+
+  const app = windowObject.CGBApp;
+  const state = app?.getState?.();
+  if (!state || state.selectedVenueId !== venue.venue_id) return false;
+
+  documentObject.querySelector('#mobile-map-button')?.click();
+  app.showSelectedVenue?.();
+  app.render?.();
+  app.focusLocation?.({
+    lon: venue.longitude,
+    lat: venue.latitude,
+    venueId: venue.venue_id
+  });
+  return true;
 }
 
 function ensureDialog(documentObject = document) {
@@ -81,9 +103,14 @@ function ensureDialog(documentObject = document) {
   return dialog;
 }
 
-export function showNewLocationContributionPrompt(venue, { documentObject = document } = {}) {
+export function showNewLocationContributionPrompt(venue, {
+  documentObject = document,
+  windowObject = documentObject?.defaultView || window
+} = {}) {
   const href = contributionUrl(venue, documentObject);
   if (!href) return false;
+
+  prepareNewLocationMapDestination(venue, { documentObject, windowObject });
 
   const dialog = ensureDialog(documentObject);
   const title = dialog.querySelector('#new-location-success-title');
