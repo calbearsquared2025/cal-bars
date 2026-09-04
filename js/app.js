@@ -46,10 +46,13 @@ const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
 const MOBILE_MEDIA = window.matchMedia(MOBILE_MEDIA_QUERY);
 const TRAY_SWIPE_THRESHOLD = 48;
+const SEARCH_HELPER_DEBOUNCE_MS = 600;
 
 const dom = {};
 let previousMobileLayout = MOBILE_MEDIA.matches;
 let lastExpandedTrayState = null;
+let searchHelperTimer = null;
+let searchHelperReady = false;
 
 function configureMapTilerSdk() {
   const sdk = window.maptilersdk;
@@ -1249,6 +1252,7 @@ async function runSearch(query) {
 
   const mappedMatches = rankVenues(state.snapshot, state.gameId, state.origin, normalizedQuery);
   const exact = findExactVenueMatch(mappedMatches.map(({ venue }) => venue), normalizedQuery);
+  resetSearchHelper();
   dom.searchDropdown.hidden = true;
 
   if (exact) {
@@ -1301,14 +1305,36 @@ async function runSearch(query) {
   }
 }
 
+function resetSearchHelper() {
+  if (searchHelperTimer !== null) {
+    window.clearTimeout(searchHelperTimer);
+    searchHelperTimer = null;
+  }
+  searchHelperReady = false;
+  if (dom.addLocationSearch) dom.addLocationSearch.hidden = true;
+}
+
+function scheduleSearchHelper() {
+  resetSearchHelper();
+  const query = dom.searchInput.value.trim();
+  if (!query || state.searchMode !== 'existing') return;
+  searchHelperTimer = window.setTimeout(() => {
+    searchHelperTimer = null;
+    if (dom.searchInput.value.trim() !== query || state.searchMode !== 'existing') return;
+    searchHelperReady = true;
+    renderSuggestions();
+  }, SEARCH_HELPER_DEBOUNCE_MS);
+}
+
 function renderSuggestions() {
   const query = dom.searchInput.value.trim();
   dom.suggestions.replaceChildren();
-  const showAddLocationAction = state.searchMode === 'existing';
+  const showAddLocationAction = state.searchMode === 'existing' && searchHelperReady && Boolean(query);
   dom.addLocationSearch.hidden = !showAddLocationAction;
   if (!query) {
+    resetSearchHelper();
     state.listQuery = '';
-    dom.searchDropdown.hidden = !showAddLocationAction || document.activeElement !== dom.searchInput;
+    dom.searchDropdown.hidden = true;
     renderLocationList();
     emitRendered();
     return;
@@ -1326,6 +1352,7 @@ function renderSuggestions() {
     locationLine.textContent = `${party ? 'Watch Party · ' : ''}${venue.city}, ${venue.region}`;
     button.append(name, locationLine);
     button.addEventListener('click', () => {
+      resetSearchHelper();
       dom.searchInput.value = venue.name;
       state.origin = null;
       state.listQuery = '';
@@ -1431,16 +1458,30 @@ function wireEvents() {
     const query = dom.searchInput.value.trim();
     if (query) runSearch(query);
   });
-  dom.searchInput.addEventListener('input', renderSuggestions);
+  dom.searchInput.addEventListener('input', () => {
+    scheduleSearchHelper();
+    renderSuggestions();
+  });
   dom.searchInput.addEventListener('focus', renderSuggestions);
   dom.searchInput.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
+      resetSearchHelper();
       dom.searchDropdown.hidden = true;
       dom.searchInput.blur();
     }
   });
+  dom.searchForm.addEventListener('focusout', () => {
+    requestAnimationFrame(() => {
+      if (dom.searchForm.contains(document.activeElement)) return;
+      resetSearchHelper();
+      dom.searchDropdown.hidden = true;
+    });
+  });
   document.addEventListener('click', (event) => {
-    if (!dom.searchForm.contains(event.target)) dom.searchDropdown.hidden = true;
+    if (!dom.searchForm.contains(event.target)) {
+      resetSearchHelper();
+      dom.searchDropdown.hidden = true;
+    }
   });
   dom.listLocationAll.addEventListener('click', () => {
     if (state.origin || state.listQuery) showAllLocations();
