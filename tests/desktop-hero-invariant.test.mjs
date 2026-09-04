@@ -145,12 +145,12 @@ test('What to Know action and profile badges match the approved guide', () => {
   assert.match(
     firstPaintCss,
     /> \.detail-hero \.venue-badge \{[\s\S]*?color: var\(--cgb-gold-300, #ffd15a\) !important;/,
-    'Desktop hero badges must use a valid gold fallback instead of inheriting white text.'
+    'Desktop hero badges keep the existing gold treatment unless a badge type overrides it.'
   );
   assert.match(
     firstPaintCss,
-    /> \.detail-hero \.venue-badge\.badge--fan-added \{[\s\S]*?border: 1px solid var\(--cgb-gold-400\) !important;/,
-    'Fan-Added must own its visible gold outline in the navy hero.'
+    /> \.detail-hero \.venue-badge\.badge--fan-added \{[\s\S]*?color: var\(--cgb-navy-950, #010133\) !important;[\s\S]*?background: var\(--cgb-white, #fff\) !important;[\s\S]*?border: 1px solid var\(--cgb-white, #fff\) !important;/,
+    'Fan-Added should be a white tag with navy text in the desktop navy hero.'
   );
   assert.match(
     firstPaintCss,
