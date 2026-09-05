@@ -56,16 +56,30 @@ test('selected venue camera focuses once through the shared mobile refinement pa
   assert.doesNotMatch(refinement, /\.cgb-marker\[data-venue-id\][\s\S]*?focusVenue\(marker\.dataset\.venueId, \{ force: true \}\)/);
 });
 
-test('mobile Locate me control follows the live selected tray edge', async () => {
+test('mobile Locate me control follows the live bottom tray edge', async () => {
   const refinement = await read('js/map-mobile-refinement.mjs');
+  const locateFunction = refinement.match(/function syncLocateControlPosition\(\) \{[\s\S]*?\n\}\n\nfunction scheduleLocateControlPosition/)?.[0] || '';
 
-  assert.match(refinement, /function syncLocateControlPosition\(\)[\s\S]*?Boolean\(state\?\.selectedVenueId\)[\s\S]*?tray\?\.dataset\.state === 'selected'/);
-  assert.doesNotMatch(refinement, /function syncLocateControlPosition\(\)[\s\S]*?state\?\.trayState === 'selected'/);
-  assert.match(refinement, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
-  assert.match(refinement, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
+  assert.ok(locateFunction);
+  assert.match(locateFunction, /const trayVisible = isMobile\(\)[\s\S]*?tray && map && nearMe[\s\S]*?getComputedStyle\(tray\)\.display !== 'none'/);
+  assert.doesNotMatch(locateFunction, /Boolean\(state\?\.selectedVenueId\)/);
+  assert.doesNotMatch(locateFunction, /tray\?\.dataset\.state === 'selected'/);
+  assert.match(locateFunction, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
+  assert.match(locateFunction, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
   assert.match(refinement, /selectedTrayResizeObserver = new ResizeObserver\(\(\) => \{[\s\S]*?scheduleLocateControlPosition\(\);[\s\S]*?\}\);/);
   assert.match(refinement, /window\.visualViewport\?\.addEventListener\?\.\('resize', handleViewportGeometryChange\)/);
   assert.match(refinement, /function handleViewportGeometryChange\(\) \{[\s\S]*?scheduleLocateControlPosition\(\);/);
+});
+
+test('mobile selected preview splits street and locality onto separate address lines', async () => {
+  const refinement = await read('js/map-mobile-refinement.mjs');
+
+  assert.match(refinement, /function renderPreviewLocation\(copyElement, \{ venue, typeLabel, distance, mode \} = \{\}\)/);
+  assert.match(refinement, /if \(mode !== 'selected'\) \{[\s\S]*?compactVenueLocation\(venue\)/);
+  assert.match(refinement, /const street = \[venue\?\.address_line_1, venue\?\.address_line_2\]\.filter\(Boolean\)\.join\(', '\);/);
+  assert.match(refinement, /const locality = \[venue\?\.city, venue\?\.region\]\.filter\(Boolean\)\.join\(', '\);/);
+  assert.match(refinement, /if \(firstLine && secondLine\) copyElement\.append\(document\.createElement\('br'\)\);/);
+  assert.match(refinement, /renderPreviewLocation\(copy, \{ venue, typeLabel, distance, mode \}\);/);
 });
 
 test('desktop Locate me preserves a selected Venue Profile so distance can render in its address', async () => {
