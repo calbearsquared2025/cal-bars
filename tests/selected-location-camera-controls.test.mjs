@@ -58,12 +58,14 @@ test('selected venue camera focuses once through the shared mobile refinement pa
 
 test('mobile Locate me control follows the live bottom tray edge', async () => {
   const refinement = await read('js/map-mobile-refinement.mjs');
+  const locateFunction = refinement.match(/function syncLocateControlPosition\(\) \{[\s\S]*?\n\}\n\nfunction scheduleLocateControlPosition/)?.[0] || '';
 
-  assert.match(refinement, /function syncLocateControlPosition\(\)[\s\S]*?const trayVisible = isMobile\(\)[\s\S]*?tray && map && nearMe[\s\S]*?getComputedStyle\(tray\)\.display !== 'none'/);
-  assert.doesNotMatch(refinement, /function syncLocateControlPosition\(\)[\s\S]*?Boolean\(state\?\.selectedVenueId\)/);
-  assert.doesNotMatch(refinement, /function syncLocateControlPosition\(\)[\s\S]*?tray\?\.dataset\.state === 'selected'/);
-  assert.match(refinement, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
-  assert.match(refinement, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
+  assert.ok(locateFunction);
+  assert.match(locateFunction, /const trayVisible = isMobile\(\)[\s\S]*?tray && map && nearMe[\s\S]*?getComputedStyle\(tray\)\.display !== 'none'/);
+  assert.doesNotMatch(locateFunction, /Boolean\(state\?\.selectedVenueId\)/);
+  assert.doesNotMatch(locateFunction, /tray\?\.dataset\.state === 'selected'/);
+  assert.match(locateFunction, /const preferredTop = trayRect\.top - controlHeight - MAP_ACTION_GAP;/);
+  assert.match(locateFunction, /actions\.style\.setProperty\('top', `\$\{Math\.round\(top\)\}px`, 'important'\);/);
   assert.match(refinement, /selectedTrayResizeObserver = new ResizeObserver\(\(\) => \{[\s\S]*?scheduleLocateControlPosition\(\);[\s\S]*?\}\);/);
   assert.match(refinement, /window\.visualViewport\?\.addEventListener\?\.\('resize', handleViewportGeometryChange\)/);
   assert.match(refinement, /function handleViewportGeometryChange\(\) \{[\s\S]*?scheduleLocateControlPosition\(\);/);
