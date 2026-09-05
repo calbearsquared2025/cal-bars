@@ -8,17 +8,12 @@ import {
   canonicalVenueWasKnown,
   showNewLocationContributionPrompt
 } from './new-location-contribution-prompt.mjs';
+import { configuredDataEndpoint } from './config.mjs';
 
-const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const WRITE_TIMEOUT_MS = 12000;
 
-function storageGet(key, windowObject) {
-  try { return windowObject.localStorage.getItem(key); } catch (_) { return null; }
-}
-
 function configuredEndpoint(documentObject, windowObject) {
-  return storageGet(DATA_URL_KEY, windowObject)?.trim() ||
-    documentObject.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
+  return configuredDataEndpoint({ documentObject, windowObject });
 }
 
 async function fetchJson(windowObject, url, options = {}, timeoutMs = WRITE_TIMEOUT_MS) {

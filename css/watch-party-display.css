@@ -7,7 +7,7 @@
   color: var(--cgb-navy-950);
   background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 78%);
   border: 1px solid var(--cgb-gold-300, #f2cc67);
-  border-left: 4px solid var(--cgb-gold-400);
+  border-left: 4px solid var(--brand-event-accent);
   border-radius: 12px;
   clip-path: none;
   box-shadow: none;

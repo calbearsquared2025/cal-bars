@@ -36,11 +36,16 @@ import {
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 import { createIcon } from './icons.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
+import {
+  configuredDataEndpoint,
+  DATA_ENDPOINT_OVERRIDE_KEY,
+  readRuntimeConfig
+} from './config.mjs';
 
-const MAPTILER_KEY = 'jNqIsIVa4dP9qv7vQ8fy';
-const MAPTILER_STYLE = new URL('../styles/dataviz-with-cgb-states.json', import.meta.url).href;
+const RUNTIME_CONFIG = readRuntimeConfig();
+const MAPTILER_KEY = RUNTIME_CONFIG.mapTiler.apiKey;
+const MAPTILER_STYLE = RUNTIME_CONFIG.mapTiler.styleUrl;
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
-const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
@@ -81,8 +86,7 @@ function storageRemove(key) {
 }
 
 function configuredEndpoint() {
-  return storageGet(DATA_URL_KEY)?.trim() ||
-    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
+  return configuredDataEndpoint();
 }
 
 function cacheDom() {
@@ -357,8 +361,8 @@ function initMap() {
   state.map = new sdk.Map({
     container: dom.map,
     style: MAPTILER_STYLE,
-    center: [-98.5795, 39.8283],
-    zoom: 3.2,
+    center: [RUNTIME_CONFIG.homeGeography.longitude, RUNTIME_CONFIG.homeGeography.latitude],
+    zoom: RUNTIME_CONFIG.homeGeography.zoom,
     navigationControl: false,
     geolocateControl: false,
     maptilerLogo: false,
@@ -1566,11 +1570,11 @@ window.CGBApp = Object.freeze({
 
 window.CGBPreview = Object.freeze({
   setDataEndpoint(url) {
-    storageSet(DATA_URL_KEY, String(url || '').trim());
+    storageSet(DATA_ENDPOINT_OVERRIDE_KEY, String(url || '').trim());
     location.reload();
   },
   clearDataEndpoint() {
-    storageRemove(DATA_URL_KEY);
+    storageRemove(DATA_ENDPOINT_OVERRIDE_KEY);
     location.reload();
   },
   clearLastKnownGood() {

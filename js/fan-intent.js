@@ -13,8 +13,8 @@ import {
 import { createFanIntentController } from './fan-intent-controller.mjs';
 import { createIcon } from './icons.mjs';
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
+import { configuredDataEndpoint } from './config.mjs';
 
-const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const WRITE_TIMEOUT_MS = 10000;
 
 let controller = null;
@@ -32,8 +32,7 @@ function storageRemove(key) {
 }
 
 function configuredEndpoint() {
-  return storageGet(DATA_URL_KEY)?.trim() ||
-    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
+  return configuredDataEndpoint();
 }
 
 function initializeIdentity() {

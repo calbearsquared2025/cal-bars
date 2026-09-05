@@ -13,27 +13,13 @@ import {
   navigateWaitingFormWindow,
   requestWatchPartyAttendance
 } from './watch-party-attendance-handoff.mjs';
+import { readFormConfig } from './config.mjs';
 
 const CTA_SELECTOR = '[data-watch-party-form-entry-point]';
 const SECTION_SELECTOR = '[data-watch-party-form-section]';
-const CONFIG_META_NAMES = Object.freeze({
-  formUrl: 'cgb-watch-party-form-url',
-  venueIdEntry: 'cgb-watch-party-venue-id-entry',
-  venueNameEntry: 'cgb-watch-party-venue-name-entry',
-  gameIdEntry: 'cgb-watch-party-game-id-entry'
-});
-
-function metaContent(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
 
 export function readWatchPartyFormConfig(documentObject = document) {
-  return {
-    formUrl: metaContent(CONFIG_META_NAMES.formUrl, documentObject),
-    venueIdEntry: metaContent(CONFIG_META_NAMES.venueIdEntry, documentObject),
-    venueNameEntry: metaContent(CONFIG_META_NAMES.venueNameEntry, documentObject),
-    gameIdEntry: metaContent(CONFIG_META_NAMES.gameIdEntry, documentObject)
-  };
+  return readFormConfig('watchParty', documentObject);
 }
 
 function removeExistingEntryPoint(detail) {

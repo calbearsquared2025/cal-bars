@@ -2,20 +2,13 @@ import {
   buildListingUpdatePrefillUrl,
   resolveListingUpdateVenue
 } from './listing-update-core.mjs';
+import { readFormConfig } from './config.mjs';
 
 const SELECTOR = '[data-listing-update-entry]';
 let initialized = false;
 
-function meta(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function readConfig(documentObject = document) {
-  return {
-    formUrl: meta('cgb-listing-update-form-url', documentObject),
-    venueIdEntry: meta('cgb-listing-update-venue-id-entry', documentObject),
-    venueNameEntry: meta('cgb-listing-update-venue-name-entry', documentObject)
-  };
+  return readFormConfig('listingUpdate', documentObject);
 }
 
 export function renderListingUpdateEntry({

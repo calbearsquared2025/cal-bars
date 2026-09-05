@@ -1,22 +1,14 @@
-import { PHOTO_FORM_CONFIG } from './photo-form-config.mjs';
 import {
   buildPhotoFormPrefillUrl,
   resolvePhotoFormVenue
 } from './photo-form-core.mjs';
+import { readFormConfig } from './config.mjs';
 
 const SELECTOR = '[data-photo-form-entry]';
 let initialized = false;
 
-function meta(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 export function readPhotoFormConfig(documentObject = document) {
-  return {
-    formUrl: meta('cgb-photo-form-url', documentObject) || PHOTO_FORM_CONFIG.formUrl,
-    venueIdEntry: meta('cgb-photo-form-venue-id-entry', documentObject) || PHOTO_FORM_CONFIG.venueIdEntry,
-    venueNameEntry: meta('cgb-photo-form-venue-name-entry', documentObject) || PHOTO_FORM_CONFIG.venueNameEntry
-  };
+  return readFormConfig('photo', documentObject);
 }
 
 function syncContributionVisibility(detail) {

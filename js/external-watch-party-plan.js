@@ -12,6 +12,7 @@ import {
   navigateWaitingFormWindow,
   requestWatchPartyAttendance
 } from './watch-party-attendance-handoff.mjs';
+import { readFormConfig } from './config.mjs';
 
 const BUTTON_ID = 'external-venue-plan-watch-party';
 const ADD_ONLY_BUTTON_ID = 'external-venue-add-only';
@@ -20,17 +21,8 @@ const STYLE_HREF = 'css/external-watch-party-plan.css';
 let pendingPlan = null;
 let pendingWindow = null;
 
-function metaContent(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function readConfig(documentObject = document) {
-  return {
-    formUrl: metaContent('cgb-watch-party-form-url', documentObject),
-    venueIdEntry: metaContent('cgb-watch-party-venue-id-entry', documentObject),
-    venueNameEntry: metaContent('cgb-watch-party-venue-name-entry', documentObject),
-    gameIdEntry: metaContent('cgb-watch-party-game-id-entry', documentObject)
-  };
+  return readFormConfig('watchParty', documentObject);
 }
 
 function ensureStylesheet(documentObject = document) {

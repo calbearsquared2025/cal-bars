@@ -24,8 +24,8 @@ import {
   canonicalVenueWasKnown,
   showNewLocationContributionPrompt
 } from './new-location-contribution-prompt.mjs';
+import { configuredDataEndpoint } from './config.mjs';
 
-const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const SEARCH_DEBOUNCE_MS = 600;
 const SEARCH_TIMEOUT_MS = 8000;
 const WRITE_TIMEOUT_MS = 12000;
@@ -57,8 +57,7 @@ function storageSet(key, value) {
 }
 
 function configuredEndpoint() {
-  return storageGet(DATA_URL_KEY)?.trim() ||
-    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
+  return configuredDataEndpoint();
 }
 
 function ensureExternalState() {

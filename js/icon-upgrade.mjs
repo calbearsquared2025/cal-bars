@@ -12,6 +12,7 @@ import { createIcon, inlineSpriteIcons } from './icons.mjs';
 import { renderPhotoFormEntry } from './photo-form.js';
 import { renderFanExperiences } from './fan-experiences.mjs';
 import { arrangeDesktopVenueMedia, enhanceVenueProfile } from './venue-profile-enhancement.mjs';
+import { readRuntimeConfig } from './config.mjs';
 
 let appConnected = false;
 let appConnectAttempts = 0;
@@ -22,7 +23,7 @@ let detailLocalMap = null;
 let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
-const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
+const DETAIL_MAP_STYLE_ID = readRuntimeConfig().mapTiler.detailStyleId;
 const DETAIL_MAP_ZOOM = 15;
 const MOBILE_QUERY = '(max-width: 899px)';
 const WIDE_DESKTOP_QUERY = '(min-width: 1100px)';

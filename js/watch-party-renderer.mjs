@@ -4,23 +4,15 @@ import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
+import { readFormConfig } from './config.mjs';
 
 const WATCH_PARTY_FEATURE_LABELS = Object.freeze({
   rsvp_requested: 'RSVP REQUESTED',
   cal_specials: 'CAL SPECIALS'
 });
 
-function meta(name, documentObject) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function issueConfig(documentObject) {
-  return {
-    formUrl: meta('cgb-watch-party-issue-form-url', documentObject),
-    venueNameEntry: meta('cgb-watch-party-issue-venue-name-entry', documentObject),
-    gameEntry: meta('cgb-watch-party-issue-game-entry', documentObject),
-    watchPartyIdEntry: meta('cgb-watch-party-issue-id-entry', documentObject)
-  };
+  return readFormConfig('watchPartyIssue', documentObject);
 }
 
 function appendText(module, text, className, documentObject) {
