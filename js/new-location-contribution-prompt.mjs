@@ -1,19 +1,12 @@
 import { buildCalBarNominationPrefillUrl } from './cal-bar-nomination-core.mjs';
+import { readFormConfig } from './config.mjs';
 
 const DIALOG_ID = 'new-location-success-dialog';
 const MOBILE_QUERY = '(max-width: 899px)';
 
-function meta(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function contributionUrl(venue, documentObject = document) {
   if (!venue?.venue_id || !venue?.name) return '';
-  return buildCalBarNominationPrefillUrl({
-    formUrl: meta('cgb-cal-bar-nomination-form-url', documentObject),
-    venueNameEntry: meta('cgb-cal-bar-nomination-venue-name-entry', documentObject),
-    venueIdEntry: meta('cgb-cal-bar-nomination-venue-id-entry', documentObject)
-  }, {
+  return buildCalBarNominationPrefillUrl(readFormConfig('calBarNomination', documentObject), {
     venueId: venue.venue_id,
     venueName: venue.name,
     venueType: venue.venue_type

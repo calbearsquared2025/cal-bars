@@ -1,5 +1,5 @@
-import { FAN_EXPERIENCE_FORM_CONFIG } from './fan-experience-form-config.mjs';
 import { buildFanExperienceFormPrefillUrl } from './fan-experience-form-core.mjs';
+import { readFormConfig } from './config.mjs';
 
 export const POSTGAME_EXPERIENCE_STORAGE_KEY = 'cgb_v2_postgame_experience_v1';
 const DIALOG_ID = 'postgame-experience-dialog';
@@ -87,16 +87,8 @@ export function removePostgameExperience(postgameState = { pending: {} }, gameId
   return { pending };
 }
 
-function meta(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function formConfig(documentObject = document) {
-  return {
-    formUrl: meta('cgb-fan-experience-form-url', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.formUrl,
-    venueIdEntry: meta('cgb-fan-experience-form-venue-id-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueIdEntry,
-    venueNameEntry: meta('cgb-fan-experience-form-venue-name-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueNameEntry
-  };
+  return readFormConfig('fanExperience', documentObject);
 }
 
 function ensureDialog(documentObject = document) {

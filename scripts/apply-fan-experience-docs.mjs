@@ -44,7 +44,7 @@ await patch('docs/public-data-contract.md', (text) => {
 
 await patch('docs/contribution-forms.md', (text) => {
   const staleConfig = `Public Form configuration is intentionally blank in \`js/fan-experience-form-config.mjs\` until the reviewed Form exists. Configure only:\n\n- public Form \`viewform\` URL\n- Venue name entry ID\n- Venue ID entry ID\n\nDo not commit a Form edit URL, response-sheet identifier, or placeholder live IDs. Equivalent \`cgb-fan-experience-form-*\` meta configuration is also supported. Until valid configuration exists, **Share your experience** is safely unavailable.`;
-  const liveConfig = `Public Form configuration in \`js/fan-experience-form-config.mjs\`:\n\n- Form URL: \`https://docs.google.com/forms/d/e/1FAIpQLScVyKUUXqR8sqEPQLIMeVV1TtxI9EiVmMDd3ib-CvLuBKRajg/viewform\`\n- Venue ID: \`entry.120767699\`\n- Venue name: \`entry.202050515\`\n\nDo not commit a Form edit URL, response-sheet identifier, responses, or private Form metadata. Equivalent \`cgb-fan-experience-form-*\` meta configuration remains supported.`;
+  const liveConfig = `Public Form configuration in \`js/config.mjs\`:\n\n- Form URL: \`https://docs.google.com/forms/d/e/1FAIpQLScVyKUUXqR8sqEPQLIMeVV1TtxI9EiVmMDd3ib-CvLuBKRajg/viewform\`\n- Venue ID: \`entry.120767699\`\n- Venue name: \`entry.202050515\`\n\nDo not commit a Form edit URL, response-sheet identifier, responses, or private Form metadata. Equivalent \`cgb-fan-experience-form-*\` meta configuration remains supported.`;
   text = text.replace(staleConfig, liveConfig);
 
   if (text.includes('## Share your Cal Game Experience')) return text;

@@ -1,4 +1,6 @@
-export const GA_MEASUREMENT_ID = 'G-CZV3JSBNJK';
+import { readRuntimeConfig } from './config.mjs';
+
+export const GA_MEASUREMENT_ID = readRuntimeConfig().analytics.measurementId;
 
 const SCRIPT_ID = 'cgb-google-analytics';
 const INITIALIZED_FLAG = '__CGB_GA_INITIALIZED__';

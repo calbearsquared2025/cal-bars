@@ -16,13 +16,14 @@ import {
   gameTitle,
   validateSnapshotShape
 } from '../js/core.mjs';
+import { BRAND_TOKENS, metaContentFromHtml, readRuntimeConfig } from '../js/config.mjs';
 
 const CARD_WIDTH = 1200;
 const CARD_HEIGHT = 630;
-const SITE_ORIGIN = 'https://calgoldenbars.com';
+const SITE_ORIGIN = readRuntimeConfig().canonicalSiteUrl.replace(/\/$/, '');
 const DESCRIPTION = 'Find your Cal crowd. Join a nearby Watch Party, or plan one of your own.';
 const NAVY = '#06152f';
-const GOLD = '#fdb515';
+const GOLD = BRAND_TOKENS.accent;
 const WHITE = '#ffffff';
 const MUTED_NAVY = '#123f73';
 const RENDERER_VERSION = 8;
@@ -254,8 +255,7 @@ export function buildSharePage(model) {
 
 async function endpointFromIndex() {
   const html = await readFile(join(repositoryRoot, 'index.html'), 'utf8');
-  const tag = html.match(/<meta\b[^>]*\bname=["']cgb-data-endpoint["'][^>]*>/i)?.[0];
-  const endpoint = tag?.match(/\bcontent=["']([^"']+)["']/i)?.[1]?.trim();
+  const endpoint = metaContentFromHtml(html, 'cgb-data-endpoint');
   if (!endpoint) throw new Error('Could not find the cgb-data-endpoint meta tag in index.html.');
   const url = new URL(endpoint);
   if (url.protocol !== 'https:' || url.hostname !== 'script.google.com') {

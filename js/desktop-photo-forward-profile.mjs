@@ -4,6 +4,7 @@ import {
 } from './cal-bar-nomination-core.mjs';
 import { venueTagsForVenue } from './fan-experiences.mjs';
 import { selectedAttendanceViewModel } from './selected-profile-renderer.mjs';
+import { readFormConfig } from './config.mjs';
 
 const DESKTOP_QUERY = '(min-width: 900px)';
 
@@ -11,16 +12,8 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
-function meta(name, documentObject) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function contributionConfig(documentObject) {
-  return {
-    formUrl: meta('cgb-cal-bar-nomination-form-url', documentObject),
-    venueIdEntry: meta('cgb-cal-bar-nomination-venue-id-entry', documentObject),
-    venueNameEntry: meta('cgb-cal-bar-nomination-venue-name-entry', documentObject)
-  };
+  return readFormConfig('calBarNomination', documentObject);
 }
 
 function refreshProfileOnReturn(link, documentObject) {

@@ -22,6 +22,7 @@ import {
   navigateWaitingFormWindow,
   requestWatchPartyAttendance
 } from './watch-party-attendance-handoff.mjs';
+import { readFormConfig } from './config.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const CONTRIBUTION_INTENTS = Object.freeze({
@@ -34,10 +35,6 @@ let currentSurface = 'map';
 let contributionIntent = '';
 let searchSubmissionPending = false;
 let dom = null;
-
-function meta(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
 
 function appState() {
   return window.CGBApp?.getState?.() || null;
@@ -113,12 +110,7 @@ function watchPartyUrl(venueId, state = appState()) {
   if (!venue || !game || String(game.game_status).toLowerCase() !== 'upcoming') return '';
   const gameLabel = buildWatchPartyFormGameLabel(game);
   if (!gameLabel) return '';
-  return buildWatchPartyPrefillUrl({
-    formUrl: meta('cgb-watch-party-form-url'),
-    venueIdEntry: meta('cgb-watch-party-venue-id-entry'),
-    venueNameEntry: meta('cgb-watch-party-venue-name-entry'),
-    gameIdEntry: meta('cgb-watch-party-game-id-entry')
-  }, {
+  return buildWatchPartyPrefillUrl(readFormConfig('watchParty'), {
     venueId: venue.venue_id,
     venueName: venue.name,
     gameId: game.game_id,
@@ -128,31 +120,18 @@ function watchPartyUrl(venueId, state = appState()) {
 
 function calBarNominationUrl(venueId, state = appState()) {
   const context = resolveCalBarNominationVenue(state?.snapshot, venueId);
-  return buildCalBarNominationPrefillUrl({
-    formUrl: meta('cgb-cal-bar-nomination-form-url'),
-    venueNameEntry: meta('cgb-cal-bar-nomination-venue-name-entry'),
-    venueIdEntry: meta('cgb-cal-bar-nomination-venue-id-entry')
-  }, context);
+  return buildCalBarNominationPrefillUrl(readFormConfig('calBarNomination'), context);
 }
 
 function listingUpdateUrl(venueId, state = appState()) {
   const context = resolveListingUpdateVenue(state?.snapshot, venueId);
-  return buildListingUpdatePrefillUrl({
-    formUrl: meta('cgb-listing-update-form-url'),
-    venueNameEntry: meta('cgb-listing-update-venue-name-entry'),
-    venueIdEntry: meta('cgb-listing-update-venue-id-entry')
-  }, context);
+  return buildListingUpdatePrefillUrl(readFormConfig('listingUpdate'), context);
 }
 
 function watchPartyIssueUrl(venueId, state = appState()) {
   const party = getWatchParty(state?.snapshot, state?.gameId, venueId);
   const context = resolveWatchPartyIssueContext(state?.snapshot, party);
-  return buildWatchPartyIssueUrl({
-    formUrl: meta('cgb-watch-party-issue-form-url'),
-    venueNameEntry: meta('cgb-watch-party-issue-venue-name-entry'),
-    gameEntry: meta('cgb-watch-party-issue-game-entry'),
-    watchPartyIdEntry: meta('cgb-watch-party-issue-id-entry')
-  }, context);
+  return buildWatchPartyIssueUrl(readFormConfig('watchPartyIssue'), context);
 }
 
 function contributionUrl(intent, venueId, state = appState()) {

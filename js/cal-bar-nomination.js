@@ -2,20 +2,13 @@ import {
   buildCalBarNominationPrefillUrl,
   resolveCalBarNominationVenue
 } from './cal-bar-nomination-core.mjs';
+import { readFormConfig } from './config.mjs';
 
 const SELECTOR = '[data-cal-bar-nomination-entry]';
 let initialized = false;
 
-function meta(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function readConfig(documentObject = document) {
-  return {
-    formUrl: meta('cgb-cal-bar-nomination-form-url', documentObject),
-    venueIdEntry: meta('cgb-cal-bar-nomination-venue-id-entry', documentObject),
-    venueNameEntry: meta('cgb-cal-bar-nomination-venue-name-entry', documentObject)
-  };
+  return readFormConfig('calBarNomination', documentObject);
 }
 
 function contributionCopy() {

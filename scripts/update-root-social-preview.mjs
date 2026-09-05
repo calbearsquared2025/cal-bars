@@ -3,9 +3,10 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { gameRouteParam, selectDefaultGame } from '../js/core.mjs';
+import { metaContentFromHtml, readRuntimeConfig } from '../js/config.mjs';
 import { fetchSnapshot } from './generate-social-cards.mjs';
 
-const SITE_ORIGIN = 'https://calgoldenbars.com';
+const SITE_ORIGIN = readRuntimeConfig().canonicalSiteUrl.replace(/\/$/, '');
 const DESCRIPTION = 'Find your Cal crowd. Join a nearby Watch Party, or plan one of your own.';
 const START_MARKER = '<!-- CGB current-game social metadata: start -->';
 const END_MARKER = '<!-- CGB current-game social metadata: end -->';
@@ -37,8 +38,7 @@ function pacificCalendarDate(now = new Date()) {
 }
 
 function endpointFromIndex(html) {
-  const tag = html.match(/<meta\b[^>]*\bname=["']cgb-data-endpoint["'][^>]*>/i)?.[0];
-  const endpoint = tag?.match(/\bcontent=["']([^"']+)["']/i)?.[1]?.trim();
+  const endpoint = metaContentFromHtml(html, 'cgb-data-endpoint');
   if (!endpoint) throw new Error('Could not find the cgb-data-endpoint meta tag in index.html.');
   const url = new URL(endpoint);
   if (url.protocol !== 'https:' || url.hostname !== 'script.google.com') {

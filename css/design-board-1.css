@@ -2,9 +2,19 @@
 :root {
   color-scheme: light;
 
+  /* Current Cal identity mapped onto reusable school-brand roles. */
+  --brand-primary: #002676;
+  --brand-primary-dark: #010133;
+  --brand-secondary: #fdb515;
+  --brand-event-accent: var(--brand-secondary);
+  --color-page-background: #f7f6f2;
+  --color-surface: #ffffff;
+  --color-text-primary: #101626;
+  --color-text-muted: #687280;
+
   /* Design-board palette. */
-  --cgb-navy-950: #010133;
-  --cgb-navy-900: #002676;
+  --cgb-navy-950: var(--brand-primary-dark);
+  --cgb-navy-900: var(--brand-primary);
   --cgb-navy-800: #052b67;
   --cgb-navy-700: #153f78;
   --cgb-navy-100: #dce6f1;
@@ -12,20 +22,20 @@
 
   --cgb-gold-600: #c88600;
   --cgb-gold-500: #e4a100;
-  --cgb-gold-400: #fdb515;
+  --cgb-gold-400: var(--brand-secondary);
   --cgb-gold-200: #f8d66e;
   --cgb-gold-100: #ffedb0;
   --cgb-gold-50: #fff8e6;
 
-  --cgb-ink-900: #101626;
+  --cgb-ink-900: var(--color-text-primary);
   --cgb-ink-700: #354052;
-  --cgb-ink-500: #687280;
+  --cgb-ink-500: var(--color-text-muted);
   --cgb-neutral-300: #cbd0d6;
   --cgb-neutral-200: #dfe2e6;
   --cgb-neutral-100: #eceef0;
   --cgb-neutral-50: #f2f2f2;
-  --cgb-warm-50: #f7f6f2;
-  --cgb-white: #ffffff;
+  --cgb-warm-50: var(--color-page-background);
+  --cgb-white: var(--color-surface);
   --cgb-success: #176b4b;
   --cgb-danger: #9b3028;
 

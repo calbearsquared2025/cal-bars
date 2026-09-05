@@ -1,10 +1,13 @@
 import './analytics.mjs';
 import { TRAY_GUIDANCE_COPY, validateSnapshotShape } from './core.mjs';
+import {
+  DATA_ENDPOINT_OVERRIDE_KEY,
+  suspendConfiguredDataEndpoint
+} from './config.mjs';
 
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
 
-const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const REFRESH_TIMEOUT_MS = 10000;
 const PUBLIC_SNAPSHOT_KEYS = [
@@ -38,7 +41,7 @@ export function allowsDataEndpointOverride(hostname) {
 export function clearDisallowedDataEndpointOverride({
   hostname,
   getStorage = () => window.localStorage,
-  key = DATA_URL_KEY
+  key = DATA_ENDPOINT_OVERRIDE_KEY
 } = {}) {
   if (allowsDataEndpointOverride(hostname) || typeof getStorage !== 'function') return false;
   try {
@@ -116,37 +119,8 @@ export function dataAvailabilityCopy({ dataSource, venueCount, refreshFailed = f
   };
 }
 
-function safeStorageGet(key) {
-  try { return window.localStorage.getItem(key); } catch (_) { return null; }
-}
-
 function safeStorageSet(key, value) {
   try { window.localStorage.setItem(key, value); } catch (_) {}
-}
-
-function safeStorageRemove(key) {
-  try { window.localStorage.removeItem(key); } catch (_) {}
-}
-
-function suspendConfiguredEndpoint() {
-  const meta = document.querySelector('meta[name="cgb-data-endpoint"]');
-  const metaValue = meta?.content || '';
-  const storedValue = safeStorageGet(DATA_URL_KEY);
-  const endpoint = String(storedValue || '').trim() || metaValue.trim();
-
-  if (storedValue !== null) safeStorageRemove(DATA_URL_KEY);
-  if (meta) meta.content = '';
-
-  let restored = false;
-  return {
-    endpoint,
-    restore() {
-      if (restored) return;
-      restored = true;
-      if (storedValue !== null) safeStorageSet(DATA_URL_KEY, storedValue);
-      if (meta) meta.content = metaValue;
-    }
-  };
 }
 
 async function fetchJson(url, timeoutMs = REFRESH_TIMEOUT_MS) {
@@ -301,7 +275,7 @@ function startRefreshController(endpointControl) {
 }
 
 async function initializeBrowserRefresh() {
-  const endpointControl = suspendConfiguredEndpoint();
+  const endpointControl = suspendConfiguredDataEndpoint();
   window.addEventListener('DOMContentLoaded', async () => {
     endpointControl.restore();
     const ready = await waitForSnapshot();

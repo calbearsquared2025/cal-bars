@@ -2,8 +2,18 @@
 :root {
   color-scheme: light;
 
-  --cgb-navy-950: #06152f;
-  --cgb-navy-900: #071e41;
+  /* School-level semantic roles. Instance theming should override this layer. */
+  --brand-primary: #071e41;
+  --brand-primary-dark: #06152f;
+  --brand-secondary: #fdb515;
+  --brand-event-accent: var(--brand-secondary);
+  --color-page-background: #fbfaf7;
+  --color-surface: #ffffff;
+  --color-text-primary: #121a28;
+  --color-text-muted: #657083;
+
+  --cgb-navy-950: var(--brand-primary-dark);
+  --cgb-navy-900: var(--brand-primary);
   --cgb-navy-800: #0a2d57;
   --cgb-navy-700: #123f73;
   --cgb-navy-100: #dce7f3;
@@ -11,20 +21,20 @@
 
   --cgb-gold-600: #c98700;
   --cgb-gold-500: #e8a600;
-  --cgb-gold-400: #fdb515;
+  --cgb-gold-400: var(--brand-secondary);
   --cgb-gold-200: #f9dc83;
   --cgb-gold-100: #fff1bf;
   --cgb-gold-50: #fff8df;
 
-  --cgb-ink-900: #121a28;
+  --cgb-ink-900: var(--color-text-primary);
   --cgb-ink-700: #354052;
-  --cgb-ink-500: #657083;
+  --cgb-ink-500: var(--color-text-muted);
   --cgb-neutral-300: #cfd5dd;
   --cgb-neutral-200: #e2e6eb;
   --cgb-neutral-100: #edf0f3;
   --cgb-neutral-50: #f7f8f9;
-  --cgb-warm-50: #fbfaf7;
-  --cgb-white: #ffffff;
+  --cgb-warm-50: var(--color-page-background);
+  --cgb-white: var(--color-surface);
   --cgb-success: #176b4b;
   --cgb-danger: #9b3028;
 
