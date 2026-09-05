@@ -2,9 +2,6 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-import { gameRouteParam, selectDefaultGame } from '../js/core.mjs';
-import { fetchSnapshot } from './generate-social-cards.mjs';
-
 const SITE_ORIGIN = 'https://calgoldenbars.com';
 const DESCRIPTION = 'Find your Cal crowd. Join a nearby Watch Party, or plan one of your own.';
 const START_MARKER = '<!-- CGB current-game social metadata: start -->';
@@ -20,31 +17,6 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
-}
-
-function pacificCalendarDate(now = new Date()) {
-  const parts = Object.fromEntries(
-    new Intl.DateTimeFormat('en-US', {
-      timeZone: 'America/Los_Angeles',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    }).formatToParts(now)
-      .filter((part) => part.type !== 'literal')
-      .map((part) => [part.type, part.value])
-  );
-  return new Date(Number(parts.year), Number(parts.month) - 1, Number(parts.day), 12, 0, 0);
-}
-
-function endpointFromIndex(html) {
-  const tag = html.match(/<meta\b[^>]*\bname=["']cgb-data-endpoint["'][^>]*>/i)?.[0];
-  const endpoint = tag?.match(/\bcontent=["']([^"']+)["']/i)?.[1]?.trim();
-  if (!endpoint) throw new Error('Could not find the cgb-data-endpoint meta tag in index.html.');
-  const url = new URL(endpoint);
-  if (url.protocol !== 'https:' || url.hostname !== 'script.google.com') {
-    throw new Error(`Refusing unexpected snapshot endpoint: ${url.origin}`);
-  }
-  return endpoint;
 }
 
 function socialMetadataBlock(entry) {
@@ -76,19 +48,21 @@ function updateLoadingCover(html, entry) {
     .replace(imagePattern, `$1${imagePath}$2`);
 }
 
+export function selectRootPreviewEntry(manifest) {
+  const slug = String(manifest?.default_game_slug || '').trim();
+  if (!slug) throw new Error('Generated social-card manifest has no default_game_slug.');
+  const entry = (manifest.games || []).find((item) => item?.slug === slug);
+  if (!entry) throw new Error(`Generated social-card manifest has no entry for default game: ${slug}`);
+  return entry;
+}
+
 export async function updateRootSocialPreview() {
   const [html, manifestText] = await Promise.all([
     readFile(indexPath, 'utf8'),
     readFile(manifestPath, 'utf8')
   ]);
-  const snapshot = await fetchSnapshot(endpointFromIndex(html));
-  const game = selectDefaultGame(snapshot.games, pacificCalendarDate());
-  if (!game) throw new Error('Could not select the current/default game from the public snapshot.');
-
   const manifest = JSON.parse(manifestText);
-  const slug = gameRouteParam(game);
-  const entry = (manifest.games || []).find((item) => item?.slug === slug);
-  if (!entry) throw new Error(`Generated social-card manifest has no entry for current game: ${slug}`);
+  const entry = selectRootPreviewEntry(manifest);
 
   const metadataUpdated = updateIndexMetadata(html, socialMetadataBlock(entry));
   const updated = updateLoadingCover(metadataUpdated, entry);
