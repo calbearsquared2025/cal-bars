@@ -345,6 +345,22 @@ function renderPreviewAttendance(countElement, fanCount) {
   return bearCountCopy(total);
 }
 
+function renderPreviewLocation(copyElement, { venue, typeLabel, distance, mode } = {}) {
+  if (mode !== 'selected') {
+    copyElement.textContent = [typeLabel, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
+    return;
+  }
+
+  const street = [venue?.address_line_1, venue?.address_line_2].filter(Boolean).join(', ');
+  const locality = [venue?.city, venue?.region].filter(Boolean).join(', ');
+  const firstLine = [typeLabel, street].filter(Boolean).join(' · ');
+  const secondLine = [locality, formatDistance(distance)].filter(Boolean).join(' · ');
+  copyElement.replaceChildren();
+  if (firstLine) copyElement.append(document.createTextNode(firstLine));
+  if (firstLine && secondLine) copyElement.append(document.createElement('br'));
+  if (secondLine) copyElement.append(document.createTextNode(secondLine));
+}
+
 function updatePreviewIntent() {
   const state = appState();
   const button = document.querySelector('#browse-locations-button');
@@ -379,7 +395,7 @@ function updatePreviewIntent() {
   const attendanceCopy = renderPreviewAttendance(count, fanCount);
   eyebrow.textContent = mode === 'selected' ? 'Selected' : 'Near you';
   title.textContent = venue.name;
-  copy.textContent = [typeLabel, compactVenueLocation(venue), formatDistance(distance)].filter(Boolean).join(' · ');
+  renderPreviewLocation(copy, { venue, typeLabel, distance, mode });
   marker.dataset.kind = markerKind(state.snapshot, state.gameId, venue);
   button.dataset.previewMode = mode;
   button.dataset.directVenueId = venue.venue_id;
@@ -488,18 +504,16 @@ function focusVenue(venueId, { force = false } = {}) {
 function syncLocateControlPosition() {
   const actions = document.querySelector('.map-actions');
   if (!actions) return;
-  const state = appState();
   const tray = document.querySelector('#venue-tray');
   const map = document.querySelector('#map');
   const nearMe = document.querySelector('#near-me-button');
-  const selectedProfileVisible = isMobile() &&
+  const trayVisible = isMobile() &&
     document.body.dataset.view === 'map' &&
     document.body.dataset.commandSurface === 'map' &&
-    Boolean(state?.selectedVenueId) &&
-    tray?.dataset.state === 'selected' &&
-    map && nearMe;
+    tray && map && nearMe &&
+    getComputedStyle(tray).display !== 'none';
 
-  if (!selectedProfileVisible) {
+  if (!trayVisible) {
     actions.style.removeProperty('top');
     return;
   }
