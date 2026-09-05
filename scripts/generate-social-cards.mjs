@@ -14,6 +14,7 @@ import { findBrowser } from './browser-discovery.mjs';
 import {
   gameRouteParam,
   gameTitle,
+  selectDefaultGame,
   validateSnapshotShape
 } from '../js/core.mjs';
 
@@ -50,6 +51,20 @@ function titleSizeClass(title) {
   if (title.length > 17) return 'game-title--long';
   if (title.length > 12) return 'game-title--medium';
   return 'game-title--default';
+}
+
+function pacificCalendarDate(now = new Date()) {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(now)
+      .filter((part) => part.type !== 'literal')
+      .map((part) => [part.type, part.value])
+  );
+  return new Date(Number(parts.year), Number(parts.month) - 1, Number(parts.day), 12, 0, 0);
 }
 
 export function validateSocialSnapshot(snapshot) {
@@ -97,6 +112,29 @@ export function socialCardModel(snapshot, game) {
     shareUrl,
     imageUrl,
     metadataTitle: `${title} · ${locationCount} locations mapped · ${watchPartyCount} Watch ${watchPartyCount === 1 ? 'Party' : 'Parties'}`
+  };
+}
+
+export function buildSocialManifest(snapshot, models, now = new Date()) {
+  const defaultGame = selectDefaultGame(snapshot.games, pacificCalendarDate(now));
+  const defaultGameSlug = gameRouteParam(defaultGame);
+  if (!defaultGameSlug || !models.some((model) => model.slug === defaultGameSlug)) {
+    throw new Error('Could not select a generated social card for the default game.');
+  }
+
+  return {
+    version: 1,
+    renderer_version: RENDERER_VERSION,
+    default_game_slug: defaultGameSlug,
+    games: models.map((model) => ({
+      game_id: model.gameId,
+      slug: model.slug,
+      title: model.title,
+      locations_mapped: model.locationCount,
+      watch_parties: model.watchPartyCount,
+      image: `assets/social-cards/${model.slug}.png`,
+      page: `share/${model.slug}/index.html`
+    }))
   };
 }
 
@@ -454,19 +492,7 @@ export async function generateSocialCards() {
 
     const activeSlugs = new Set(models.map((model) => model.slug));
     await removeObsoleteOutputs(previousManifest, activeSlugs);
-    const manifest = {
-      version: 1,
-      renderer_version: RENDERER_VERSION,
-      games: models.map((model) => ({
-        game_id: model.gameId,
-        slug: model.slug,
-        title: model.title,
-        locations_mapped: model.locationCount,
-        watch_parties: model.watchPartyCount,
-        image: `assets/social-cards/${model.slug}.png`,
-        page: `share/${model.slug}/index.html`
-      }))
-    };
+    const manifest = buildSocialManifest(snapshot, models);
     await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   } finally {
     if (temporaryDirectory) await rm(temporaryDirectory, { recursive: true, force: true });
