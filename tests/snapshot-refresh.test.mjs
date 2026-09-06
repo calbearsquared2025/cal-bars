@@ -116,7 +116,7 @@ test('direct-entry venue is resolved after cached or fallback startup refreshes'
   assert.equal(resolveDirectEntryVenueId(current, '?game=ucla'), '');
 });
 
-test('browser bootstrap renders cache first and suppresses an unchanged live rerender', async () => {
+test('browser bootstrap leaves the live endpoint available and does not duplicate the startup fetch', async () => {
   const originalWindow = globalThis.window;
   const originalDocument = globalThis.document;
   const originalFetch = globalThis.fetch;
@@ -131,6 +131,7 @@ test('browser bootstrap renders cache first and suppresses an unchanged live rer
     ['#list-heading', { textContent: '' }],
     ['#location-list', { replaceChildren() {} }]
   ]);
+  const initial = snapshot({ generatedAt: '2026-08-03T00:00:00Z' });
   const live = snapshot({ generatedAt: '2026-08-03T01:00:00Z' });
   let fetchCalls = 0;
   let renderCalls = 0;
@@ -169,12 +170,12 @@ test('browser bootstrap renders cache first and suppresses an unchanged live rer
 
   try {
     await import(`../js/snapshot-refresh.mjs?browser-bootstrap=${Date.now()}`);
-    assert.equal(meta.content, '');
-    assert.equal(storage.has('cgb_v2_public_data_url'), false);
+    assert.equal(meta.content, 'https://example.invalid/default');
+    assert.equal(storage.get('cgb_v2_public_data_url'), 'https://example.invalid/live');
 
     const state = {
-      snapshot: snapshot({ generatedAt: '2026-08-03T00:00:00Z' }),
-      dataSource: 'last-known-good',
+      snapshot: initial,
+      dataSource: 'live',
       detailMode: false,
       selectedVenueId: null
     };
@@ -189,8 +190,12 @@ test('browser bootstrap renders cache first and suppresses an unchanged live rer
     await windowListeners.get('DOMContentLoaded')();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    assert.equal(meta.content, 'https://example.invalid/default');
-    assert.equal(storage.get('cgb_v2_public_data_url'), 'https://example.invalid/live');
+    assert.equal(fetchCalls, 0);
+    assert.equal(renderCalls, 0);
+    assert.equal(state.snapshot.generatedAt, '2026-08-03T00:00:00Z');
+
+    await window.CGBSnapshotRefresh.refresh();
+
     assert.equal(fetchCalls, 1);
     assert.equal(renderCalls, 0);
     assert.equal(state.dataSource, 'live');
