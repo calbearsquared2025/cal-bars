@@ -124,29 +124,9 @@ function safeStorageSet(key, value) {
   try { window.localStorage.setItem(key, value); } catch (_) {}
 }
 
-function safeStorageRemove(key) {
-  try { window.localStorage.removeItem(key); } catch (_) {}
-}
-
-function suspendConfiguredEndpoint() {
-  const meta = document.querySelector('meta[name="cgb-data-endpoint"]');
-  const metaValue = meta?.content || '';
-  const storedValue = safeStorageGet(DATA_URL_KEY);
-  const endpoint = String(storedValue || '').trim() || metaValue.trim();
-
-  if (storedValue !== null) safeStorageRemove(DATA_URL_KEY);
-  if (meta) meta.content = '';
-
-  let restored = false;
-  return {
-    endpoint,
-    restore() {
-      if (restored) return;
-      restored = true;
-      if (storedValue !== null) safeStorageSet(DATA_URL_KEY, storedValue);
-      if (meta) meta.content = metaValue;
-    }
-  };
+function configuredEndpoint() {
+  return safeStorageGet(DATA_URL_KEY)?.trim() ||
+    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
 }
 
 async function fetchJson(url, timeoutMs = REFRESH_TIMEOUT_MS) {
@@ -236,26 +216,26 @@ function restoreDirectEntryAfterRefresh(app) {
   return true;
 }
 
-function startRefreshController(endpointControl) {
+function startRefreshController(endpoint) {
   const app = window.CGBApp;
   if (!app) return null;
 
   let inFlight = null;
-  let lastAttemptAt = 0;
-  let refreshFailed = !endpointControl.endpoint;
+  let lastAttemptAt = Date.now();
+  let refreshFailed = !endpoint || app.getState?.()?.dataSource !== 'live';
 
   const applyCopy = () => applyDataAvailabilityCopy(refreshFailed);
   app.subscribe?.('rendered', applyCopy);
   applyCopy();
 
   async function refreshLive({ force = false } = {}) {
-    if (!endpointControl.endpoint || !app.getSnapshot?.()) return false;
+    if (!endpoint || !app.getSnapshot?.()) return false;
     if (!force && document.visibilityState !== 'visible') return false;
     if (inFlight) return inFlight;
 
     lastAttemptAt = Date.now();
     inFlight = (async () => {
-      const live = await fetchJson(endpointControl.endpoint);
+      const live = await fetchJson(endpoint);
       if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
 
       safeStorageSet(LAST_GOOD_KEY, JSON.stringify(live));
@@ -288,7 +268,6 @@ function startRefreshController(endpointControl) {
     refreshLive();
   };
 
-  refreshLive({ force: true });
   window.setInterval(() => {
     if (document.visibilityState === 'visible') refreshLive();
   }, ACTIVE_REFRESH_INTERVAL_MS);
@@ -300,13 +279,11 @@ function startRefreshController(endpointControl) {
   return { refreshLive };
 }
 
-async function initializeBrowserRefresh() {
-  const endpointControl = suspendConfiguredEndpoint();
+function initializeBrowserRefresh() {
   window.addEventListener('DOMContentLoaded', async () => {
-    endpointControl.restore();
     const ready = await waitForSnapshot();
     if (!ready) return;
-    browserRefreshController = startRefreshController(endpointControl);
+    browserRefreshController = startRefreshController(configuredEndpoint());
   }, { once: true });
 }
 
