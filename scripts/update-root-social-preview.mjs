@@ -3,13 +3,14 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 import { readBuildConfigFromHtml } from '../js/config.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from '../js/instance-config.mjs';
 
-const DESCRIPTION = 'Find your Cal crowd. Join a nearby Watch Party, or plan one of your own.';
+const DESCRIPTION = ACTIVE_INSTANCE_CONFIG.social.description;
 const START_MARKER = '<!-- CGB current-game social metadata: start -->';
 const END_MARKER = '<!-- CGB current-game social metadata: end -->';
 const repositoryRoot = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
 const indexPath = join(repositoryRoot, 'index.html');
-const manifestPath = join(repositoryRoot, 'assets', 'social-cards', 'manifest.json');
+const manifestPath = join(repositoryRoot, ACTIVE_INSTANCE_CONFIG.brand.assets.socialCardsDirectory, 'manifest.json');
 
 function escapeHtml(value) {
   return String(value)

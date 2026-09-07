@@ -23,6 +23,7 @@ import {
   requestWatchPartyAttendance
 } from './watch-party-attendance-handoff.mjs';
 import { readRuntimeConfig } from './config.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const CONTRIBUTION_INTENTS = Object.freeze({
@@ -30,6 +31,9 @@ const CONTRIBUTION_INTENTS = Object.freeze({
   calBar: 'cal-bar',
   report: 'report'
 });
+const PRODUCT_NAME = ACTIVE_INSTANCE_CONFIG.identity.productName;
+const PRODUCT_SHORT_NAME = ACTIVE_INSTANCE_CONFIG.identity.productShortName;
+const FIND_CROWD_COPY = ACTIVE_INSTANCE_CONFIG.copy.findCrowd;
 
 let currentSurface = 'map';
 let contributionIntent = '';
@@ -153,7 +157,7 @@ function updateResponsiveCommandLabels() {
   const venue = selectedVenue();
   const labels = mobile
     ? { map: 'Map', search: 'Search', add: 'Add', list: 'List', about: 'About' }
-    : { map: 'Selected', search: 'Search', add: 'Add to CGB', list: 'Locations', about: 'About' };
+    : { map: 'Selected', search: 'Search', add: `Add to ${PRODUCT_SHORT_NAME}`, list: 'Locations', about: 'About' };
 
   syncContributionStructure();
 
@@ -165,17 +169,17 @@ function updateResponsiveCommandLabels() {
 
   const addButton = dom.commandButtons.find((button) => button.dataset.command === 'add');
   if (addButton) {
-    addButton.setAttribute('aria-label', mobile ? 'Add' : 'Add to Cal Golden Bars');
+    addButton.setAttribute('aria-label', mobile ? 'Add' : `Add to ${PRODUCT_NAME}`);
   }
   const addTitle = document.querySelector('#add-surface-title');
   const addIntro = document.querySelector('#add-surface > .command-surface__shell > .command-surface__intro');
-  if (addTitle) addTitle.textContent = mobile ? 'Add to the map' : 'Add to Cal Golden Bars';
+  if (addTitle) addTitle.textContent = mobile ? 'Add to the map' : `Add to ${PRODUCT_NAME}`;
   if (addIntro) {
     addIntro.textContent = mobile
       ? 'Choose what you would like to add or correct.'
       : venue
         ? 'Choose an action for the selected location, or search for another location.'
-        : 'If the location is already listed in CGB, select it first to add a Watch Party or other content. If it isn’t listed yet, search below to add it.';
+        : `If the location is already listed in ${PRODUCT_SHORT_NAME}, select it first to add a Watch Party or other content. If it isn’t listed yet, search below to add it.`;
   }
 
   if (dom.addCalBarTitle) {
@@ -188,15 +192,15 @@ function updateResponsiveCommandLabels() {
   }
   if (dom.addSomewhereElseIntro) {
     dom.addSomewhereElseIntro.hidden = !mobile;
-    dom.addSomewhereElseIntro.textContent = 'Search for a place that isn’t listed in Cal Golden Bars yet.';
+    dom.addSomewhereElseIntro.textContent = `Search for a place that isn’t listed in ${PRODUCT_NAME} yet.`;
   }
   if (dom.addNewLocationTitle) {
-    dom.addNewLocationTitle.textContent = mobile ? 'Search for another location' : 'Search for another location';
+    dom.addNewLocationTitle.textContent = 'Search for another location';
   }
   if (dom.addNewLocationDetail) {
     dom.addNewLocationDetail.textContent = mobile
       ? 'Find a place that isn’t listed yet.'
-      : 'Find a place that isn’t listed in CGB yet.';
+      : `Find a place that isn’t listed in ${PRODUCT_SHORT_NAME} yet.`;
   }
 
   const selectedButton = dom.commandButtons.find((button) => button.dataset.command === 'map');
@@ -272,8 +276,8 @@ function setSearchMode(mode = 'existing', { refresh = true } = {}) {
   document.body.dataset.searchMode = mode;
   dom.searchTitle.textContent = addingLocation ? 'Search for another location' : 'Search locations';
   dom.searchIntro.textContent = addingLocation
-    ? 'Find a place that isn’t listed in Cal Golden Bars yet.'
-    : 'Find a location already listed in Cal Golden Bars.';
+    ? `Find a place that isn’t listed in ${PRODUCT_NAME} yet.`
+    : `Find a location already listed in ${PRODUCT_NAME}.`;
   dom.searchInput.placeholder = addingLocation ? 'Venue or address' : 'City, ZIP, or venue';
   if (mode !== 'existing') dom.addLocationSearch.hidden = true;
   if (changed && refresh) dom.searchInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -311,9 +315,9 @@ function showList() {
 function updateSearchIntent() {
   const calBarTitle = isMobileLayout() ? 'Tell us about this location' : 'Tell us about a location';
   const messages = {
-    [CONTRIBUTION_INTENTS.watchParty]: '<strong>Add a Watch Party</strong><span>Search for the venue. Existing CGB locations open the prefilled form; external places offer “Add a Watch Party” after selection.</span>',
-    [CONTRIBUTION_INTENTS.calBar]: `<strong>${calBarTitle}</strong><span>Search for an existing CGB location. Unlisted places must first be added to Cal Golden Bars.</span>`,
-    [CONTRIBUTION_INTENTS.report]: '<strong>Report a problem</strong><span>Search for the existing CGB listing you need to correct.</span>'
+    [CONTRIBUTION_INTENTS.watchParty]: `<strong>Add a Watch Party</strong><span>Search for the venue. Existing ${PRODUCT_SHORT_NAME} locations open the prefilled form; external places offer “Add a Watch Party” after selection.</span>`,
+    [CONTRIBUTION_INTENTS.calBar]: `<strong>${calBarTitle}</strong><span>Search for an existing ${PRODUCT_SHORT_NAME} location. Unlisted places must first be added to ${PRODUCT_NAME}.</span>`,
+    [CONTRIBUTION_INTENTS.report]: `<strong>Report a problem</strong><span>Search for the existing ${PRODUCT_SHORT_NAME} listing you need to correct.</span>`
   };
   const message = messages[contributionIntent] || '';
   dom.searchIntent.hidden = !message;
@@ -488,9 +492,9 @@ function handleSearchResultClick(event) {
   if (contributionIntent === CONTRIBUTION_INTENTS.watchParty) {
     showStatus('In the place confirmation, choose “Add a Watch Party.”', 4200);
   } else if (contributionIntent === CONTRIBUTION_INTENTS.calBar) {
-    showStatus('Add this place to CGB first, then tell us about it from the location profile.', 4600);
+    showStatus(`Add this place to ${PRODUCT_SHORT_NAME} first, then tell us about it from the location profile.`, 4600);
   } else if (contributionIntent === CONTRIBUTION_INTENTS.report) {
-    showStatus('Only existing CGB listings can be reported.', 3600);
+    showStatus(`Only existing ${PRODUCT_SHORT_NAME} listings can be reported.`, 3600);
   }
   requestAnimationFrame(() => setSurface('map'));
 }
@@ -513,10 +517,9 @@ function syncDesktopBrowseState() {
   if (!dom || isMobileLayout()) return;
   const state = appState();
   if (!state?.listQuery) {
-    dom.listHeading.textContent = 'Find your Cal crowd';
+    dom.listHeading.textContent = FIND_CROWD_COPY;
     dom.listEyebrow.textContent = 'Browse';
   }
-
 }
 
 function syncViewState() {

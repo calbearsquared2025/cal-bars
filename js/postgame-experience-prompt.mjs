@@ -1,7 +1,8 @@
 import { readRuntimeConfig } from './config.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import { buildFanExperienceFormPrefillUrl } from './fan-experience-form-core.mjs';
 
-export const POSTGAME_EXPERIENCE_STORAGE_KEY = 'cgb_v2_postgame_experience_v1';
+export const POSTGAME_EXPERIENCE_STORAGE_KEY = ACTIVE_INSTANCE_CONFIG.storage.postgameExperience;
 const DIALOG_ID = 'postgame-experience-dialog';
 
 function clean(value) {
@@ -164,10 +165,11 @@ export function showPostgameExperiencePrompt(context, {
   const skip = dialog.querySelector('#postgame-experience-skip');
   if (!title || !copy || !contribute || !skip) return false;
 
-  title.textContent = `How was watching Cal at ${context.venueName}?`;
+  const { fanSingular, schoolShortName } = ACTIVE_INSTANCE_CONFIG.identity;
+  title.textContent = `How was watching ${schoolShortName} at ${context.venueName}?`;
   copy.textContent = context.opponentName
-    ? `You said you’d be here for Cal–${context.opponentName}. What should another Bear know about watching a game here?`
-    : 'What should another Bear know about watching a Cal game here?';
+    ? `You said you’d be here for ${schoolShortName}–${context.opponentName}. What should another ${fanSingular} know about watching a game here?`
+    : `What should another ${fanSingular} know about watching a ${schoolShortName} game here?`;
   contribute.href = href;
 
   const complete = () => {

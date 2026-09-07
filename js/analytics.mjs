@@ -1,10 +1,11 @@
 import { readRuntimeConfig } from './config.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 
 export const GA_MEASUREMENT_ID = readRuntimeConfig().analyticsMeasurementId;
 
-const SCRIPT_ID = 'cgb-google-analytics';
-const INITIALIZED_FLAG = '__CGB_GA_INITIALIZED__';
-const FLOW_INITIALIZED_FLAG = '__CGB_GA_FLOW_INITIALIZED__';
+const SCRIPT_ID = ACTIVE_INSTANCE_CONFIG.analytics.scriptElementId;
+const INITIALIZED_FLAG = ACTIVE_INSTANCE_CONFIG.analytics.initializedFlag;
+const FLOW_INITIALIZED_FLAG = ACTIVE_INSTANCE_CONFIG.analytics.flowInitializedFlag;
 const APP_CONNECT_MAX_ATTEMPTS = 400;
 const APP_CONNECT_DELAY_MS = 25;
 const EVENT_ALIASES = Object.freeze({
