@@ -36,11 +36,12 @@ import {
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 import { createIcon } from './icons.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
+import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
 
-const MAPTILER_KEY = 'jNqIsIVa4dP9qv7vQ8fy';
-const MAPTILER_STYLE = new URL('../styles/dataviz-with-cgb-states.json', import.meta.url).href;
+const runtimeConfig = readRuntimeConfig();
+const MAPTILER_KEY = runtimeConfig.mapTiler.apiKey;
+const MAPTILER_STYLE = runtimeConfig.mapTiler.styleUrl;
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
-const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
@@ -81,8 +82,7 @@ function storageRemove(key) {
 }
 
 function configuredEndpoint() {
-  return storageGet(DATA_URL_KEY)?.trim() ||
-    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
+  return readRuntimeConfig().dataEndpoint;
 }
 
 function cacheDom() {
@@ -357,8 +357,8 @@ function initMap() {
   state.map = new sdk.Map({
     container: dom.map,
     style: MAPTILER_STYLE,
-    center: [-98.5795, 39.8283],
-    zoom: 3.2,
+    center: [...runtimeConfig.defaultGeography.center],
+    zoom: runtimeConfig.defaultGeography.zoom,
     navigationControl: false,
     geolocateControl: false,
     maptilerLogo: false,
@@ -1566,11 +1566,11 @@ window.CGBApp = Object.freeze({
 
 window.CGBPreview = Object.freeze({
   setDataEndpoint(url) {
-    storageSet(DATA_URL_KEY, String(url || '').trim());
+    storageSet(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, String(url || '').trim());
     location.reload();
   },
   clearDataEndpoint() {
-    storageRemove(DATA_URL_KEY);
+    storageRemove(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY);
     location.reload();
   },
   clearLastKnownGood() {

@@ -45,6 +45,12 @@ const mobileTrayViewports = [
   { label: 'mobile-390-full', width: 390, height: 844, reviewMode: 'tray-full' },
   { label: 'desktop-1280-selected', width: 1280, height: 900, reviewMode: 'tray-selected' }
 ];
+const consolidationViewports = [
+  { label: 'mobile-390-landing', width: 390, height: 844, reviewMode: 'landing' },
+  { label: 'mobile-390-selected', width: 390, height: 844 },
+  { label: 'desktop-1440-landing', width: 1440, height: 1000, reviewMode: 'landing' },
+  { label: 'desktop-1440-selected', width: 1440, height: 1000 }
+];
 const reviewProfile = process.env.CGB_REVIEW_PROFILE || '';
 const viewports = reviewProfile === 'photo-forward-balanced'
   ? balancedPhotoForwardViewports
@@ -52,7 +58,9 @@ const viewports = reviewProfile === 'photo-forward-balanced'
     ? photoForwardViewports
     : reviewProfile === 'mobile-tray'
       ? mobileTrayViewports
-      : standardViewports;
+      : reviewProfile === 'consolidation'
+        ? consolidationViewports
+        : standardViewports;
 
 mkdirSync(outputDir, { recursive: true });
 
@@ -110,6 +118,11 @@ function reviewPage(root, response) {
         const mobile = matchMedia('(max-width: 899px)').matches;
         const reviewMode = new URLSearchParams(location.search).get('reviewMode');
         const trayReview = reviewMode?.startsWith('tray-');
+
+        if (reviewMode === 'landing') {
+          document.body.dataset.reviewReady = 'true';
+          return;
+        }
 
         if (mobile && trayReview && reviewMode === 'tray-peek') {
           await waitFor(() => document.querySelector('#venue-tray')?.dataset.state === 'peek');

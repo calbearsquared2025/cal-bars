@@ -12,6 +12,7 @@ import { createIcon, inlineSpriteIcons } from './icons.mjs';
 import { renderPhotoFormEntry } from './photo-form.js';
 import { renderFanExperiences } from './fan-experiences.mjs';
 import { arrangeDesktopVenueMedia, enhanceVenueProfile } from './venue-profile-enhancement.mjs';
+import { readRuntimeConfig } from './config.mjs';
 
 let appConnected = false;
 let appConnectAttempts = 0;
@@ -22,7 +23,6 @@ let detailLocalMap = null;
 let detailLocalMapContainer = null;
 let detailLocalMapVenueId = '';
 const APP_CONNECT_MAX_ATTEMPTS = 1200;
-const DETAIL_MAP_STYLE_ID = 'dataviz-v4';
 const DETAIL_MAP_ZOOM = 15;
 const MOBILE_QUERY = '(max-width: 899px)';
 const WIDE_DESKTOP_QUERY = '(min-width: 1100px)';
@@ -214,14 +214,15 @@ function syncDetailLocalMap(root, venue, state) {
     return;
   }
 
-  const key = String(window.CGBApp?.mapTilerKey || '').trim();
+  const mapTilerConfig = readRuntimeConfig().mapTiler;
+  const key = mapTilerConfig.apiKey;
   if (!key) {
     revealDetailLocalMap(container);
     return;
   }
   sdk.config.apiKey = key;
   sdk.config.session = true;
-  const style = `https://api.maptiler.com/maps/${DETAIL_MAP_STYLE_ID}/style.json?key=${encodeURIComponent(key)}`;
+  const style = `https://api.maptiler.com/maps/${mapTilerConfig.detailStyleId}/style.json?key=${encodeURIComponent(key)}`;
   const configuredZoom = Number(container.dataset.zoom);
   const zoom = Number.isFinite(configuredZoom) ? configuredZoom : DETAIL_MAP_ZOOM;
   const map = new sdk.Map({

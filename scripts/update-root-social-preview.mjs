@@ -2,7 +2,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const SITE_ORIGIN = 'https://calgoldenbars.com';
+import { readBuildConfigFromHtml } from '../js/config.mjs';
+
 const DESCRIPTION = 'Find your Cal crowd. Join a nearby Watch Party, or plan one of your own.';
 const START_MARKER = '<!-- CGB current-game social metadata: start -->';
 const END_MARKER = '<!-- CGB current-game social metadata: end -->';
@@ -19,10 +20,10 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-function socialMetadataBlock(entry) {
+function socialMetadataBlock(entry, siteOrigin) {
   const title = `${entry.title} · ${entry.locations_mapped} locations mapped · ${entry.watch_parties} Watch ${entry.watch_parties === 1 ? 'Party' : 'Parties'}`;
-  const imageUrl = `${SITE_ORIGIN}/${entry.image}`;
-  return `${START_MARKER}\n  <meta property="og:title" content="${escapeHtml(title)}">\n  <meta property="og:description" content="${escapeHtml(DESCRIPTION)}">\n  <meta property="og:image" content="${escapeHtml(imageUrl)}">\n  <meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">\n  <meta property="og:url" content="${SITE_ORIGIN}/">\n  <meta property="og:type" content="website">\n  <meta name="twitter:card" content="summary_large_image">\n  <meta name="twitter:title" content="${escapeHtml(title)}">\n  <meta name="twitter:description" content="${escapeHtml(DESCRIPTION)}">\n  <meta name="twitter:image" content="${escapeHtml(imageUrl)}">\n  ${END_MARKER}`;
+  const imageUrl = `${siteOrigin}/${entry.image}`;
+  return `${START_MARKER}\n  <meta property="og:title" content="${escapeHtml(title)}">\n  <meta property="og:description" content="${escapeHtml(DESCRIPTION)}">\n  <meta property="og:image" content="${escapeHtml(imageUrl)}">\n  <meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">\n  <meta property="og:url" content="${siteOrigin}/">\n  <meta property="og:type" content="website">\n  <meta name="twitter:card" content="summary_large_image">\n  <meta name="twitter:title" content="${escapeHtml(title)}">\n  <meta name="twitter:description" content="${escapeHtml(DESCRIPTION)}">\n  <meta name="twitter:image" content="${escapeHtml(imageUrl)}">\n  ${END_MARKER}`;
 }
 
 function updateIndexMetadata(html, block) {
@@ -61,10 +62,11 @@ export async function updateRootSocialPreview() {
     readFile(indexPath, 'utf8'),
     readFile(manifestPath, 'utf8')
   ]);
+  const siteOrigin = readBuildConfigFromHtml(html).canonicalSiteUrl.replace(/\/$/, '');
   const manifest = JSON.parse(manifestText);
   const entry = selectRootPreviewEntry(manifest);
 
-  const metadataUpdated = updateIndexMetadata(html, socialMetadataBlock(entry));
+  const metadataUpdated = updateIndexMetadata(html, socialMetadataBlock(entry, siteOrigin));
   const updated = updateLoadingCover(metadataUpdated, entry);
   if (updated !== html) await writeFile(indexPath, updated, 'utf8');
   console.log(`Root social preview now uses ${entry.title}.`);

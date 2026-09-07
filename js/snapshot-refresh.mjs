@@ -1,10 +1,13 @@
 import './analytics.mjs';
 import { TRAY_GUIDANCE_COPY, validateSnapshotShape } from './core.mjs';
+import {
+  DATA_ENDPOINT_OVERRIDE_STORAGE_KEY,
+  readRuntimeConfig
+} from './config.mjs';
 
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
 
-const DATA_URL_KEY = 'cgb_v2_public_data_url';
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const REFRESH_TIMEOUT_MS = 10000;
 const PUBLIC_SNAPSHOT_KEYS = [
@@ -38,7 +41,7 @@ export function allowsDataEndpointOverride(hostname) {
 export function clearDisallowedDataEndpointOverride({
   hostname,
   getStorage = () => window.localStorage,
-  key = DATA_URL_KEY
+  key = DATA_ENDPOINT_OVERRIDE_STORAGE_KEY
 } = {}) {
   if (allowsDataEndpointOverride(hostname) || typeof getStorage !== 'function') return false;
   try {
@@ -116,17 +119,12 @@ export function dataAvailabilityCopy({ dataSource, venueCount, refreshFailed = f
   };
 }
 
-function safeStorageGet(key) {
-  try { return window.localStorage.getItem(key); } catch (_) { return null; }
-}
-
 function safeStorageSet(key, value) {
   try { window.localStorage.setItem(key, value); } catch (_) {}
 }
 
 function configuredEndpoint() {
-  return safeStorageGet(DATA_URL_KEY)?.trim() ||
-    document.querySelector('meta[name="cgb-data-endpoint"]')?.content.trim() || '';
+  return readRuntimeConfig().dataEndpoint;
 }
 
 async function fetchJson(url, timeoutMs = REFRESH_TIMEOUT_MS) {
