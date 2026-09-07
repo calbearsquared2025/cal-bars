@@ -1,6 +1,7 @@
 {
   "version": 1,
   "renderer_version": 8,
+  "default_game_slug": "ucla",
   "games": [
     {
       "game_id": "game_9e8f4860c6a256c0fae6007d",
