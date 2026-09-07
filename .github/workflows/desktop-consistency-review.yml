@@ -24,6 +24,9 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           path: after
+          fetch-depth: 0
+      - name: Validate review diff whitespace
+        run: git -C after diff --check ${{ github.event.pull_request.base.sha }} HEAD
       - uses: actions/setup-node@v4
         with:
           node-version: 22
