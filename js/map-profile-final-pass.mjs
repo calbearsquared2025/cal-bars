@@ -242,14 +242,17 @@ function installStyles() {
         grid-row: 1 !important;
         min-height: 50px !important;
         margin: 0 !important;
-        color: var(--cgb-white) !important;
-        background: var(--cgb-navy-950) !important;
-        border-color: var(--cgb-navy-950) !important;
         font-family: var(--font-condensed, var(--font-display)) !important;
         font-size: 1rem !important;
         font-weight: 900 !important;
         letter-spacing: .015em !important;
         text-transform: uppercase !important;
+      }
+
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .intent-button:not([aria-pressed="true"]) {
+        color: var(--cgb-white) !important;
+        background: var(--cgb-navy-950) !important;
+        border-color: var(--cgb-navy-950) !important;
       }
 
       .intent-button__main {
