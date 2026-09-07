@@ -12,13 +12,17 @@ test('mobile selected intent keeps Undo while giving the selected action more ro
   assert.match(fanIntentCss, /@media \(max-width: 899px\)[\s\S]*?\.action-row \{[\s\S]*?grid-template-columns: minmax\(0, 1fr\) clamp\(78px, 25vw, 96px\) !important;/);
   assert.match(fanIntentCss, /\.selected-card__share-label-full \{[\s\S]*?display: none;[\s\S]*?\.selected-card__share-label-short \{[\s\S]*?display: inline;/);
   assert.match(fanIntentCss, /tray--selected[\s\S]*?\.intent-button__undo \{[\s\S]*?margin-left: 2px !important;[\s\S]*?padding-left: 4px !important;[\s\S]*?font-size: \.62rem !important;/);
-  assert.match(fanIntentCss, /\.intent-button__undo \{[\s\S]*?border-left-color: rgba\(1, 1, 51, \.18\) !important;/);
+  assert.match(fanIntentCss, /\.intent-button__undo \{[\s\S]*?border-left-color: rgba\(255, 255, 255, \.22\) !important;/);
 });
 
-test('selected attendance stays navy with gold foreground and retains its existing shadow treatment', () => {
+test('selected attendance keeps a navy surface with white label, gold check, and existing shadow treatment', () => {
   assert.match(
     fanIntentCss,
-    /\.primary-button\.intent-button\[aria-pressed="true"\] \{[\s\S]*?border-color: var\(--cgb-gold-500, #e6a411\);[\s\S]*?background: var\(--cgb-navy-950, #010133\);[\s\S]*?color: var\(--cgb-gold-300, #ffd15a\);[\s\S]*?box-shadow:\s*\n\s*inset 0 1px 0 rgba\(255, 255, 255, \.28\),\s*\n\s*inset 0 -2px 0 rgba\(1, 1, 51, \.14\);/
+    /\.primary-button\.intent-button\[aria-pressed="true"\] \{[\s\S]*?border-color: var\(--cgb-gold-500, #e6a411\);[\s\S]*?background: var\(--cgb-navy-950, #010133\);[\s\S]*?color: var\(--cgb-white, #fff\);[\s\S]*?box-shadow:\s*\n\s*inset 0 1px 0 rgba\(255, 255, 255, \.28\),\s*\n\s*inset 0 -2px 0 rgba\(1, 1, 51, \.14\);/
+  );
+  assert.match(
+    fanIntentCss,
+    /\.primary-button\.intent-button\[aria-pressed="true"\] \.intent-button__main \.ui-icon \{[\s\S]*?color: var\(--cgb-gold-300, #ffd15a\);/
   );
   assert.match(
     finalPassSource,
