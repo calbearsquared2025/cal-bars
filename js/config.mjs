@@ -21,11 +21,11 @@ export const CONFIG_META_NAMES = Object.freeze({
   watchPartyIssueGameEntry: 'cgb-watch-party-issue-game-entry',
   watchPartyIssueIdEntry: 'cgb-watch-party-issue-id-entry',
   fanExperienceFormUrl: 'cgb-fan-experience-form-url',
-  fanExperienceVenueIdEntry: 'cgb-fan-experience-venue-id-entry',
-  fanExperienceVenueNameEntry: 'cgb-fan-experience-venue-name-entry',
+  fanExperienceVenueIdEntry: 'cgb-fan-experience-form-venue-id-entry',
+  fanExperienceVenueNameEntry: 'cgb-fan-experience-form-venue-name-entry',
   photoFormUrl: 'cgb-photo-form-url',
-  photoVenueIdEntry: 'cgb-photo-venue-id-entry',
-  photoVenueNameEntry: 'cgb-photo-venue-name-entry'
+  photoVenueIdEntry: 'cgb-photo-form-venue-id-entry',
+  photoVenueNameEntry: 'cgb-photo-form-venue-name-entry'
 });
 
 const DEFAULTS = Object.freeze({
