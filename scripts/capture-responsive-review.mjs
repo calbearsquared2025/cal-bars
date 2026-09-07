@@ -113,6 +113,21 @@ function reviewPage(root, response) {
         }
         return false;
       };
+      const stabilizeMobileSelectedProfile = async () => {
+        const tray = document.querySelector('#venue-tray');
+        await waitFor(() =>
+          Boolean(document.querySelector('#venue-detail.venue-detail--selected-continuation')) &&
+          Boolean(tray?.style?.getPropertyValue('--cgb-selected-tray-max-height')),
+        1600);
+        [
+          tray,
+          document.querySelector('.map-actions'),
+          document.querySelector('.site-header > .opening-stat')
+        ].forEach((node) => node?.style?.setProperty('transition', 'none', 'important'));
+        await sleep(180);
+        tray?.getBoundingClientRect?.();
+        await sleep(180);
+      };
       (async () => {
         await waitFor(() => document.querySelector('#app')?.getAttribute('aria-busy') === 'false' && window.CGBApp?.getState?.()?.snapshot);
         const mobile = matchMedia('(max-width: 899px)').matches;
@@ -158,6 +173,7 @@ function reviewPage(root, response) {
         const first = document.querySelector('#location-list .location-card[data-venue-id]');
         first?.click();
         await waitFor(() => visible(document.querySelector('#tray-selected')) && (document.querySelector('#tray-selected')?.textContent || '').trim().length > 0);
+        if (mobile) await stabilizeMobileSelectedProfile();
         if (mobile && reviewMode === 'bears-say') {
           await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));
           document.querySelector('.detail-fan-experiences')?.scrollIntoView({ block: 'start', inline: 'nearest' });
