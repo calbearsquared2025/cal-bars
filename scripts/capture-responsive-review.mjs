@@ -45,6 +45,12 @@ const mobileTrayViewports = [
   { label: 'mobile-390-full', width: 390, height: 844, reviewMode: 'tray-full' },
   { label: 'desktop-1280-selected', width: 1280, height: 900, reviewMode: 'tray-selected' }
 ];
+const consolidationViewports = [
+  { label: 'mobile-390-landing', width: 390, height: 844, reviewMode: 'landing' },
+  { label: 'mobile-390-selected', width: 390, height: 844 },
+  { label: 'desktop-1440-landing', width: 1440, height: 1000, reviewMode: 'landing' },
+  { label: 'desktop-1440-selected', width: 1440, height: 1000 }
+];
 const reviewProfile = process.env.CGB_REVIEW_PROFILE || '';
 const viewports = reviewProfile === 'photo-forward-balanced'
   ? balancedPhotoForwardViewports
@@ -52,7 +58,9 @@ const viewports = reviewProfile === 'photo-forward-balanced'
     ? photoForwardViewports
     : reviewProfile === 'mobile-tray'
       ? mobileTrayViewports
-      : standardViewports;
+      : reviewProfile === 'consolidation'
+        ? consolidationViewports
+        : standardViewports;
 
 mkdirSync(outputDir, { recursive: true });
 
@@ -105,11 +113,31 @@ function reviewPage(root, response) {
         }
         return false;
       };
+      const stabilizeMobileSelectedProfile = async () => {
+        const tray = document.querySelector('#venue-tray');
+        await waitFor(() =>
+          Boolean(document.querySelector('#venue-detail.venue-detail--selected-continuation')) &&
+          Boolean(tray?.style?.getPropertyValue('--cgb-selected-tray-max-height')),
+        1600);
+        [
+          tray,
+          document.querySelector('.map-actions'),
+          document.querySelector('.site-header > .opening-stat')
+        ].forEach((node) => node?.style?.setProperty('transition', 'none', 'important'));
+        await sleep(180);
+        tray?.getBoundingClientRect?.();
+        await sleep(180);
+      };
       (async () => {
         await waitFor(() => document.querySelector('#app')?.getAttribute('aria-busy') === 'false' && window.CGBApp?.getState?.()?.snapshot);
         const mobile = matchMedia('(max-width: 899px)').matches;
         const reviewMode = new URLSearchParams(location.search).get('reviewMode');
         const trayReview = reviewMode?.startsWith('tray-');
+
+        if (reviewMode === 'landing') {
+          document.body.dataset.reviewReady = 'true';
+          return;
+        }
 
         if (mobile && trayReview && reviewMode === 'tray-peek') {
           await waitFor(() => document.querySelector('#venue-tray')?.dataset.state === 'peek');
@@ -145,6 +173,7 @@ function reviewPage(root, response) {
         const first = document.querySelector('#location-list .location-card[data-venue-id]');
         first?.click();
         await waitFor(() => visible(document.querySelector('#tray-selected')) && (document.querySelector('#tray-selected')?.textContent || '').trim().length > 0);
+        if (mobile) await stabilizeMobileSelectedProfile();
         if (mobile && reviewMode === 'bears-say') {
           await waitFor(() => Boolean(document.querySelector('.detail-fan-experiences')));
           document.querySelector('.detail-fan-experiences')?.scrollIntoView({ block: 'start', inline: 'nearest' });

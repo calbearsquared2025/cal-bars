@@ -99,8 +99,8 @@
       gap: clamp(18px, 3vh, 30px);
       padding: clamp(18px, 4vw, 48px);
       overflow: hidden;
-      background: #06152f;
-      color: #ffffff;
+      background: var(--brand-loading-background, #06152f);
+      color: var(--brand-text-on-primary, #ffffff);
       text-align: center;
       opacity: 1;
       transition: opacity 240ms ease;
@@ -154,7 +154,7 @@
       </button>
     </div>
     <button id="game-button" class="game-button" type="button" aria-haspopup="dialog" aria-controls="game-dialog">
-      <span class="game-button__eyebrow" style="color: var(--cgb-gold-400);">SELECT GAME</span>
+      <span class="game-button__eyebrow" style="color: var(--brand-secondary);">SELECT GAME</span>
       <strong id="header-game-label">Loading schedule…</strong>
       <span id="header-kickoff">&nbsp;</span>
       <svg class="ui-icon game-button__chevron" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-chevron-down"></use></svg>

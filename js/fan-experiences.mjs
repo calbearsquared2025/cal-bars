@@ -1,4 +1,4 @@
-import { FAN_EXPERIENCE_FORM_CONFIG } from './fan-experience-form-config.mjs';
+import { readRuntimeConfig } from './config.mjs';
 import {
   buildFanExperienceFormPrefillUrl,
   resolveFanExperienceVenue
@@ -27,10 +27,6 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
-function meta(name, documentObject = document) {
-  return documentObject.querySelector(`meta[name="${name}"]`)?.content?.trim() || '';
-}
-
 function controlledTagValues(value) {
   if (Array.isArray(value)) return value.map(clean).filter(Boolean);
   const raw = clean(value);
@@ -52,19 +48,11 @@ export function venueTagsForVenue(venue = {}) {
 }
 
 export function readFanExperienceFormConfig(documentObject = document) {
-  return {
-    formUrl: meta('cgb-fan-experience-form-url', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.formUrl,
-    venueIdEntry: meta('cgb-fan-experience-form-venue-id-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueIdEntry,
-    venueNameEntry: meta('cgb-fan-experience-form-venue-name-entry', documentObject) || FAN_EXPERIENCE_FORM_CONFIG.venueNameEntry
-  };
+  return readRuntimeConfig({ documentObject }).forms.fanExperience;
 }
 
 function readVenueContributionConfig(documentObject) {
-  return {
-    formUrl: meta('cgb-cal-bar-nomination-form-url', documentObject),
-    venueIdEntry: meta('cgb-cal-bar-nomination-venue-id-entry', documentObject),
-    venueNameEntry: meta('cgb-cal-bar-nomination-venue-name-entry', documentObject)
-  };
+  return readRuntimeConfig({ documentObject }).forms.calBarNomination;
 }
 
 export function fanExperiencesForVenue(snapshot, venueId) {

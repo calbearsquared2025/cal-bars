@@ -1,7 +1,7 @@
 /* Settled mobile map geometry required before deferred modules initialize. */
 @media (max-width: 899px) {
   :root {
-    --cgb-mobile-safe-surface: #eef4fa;
+    --cgb-mobile-safe-surface: var(--brand-mobile-safe-surface);
   }
 
   html,
