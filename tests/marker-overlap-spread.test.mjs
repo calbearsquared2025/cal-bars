@@ -26,7 +26,7 @@ test('separate pins stay at their exact coordinates', () => {
   assert.deepEqual(offsets.get('b'), [0, 0]);
 });
 
-test('overlapping pins fan apart only after that stack is targeted', () => {
+test('overlapping pins fan around the tapped anchor without moving it', () => {
   const entries = [
     { id: 'a', x: 0, y: 0 },
     { id: 'b', x: 40, y: 0 }
@@ -37,7 +37,7 @@ test('overlapping pins fan apart only after that stack is targeted', () => {
   const second = finalPoint(entries[1], offsets);
 
   assert.deepEqual(group.map((entry) => entry.id).sort(), ['a', 'b']);
-  assert.notDeepEqual(offsets.get('a'), [0, 0]);
+  assert.deepEqual(offsets.get('a'), [0, 0]);
   assert.notDeepEqual(offsets.get('b'), [0, 0]);
   assert.ok(Math.hypot(first.x - second.x, first.y - second.y) >= 62);
 });
@@ -52,14 +52,14 @@ test('marker-footprint collision catches diagonal overlap missed by the old 28px
   assert.deepEqual(markerCollisionGroup(entries, 'a').map((entry) => entry.id).sort(), ['a', 'b']);
 });
 
-test('pins at the same projected point fan deterministically', () => {
+test('pins at the same projected point fan deterministically around the tapped pin', () => {
   const offsets = markerFanOffsets([
     { id: 'b', x: 10, y: 10 },
     { id: 'a', x: 10, y: 10 }
   ], 'a');
 
-  assert.deepEqual(offsets.get('a'), [0, -36]);
-  assert.deepEqual(offsets.get('b'), [0, 36]);
+  assert.deepEqual(offsets.get('a'), [0, 0]);
+  assert.deepEqual(offsets.get('b'), [0, -62]);
 });
 
 test('tapping one stack leaves a separate overlapping stack at true coordinates', () => {
@@ -71,10 +71,29 @@ test('tapping one stack leaves a separate overlapping stack at true coordinates'
   ];
   const offsets = markerFanOffsets(entries, 'a');
 
-  assert.notDeepEqual(offsets.get('a'), [0, 0]);
+  assert.deepEqual(offsets.get('a'), [0, 0]);
   assert.notDeepEqual(offsets.get('b'), [0, 0]);
   assert.deepEqual(offsets.get('c'), [0, 0]);
   assert.deepEqual(offsets.get('d'), [0, 0]);
+});
+
+test('wide-zoom overlap chains do not pull indirectly connected pins into one giant fan', () => {
+  const entries = [
+    { id: 'a', x: 0, y: 0 },
+    { id: 'b', x: 45, y: 0 },
+    { id: 'c', x: 90, y: 0 },
+    { id: 'd', x: 135, y: 0 },
+    { id: 'e', x: 180, y: 0 }
+  ];
+  const group = markerCollisionGroup(entries, 'a');
+  const offsets = markerFanOffsets(entries, 'a');
+
+  assert.deepEqual(group.map((entry) => entry.id).sort(), ['a', 'b']);
+  assert.deepEqual(offsets.get('a'), [0, 0]);
+  assert.notDeepEqual(offsets.get('b'), [0, 0]);
+  assert.deepEqual(offsets.get('c'), [0, 0]);
+  assert.deepEqual(offsets.get('d'), [0, 0]);
+  assert.deepEqual(offsets.get('e'), [0, 0]);
 });
 
 test('overlap handling is tap-to-fan rather than automatic marker offsetting', async () => {
