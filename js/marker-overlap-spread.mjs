@@ -52,42 +52,18 @@ function overlaps(a, b, padding) {
     first.bottom > second.top;
 }
 
-function collisionGroups(entries, padding) {
-  const groups = [];
-  const visited = new Set();
-
-  entries.forEach((seed) => {
-    if (visited.has(seed.id)) return;
-    const group = [];
-    const pending = [seed];
-    visited.add(seed.id);
-
-    while (pending.length) {
-      const current = pending.pop();
-      group.push(current);
-      entries.forEach((candidate) => {
-        if (visited.has(candidate.id)) return;
-        if (!overlaps(current, candidate, padding)) return;
-        visited.add(candidate.id);
-        pending.push(candidate);
-      });
-    }
-
-    groups.push(group);
-  });
-
-  return groups;
-}
-
 export function markerCollisionGroup(entries = [], targetId, {
   collisionPaddingPx = COLLISION_PADDING_PX
 } = {}) {
   const normalized = normalizedEntries(entries);
   const target = String(targetId ?? '');
   if (!target) return [];
+  const targetEntry = normalized.find((entry) => entry.id === target);
+  if (!targetEntry) return [];
   const padding = Math.max(0, finite(collisionPaddingPx) ?? COLLISION_PADDING_PX);
-  return collisionGroups(normalized, padding)
-    .find((group) => group.some((entry) => entry.id === target)) || [];
+
+  return normalized.filter((entry) =>
+    entry.id === target || overlaps(targetEntry, entry, padding));
 }
 
 export function markerFanOffsets(entries = [], targetId, {
@@ -97,29 +73,30 @@ export function markerFanOffsets(entries = [], targetId, {
 } = {}) {
   const normalized = normalizedEntries(entries);
   const offsets = new Map(normalized.map((entry) => [entry.id, [0, 0]]));
-  const group = markerCollisionGroup(normalized, targetId, { collisionPaddingPx });
+  const target = String(targetId ?? '');
+  const group = markerCollisionGroup(normalized, target, { collisionPaddingPx });
   if (group.length < 2) return offsets;
 
-  const sorted = [...group].sort((a, b) => a.id.localeCompare(b.id));
-  const center = group.reduce((sum, entry) => ({
-    x: sum.x + entry.x,
-    y: sum.y + entry.y
-  }), { x: 0, y: 0 });
-  center.x /= group.length;
-  center.y /= group.length;
+  const targetEntry = group.find((entry) => entry.id === target);
+  if (!targetEntry) return offsets;
+  const others = group
+    .filter((entry) => entry.id !== target)
+    .sort((a, b) => a.id.localeCompare(b.id));
 
   const gap = Math.max(0, finite(fanGapPx) ?? FAN_GAP_PX);
   const minRadius = Math.max(0, finite(fanMinRadiusPx) ?? FAN_MIN_RADIUS_PX);
   const largestMarker = Math.max(...group.map((entry) => Math.max(entry.width, entry.height)));
   const desiredSeparation = largestMarker + gap;
-  const ringRadius = desiredSeparation / (2 * Math.sin(Math.PI / sorted.length));
-  const radius = Math.max(minRadius, ringRadius);
+  const ringRadius = others.length > 1
+    ? desiredSeparation / (2 * Math.sin(Math.PI / others.length))
+    : desiredSeparation;
+  const radius = Math.max(minRadius, desiredSeparation, ringRadius);
   const startAngle = -Math.PI / 2;
 
-  sorted.forEach((entry, index) => {
-    const angle = startAngle + ((Math.PI * 2 * index) / sorted.length);
-    const desiredX = center.x + (Math.cos(angle) * radius);
-    const desiredY = center.y + (Math.sin(angle) * radius);
+  others.forEach((entry, index) => {
+    const angle = startAngle + ((Math.PI * 2 * index) / others.length);
+    const desiredX = targetEntry.x + (Math.cos(angle) * radius);
+    const desiredY = targetEntry.y + (Math.sin(angle) * radius);
     offsets.set(entry.id, [
       rounded(desiredX - entry.x),
       rounded(desiredY - entry.y)
