@@ -47,6 +47,22 @@ test('mobile selected venue camera uses regional bounds without zooming out from
   assert.match(refinement, /state\.map\.easeTo\([\s\S]*?zoom: Math\.max\(currentZoom, FOCUS_ZOOM\)[\s\S]*?offset: \[0, verticalOffset\]/);
 });
 
+test('initial mobile selected profile settles its camera before the visible interaction path', async () => {
+  const refinement = await read('js/map-mobile-refinement.mjs');
+
+  assert.match(refinement, /function captureInitialSelectedProfile\(state = appState\(\), tray = document\.querySelector\('#venue-tray'\)\)/);
+  assert.match(refinement, /const initialRouteSelected = isMobile\(\)[\s\S]*?tray\?\.dataset\.state === 'selected'[\s\S]*?selectedVenueRouteActive\(state\)/);
+  assert.match(refinement, /function claimInitialSelectedFocus\(state, venueId\)/);
+  assert.match(refinement, /const instant = claimInitialSelectedFocus\(state, venueId\);/);
+  assert.match(refinement, /if \(instant\) \{[\s\S]*?applyVenueFocus\(state, venue, \{ instant: true \}\);[\s\S]*?return;/);
+  assert.match(refinement, /const duration = instant \|\| reducedMotion\(\) \? 0 : 420;/,
+    'Only the initial selected-profile settlement and reduced-motion path should skip animation.');
+  assert.match(refinement, /requestAnimationFrame\(\(\) => \{[\s\S]*?requestAnimationFrame\(\(\) => applyVenueFocus\(state, venue\)\);/,
+    'Later user-selected camera moves should retain the existing settled-layout animation path.');
+  assert.match(refinement, /captureInitialSelectedProfile\(state, tray\);[\s\S]*?const routeChanged = selectedVenueChosen \? syncSelectedVenueRoute\(state\) : false;/,
+    'Initial route ownership must be captured before later selected-route synchronization can create a route.');
+});
+
 test('selected venue camera focuses once through the shared mobile refinement path', async () => {
   const refinement = await read('js/map-mobile-refinement.mjs');
 
