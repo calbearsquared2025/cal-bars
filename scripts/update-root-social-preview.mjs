@@ -5,7 +5,6 @@ import { dirname, join } from 'node:path';
 import { readBuildConfigFromHtml } from '../js/config.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from '../js/instance-config.mjs';
 
-const DESCRIPTION = ACTIVE_INSTANCE_CONFIG.social.description;
 const START_MARKER = '<!-- CGB current-game social metadata: start -->';
 const END_MARKER = '<!-- CGB current-game social metadata: end -->';
 const repositoryRoot = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
@@ -22,9 +21,10 @@ function escapeHtml(value) {
 }
 
 function socialMetadataBlock(entry, siteOrigin) {
-  const title = `${entry.title} · ${entry.locations_mapped} locations mapped · ${entry.watch_parties} Watch ${entry.watch_parties === 1 ? 'Party' : 'Parties'}`;
+  const title = `${ACTIVE_INSTANCE_CONFIG.identity.productName} · ${entry.title}`;
+  const description = `${entry.locations_mapped} locations mapped · ${entry.watch_parties} Watch ${entry.watch_parties === 1 ? 'Party' : 'Parties'}. ${ACTIVE_INSTANCE_CONFIG.copy.findCrowd}.`;
   const imageUrl = `${siteOrigin}/${entry.image}`;
-  return `${START_MARKER}\n  <meta property="og:title" content="${escapeHtml(title)}">\n  <meta property="og:description" content="${escapeHtml(DESCRIPTION)}">\n  <meta property="og:image" content="${escapeHtml(imageUrl)}">\n  <meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">\n  <meta property="og:url" content="${siteOrigin}/">\n  <meta property="og:type" content="website">\n  <meta name="twitter:card" content="summary_large_image">\n  <meta name="twitter:title" content="${escapeHtml(title)}">\n  <meta name="twitter:description" content="${escapeHtml(DESCRIPTION)}">\n  <meta name="twitter:image" content="${escapeHtml(imageUrl)}">\n  ${END_MARKER}`;
+  return `${START_MARKER}\n  <meta property="og:title" content="${escapeHtml(title)}">\n  <meta property="og:description" content="${escapeHtml(description)}">\n  <meta property="og:image" content="${escapeHtml(imageUrl)}">\n  <meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">\n  <meta property="og:url" content="${siteOrigin}/">\n  <meta property="og:type" content="website">\n  <meta name="twitter:card" content="summary_large_image">\n  <meta name="twitter:title" content="${escapeHtml(title)}">\n  <meta name="twitter:description" content="${escapeHtml(description)}">\n  <meta name="twitter:image" content="${escapeHtml(imageUrl)}">\n  ${END_MARKER}`;
 }
 
 function updateIndexMetadata(html, block) {

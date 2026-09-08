@@ -169,7 +169,8 @@ test('social share-page generation remains equivalent to the checked-in Cal outp
     watchPartyCount: entry.watch_parties,
     shareUrl: `${origin}/share/${entry.slug}/`,
     imageUrl: `${origin}/${entry.image}`,
-    metadataTitle: `${entry.title} · ${entry.locations_mapped} locations mapped · ${entry.watch_parties} Watch ${entry.watch_parties === 1 ? 'Party' : 'Parties'}`
+    metadataTitle: `${ACTIVE_INSTANCE_CONFIG.identity.productName} · ${entry.title}`,
+    metadataDescription: `${entry.locations_mapped} locations mapped · ${entry.watch_parties} Watch ${entry.watch_parties === 1 ? 'Party' : 'Parties'}. ${ACTIVE_INSTANCE_CONFIG.copy.findCrowd}.`
   };
   assert.equal(buildSharePage(model), await read(entry.page));
 });

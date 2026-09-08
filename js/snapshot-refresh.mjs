@@ -1,5 +1,10 @@
 import './analytics.mjs';
-import { TRAY_GUIDANCE_COPY, validateSnapshotShape } from './core.mjs';
+import {
+  gameRouteParam,
+  selectDefaultGame,
+  TRAY_GUIDANCE_COPY,
+  validateSnapshotShape
+} from './core.mjs';
 import {
   DATA_ENDPOINT_OVERRIDE_STORAGE_KEY,
   readRuntimeConfig
@@ -7,9 +12,11 @@ import {
 
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
+export const STARTUP_ROLLOVER_GUARD_MS = 5 * 60 * 60 * 1000;
 
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const REFRESH_TIMEOUT_MS = 10000;
+const SAVED_STARTUP_ENDPOINT = 'data:application/json,%7B%7D';
 const PUBLIC_SNAPSHOT_KEYS = [
   'venues',
   'games',
@@ -71,6 +78,40 @@ export function resolveDirectEntryVenueId(snapshot, search = '') {
   return snapshot.venues.find((venue) => venue.slug === slug)?.venue_id || '';
 }
 
+export function shouldUseSavedSnapshotAtStartup({
+  snapshot,
+  search = '',
+  loadingCoverGameSlug = '',
+  now = new Date(),
+  rolloverGuardMs = STARTUP_ROLLOVER_GUARD_MS
+} = {}) {
+  if (!validateSnapshotShape(snapshot)) return false;
+
+  const requestedGame = String(new URLSearchParams(search).get('game') || '').trim();
+  if (requestedGame) {
+    const requestedSlug = requestedGame.toLowerCase();
+    return snapshot.games.some((game) =>
+      game?.game_id === requestedGame || gameRouteParam(game) === requestedSlug);
+  }
+
+  const defaultGame = selectDefaultGame(snapshot.games, now);
+  if (!defaultGame || defaultGame.game_status !== 'upcoming') return false;
+
+  const coverSlug = String(loadingCoverGameSlug || '').trim().toLowerCase();
+  const defaultSlug = gameRouteParam(defaultGame);
+  if (coverSlug && defaultSlug && coverSlug !== defaultSlug) return false;
+
+  const kickoffAt = Date.parse(defaultGame.kickoff_at || '');
+  const nowAt = now instanceof Date ? now.getTime() : new Date(now).getTime();
+  if (defaultGame.kickoff_status !== 'tbd' &&
+      Number.isFinite(kickoffAt) && Number.isFinite(nowAt) &&
+      nowAt >= kickoffAt + rolloverGuardMs) {
+    return false;
+  }
+
+  return true;
+}
+
 function publicSnapshotValue(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') return null;
   return {
@@ -119,12 +160,71 @@ export function dataAvailabilityCopy({ dataSource, venueCount, refreshFailed = f
   };
 }
 
+function safeStorageGet(key) {
+  try { return window.localStorage.getItem(key); } catch (_) { return null; }
+}
+
 function safeStorageSet(key, value) {
   try { window.localStorage.setItem(key, value); } catch (_) {}
 }
 
+function safeStorageRemove(key) {
+  try { window.localStorage.removeItem(key); } catch (_) {}
+}
+
 function configuredEndpoint() {
   return readRuntimeConfig().dataEndpoint;
+}
+
+function readSavedSnapshot() {
+  const cached = safeStorageGet(LAST_GOOD_KEY);
+  if (!cached) return null;
+  try {
+    const snapshot = JSON.parse(cached);
+    return validateSnapshotShape(snapshot) ? snapshot : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function currentLoadingCoverGameSlug(documentObject = document) {
+  const preload = documentObject?.querySelector?.('#cgb-loading-cover-preload');
+  const href = preload?.getAttribute?.('href') || preload?.href || '';
+  const clean = String(href).split(/[?#]/)[0];
+  const filename = clean.slice(clean.lastIndexOf('/') + 1);
+  return filename.toLowerCase().endsWith('.png') ? filename.slice(0, -4) : '';
+}
+
+function prepareStartupEndpoint() {
+  const endpoint = configuredEndpoint();
+  const meta = document.querySelector('meta[name="cgb-data-endpoint"]');
+  const snapshot = readSavedSnapshot();
+  const fastStart = Boolean(endpoint && meta && shouldUseSavedSnapshotAtStartup({
+    snapshot,
+    search: window.location?.search || '',
+    loadingCoverGameSlug: currentLoadingCoverGameSlug()
+  }));
+
+  if (!fastStart) {
+    return { endpoint, fastStart: false, restore() {} };
+  }
+
+  const originalMetaContent = meta.content;
+  const storedEndpoint = safeStorageGet(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY);
+  if (storedEndpoint !== null) safeStorageRemove(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY);
+  meta.content = SAVED_STARTUP_ENDPOINT;
+
+  let restored = false;
+  return {
+    endpoint,
+    fastStart: true,
+    restore() {
+      if (restored) return;
+      restored = true;
+      meta.content = originalMetaContent;
+      if (storedEndpoint !== null) safeStorageSet(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, storedEndpoint);
+    }
+  };
 }
 
 async function fetchJson(url, timeoutMs = REFRESH_TIMEOUT_MS) {
@@ -277,20 +377,25 @@ function startRefreshController(endpoint) {
   return { refreshLive };
 }
 
-function initializeBrowserRefresh() {
+function initializeBrowserRefresh(startupEndpoint) {
   window.addEventListener('DOMContentLoaded', async () => {
     const ready = await waitForSnapshot();
+    startupEndpoint.restore();
     if (!ready) return;
-    browserRefreshController = startRefreshController(configuredEndpoint());
+    browserRefreshController = startRefreshController(startupEndpoint.endpoint || configuredEndpoint());
+    if (startupEndpoint.fastStart) {
+      await browserRefreshController?.refreshLive({ force: true });
+    }
   }, { once: true });
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   clearDisallowedDataEndpointOverride({ hostname: window.location?.hostname });
+  const startupEndpoint = prepareStartupEndpoint();
   window.CGBSnapshotRefresh = Object.freeze({
     refresh() {
       return browserRefreshController?.refreshLive({ force: true }) || Promise.resolve(false);
     }
   });
-  initializeBrowserRefresh();
+  initializeBrowserRefresh(startupEndpoint);
 }
