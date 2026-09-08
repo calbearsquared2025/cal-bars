@@ -152,7 +152,7 @@ test('static first-paint identity and assets remain the Cal materialization', ()
   assert.match(index, /<link rel="canonical" href="https:\/\/calgoldenbars\.com\/">/);
   assert.match(index, /src="assets\/cgb-mark\.svg"/);
   assert.match(index, /href="assets\/cgbfavicon\.svg"/);
-  assert.match(index, /<span>CAL GOLDEN BARS<\/span>/);
+  assert.match(index, /<span class="brand-name">CAL GOLDEN BARS<\/span>/);
   assert.match(index, /Not affiliated with Cal Athletics or the California Alumni Association/);
   assert.match(index, /@CalBearSquared/);
 });
