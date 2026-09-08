@@ -3,7 +3,6 @@
 client_secret*.json
 credentials*.json
 token*.json
-*.private.json
 *.private.*
 .env
 .env.*
