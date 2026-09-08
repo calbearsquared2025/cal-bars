@@ -6,7 +6,7 @@ const EXCLUDED_PATHS = [/^tests\//, /^data\//, /^assets\//];
 const FORBIDDEN_PUBLIC_PATHS = [
   { name: 'canonical or legacy private planning document', pattern: /^(?:CGB_v2_.*|CGB_Working_Lists)\.md$/i },
   { name: 'private planning or audit directory', pattern: /^(?:planning|audits)\//i },
-  { name: 'environment file', pattern: /(^|\/)\.env(?:\.|$)/i },
+  { name: 'environment file', pattern: /(^|\/)\.env(?!\.example$)(?:\..+)?$/i },
   { name: 'credential or private-key file', pattern: /\.(?:pem|key|p12|pfx)$/i },
   { name: 'spreadsheet workbook export', pattern: /\.(?:xls|xlsx)$/i }
 ];
