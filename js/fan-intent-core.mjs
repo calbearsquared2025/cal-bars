@@ -1,5 +1,7 @@
-export const BROWSER_ID_STORAGE_KEY = 'cgb_v2_browser_id';
-export const INTENT_SELECTIONS_STORAGE_KEY = 'cgb_v2_fan_intent_selections';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+
+export const BROWSER_ID_STORAGE_KEY = ACTIVE_INSTANCE_CONFIG.storage.browserId;
+export const INTENT_SELECTIONS_STORAGE_KEY = ACTIVE_INSTANCE_CONFIG.storage.fanIntentSelections;
 
 const BROWSER_ID_PATTERN = /^browser_[A-Za-z0-9_-]{16,128}$/;
 const PRIVATE_RESPONSE_KEYS = new Set([
@@ -40,13 +42,16 @@ export function parseStoredSelections(value) {
 export function compactListFanCountCopy(count) {
   const total = Math.max(0, Math.trunc(Number(count) || 0));
   if (total === 0) return '';
-  return `${total} ${total === 1 ? 'Bear' : 'Bears'} on CGB`;
+  const fan = total === 1
+    ? ACTIVE_INSTANCE_CONFIG.identity.fanSingular
+    : ACTIVE_INSTANCE_CONFIG.identity.fanPlural;
+  return `${total} ${fan} on ${ACTIVE_INSTANCE_CONFIG.identity.productShortName}`;
 }
 
 export function detailPresenceCopy(count) {
   const total = Math.max(0, Math.trunc(Number(count) || 0));
   return total <= 1
-    ? 'You’re the first Bear on CGB.'
+    ? `You’re the first ${ACTIVE_INSTANCE_CONFIG.identity.fanSingular} on ${ACTIVE_INSTANCE_CONFIG.identity.productShortName}.`
     : 'You’re one of them.';
 }
 

@@ -1,4 +1,6 @@
-export const DATA_ENDPOINT_OVERRIDE_STORAGE_KEY = 'cgb_v2_public_data_url';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+
+export const DATA_ENDPOINT_OVERRIDE_STORAGE_KEY = ACTIVE_INSTANCE_CONFIG.storage.dataEndpointOverride;
 
 export const CONFIG_META_NAMES = Object.freeze({
   dataEndpoint: 'cgb-data-endpoint',
@@ -27,24 +29,14 @@ export const CONFIG_META_NAMES = Object.freeze({
 });
 
 const DEFAULTS = Object.freeze({
-  mapTilerKey: 'jNqIsIVa4dP9qv7vQ8fy',
-  analyticsMeasurementId: 'G-CZV3JSBNJK',
-  canonicalSiteUrl: 'https://calgoldenbars.com/',
-  mapStyleUrl: new URL('../styles/dataviz-with-cgb-states.json', import.meta.url).href,
-  detailMapStyleId: 'dataviz-v4',
-  defaultGeography: Object.freeze({ center: Object.freeze([-98.5795, 39.8283]), zoom: 3.2 }),
-  forms: Object.freeze({
-    fanExperience: Object.freeze({
-      formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLScVyKUUXqR8sqEPQLIMeVV1TtxI9EiVmMDd3ib-CvLuBKRajg/viewform',
-      venueIdEntry: 'entry.120767699',
-      venueNameEntry: 'entry.202050515'
-    }),
-    photo: Object.freeze({
-      formUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSecvY5Pm73oPNRe4viSATCWYeERxwyDGYHwGpvPZHzQ03BmDg/viewform',
-      venueIdEntry: 'entry.893543394',
-      venueNameEntry: 'entry.1077046729'
-    })
-  })
+  dataEndpoint: ACTIVE_INSTANCE_CONFIG.integrations.dataEndpoint,
+  mapTilerKey: ACTIVE_INSTANCE_CONFIG.integrations.mapTiler.apiKey,
+  analyticsMeasurementId: ACTIVE_INSTANCE_CONFIG.integrations.analytics.measurementId,
+  canonicalSiteUrl: ACTIVE_INSTANCE_CONFIG.site.canonicalUrl,
+  mapStyleUrl: ACTIVE_INSTANCE_CONFIG.integrations.mapTiler.styleUrl,
+  detailMapStyleId: ACTIVE_INSTANCE_CONFIG.integrations.mapTiler.detailStyleId,
+  defaultGeography: ACTIVE_INSTANCE_CONFIG.geography.defaultMap,
+  forms: ACTIVE_INSTANCE_CONFIG.integrations.forms
 });
 
 function clean(value) {
@@ -87,10 +79,10 @@ function formConfig(documentObject, names, fallback = {}) {
 
 function watchPartyIssueConfig(documentObject) {
   return Object.freeze({
-    formUrl: readMetaContent(CONFIG_META_NAMES.watchPartyIssueFormUrl, documentObject),
-    venueNameEntry: readMetaContent(CONFIG_META_NAMES.watchPartyIssueVenueNameEntry, documentObject),
-    gameEntry: readMetaContent(CONFIG_META_NAMES.watchPartyIssueGameEntry, documentObject),
-    watchPartyIdEntry: readMetaContent(CONFIG_META_NAMES.watchPartyIssueIdEntry, documentObject)
+    formUrl: readMetaContent(CONFIG_META_NAMES.watchPartyIssueFormUrl, documentObject) || DEFAULTS.forms.watchPartyIssue.formUrl,
+    venueNameEntry: readMetaContent(CONFIG_META_NAMES.watchPartyIssueVenueNameEntry, documentObject) || DEFAULTS.forms.watchPartyIssue.venueNameEntry,
+    gameEntry: readMetaContent(CONFIG_META_NAMES.watchPartyIssueGameEntry, documentObject) || DEFAULTS.forms.watchPartyIssue.gameEntry,
+    watchPartyIdEntry: readMetaContent(CONFIG_META_NAMES.watchPartyIssueIdEntry, documentObject) || DEFAULTS.forms.watchPartyIssue.watchPartyIdEntry
   });
 }
 
@@ -99,7 +91,7 @@ export function readRuntimeConfig({
   windowObject = documentObject?.defaultView || globalThis.window
 } = {}) {
   const storedEndpoint = safeStorageGet(windowObject, DATA_ENDPOINT_OVERRIDE_STORAGE_KEY);
-  const endpoint = clean(storedEndpoint) || readMetaContent(CONFIG_META_NAMES.dataEndpoint, documentObject);
+  const endpoint = clean(storedEndpoint) || readMetaContent(CONFIG_META_NAMES.dataEndpoint, documentObject) || DEFAULTS.dataEndpoint;
 
   return Object.freeze({
     dataEndpoint: endpoint,
@@ -118,17 +110,17 @@ export function readRuntimeConfig({
         venueIdEntry: CONFIG_META_NAMES.watchPartyVenueIdEntry,
         venueNameEntry: CONFIG_META_NAMES.watchPartyVenueNameEntry,
         gameIdEntry: CONFIG_META_NAMES.watchPartyGameIdEntry
-      }),
+      }, DEFAULTS.forms.watchParty),
       calBarNomination: formConfig(documentObject, {
         formUrl: CONFIG_META_NAMES.calBarNominationFormUrl,
         venueIdEntry: CONFIG_META_NAMES.calBarNominationVenueIdEntry,
         venueNameEntry: CONFIG_META_NAMES.calBarNominationVenueNameEntry
-      }),
+      }, DEFAULTS.forms.calBarNomination),
       listingUpdate: formConfig(documentObject, {
         formUrl: CONFIG_META_NAMES.listingUpdateFormUrl,
         venueIdEntry: CONFIG_META_NAMES.listingUpdateVenueIdEntry,
         venueNameEntry: CONFIG_META_NAMES.listingUpdateVenueNameEntry
-      }),
+      }, DEFAULTS.forms.listingUpdate),
       watchPartyIssue: watchPartyIssueConfig(documentObject),
       fanExperience: formConfig(documentObject, {
         formUrl: CONFIG_META_NAMES.fanExperienceFormUrl,
@@ -146,7 +138,7 @@ export function readRuntimeConfig({
 
 export function readBuildConfigFromHtml(html) {
   return Object.freeze({
-    dataEndpoint: readMetaContentFromHtml(html, CONFIG_META_NAMES.dataEndpoint),
+    dataEndpoint: readMetaContentFromHtml(html, CONFIG_META_NAMES.dataEndpoint) || DEFAULTS.dataEndpoint,
     canonicalSiteUrl: readCanonicalUrlFromHtml(html)
   });
 }

@@ -1,5 +1,7 @@
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+
 export const NEARBY_RADIUS_MILES = 25;
-export const TRAY_GUIDANCE_COPY = 'Explore Watch Parties, Cal Bars, and places where other Bears are planning to watch.';
+export const TRAY_GUIDANCE_COPY = `Explore ${ACTIVE_INSTANCE_CONFIG.terminology.watchPartyPlural}, ${ACTIVE_INSTANCE_CONFIG.terminology.designatedVenuePlural}, and places where other ${ACTIVE_INSTANCE_CONFIG.identity.fanPlural} are planning to watch.`;
 
 const US_REGION_QUERY_ALIASES = Object.freeze({
   alabama: 'al', alaska: 'ak', arizona: 'az', arkansas: 'ar', california: 'ca',
@@ -61,7 +63,7 @@ export function formatKickoff(game, locale) {
 }
 
 export function gameTitle(game) {
-  if (!game) return 'Cal football';
+  if (!game) return `${ACTIVE_INSTANCE_CONFIG.identity.schoolShortName} football`;
   const opponent = game.opponent_name || 'Opponent';
   if (game.home_away === 'home') return `vs. ${opponent}`;
   if (game.home_away === 'away') return `at ${opponent}`;
@@ -89,7 +91,9 @@ export function resolveGameRouteParam(games, value) {
 }
 
 export function venueTypeLabel(venue) {
-  return venue?.venue_type === 'cal_bar' ? 'CAL BAR' : 'COMMUNITY LOCATION';
+  return venue?.venue_type === 'cal_bar'
+    ? ACTIVE_INSTANCE_CONFIG.terminology.designatedVenueBadge
+    : ACTIVE_INSTANCE_CONFIG.terminology.communityLocationBadge;
 }
 
 export function compactVenueLocation(venue) {
@@ -100,11 +104,11 @@ export function compactVenueLocation(venue) {
 
 export function venueBadgeDescriptors(venue, party) {
   const badges = [];
-  if (party) badges.push({ text: 'WATCH PARTY', kind: 'party' });
+  if (party) badges.push({ text: ACTIVE_INSTANCE_CONFIG.terminology.watchPartyBadge, kind: 'party' });
   if (venue?.venue_type === 'cal_bar') {
-    badges.push({ text: 'CAL BAR', kind: 'cal' });
+    badges.push({ text: ACTIVE_INSTANCE_CONFIG.terminology.designatedVenueBadge, kind: 'cal' });
   } else if (!party && venue?.verification_status === 'user_added') {
-    badges.push({ text: 'FAN-ADDED', kind: 'fan-added' });
+    badges.push({ text: ACTIVE_INSTANCE_CONFIG.terminology.fanAddedBadge, kind: 'fan-added' });
   }
   return badges;
 }
@@ -140,15 +144,17 @@ export function getHistoryCount(snapshot, venueId) {
 
 export function bearCountCopy(count) {
   const total = Number(count);
-  if (total === 1) return '1 Bear attending on Cal Golden Bars';
-  if (total > 1) return `${total} Bears attending on Cal Golden Bars`;
-  return 'No Bears on Cal Golden Bars yet.';
+  const { fanSingular, fanPlural, productName } = ACTIVE_INSTANCE_CONFIG.identity;
+  if (total === 1) return `1 ${fanSingular} attending on ${productName}`;
+  if (total > 1) return `${total} ${fanPlural} attending on ${productName}`;
+  return `No ${fanPlural} on ${productName} yet.`;
 }
 
 export function historyCountCopy(count) {
-  if (count === 1) return 'Bears have watched 1 Cal game here.';
-  if (count > 1) return `Bears have watched ${count} Cal games here.`;
-  return 'No prior Cal-game activity is recorded here yet.';
+  const { fanPlural, schoolShortName } = ACTIVE_INSTANCE_CONFIG.identity;
+  if (count === 1) return `${fanPlural} have watched 1 ${schoolShortName} game here.`;
+  if (count > 1) return `${fanPlural} have watched ${count} ${schoolShortName} games here.`;
+  return `No prior ${schoolShortName}-game activity is recorded here yet.`;
 }
 
 export function markerKind(snapshot, gameId, venue) {
@@ -254,9 +260,10 @@ export function buildVenueShareMessage({
   const opponent = String(opponentName || '').trim();
   const link = String(url || '').trim();
   if (!venue || !opponent || !link) return '';
+  const schoolName = ACTIVE_INSTANCE_CONFIG.identity.schoolShortName;
   return hasWatchParty
-    ? `I’ll be at ${venue} for a Cal vs. ${opponent} watch party. Join me: ${link}`
-    : `I’ll be at ${venue} for Cal vs. ${opponent}. Join me: ${link}`;
+    ? `I’ll be at ${venue} for a ${schoolName} vs. ${opponent} watch party. Join me: ${link}`
+    : `I’ll be at ${venue} for ${schoolName} vs. ${opponent}. Join me: ${link}`;
 }
 
 function clamp(value, minimum, maximum) {

@@ -1,3 +1,5 @@
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+
 function normalizedCount(value) {
   const count = Math.trunc(Number(value) || 0);
   return count > 0 ? count : 0;
@@ -19,8 +21,9 @@ export function getVenueSeasonCount(snapshot, season, venueId) {
 
 export function seasonActivityCopy(count) {
   const total = normalizedCount(count);
-  if (total === 1) return '1 Bear watched Cal games here this season.';
-  if (total > 1) return `${total} Bears watched Cal games here this season.`;
+  const { fanSingular, fanPlural, schoolShortName } = ACTIVE_INSTANCE_CONFIG.identity;
+  if (total === 1) return `1 ${fanSingular} watched ${schoolShortName} games here this season.`;
+  if (total > 1) return `${total} ${fanPlural} watched ${schoolShortName} games here this season.`;
   return '';
 }
 
@@ -39,7 +42,7 @@ export function venueActivityPresentation({ snapshot, game, venue, currentCopy =
   if (selectedGameCompleted) {
     if (seasonCopy) return { primary: seasonCopy, secondary: [] };
     return {
-      primary: 'No Cal-game activity is recorded here for this season.',
+      primary: `No ${ACTIVE_INSTANCE_CONFIG.identity.schoolShortName}-game activity is recorded here for this season.`,
       secondary: []
     };
   }

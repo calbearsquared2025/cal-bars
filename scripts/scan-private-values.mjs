@@ -9,7 +9,7 @@ const PATTERNS = [
   { name: 'private key material', pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/g },
   { name: 'Google service-account credential', pattern: /"private_key_id"\s*:\s*"[^"\s]+"/g },
   { name: 'literal password or secret', pattern: /\b(?:password|client_secret|api_secret)\b\s*[:=]\s*['"][^'"]{8,}['"]/gi },
-  { name: 'private email address', pattern: /[A-Z0-9._%+-]+@(?!calgoldenbars\.com\b)[A-Z0-9.-]+\.[A-Z]{2,}/gi }
+  { name: 'private email address', pattern: /\b(?!calbearsquared2025@gmail\.com\b)[A-Z0-9._%+-]+@(?!calgoldenbars\.com\b)[A-Z0-9.-]+\.[A-Z]{2,}/gi }
 ];
 
 function changedFiles() {

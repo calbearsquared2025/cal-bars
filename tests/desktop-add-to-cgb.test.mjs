@@ -74,7 +74,8 @@ test('desktop contribution copy explains existing and unlisted location paths', 
   assert.match(refinementSource, /venue \? 'Different location\?' : 'Place not listed yet\?'/);
   assert.match(refinementSource, /Search for the venue or address below\./);
   assert.match(refinementSource, /Search for a venue or address that isn’t listed in CGB yet\./);
-  assert.match(shellSource, /add: 'Add to CGB'/);
+  assert.match(shellSource, /const PRODUCT_SHORT_NAME = ACTIVE_INSTANCE_CONFIG\.identity\.productShortName;/);
+  assert.match(shellSource, /add: `Add to \$\{PRODUCT_SHORT_NAME\}`/);
   assert.match(shellSource, /add: 'Add'/);
 });
 

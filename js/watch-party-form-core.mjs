@@ -1,3 +1,5 @@
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+
 const GOOGLE_FORMS_HOST = 'docs.google.com';
 const GOOGLE_FORMS_PATH_PREFIX = '/forms/';
 const ENTRY_ID_PATTERN = /^(?:entry\.)?(\d+)$/;
@@ -59,9 +61,10 @@ export function buildWatchPartyFormGameLabel(game = {}) {
   const day = Number(dateMatch[3]);
   if (!month || !Number.isInteger(day) || day < 1 || day > 31) return '';
 
+  const schoolName = ACTIVE_INSTANCE_CONFIG.identity.schoolShortName;
   const relationship = clean(game.home_away).toLowerCase() === 'away'
-    ? 'Cal at '
-    : 'Cal vs. ';
+    ? `${schoolName} at `
+    : `${schoolName} vs. `;
   return `${month} ${day} — ${relationship}${opponentName}`;
 }
 

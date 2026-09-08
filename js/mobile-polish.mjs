@@ -1,3 +1,5 @@
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const VALID_VIEWS = new Set(['map', 'search', 'add', 'list', 'about']);
 let activeView = 'map';
@@ -74,17 +76,17 @@ function updateListHeading() {
   const heading = document.querySelector('#list-heading');
   const eyebrow = document.querySelector('.tray-list__header .eyebrow');
   if (!heading || !eyebrow) return;
-  heading.textContent = 'Find your Cal crowd';
+  heading.textContent = ACTIVE_INSTANCE_CONFIG.copy.findCrowd;
   eyebrow.textContent = 'Browse';
 }
 
 function normalizeSearchLabels() {
   document.querySelectorAll('.search-result-group--existing .search-result-group__heading')
-    .forEach((heading) => { heading.textContent = 'CGB locations'; });
+    .forEach((heading) => { heading.textContent = `${ACTIVE_INSTANCE_CONFIG.identity.productShortName} locations`; });
   document.querySelectorAll('.search-result-group--external .search-result-group__heading')
     .forEach((heading) => { heading.textContent = 'Places'; });
   document.querySelectorAll('.search-result-group--external .search-result-group__note')
-    .forEach((note) => { note.textContent = 'Not yet listed in Cal Golden Bars.'; });
+    .forEach((note) => { note.textContent = `Not yet listed in ${ACTIVE_INSTANCE_CONFIG.identity.productName}.`; });
 }
 
 function setActiveView(next) {
