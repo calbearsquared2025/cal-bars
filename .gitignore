@@ -10,4 +10,5 @@ endpoint-response*.tmp
 migration-source/
 migration-output/
 migration-private/
+.instance-build/
 *.production-source.csv
