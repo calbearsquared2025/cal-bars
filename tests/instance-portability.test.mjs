@@ -79,10 +79,9 @@ test('fictional instance materializes into a disposable coherent local output', 
   t.after(async () => rm(buildFsPath, { recursive: true, force: true }));
   await materializeTestInstance({ outputPath: buildFsPath });
 
-  const [rootIndex, index, coreSource, designSystem, fallback, materializedConfigSource] = await Promise.all([
+  const [rootIndex, index, designSystem, fallback, materializedConfigSource] = await Promise.all([
     readRoot('index.html'),
     readBuild('index.html'),
-    readBuild('js/core.mjs'),
     readBuild('css/design-system.css'),
     readBuild('data/fallback-v2.json'),
     readBuild('js/instance-config.mjs')
@@ -101,8 +100,6 @@ test('fictional instance materializes into a disposable coherent local output', 
   assert.match(index, /Fox Den/);
   assert.match(index, /Community Spot/);
   assert.match(index, /Foxes/);
-  assert.match(coreSource, /FOX DEN/);
-  assert.match(coreSource, /COMMUNITY SPOT/);
   assert.doesNotMatch(index, /https:\/\/script\.google\.com\//i);
   assert.doesNotMatch(index, /https:\/\/docs\.google\.com\/forms\//i);
   assert.doesNotMatch(index, /G-CZV3JSBNJK/);
@@ -136,6 +133,8 @@ test('fictional instance materializes into a disposable coherent local output', 
 
   const materializedModule = await import(`${pathToFileURL(join(buildFsPath, 'js', 'instance-config.mjs')).href}?test=${Date.now()}`);
   assert.equal(materializedModule.ACTIVE_INSTANCE_CONFIG.id, 'test');
+  assert.equal(materializedModule.ACTIVE_INSTANCE_CONFIG.terminology.designatedVenueBadge, 'FOX DEN');
+  assert.equal(materializedModule.ACTIVE_INSTANCE_CONFIG.terminology.communityLocationBadge, 'COMMUNITY SPOT');
   assert.equal(materializedModule.ACTIVE_INSTANCE_CONFIG.storage.browserId, 'test_fox_bars_browser_id');
   assert.deepEqual(materializedModule.ACTIVE_INSTANCE_CONFIG.geography.defaultMap, { center: [-105.012, 39.742], zoom: 9.1 });
   assert.equal(materializedModule.ACTIVE_INSTANCE_CONFIG.integrations.dataEndpoint, '');
