@@ -3,7 +3,16 @@
 client_secret*.json
 credentials*.json
 token*.json
-*.private.json
+*.private.*
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.xls
+*.xlsx
 apps-script-response*.tmp
 apps-script-headers*.tmp
 endpoint-response*.tmp
@@ -12,3 +21,9 @@ migration-output/
 migration-private/
 .instance-build/
 *.production-source.csv
+
+# Canonical planning and audit material belongs in the private planning repository.
+/CGB_v2_*.md
+/CGB_Working_Lists.md
+/planning/
+/audits/

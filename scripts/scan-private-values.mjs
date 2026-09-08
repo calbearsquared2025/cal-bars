@@ -3,6 +3,13 @@ import { extname } from 'node:path';
 
 const ALLOWED_EXTENSIONS = new Set(['.css', '.gs', '.html', '.js', '.json', '.md', '.mjs', '.yml', '.yaml']);
 const EXCLUDED_PATHS = [/^tests\//, /^data\//, /^assets\//];
+const FORBIDDEN_PUBLIC_PATHS = [
+  { name: 'canonical or legacy private planning document', pattern: /^(?:CGB_v2_.*|CGB_Working_Lists)\.md$/i },
+  { name: 'private planning or audit directory', pattern: /^(?:planning|audits)\//i },
+  { name: 'environment file', pattern: /(^|\/)\.env(?!\.example$)(?:\..+)?$/i },
+  { name: 'credential or private-key file', pattern: /\.(?:pem|key|p12|pfx)$/i },
+  { name: 'spreadsheet workbook export', pattern: /\.(?:xls|xlsx)$/i }
+];
 const PATTERNS = [
   { name: 'concrete browser identifier', pattern: /browser_[A-Za-z0-9_-]{16,}/g },
   { name: 'literal workbook identifier', pattern: /CGB_WORKBOOK_ID\s*=\s*['"][^'"]+['"]/g },
@@ -51,6 +58,11 @@ function addedLines(file) {
 
 const findings = [];
 for (const file of changedFiles()) {
+  for (const { name, pattern } of FORBIDDEN_PUBLIC_PATHS) {
+    pattern.lastIndex = 0;
+    if (pattern.test(file)) findings.push(`${file}: ${name}`);
+  }
+
   if (!ALLOWED_EXTENSIONS.has(extname(file).toLowerCase())) continue;
   if (EXCLUDED_PATHS.some((pattern) => pattern.test(file))) continue;
   for (const addition of addedLines(file)) {
@@ -62,9 +74,9 @@ for (const file of changedFiles()) {
 }
 
 if (findings.length) {
-  console.error('Potential private values found in newly added public content:');
+  console.error('Potential private material found in newly added public content:');
   findings.forEach((finding) => console.error(`- ${finding}`));
   process.exit(1);
 }
 
-console.log('No concrete browser IDs, credentials, private keys, workbook IDs, or contact values found in newly added public content.');
+console.log('No forbidden private file paths, concrete browser IDs, credentials, private keys, workbook IDs, or contact values found in newly added public content.');
