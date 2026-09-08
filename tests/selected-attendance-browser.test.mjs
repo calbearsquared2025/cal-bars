@@ -89,8 +89,10 @@ function testPage(response) {
           const heroRect = hero?.getBoundingClientRect?.();
           output.textContent = JSON.stringify({
             text: numeral?.textContent?.trim() || '',
+            label: hero?.querySelector('.bear-count__label')?.textContent?.trim() || '',
+            attending: hero?.querySelector('.bear-count__attending')?.textContent?.trim() || '',
+            context: hero?.querySelector('.bear-count__context')?.textContent?.trim() || '',
             ariaLabel: hero?.getAttribute('aria-label') || '',
-            heroText: hero?.textContent?.replace(/\\s+/g, ' ').trim() || '',
             display: numeralStyle?.display || '',
             visibility: numeralStyle?.visibility || '',
             opacity: numeralStyle?.opacity || '',
@@ -170,11 +172,14 @@ test('mobile selected profile visibly renders a positive attendee numeral', { ti
   const result = await runBrowser();
   assert.equal(result.error, undefined, result.error);
   assert.equal(result.text, '2');
+  assert.equal(result.label, 'BEARS');
+  assert.equal(result.attending, 'ATTENDING');
+  assert.equal(result.context, 'ON CGB');
   assert.match(result.ariaLabel, /^2 Bears attending on Cal Golden Bars$/);
-  assert.match(result.heroText, /^2 BEARS ATTENDING ON CGB$/);
   assert.notEqual(result.display, 'none');
   assert.notEqual(result.visibility, 'hidden');
   assert.notEqual(result.opacity, '0');
+  assert.match(result.color, /^rgba?\(255, 255, 255(?:, 1)?\)$/);
   assert.ok(result.width > 0, `Expected visible numeral width, got ${result.width}`);
   assert.ok(result.height > 0, `Expected visible numeral height, got ${result.height}`);
   assert.ok(result.heroWidth > 0 && result.heroHeight > 0, 'Attendance hero should have visible geometry');
