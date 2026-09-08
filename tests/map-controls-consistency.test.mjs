@@ -87,7 +87,8 @@ test('mobile tray collapse does not recenter a retained selected venue over an e
 test('mobile selected venue camera uses one focus path and stops motion when the tray closes', async () => {
   const source = await read('js/map-mobile-refinement.mjs');
   assert.match(source, /function preserveMobileCameraOwnership\([\s\S]*?queueMicrotask\(\(\) => cancelBaseSelectedVenueVisibility\(state\)\);/);
-  assert.match(source, /function focusVenue\([\s\S]*?state\.map\.stop\?\.\(\);[\s\S]*?(?:fitBounds|easeTo)/);
+  assert.match(source, /function applyVenueFocus\([\s\S]*?state\.map\.stop\?\.\(\);[\s\S]*?(?:fitBounds|easeTo)/);
+  assert.match(source, /function focusVenue\([\s\S]*?applyVenueFocus\(state, venue/);
   assert.match(source, /function handleTrayTopTap\([\s\S]*?map\?\.stop\?\.\(\);[\s\S]*?\.click\(\);/);
   assert.match(source, /function observeSelectedTrayGeometry\([\s\S]*?tray\.dataset\.state !== 'selected'[\s\S]*?map\?\.stop\?\.\(\);/);
   assert.doesNotMatch(source, /document\.addEventListener\('click', \(event\) => \{[\s\S]*?\.cgb-marker\[data-venue-id\][\s\S]*?focusVenue/);
