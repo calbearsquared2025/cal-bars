@@ -17,7 +17,7 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         text-transform: uppercase;
       }
 
-      body[data-view="map"]:has(#map-view > #venue-tray.venue-tray.tray--selected) .mobile-command-bar {
+      html body[data-view="map"]:has(#map-view > #venue-tray.venue-tray.tray--selected) .mobile-command-bar {
         right: calc(24px + var(${SELECTED_TRAY_SCROLLBAR_VAR}, 0px)) !important;
         width: calc(clamp(500px, 52vw, 620px) - var(${SELECTED_TRAY_SCROLLBAR_VAR}, 0px)) !important;
       }
@@ -364,7 +364,13 @@ function initializeDesktopVisualCohesion({
     syncDesktopSelectedTrayAlignment({ documentObject, windowObject });
   };
 
-  const scheduleSync = () => windowObject.requestAnimationFrame?.(sync) || sync();
+  const scheduleSync = () => {
+    if (typeof windowObject.requestAnimationFrame === 'function') {
+      windowObject.requestAnimationFrame(sync);
+      return;
+    }
+    sync();
+  };
 
   const start = () => {
     sync();
