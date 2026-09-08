@@ -79,9 +79,10 @@ test('fictional instance materializes into a disposable coherent local output', 
   t.after(async () => rm(buildFsPath, { recursive: true, force: true }));
   await materializeTestInstance({ outputPath: buildFsPath });
 
-  const [rootIndex, index, designSystem, fallback, materializedConfigSource] = await Promise.all([
+  const [rootIndex, index, coreSource, designSystem, fallback, materializedConfigSource] = await Promise.all([
     readRoot('index.html'),
     readBuild('index.html'),
+    readBuild('js/core.mjs'),
     readBuild('css/design-system.css'),
     readBuild('data/fallback-v2.json'),
     readBuild('js/instance-config.mjs')
@@ -97,9 +98,11 @@ test('fictional instance materializes into a disposable coherent local output', 
   assert.match(index, /https:\/\/test-school\.invalid\//);
   assert.match(index, /assets\/test-fox-mark\.svg/);
   assert.match(index, /Find your Test U crowd/);
-  assert.match(index, /FOX DEN/);
-  assert.match(index, /COMMUNITY SPOT/);
+  assert.match(index, /Fox Den/);
+  assert.match(index, /Community Spot/);
   assert.match(index, /Foxes/);
+  assert.match(coreSource, /FOX DEN/);
+  assert.match(coreSource, /COMMUNITY SPOT/);
   assert.doesNotMatch(index, /https:\/\/script\.google\.com\//i);
   assert.doesNotMatch(index, /https:\/\/docs\.google\.com\/forms\//i);
   assert.doesNotMatch(index, /G-CZV3JSBNJK/);
