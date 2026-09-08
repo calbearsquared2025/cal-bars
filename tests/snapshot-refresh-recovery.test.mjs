@@ -5,12 +5,7 @@ import '../js/snapshot-refresh.mjs';
 function snapshot(overrides = {}) {
   return {
     schemaVersion: '2.0',
-    venues: [{
-      venue_id: 'venue_one',
-      slug: 'one',
-      latitude: 37.8,
-      longitude: -122.2
-    }],
+    venues: [{ venue_id: 'venue_one', slug: 'one', latitude: 37.8, longitude: -122.2 }],
     games: [],
     watchParties: [],
     fanCounts: [],
@@ -69,11 +64,7 @@ test('saved startup snapshot retries live attendance immediately while visible',
       return elements.get(selector) || null;
     },
     addEventListener: (name, listener) => documentListeners.set(name, listener),
-    createElement: () => ({
-      className: '',
-      textContent: '',
-      append() {}
-    })
+    createElement: () => ({ className: '', textContent: '', append() {} })
   };
 
   try {
