@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Test Fox Bars placeholder mark</title>
+  <desc id="desc">A geometric fictional fox mark used only for local portability testing.</desc>
+  <path fill="#2bb3a3" d="M18 26 45 39 64 24 83 39l27-13-10 43-36 35L28 69 18 26Z"/>
+  <path fill="#6b1d3a" d="m31 42 22 11 11-9 11 9 22-11-7 25-26 25-26-25-7-25Z"/>
+  <path fill="#fff" d="m42 58 15 3-8 9-7-12Zm44 0-15 3 8 9 7-12ZM56 76h16l-8 8-8-8Z"/>
+</svg>
