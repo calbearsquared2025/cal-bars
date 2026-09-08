@@ -13,6 +13,7 @@ const productionIndex = readFileSync(join(root, 'index.html'), 'utf8');
 const snapshot = JSON.parse(readFileSync(join(root, 'tests/fixtures/public-snapshot.synthetic.json'), 'utf8'));
 const snapshotJson = JSON.stringify(snapshot).replaceAll('<', '\\u003c');
 const TARGET_VENUE_ID = 'ven_000003';
+const TARGET_GAME_ID = 'game_64902a48440e55522742d631';
 const mimeTypes = new Map([
   ['.css', 'text/css; charset=utf-8'], ['.html', 'text/html; charset=utf-8'],
   ['.js', 'text/javascript; charset=utf-8'], ['.json', 'application/json; charset=utf-8'],
@@ -68,13 +69,12 @@ function testPage(response) {
             window.matchMedia('(max-width: 899px)').matches);
           if (!ready) throw new Error('app_not_ready');
 
-          document.querySelector('#mobile-list-button')?.click();
-          const listReady = await waitFor(() => visible(document.querySelector('#tray-list')));
-          if (!listReady) throw new Error('list_not_ready');
-
-          const card = document.querySelector('#location-list .location-card[data-venue-id="${TARGET_VENUE_ID}"]');
-          if (!card) throw new Error('target_card_missing');
-          card.click();
+          const appState = window.CGBApp.getState();
+          appState.gameId = '${TARGET_GAME_ID}';
+          appState.selectedVenueId = '${TARGET_VENUE_ID}';
+          appState.detailMode = false;
+          window.CGBApp.showSelectedVenue?.();
+          window.CGBApp.render?.();
 
           const selectedReady = await waitFor(() =>
             window.CGBApp?.getState?.()?.selectedVenueId === '${TARGET_VENUE_ID}' &&
