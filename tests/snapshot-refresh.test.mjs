@@ -3,10 +3,12 @@ import assert from 'node:assert/strict';
 import {
   ACTIVE_REFRESH_INTERVAL_MS,
   FOCUS_REFRESH_STALE_MS,
+  STARTUP_ROLLOVER_GUARD_MS,
   dataAvailabilityCopy,
   publicSnapshotsEqual,
   resolveDirectEntryVenueId,
-  shouldRefreshSnapshot
+  shouldRefreshSnapshot,
+  shouldUseSavedSnapshotAtStartup
 } from '../js/snapshot-refresh.mjs';
 import { TRAY_GUIDANCE_COPY } from '../js/core.mjs';
 
@@ -25,6 +27,19 @@ function snapshot(overrides = {}) {
     venueHistoryCounts: [],
     venueSeasonCounts: [],
     fanExperiences: [],
+    ...overrides
+  };
+}
+
+function game(overrides = {}) {
+  return {
+    game_id: 'game_syracuse',
+    schedule_order: 2,
+    opponent_name: 'Syracuse',
+    game_date: '2099-09-12',
+    kickoff_at: '2099-09-12T19:30:00-07:00',
+    kickoff_status: 'confirmed',
+    game_status: 'upcoming',
     ...overrides
   };
 }
@@ -61,6 +76,49 @@ test('visible tabs refresh after the stale threshold but not before it', () => {
     visibilityState: 'visible',
     now: lastAttemptAt + FOCUS_REFRESH_STALE_MS,
     lastAttemptAt
+  }), true);
+});
+
+test('saved startup is allowed when the cached default matches the loading-cover game', () => {
+  const cached = snapshot({ games: [game()] });
+  assert.equal(shouldUseSavedSnapshotAtStartup({
+    snapshot: cached,
+    loadingCoverGameSlug: 'syracuse',
+    now: new Date('2099-09-12T12:00:00-07:00')
+  }), true);
+});
+
+test('saved startup is rejected when the cached default disagrees with the loading-cover game', () => {
+  const cached = snapshot({ games: [game({ opponent_name: 'UCLA' })] });
+  assert.equal(shouldUseSavedSnapshotAtStartup({
+    snapshot: cached,
+    loadingCoverGameSlug: 'syracuse',
+    now: new Date('2099-09-12T12:00:00-07:00')
+  }), false);
+});
+
+test('saved startup is rejected after the kickoff rollover guard even when the cover still matches', () => {
+  const kickoff = '2099-09-12T12:00:00-07:00';
+  const cached = snapshot({ games: [game({ kickoff_at: kickoff })] });
+  assert.equal(shouldUseSavedSnapshotAtStartup({
+    snapshot: cached,
+    loadingCoverGameSlug: 'syracuse',
+    now: new Date(new Date(kickoff).getTime() + STARTUP_ROLLOVER_GUARD_MS)
+  }), false);
+});
+
+test('an explicit game route may use its matching saved game without auto-rollover gating', () => {
+  const cached = snapshot({ games: [game({
+    game_id: 'game_ucla',
+    opponent_name: 'UCLA',
+    game_date: '2099-09-05',
+    kickoff_at: '2099-09-05T19:30:00-07:00'
+  })] });
+  assert.equal(shouldUseSavedSnapshotAtStartup({
+    snapshot: cached,
+    search: '?game=ucla',
+    loadingCoverGameSlug: 'syracuse',
+    now: new Date('2099-09-06T12:00:00-07:00')
   }), true);
 });
 
@@ -116,14 +174,29 @@ test('direct-entry venue is resolved after cached or fallback startup refreshes'
   assert.equal(resolveDirectEntryVenueId(current, '?game=ucla'), '');
 });
 
-test('browser bootstrap leaves the live endpoint available and does not duplicate the startup fetch', async () => {
+test('browser bootstrap renders a safe saved snapshot before making one live refresh', async () => {
   const originalWindow = globalThis.window;
   const originalDocument = globalThis.document;
   const originalFetch = globalThis.fetch;
-  const storage = new Map([['cgb_v2_public_data_url', 'https://example.invalid/live']]);
+  const initial = snapshot({
+    games: [game()],
+    generatedAt: '2099-09-01T00:00:00Z'
+  });
+  const live = snapshot({
+    games: [game()],
+    generatedAt: '2099-09-01T01:00:00Z'
+  });
+  const storage = new Map([
+    ['cgb_v2_public_data_url', 'https://example.invalid/live'],
+    ['cgb_v2_last_good_snapshot', JSON.stringify(initial)]
+  ]);
   const windowListeners = new Map();
   const documentListeners = new Map();
   const meta = { content: 'https://example.invalid/default' };
+  const preload = {
+    href: 'assets/social-cards/syracuse.png',
+    getAttribute: (name) => name === 'href' ? 'assets/social-cards/syracuse.png' : null
+  };
   const elements = new Map([
     ['#tray-summary-copy', { textContent: '' }],
     ['#watch-party-stat', { textContent: '' }],
@@ -131,8 +204,6 @@ test('browser bootstrap leaves the live endpoint available and does not duplicat
     ['#list-heading', { textContent: '' }],
     ['#location-list', { replaceChildren() {} }]
   ]);
-  const initial = snapshot({ generatedAt: '2026-08-03T00:00:00Z' });
-  const live = snapshot({ generatedAt: '2026-08-03T01:00:00Z' });
   let fetchCalls = 0;
   let renderCalls = 0;
 
@@ -158,6 +229,7 @@ test('browser bootstrap leaves the live endpoint available and does not duplicat
     visibilityState: 'visible',
     querySelector(selector) {
       if (selector === 'meta[name="cgb-data-endpoint"]') return meta;
+      if (selector === '#cgb-loading-cover-preload') return preload;
       return elements.get(selector) || null;
     },
     addEventListener: (name, listener) => documentListeners.set(name, listener),
@@ -170,12 +242,13 @@ test('browser bootstrap leaves the live endpoint available and does not duplicat
 
   try {
     await import(`../js/snapshot-refresh.mjs?browser-bootstrap=${Date.now()}`);
-    assert.equal(meta.content, 'https://example.invalid/default');
-    assert.equal(storage.get('cgb_v2_public_data_url'), 'https://example.invalid/live');
+    assert.match(meta.content, /^data:application\/json/);
+    assert.equal(storage.has('cgb_v2_public_data_url'), false);
+    assert.equal(fetchCalls, 0);
 
     const state = {
       snapshot: initial,
-      dataSource: 'live',
+      dataSource: 'last-known-good',
       detailMode: false,
       selectedVenueId: null
     };
@@ -188,18 +261,13 @@ test('browser bootstrap leaves the live endpoint available and does not duplicat
     };
 
     await windowListeners.get('DOMContentLoaded')();
-    await new Promise((resolve) => setTimeout(resolve, 0));
 
-    assert.equal(fetchCalls, 0);
-    assert.equal(renderCalls, 0);
-    assert.equal(state.snapshot.generatedAt, '2026-08-03T00:00:00Z');
-
-    await window.CGBSnapshotRefresh.refresh();
-
+    assert.equal(meta.content, 'https://example.invalid/default');
+    assert.equal(storage.get('cgb_v2_public_data_url'), 'https://example.invalid/live');
     assert.equal(fetchCalls, 1);
     assert.equal(renderCalls, 0);
     assert.equal(state.dataSource, 'live');
-    assert.equal(state.snapshot.generatedAt, '2026-08-03T01:00:00Z');
+    assert.equal(state.snapshot.generatedAt, '2099-09-01T01:00:00Z');
   } finally {
     if (originalWindow === undefined) delete globalThis.window;
     else globalThis.window = originalWindow;
