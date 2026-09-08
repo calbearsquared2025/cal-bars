@@ -27,6 +27,15 @@ function allBrandColors(config) {
   ].map((value) => value.toLowerCase());
 }
 
+function visibleHtmlText(html) {
+  return String(html)
+    .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 test('production remains hard-wired to the Cal instance', () => {
   assert.equal(ACTIVE_INSTANCE_CONFIG, CAL_INSTANCE_CONFIG);
   assert.equal(resolveInstanceConfig('cal'), CAL_INSTANCE_CONFIG);
@@ -104,7 +113,9 @@ test('fictional instance materializes into a disposable coherent local output', 
   assert.doesNotMatch(index, /https:\/\/docs\.google\.com\/forms\//i);
   assert.doesNotMatch(index, /G-CZV3JSBNJK/);
   assert.doesNotMatch(index, /calgoldenbars\.com/i);
-  assert.doesNotMatch(index, /\bCal(?:ifornia)?\b|\bBears?\b|Cal Golden Bars/i);
+  assert.doesNotMatch(visibleHtmlText(index), /\bCal(?:ifornia)?\b|\bBears?\b|Cal Golden Bars/i);
+  assert.match(index, /cgb-cal-bar-nomination-form-url/);
+  assert.match(index, /map-legend__marker--cal-bar/);
 
   assert.equal(readMetaContentFromHtml(index, CONFIG_META_NAMES.dataEndpoint), '');
   assert.equal(readMetaContentFromHtml(index, CONFIG_META_NAMES.analyticsMeasurementId), '');
