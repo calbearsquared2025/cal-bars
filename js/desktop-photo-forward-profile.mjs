@@ -5,6 +5,7 @@ import {
 import { venueTagsForVenue } from './fan-experiences.mjs';
 import { selectedAttendanceViewModel } from './selected-profile-renderer.mjs';
 import { readRuntimeConfig } from './config.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 
 const DESKTOP_QUERY = '(min-width: 900px)';
 
@@ -115,13 +116,15 @@ function syncAttendance({ detail, state, venue, documentObject }) {
   numeral.textContent = String(view.number);
   const label = documentObject.createElement('span');
   label.className = 'bear-count__label';
-  label.textContent = view.number === 1 ? 'BEAR' : 'BEARS';
+  label.textContent = (view.number === 1
+    ? ACTIVE_INSTANCE_CONFIG.identity.fanSingular
+    : ACTIVE_INSTANCE_CONFIG.identity.fanPlural).toUpperCase();
   const attending = documentObject.createElement('span');
   attending.className = 'bear-count__attending';
   attending.textContent = 'ATTENDING';
   const context = documentObject.createElement('span');
   context.className = 'bear-count__context';
-  context.textContent = 'ON CGB';
+  context.textContent = `ON ${ACTIVE_INSTANCE_CONFIG.identity.productShortName.toUpperCase()}`;
   current.replaceChildren(numeral, label, attending, context);
 }
 
