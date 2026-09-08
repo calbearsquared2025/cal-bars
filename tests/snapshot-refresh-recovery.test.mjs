@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import '../js/snapshot-refresh.mjs';
 
 function snapshot(overrides = {}) {
   return {
