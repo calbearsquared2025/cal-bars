@@ -1,36 +1,47 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { ACTIVE_INSTANCE_CONFIG } from '../js/instance-config.mjs';
+import { spawn } from 'node:child_process';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { findBrowser } from '../scripts/browser-discovery.mjs';
 
-const localRenderer = readFileSync(new URL('../js/selected-profile-renderer.mjs', import.meta.url), 'utf8');
-const localFanIntentCss = readFileSync(new URL('../css/fan-intent.css', import.meta.url), 'utf8');
+const PRODUCTION_URL = 'https://calgoldenbars.com/?game=syracuse&venue=kingfish-pub-and-cafe-oakland';
 
-test('diagnostic: report live Syracuse attendance and deployed asset parity', { timeout: 20000 }, async () => {
-  const [dataResponse, rendererResponse, cssResponse] = await Promise.all([
-    fetch(ACTIVE_INSTANCE_CONFIG.integrations.dataEndpoint, { redirect: 'follow' }),
-    fetch('https://calgoldenbars.com/js/selected-profile-renderer.mjs', { redirect: 'follow', cache: 'no-store' }),
-    fetch('https://calgoldenbars.com/css/fan-intent.css', { redirect: 'follow', cache: 'no-store' })
-  ]);
-  assert.equal(dataResponse.ok, true, `Live endpoint returned ${dataResponse.status}`);
-  assert.equal(rendererResponse.ok, true, `Live renderer returned ${rendererResponse.status}`);
-  assert.equal(cssResponse.ok, true, `Live fan-intent CSS returned ${cssResponse.status}`);
+async function dumpProductionDom() {
+  const profile = mkdtempSync(join(tmpdir(), 'cgb-live-attendance-'));
+  try {
+    const browser = findBrowser();
+    const child = spawn(browser, [
+      '--headless=new', '--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
+      '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
+      '--disable-sync', '--metrics-recording-only', '--no-first-run', `--user-data-dir=${profile}`,
+      '--window-size=390,844', '--virtual-time-budget=8000', '--dump-dom', PRODUCTION_URL
+    ], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.stderr.on('data', (chunk) => { stderr += chunk; });
+    const exitCode = await new Promise((resolve) => child.once('close', resolve));
+    assert.equal(exitCode, 0, stderr.slice(-4000));
+    return stdout;
+  } finally {
+    rmSync(profile, { recursive: true, force: true, maxRetries: 3 });
+  }
+}
 
-  const snapshot = await dataResponse.json();
-  const [liveRenderer, liveFanIntentCss] = await Promise.all([rendererResponse.text(), cssResponse.text()]);
-  const game = (snapshot.games || []).find((row) => String(row.opponent_name || '').toLowerCase() === 'syracuse');
-  assert.ok(game, 'Syracuse game missing from live snapshot');
-  const counts = (snapshot.fanCounts || []).filter((row) => row.game_id === game.game_id);
-  const venuesById = new Map((snapshot.venues || []).map((venue) => [venue.venue_id, venue.name]));
-
+test('diagnostic: report deployed Kingfish selected-profile attendance DOM', { timeout: 30000 }, async () => {
+  const dom = await dumpProductionDom();
+  const heroMatch = dom.match(/<div class="bear-count bear-count--hero[\s\S]*?<\/div>/i);
+  const numberMatch = dom.match(/<span class="bear-count__number">([^<]*)<\/span>/i);
+  const sourceMatch = dom.match(/<body[^>]*data-data-source="([^"]*)"/i);
   assert.fail(JSON.stringify({
-    generatedAt: snapshot.generatedAt || '',
-    gameId: game.game_id,
-    gameStatus: game.game_status,
-    fanCounts: counts.map((row) => ({ ...row, venueName: venuesById.get(row.venue_id) || '' })),
-    rendererMatchesCurrentSource: liveRenderer === localRenderer,
-    fanIntentCssMatchesCurrentSource: liveFanIntentCss === localFanIntentCss,
-    rendererCacheControl: rendererResponse.headers.get('cache-control') || '',
-    cssCacheControl: cssResponse.headers.get('cache-control') || ''
+    hasAttendanceHero: Boolean(heroMatch),
+    number: numberMatch?.[1]?.trim() || '',
+    dataSource: sourceMatch?.[1] || '',
+    kingfishPresent: dom.includes('Kingfish Pub &amp; Cafe') || dom.includes('Kingfish Pub & Cafe'),
+    beTheFirstPresent: dom.includes('BE THE FIRST')
   }));
 });
