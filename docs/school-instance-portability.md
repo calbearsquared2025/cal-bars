@@ -10,7 +10,7 @@ The fictional instance is intentionally non-production: **Test University / Test
 
 ## What the proof established
 
-A materially different school presentation can be generated from the current application while preserving the Cal production result. The proof changes visible identity, fan terminology, designated/community venue terminology, colors, mark assets, default geography, home timezone, canonical/social identity, storage namespace, and fixture data.
+A materially different school presentation can be generated from the current application while preserving Cal production behavior and presentation outside explicitly approved shared-instance corrections. The proof changes visible identity, fan terminology, designated/community venue terminology, colors, mark assets, default geography, home timezone, canonical/social identity, storage namespace, and fixture data.
 
 The generated test instance disables Cal production writes, Google Forms, and analytics. It uses isolated browser storage keys and synthetic public data. The existing public MapTiler client integration is retained for map rendering.
 
@@ -42,7 +42,7 @@ Not every school-specific value is runtime-configurable yet. The proof currently
 - frontend storage keys that are not yet consumed directly from the shared instance config;
 - fallback/test snapshot data.
 
-The portability proof also found renderer-level display assumptions that were better fixed at source rather than hidden by materialization. Selected-profile attendance labels and Watch Party matchup/specials labels now read active instance identity instead of embedding Cal/Bear/CGB display text.
+The portability proof also found renderer-level display assumptions that were better fixed at source rather than hidden by materialization. Selected-profile attendance labels and Watch Party matchup/specials labels now read active instance identity instead of embedding Cal/Bear/CGB display text. The shared header gradient also now ends in the semantic cover/loading background role instead of a Cal-specific hardcoded blue, so each instance can blend the header into its own cover treatment.
 
 ## Color-system implication
 
@@ -61,7 +61,7 @@ A real second-school rollout should also decide how instance-specific backend re
 The proof is considered successful only when all of the following remain true:
 
 - the normal test suite, public-data validation, private-value scan, and syntax checks pass;
-- Cal 390px and 1440px landing/selected screenshots remain unchanged from the branch base;
+- Cal 390px and 1440px landing/selected screenshot differences from the branch base are limited to explicitly approved shared-instance corrections, with no unrelated visual changes;
 - fictional 390px and 1440px captures show the alternate identity, terminology, colors, geography, and fixture data without visible Cal/Bear/CGB branding leakage;
 - generated output contains no Cal production write endpoint, Google Form URLs, Cal analytics measurement ID, or Cal browser-storage keys;
 - no second-school site is deployed by this PR.
