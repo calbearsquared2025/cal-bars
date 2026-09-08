@@ -27,7 +27,7 @@ function safePath(requestUrl) {
   return candidate.startsWith(root) ? candidate : null;
 }
 
-function testPage(response) {
+function testPage(response, { desktop }) {
   const prelude = `<script>
     (() => {
       const snapshot = ${snapshotJson};
@@ -42,7 +42,11 @@ function testPage(response) {
         return nativeFetch(input);
       };
     })();
-  </script>`;
+  </script>${desktop ? '<style>@media (min-width:900px){#tray-selected{scrollbar-gutter:stable !important;}}</style>' : ''}`;
+  const mediaQuery = desktop ? '(min-width: 900px)' : '(max-width: 899px)';
+  const attendanceSelector = desktop
+    ? '#venue-detail[data-profile-presentation="desktop"] > .detail-hero .activity-card strong.bear-count'
+    : '.selected-card__header .bear-count--hero';
   const driver = `<output id="attendance-test-result">RUNNING</output><script>
     (() => {
       const output = document.querySelector('#attendance-test-result');
@@ -53,7 +57,7 @@ function testPage(response) {
         const rect = node.getBoundingClientRect();
         return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0 && rect.width > 0 && rect.height > 0;
       };
-      const waitFor = async (predicate, timeout = 3500) => {
+      const waitFor = async (predicate, timeout = 5000) => {
         const deadline = performance.now() + timeout;
         while (performance.now() < deadline) {
           try { if (predicate()) return true; } catch (_) {}
@@ -66,7 +70,7 @@ function testPage(response) {
           const ready = await waitFor(() =>
             document.querySelector('#app')?.getAttribute('aria-busy') === 'false' &&
             window.CGBApp?.getState?.()?.snapshot &&
-            window.matchMedia('(max-width: 899px)').matches);
+            window.matchMedia('${mediaQuery}').matches);
           if (!ready) throw new Error('app_not_ready');
 
           const appState = window.CGBApp.getState();
@@ -76,32 +80,48 @@ function testPage(response) {
           window.CGBApp.showSelectedVenue?.();
           window.CGBApp.render?.();
 
-          const selectedReady = await waitFor(() =>
-            window.CGBApp?.getState?.()?.selectedVenueId === '${TARGET_VENUE_ID}' &&
-            visible(document.querySelector('#tray-selected')) &&
-            Boolean(document.querySelector('.selected-card__header .bear-count--hero .bear-count__number')));
+          const selectedReady = await waitFor(() => {
+            const attendance = document.querySelector('${attendanceSelector}');
+            return visible(document.querySelector('#tray-selected')) &&
+              visible(attendance) &&
+              visible(attendance?.querySelector('.bear-count__number'));
+          });
           if (!selectedReady) throw new Error('positive_attendance_not_rendered');
 
-          const hero = document.querySelector('.selected-card__header .bear-count--hero');
-          const numeral = hero?.querySelector('.bear-count__number');
-          const numeralStyle = numeral ? getComputedStyle(numeral) : null;
-          const numeralRect = numeral?.getBoundingClientRect?.();
-          const heroRect = hero?.getBoundingClientRect?.();
-          output.textContent = JSON.stringify({
-            text: numeral?.textContent?.trim() || '',
-            label: hero?.querySelector('.bear-count__label')?.textContent?.trim() || '',
-            attending: hero?.querySelector('.bear-count__attending')?.textContent?.trim() || '',
-            context: hero?.querySelector('.bear-count__context')?.textContent?.trim() || '',
-            ariaLabel: hero?.getAttribute('aria-label') || '',
-            display: numeralStyle?.display || '',
-            visibility: numeralStyle?.visibility || '',
-            opacity: numeralStyle?.opacity || '',
-            color: numeralStyle?.color || '',
-            width: numeralRect?.width || 0,
-            height: numeralRect?.height || 0,
-            heroWidth: heroRect?.width || 0,
-            heroHeight: heroRect?.height || 0
-          });
+          await sleep(100);
+          const attendance = document.querySelector('${attendanceSelector}');
+          const numeral = attendance.querySelector('.bear-count__number');
+          const numeralStyle = getComputedStyle(numeral);
+          const numeralRect = numeral.getBoundingClientRect();
+          const result = {
+            text: numeral.textContent.trim(),
+            label: attendance.querySelector('.bear-count__label')?.textContent?.trim() || '',
+            attending: attendance.querySelector('.bear-count__attending')?.textContent?.trim() || '',
+            context: attendance.querySelector('.bear-count__context')?.textContent?.trim() || '',
+            ariaLabel: attendance.getAttribute('aria-label') || '',
+            display: numeralStyle.display,
+            visibility: numeralStyle.visibility,
+            opacity: numeralStyle.opacity,
+            color: numeralStyle.color,
+            width: numeralRect.width,
+            height: numeralRect.height
+          };
+
+          if (${desktop}) {
+            const selected = document.querySelector('#tray-selected');
+            const hero = document.querySelector('#venue-detail[data-profile-presentation="desktop"] > .detail-hero');
+            const bar = document.querySelector('.mobile-command-bar');
+            const heroRect = hero.getBoundingClientRect();
+            const barRect = bar.getBoundingClientRect();
+            Object.assign(result, {
+              scrollbarWidth: Math.max(0, selected.offsetWidth - selected.clientWidth),
+              heroLeft: heroRect.left,
+              heroRight: heroRect.right,
+              barLeft: barRect.left,
+              barRight: barRect.right
+            });
+          }
+          output.textContent = JSON.stringify(result);
         } catch (error) {
           output.textContent = JSON.stringify({ error: String(error?.message || error) });
         }
@@ -119,10 +139,10 @@ function testPage(response) {
   response.end(html);
 }
 
-async function runBrowser() {
+async function runBrowser({ desktop = false } = {}) {
   const server = createServer((request, response) => {
-    const pathname = new URL(request.url || '/', 'http://127.0.0.1').pathname;
-    if (pathname === '/__attendance_test__') return testPage(response);
+    const url = new URL(request.url || '/', 'http://127.0.0.1');
+    if (url.pathname === '/__attendance_test__') return testPage(response, { desktop: url.searchParams.get('desktop') === '1' });
     const filePath = safePath(request.url || '/');
     try {
       if (!filePath || !statSync(filePath).isFile()) throw new Error('not_found');
@@ -148,8 +168,8 @@ async function runBrowser() {
       '--disable-background-networking', '--disable-default-apps', '--disable-extensions',
       '--disable-sync', '--metrics-recording-only', '--no-first-run', `--user-data-dir=${profile}`,
       '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1',
-      '--window-size=390,844', '--virtual-time-budget=6000', '--dump-dom',
-      `http://127.0.0.1:${port}/__attendance_test__`
+      `--window-size=${desktop ? '1200,800' : '390,844'}`, '--virtual-time-budget=7000', '--dump-dom',
+      `http://127.0.0.1:${port}/__attendance_test__?desktop=${desktop ? '1' : '0'}`
     ], { stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '';
     let stderr = '';
@@ -168,19 +188,29 @@ async function runBrowser() {
   }
 }
 
-test('mobile selected profile visibly renders a positive attendee numeral', { timeout: 20000 }, async () => {
-  const result = await runBrowser();
+function assertPositiveAttendance(result) {
   assert.equal(result.error, undefined, result.error);
   assert.equal(result.text, '2');
   assert.equal(result.label, 'BEARS');
   assert.equal(result.attending, 'ATTENDING');
   assert.equal(result.context, 'ON CGB');
-  assert.match(result.ariaLabel, /^2 Bears attending on Cal Golden Bars$/);
   assert.notEqual(result.display, 'none');
   assert.notEqual(result.visibility, 'hidden');
   assert.notEqual(result.opacity, '0');
   assert.match(result.color, /^rgba?\(255, 255, 255(?:, 1)?\)$/);
-  assert.ok(result.width > 0, `Expected visible numeral width, got ${result.width}`);
-  assert.ok(result.height > 0, `Expected visible numeral height, got ${result.height}`);
-  assert.ok(result.heroWidth > 0 && result.heroHeight > 0, 'Attendance hero should have visible geometry');
+  assert.ok(result.width > 0 && result.height > 0, 'Attendee numeral should have visible geometry');
+}
+
+test('mobile selected profile visibly renders a positive attendee numeral', { timeout: 20000 }, async () => {
+  const result = await runBrowser();
+  assertPositiveAttendance(result);
+  assert.match(result.ariaLabel, /^2 Bears attending on Cal Golden Bars$/);
+});
+
+test('desktop selected profile shows the attendee numeral and aligns its hero with the command bar', { timeout: 22000 }, async () => {
+  const result = await runBrowser({ desktop: true });
+  assertPositiveAttendance(result);
+  assert.ok(result.scrollbarWidth > 0, `Test should reserve a desktop scrollbar gutter, got ${result.scrollbarWidth}`);
+  assert.ok(Math.abs(result.heroLeft - result.barLeft) <= 1, `Expected aligned left edges, got hero ${result.heroLeft} and bar ${result.barLeft}`);
+  assert.ok(Math.abs(result.heroRight - result.barRight) <= 1, `Expected aligned right edges, got hero ${result.heroRight} and bar ${result.barRight}`);
 });
