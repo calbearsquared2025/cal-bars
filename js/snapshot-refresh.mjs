@@ -218,10 +218,9 @@ function startRefreshController(endpoint) {
   const app = window.CGBApp;
   if (!app) return null;
 
-  const initialDataSource = app.getState?.()?.dataSource;
   let inFlight = null;
-  let lastAttemptAt = initialDataSource === 'live' ? Date.now() : 0;
-  let refreshFailed = !endpoint || initialDataSource !== 'live';
+  let lastAttemptAt = Date.now();
+  let refreshFailed = !endpoint || app.getState?.()?.dataSource !== 'live';
 
   const applyCopy = () => applyDataAvailabilityCopy(refreshFailed);
   app.subscribe?.('rendered', applyCopy);
@@ -274,10 +273,6 @@ function startRefreshController(endpoint) {
     if (document.visibilityState === 'visible') refreshWhenStale();
   });
   window.addEventListener('focus', refreshWhenStale);
-
-  // A cached/fallback startup means the initial live request already failed. Retry
-  // immediately while visible instead of treating that stale snapshot as freshly checked.
-  refreshWhenStale();
 
   return { refreshLive };
 }
