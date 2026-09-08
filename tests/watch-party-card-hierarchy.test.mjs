@@ -8,7 +8,10 @@ const styles = readFileSync(new URL('../css/watch-party-display.css', import.met
 test('watch party card separates matchup, date, and timing context', () => {
   assert.match(renderer, /date\.className = 'party-module__date'/);
   assert.match(renderer, /date\.textContent = formatGameDate\(game\)\.toUpperCase\(\)/);
-  assert.match(renderer, /`CAL \$\{gameTitle\(game\)\.toUpperCase\(\)\}`/);
+  assert.match(
+    renderer,
+    /`\$\{ACTIVE_INSTANCE_CONFIG\.identity\.schoolShortName\.toUpperCase\(\)\} \$\{gameTitle\(game\)\.toUpperCase\(\)\}`/
+  );
   assert.match(renderer, /return 'Kickoff Time TBD'/);
   assert.match(renderer, /\[kickoffLabel\(game\), arrivalLabel\(party\)\]\.filter\(Boolean\)\.join\(' · '\)/);
 });

@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "2.0",
+  "venues": [
+    {
+      "venue_id": "test_venue_001",
+      "slug": "fox-den-test-city",
+      "name": "Fox Den Test House",
+      "address_line_1": "101 Fixture Avenue",
+      "address_line_2": "",
+      "city": "Test City",
+      "region": "TS",
+      "postal_code": "80001",
+      "country_code": "US",
+      "latitude": 39.742,
+      "longitude": -105.012,
+      "website_url": "",
+      "venue_type": "cal_bar",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "A fictional designated venue used only for local portability testing.",
+      "photo_url": "",
+      "photo_credit": "",
+      "venue_tags": ["audio_on", "food"],
+      "updated_at": "2026-09-07T12:00:00Z"
+    },
+    {
+      "venue_id": "test_venue_002",
+      "slug": "fixture-corner-test-city",
+      "name": "Fixture Corner",
+      "address_line_1": "202 Sample Street",
+      "address_line_2": "",
+      "city": "Test City",
+      "region": "TS",
+      "postal_code": "80002",
+      "country_code": "US",
+      "latitude": 39.768,
+      "longitude": -105.061,
+      "website_url": "",
+      "venue_type": "community_location",
+      "verification_status": "user_added",
+      "alumni_owned": "unknown",
+      "short_description": "A fictional fan-added location for the portability fixture.",
+      "photo_url": "",
+      "photo_credit": "",
+      "venue_tags": [],
+      "updated_at": "2026-09-07T12:00:00Z"
+    }
+  ],
+  "games": [
+    {
+      "game_id": "test_game_001",
+      "season": 2026,
+      "schedule_order": 1,
+      "opponent_name": "Sample Tech",
+      "opponent_short_name": "Sample Tech",
+      "home_away": "home",
+      "game_date": "2026-09-12",
+      "kickoff_at": "2026-09-12T23:00:00Z",
+      "kickoff_status": "confirmed",
+      "game_status": "upcoming",
+      "updated_at": "2026-09-07T12:00:00Z"
+    },
+    {
+      "game_id": "test_game_002",
+      "season": 2026,
+      "schedule_order": 2,
+      "opponent_name": "Example State",
+      "opponent_short_name": "Example State",
+      "home_away": "away",
+      "game_date": "2026-09-19",
+      "kickoff_at": "",
+      "kickoff_status": "tbd",
+      "game_status": "upcoming",
+      "updated_at": "2026-09-07T12:00:00Z"
+    }
+  ],
+  "watchParties": [
+    {
+      "watch_party_id": "test_wp_001",
+      "venue_id": "test_venue_001",
+      "game_id": "test_game_001",
+      "organizer_name": "Test Foxes Club",
+      "organizer_type": "alumni_group",
+      "official_event_url": "",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-09-12T22:00:00Z",
+      "age_policy": "all_ages",
+      "sound_status": "confirmed_on",
+      "restrictions_note": "Fictional event fixture.",
+      "game_day_note": "",
+      "feature_tags": [],
+      "event_status": "active",
+      "updated_at": "2026-09-07T12:00:00Z"
+    }
+  ],
+  "fanCounts": [
+    { "game_id": "test_game_001", "venue_id": "test_venue_001", "count": 4 },
+    { "game_id": "test_game_001", "venue_id": "test_venue_002", "count": 2 }
+  ],
+  "venueHistoryCounts": [
+    { "venue_id": "test_venue_001", "past_game_count": 3 },
+    { "venue_id": "test_venue_002", "past_game_count": 1 }
+  ],
+  "venueSeasonCounts": [
+    { "venue_id": "test_venue_001", "season": 2026, "count": 3 },
+    { "venue_id": "test_venue_002", "season": 2026, "count": 1 }
+  ],
+  "fanExperiences": [],
+  "generatedAt": "2026-09-07T12:00:00Z"
+}

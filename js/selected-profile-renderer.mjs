@@ -5,6 +5,7 @@ import {
   venueBadgeDescriptors
 } from './core.mjs';
 import { createIcon } from './icons.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import { venueActivityPresentation } from './venue-activity-core.mjs';
 import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';
 import { createWatchPartyModule } from './watch-party-renderer.mjs';
@@ -84,13 +85,15 @@ function createAttendance(state, game, venue, documentObject, { hero = false } =
     numeral.textContent = String(view.number);
     const label = documentObject.createElement('span');
     label.className = 'bear-count__label';
-    label.textContent = view.number === 1 ? 'BEAR' : 'BEARS';
+    label.textContent = (view.number === 1
+      ? ACTIVE_INSTANCE_CONFIG.identity.fanSingular
+      : ACTIVE_INSTANCE_CONFIG.identity.fanPlural).toUpperCase();
     const attending = documentObject.createElement('span');
     attending.className = 'bear-count__attending';
     attending.textContent = 'ATTENDING';
     const context = documentObject.createElement('span');
     context.className = 'bear-count__context';
-    context.textContent = 'ON CGB';
+    context.textContent = `ON ${ACTIVE_INSTANCE_CONFIG.identity.productShortName.toUpperCase()}`;
     count.append(numeral, label, attending, context);
   }
 

@@ -1,5 +1,6 @@
 import { formatGameDate, gameTitle } from './core.mjs';
 import { createIcon } from './icons.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import {
   buildWatchPartyIssueUrl,
   resolveWatchPartyIssueContext
@@ -8,7 +9,7 @@ import { readRuntimeConfig } from './config.mjs';
 
 const WATCH_PARTY_FEATURE_LABELS = Object.freeze({
   rsvp_requested: 'RSVP REQUESTED',
-  cal_specials: 'CAL SPECIALS'
+  cal_specials: `${ACTIVE_INSTANCE_CONFIG.identity.schoolShortName.toUpperCase()} SPECIALS`
 });
 
 function issueConfig(documentObject) {
@@ -124,7 +125,14 @@ export function createWatchPartyModule({
   }
   module.append(title);
 
-  if (game) appendText(module, `CAL ${gameTitle(game).toUpperCase()}`, 'party-game-context', documentObject);
+  if (game) {
+    appendText(
+      module,
+      `${ACTIVE_INSTANCE_CONFIG.identity.schoolShortName.toUpperCase()} ${gameTitle(game).toUpperCase()}`,
+      'party-game-context',
+      documentObject
+    );
+  }
 
   const timing = [kickoffLabel(game), arrivalLabel(party)].filter(Boolean).join(' · ');
   appendText(module, timing, 'party-module__time', documentObject);

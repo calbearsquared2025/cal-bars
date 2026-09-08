@@ -39,7 +39,7 @@
   background:
     var(--cgb-header-safe-area-blend),
     radial-gradient(circle at 18% -35%, rgba(253, 181, 21, .16), transparent 43%),
-    linear-gradient(150deg, var(--cgb-navy-950) 0%, var(--cgb-navy-900) 72%, #00358c 100%);
+    linear-gradient(150deg, var(--cgb-navy-950) 0%, var(--cgb-navy-900) 72%, var(--brand-loading-background) 100%);
   border: 0;
   overflow: visible;
 }
