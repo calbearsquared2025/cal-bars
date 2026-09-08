@@ -26,6 +26,9 @@ let returnCameraPending = false;
 let returnCameraFrame = 0;
 let selectedTrayResizeObserver = null;
 let mapActionFrame = 0;
+let initialSelectionCaptured = false;
+let initialSelectedVenueId = '';
+let initialSelectedFocusApplied = false;
 
 function isMobile() {
   return window.matchMedia(MOBILE_QUERY).matches;
@@ -225,6 +228,25 @@ function selectedVenueRouteActive(state = appState()) {
   if (!venue) return false;
   const current = new URL(window.location.href);
   return current.searchParams.get('venue') === venue.slug;
+}
+
+function captureInitialSelectedProfile(state = appState(), tray = document.querySelector('#venue-tray')) {
+  if (initialSelectionCaptured || !state?.snapshot) return false;
+  initialSelectionCaptured = true;
+  const initialRouteSelected = isMobile() &&
+    document.body.dataset.view === 'map' &&
+    Boolean(state.selectedVenueId) &&
+    tray?.dataset.state === 'selected' &&
+    selectedVenueRouteActive(state);
+  initialSelectedVenueId = initialRouteSelected ? state.selectedVenueId : '';
+  return Boolean(initialSelectedVenueId);
+}
+
+function claimInitialSelectedFocus(state, venueId) {
+  captureInitialSelectedProfile(state);
+  if (initialSelectedFocusApplied || !initialSelectedVenueId || venueId !== initialSelectedVenueId) return false;
+  initialSelectedFocusApplied = true;
+  return true;
 }
 
 function syncSelectedVenueRoute(state = appState()) {
@@ -439,65 +461,75 @@ function handleTrayTopTap(event) {
   document.querySelector('#tray-selected .selected-card__header > .icon-button')?.click();
 }
 
+function applyVenueFocus(state, venue, { instant = false } = {}) {
+  preserveMobileCameraOwnership(state);
+  state.map.stop?.();
+  const { verticalOffset, bottomPadding } = selectedTrayCameraMetrics();
+  const currentZoom = Number(state.map.getZoom?.()) || 0;
+  const nearby = nearbyVenuesForSelected(state, venue);
+  const duration = instant || reducedMotion() ? 0 : 420;
+
+  if (nearby.length > 0) {
+    const points = [venue, ...nearby.map(({ venue: candidate }) => candidate)]
+      .map((candidate) => [Number(candidate.longitude), Number(candidate.latitude)])
+      .filter(([longitude, latitude]) => Number.isFinite(longitude) && Number.isFinite(latitude));
+    const longitudes = points.map(([longitude]) => longitude);
+    const latitudes = points.map(([, latitude]) => latitude);
+    const bounds = [
+      [Math.min(...longitudes), Math.min(...latitudes)],
+      [Math.max(...longitudes), Math.max(...latitudes)]
+    ];
+    const padding = { top: 36, right: 36, bottom: bottomPadding, left: 36 };
+    const regionalCamera = state.map.cameraForBounds?.(bounds, {
+      padding,
+      maxZoom: REGIONAL_FOCUS_MAX_ZOOM
+    });
+    const regionalZoom = Number(regionalCamera?.zoom);
+    if (Number.isFinite(regionalZoom) && currentZoom > regionalZoom) {
+      state.map.easeTo({
+        center: [Number(venue.longitude), Number(venue.latitude)],
+        zoom: currentZoom,
+        offset: [0, verticalOffset],
+        duration,
+        essential: true
+      });
+      return;
+    }
+    state.map.fitBounds(bounds, {
+      padding,
+      maxZoom: REGIONAL_FOCUS_MAX_ZOOM,
+      duration,
+      essential: true
+    });
+    return;
+  }
+
+  state.map.easeTo({
+    center: [Number(venue.longitude), Number(venue.latitude)],
+    zoom: Math.max(currentZoom, FOCUS_ZOOM),
+    offset: [0, verticalOffset],
+    duration,
+    essential: true
+  });
+}
+
 function focusVenue(venueId, { force = false } = {}) {
   if (!isMobile()) return;
   const state = appState();
   const venue = selectedVenue(venueId, state);
   if (!state?.map || !venue) return;
   if (!force && lastAutoFocusedVenueId === venueId) return;
+  const instant = claimInitialSelectedFocus(state, venueId);
   lastAutoFocusedVenueId = venueId;
   preserveMobileCameraOwnership(state);
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      preserveMobileCameraOwnership(state);
-      state.map.stop?.();
-      const { verticalOffset, bottomPadding } = selectedTrayCameraMetrics();
-      const currentZoom = Number(state.map.getZoom?.()) || 0;
-      const nearby = nearbyVenuesForSelected(state, venue);
-      if (nearby.length > 0) {
-        const points = [venue, ...nearby.map(({ venue: candidate }) => candidate)]
-          .map((candidate) => [Number(candidate.longitude), Number(candidate.latitude)])
-          .filter(([longitude, latitude]) => Number.isFinite(longitude) && Number.isFinite(latitude));
-        const longitudes = points.map(([longitude]) => longitude);
-        const latitudes = points.map(([, latitude]) => latitude);
-        const bounds = [
-          [Math.min(...longitudes), Math.min(...latitudes)],
-          [Math.max(...longitudes), Math.max(...latitudes)]
-        ];
-        const padding = { top: 36, right: 36, bottom: bottomPadding, left: 36 };
-        const regionalCamera = state.map.cameraForBounds?.(bounds, {
-          padding,
-          maxZoom: REGIONAL_FOCUS_MAX_ZOOM
-        });
-        const regionalZoom = Number(regionalCamera?.zoom);
-        if (Number.isFinite(regionalZoom) && currentZoom > regionalZoom) {
-          state.map.easeTo({
-            center: [Number(venue.longitude), Number(venue.latitude)],
-            zoom: currentZoom,
-            offset: [0, verticalOffset],
-            duration: reducedMotion() ? 0 : 420,
-            essential: true
-          });
-          return;
-        }
-        state.map.fitBounds(bounds, {
-          padding,
-          maxZoom: REGIONAL_FOCUS_MAX_ZOOM,
-          duration: reducedMotion() ? 0 : 420,
-          essential: true
-        });
-        return;
-      }
+  if (instant) {
+    applyVenueFocus(state, venue, { instant: true });
+    return;
+  }
 
-      state.map.easeTo({
-        center: [Number(venue.longitude), Number(venue.latitude)],
-        zoom: Math.max(currentZoom, FOCUS_ZOOM),
-        offset: [0, verticalOffset],
-        duration: reducedMotion() ? 0 : 420,
-        essential: true
-      });
-    });
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => applyVenueFocus(state, venue));
   });
 }
 
@@ -568,6 +600,7 @@ function sync() {
   const state = appState();
   preserveMobileCameraOwnership(state);
   const tray = document.querySelector('#venue-tray');
+  captureInitialSelectedProfile(state, tray);
   const selectedVenueChosen = isMobile() &&
     document.body.dataset.view === 'map' &&
     Boolean(state?.selectedVenueId) &&
