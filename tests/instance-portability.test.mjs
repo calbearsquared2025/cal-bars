@@ -96,7 +96,7 @@ test('fictional instance materializes into a disposable coherent local output', 
   assert.match(index, /Test Fox Bars \| Find Fox Dens &amp; Watch Parties/);
   assert.match(index, /https:\/\/test-school\.invalid\//);
   assert.match(index, /assets\/test-fox-mark\.svg/);
-  assert.match(index, /Find your Fox crowd/);
+  assert.match(index, /Find your Test U crowd/);
   assert.match(index, /FOX DEN/);
   assert.match(index, /COMMUNITY SPOT/);
   assert.match(index, /Foxes/);
