@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -31,7 +31,7 @@ function escapeHtml(value) {
 function assertSafeOutput(outputPath) {
   const output = resolve(outputPath);
   const relativePath = relative(buildRoot, output);
-  if (!relativePath || relativePath.startsWith(`..${sep}`) || relativePath === '..' || resolve(output) === resolve(repositoryRoot)) {
+  if (!relativePath || relativePath.startsWith(`..${sep}`) || relativePath === '..' || output === resolve(repositoryRoot)) {
     throw new Error(`Refusing output outside ${relative(repositoryRoot, buildRoot)}: ${output}`);
   }
   return output;
@@ -49,9 +49,7 @@ function brandColorPairs() {
     const target = TEST_INSTANCE_CONFIG.brand[section];
     for (const [key, sourceValue] of Object.entries(source)) {
       const targetValue = target[key];
-      if (sourceValue && targetValue && sourceValue.toLowerCase() !== targetValue.toLowerCase()) {
-        pairs.push([sourceValue, targetValue]);
-      }
+      if (sourceValue && targetValue && sourceValue.toLowerCase() !== targetValue.toLowerCase()) pairs.push([sourceValue, targetValue]);
     }
   }
   return pairs;
@@ -67,6 +65,35 @@ function materializeColors(text) {
       new RegExp(`(rgba?\\(\\s*)${sr}\\s*,\\s*${sg}\\s*,\\s*${sb}`, 'gi'),
       `$1${tr}, ${tg}, ${tb}`
     );
+  }
+  return output;
+}
+
+function materializeBrandLanguage(text) {
+  const instance = TEST_INSTANCE_CONFIG;
+  return String(text)
+    .replace(/\bCal Golden Bars\b/g, instance.identity.productName)
+    .replace(/\bCAL GOLDEN BARS\b/g, instance.social.brandLabel)
+    .replace(/\bCal Bars\b/g, instance.terminology.designatedVenuePlural)
+    .replace(/\bCal Bar\b/g, instance.terminology.designatedVenueSingular)
+    .replace(/\bCal bars\b/g, instance.terminology.designatedVenuePlural.toLowerCase())
+    .replace(/\bCal bar\b/g, instance.terminology.designatedVenueSingular.toLowerCase())
+    .replace(/\bCAL BAR\b/g, instance.terminology.designatedVenueBadge)
+    .replace(/\bCommunity Locations\b/g, instance.terminology.communityLocationPlural)
+    .replace(/\bCommunity Location\b/g, instance.terminology.communityLocationSingular)
+    .replace(/\bCOMMUNITY LOCATION\b/g, instance.terminology.communityLocationBadge)
+    .replace(/\bCalifornia\b/g, instance.identity.institutionName)
+    .replace(/\bBerkeley\b/g, 'Test City')
+    .replace(/\bCal\b/g, instance.identity.schoolShortName)
+    .replace(/\bBears\b/g, instance.identity.fanPlural)
+    .replace(/\bBear\b/g, instance.identity.fanSingular)
+    .replace(/\bCGB\b/g, instance.identity.productShortName);
+}
+
+function materializeStorage(text) {
+  let output = text;
+  for (const key of Object.keys(CAL_INSTANCE_CONFIG.storage)) {
+    output = output.replaceAll(CAL_INSTANCE_CONFIG.storage[key], TEST_INSTANCE_CONFIG.storage[key]);
   }
   return output;
 }
@@ -108,20 +135,16 @@ function materializeStaticHtml(sourceHtml, snapshot) {
   html = html.replaceAll(CAL_INSTANCE_CONFIG.site.social.xUrl, instance.site.social.xUrl);
   html = html.replaceAll(CAL_INSTANCE_CONFIG.site.social.xHandle, instance.site.social.xHandle);
   html = html.replaceAll(CAL_INSTANCE_CONFIG.site.affiliationDisclaimer, instance.site.affiliationDisclaimer);
-  html = html.replaceAll('CAL GOLDEN BARS', instance.social.brandLabel);
-  html = html.replaceAll('Cal Golden Bars', instance.identity.productName);
-  html = html.replaceAll('CAL BAR', instance.terminology.designatedVenueBadge);
-  html = html.replaceAll('Cal Bars', instance.terminology.designatedVenuePlural);
-  html = html.replaceAll('Cal Bar', instance.terminology.designatedVenueSingular);
-  html = html.replaceAll('COMMUNITY LOCATION', instance.terminology.communityLocationBadge);
-  html = html.replaceAll('Community Locations', instance.terminology.communityLocationPlural);
-  html = html.replaceAll('Community Location', instance.terminology.communityLocationSingular);
-  html = html.replaceAll('Find your Cal crowd', instance.copy.findCrowd);
-  html = html.replaceAll('Cal fans', 'Test U fans');
-  html = html.replaceAll('Cal gathering locations', 'Test U gathering locations');
-  html = html.replaceAll('Cal activity', 'Test U activity');
-  html = html.replaceAll('Bears', instance.identity.fanPlural);
-  html = html.replaceAll('Bear', instance.identity.fanSingular);
+  html = html.replaceAll('mailto:calbearsquared2025@gmail.com', 'https://test-school.invalid/contact');
+  html = html.replaceAll('https://ko-fi.com/calgoldenbars/?hidefeed=true&amp;widget=true&amp;embed=true&amp;preview=true', 'about:blank');
+  html = html.replaceAll('https://ko-fi.com/calgoldenbars', 'https://test-school.invalid/support');
+  html = html.replaceAll('Open Ko-fi', 'Support disabled in fixture');
+  html = html.replaceAll(' on Ko-fi', ' (disabled in fixture)');
+  html = html.replaceAll(
+    ' and Google Analytics for site analytics. If you share your device location, it’s used for location-based features and isn’t stored.',
+    '. Analytics and contribution writes are disabled in this fictional local fixture. If you share your device location, it’s used for location-based features and isn’t stored.'
+  );
+  html = materializeBrandLanguage(html);
 
   for (const name of Object.values(CONFIG_META_NAMES)) {
     if (name === CONFIG_META_NAMES.mapTilerKey) continue;
@@ -146,14 +169,13 @@ function buildSharePage(snapshot) {
   return `<!doctype html>\n<html lang="en">\n<head>\n  <meta charset="utf-8">\n  <meta name="robots" content="noindex,nofollow">\n  <title>${escapeHtml(title)}</title>\n  <meta name="description" content="${escapeHtml(instance.social.description)}">\n  <meta property="og:title" content="${escapeHtml(title)}">\n  <meta property="og:description" content="${escapeHtml(instance.social.description)}">\n  <meta property="og:image" content="${origin}/assets/social-cards/test-sample-tech.svg">\n  <meta property="og:url" content="${origin}/share/sample-tech/">\n</head>\n<body>Fictional local portability fixture.</body>\n</html>\n`;
 }
 
-async function materializeTextTree(root, extension, transform) {
-  const { readdir } = await import('node:fs/promises');
+async function materializeTextTree(root, extensions, transform) {
   async function walk(directory) {
     const entries = await readdir(directory, { withFileTypes: true });
     for (const entry of entries) {
       const path = join(directory, entry.name);
       if (entry.isDirectory()) await walk(path);
-      else if (entry.isFile() && path.endsWith(extension)) {
+      else if (entry.isFile() && extensions.some((extension) => path.endsWith(extension))) {
         const source = await readFile(path, 'utf8');
         const updated = transform(source, path);
         if (updated !== source) await writeFile(path, updated, 'utf8');
@@ -169,39 +191,37 @@ export async function materializeTestInstance({ outputPath = defaultOutput } = {
 
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
-  for (const entry of sourceEntries) {
-    await cp(join(repositoryRoot, entry), join(output, entry), { recursive: true });
-  }
+  for (const entry of sourceEntries) await cp(join(repositoryRoot, entry), join(output, entry), { recursive: true });
 
   const instanceConfigPath = join(output, 'js', 'instance-config.mjs');
   const instanceSource = await readFile(instanceConfigPath, 'utf8');
   if (!instanceSource.includes(activeAssignment)) throw new Error('Production active-instance assignment changed; refusing to guess.');
   await writeFile(instanceConfigPath, instanceSource.replace(activeAssignment, testAssignment), 'utf8');
 
-  await materializeTextTree(join(output, 'css'), '.css', materializeColors);
-  await materializeTextTree(join(output, 'js'), '.mjs', (source) => {
-    let updated = source;
-    for (const key of Object.keys(CAL_INSTANCE_CONFIG.storage)) {
-      updated = updated.replaceAll(CAL_INSTANCE_CONFIG.storage[key], TEST_INSTANCE_CONFIG.storage[key]);
-    }
-    return materializeColors(updated);
+  await materializeTextTree(join(output, 'css'), ['.css'], (source) => materializeColors(source));
+  await materializeTextTree(join(output, 'js'), ['.js', '.mjs'], (source, path) => {
+    if (path === instanceConfigPath) return source;
+    return materializeBrandLanguage(materializeColors(materializeStorage(source)));
   });
-  const appJsPath = join(output, 'js', 'app.js');
-  let appJs = await readFile(appJsPath, 'utf8');
-  for (const key of Object.keys(CAL_INSTANCE_CONFIG.storage)) {
-    appJs = appJs.replaceAll(CAL_INSTANCE_CONFIG.storage[key], TEST_INSTANCE_CONFIG.storage[key]);
-  }
-  await writeFile(appJsPath, materializeColors(appJs), 'utf8');
 
-  await cp(join(output, 'styles', 'dataviz-with-cgb-states.json'), join(output, 'styles', 'dataviz-test-instance.json'));
+  const originalStylePath = join(output, 'styles', 'dataviz-with-cgb-states.json');
+  const genericStylePath = join(output, 'styles', 'dataviz-test-instance.json');
+  await writeFile(genericStylePath, materializeColors(await readFile(originalStylePath, 'utf8')), 'utf8');
+  await rm(originalStylePath, { force: true });
+
   await writeFile(join(output, 'data', 'fallback-v2.json'), `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
   await writeFile(join(output, 'tests', 'fixtures', 'public-snapshot.synthetic.json'), `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
 
   const sourceIndex = await readFile(join(output, 'index.html'), 'utf8');
   await writeFile(join(output, 'index.html'), materializeStaticHtml(sourceIndex, snapshot), 'utf8');
 
+  await rm(join(output, 'assets', 'social-cards'), { recursive: true, force: true });
+  await mkdir(join(output, 'assets', 'social-cards'), { recursive: true });
+  for (const asset of [CAL_INSTANCE_CONFIG.brand.assets.mark, CAL_INSTANCE_CONFIG.brand.assets.appIcon, CAL_INSTANCE_CONFIG.brand.assets.favicon]) {
+    await rm(join(output, asset), { force: true });
+  }
+
   const socialCardPath = join(output, 'assets', 'social-cards', 'test-sample-tech.svg');
-  await mkdir(dirname(socialCardPath), { recursive: true });
   await writeFile(socialCardPath, buildSocialCardSvg(snapshot), 'utf8');
   const sharePath = join(output, 'share', 'sample-tech', 'index.html');
   await mkdir(dirname(sharePath), { recursive: true });
