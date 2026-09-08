@@ -1,5 +1,6 @@
 const DESKTOP_QUERY = '(min-width: 900px)';
 const STYLE_ID = 'cgb-desktop-visual-cohesion';
+const SELECTED_TRAY_SCROLLBAR_VAR = '--cgb-selected-tray-scrollbar-width';
 let gameDropdownWired = false;
 
 function isDesktop(windowObject = globalThis.window) {
@@ -14,6 +15,15 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
     @media (min-width: 900px) {
       .mobile-command-bar .mobile-command {
         text-transform: uppercase;
+      }
+
+      html body[data-view="map"]:has(#map-view > #venue-tray.venue-tray.tray--selected) .mobile-command-bar {
+        right: calc(24px + var(${SELECTED_TRAY_SCROLLBAR_VAR}, 0px)) !important;
+        width: calc(clamp(500px, 52vw, 620px) - var(${SELECTED_TRAY_SCROLLBAR_VAR}, 0px)) !important;
+      }
+
+      html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__number {
+        color: var(--cgb-white, #fff) !important;
       }
 
       .mobile-command-bar #mobile-add-button {
@@ -305,6 +315,30 @@ function wireDesktopGameDropdown({
   return true;
 }
 
+export function syncDesktopSelectedTrayAlignment({
+  documentObject = globalThis.document,
+  windowObject = globalThis.window
+} = {}) {
+  const bar = documentObject?.querySelector?.('.mobile-command-bar');
+  if (!bar) return false;
+
+  if (!isDesktop(windowObject)) {
+    bar.style.removeProperty(SELECTED_TRAY_SCROLLBAR_VAR);
+    return false;
+  }
+
+  const tray = documentObject.querySelector('#map-view > #venue-tray.venue-tray.tray--selected');
+  const selected = documentObject.querySelector('#tray-selected');
+  if (!tray || !selected || selected.hidden) {
+    bar.style.removeProperty(SELECTED_TRAY_SCROLLBAR_VAR);
+    return false;
+  }
+
+  const scrollbarWidth = Math.max(0, Number(selected.offsetWidth || 0) - Number(selected.clientWidth || 0));
+  bar.style.setProperty(SELECTED_TRAY_SCROLLBAR_VAR, `${scrollbarWidth}px`);
+  return true;
+}
+
 export function syncDesktopAddLanguage({
   documentObject = globalThis.document,
   windowObject = globalThis.window
@@ -327,6 +361,15 @@ function initializeDesktopVisualCohesion({
 
   const sync = () => {
     syncDesktopAddLanguage({ documentObject, windowObject });
+    syncDesktopSelectedTrayAlignment({ documentObject, windowObject });
+  };
+
+  const scheduleSync = () => {
+    if (typeof windowObject.requestAnimationFrame === 'function') {
+      windowObject.requestAnimationFrame(sync);
+      return;
+    }
+    sync();
   };
 
   const start = () => {
@@ -334,7 +377,7 @@ function initializeDesktopVisualCohesion({
     wireDesktopGameDropdown({ documentObject, windowObject });
     const addSurface = documentObject.querySelector('#add-surface');
     if (addSurface && typeof MutationObserver === 'function') {
-      const observer = new MutationObserver(() => windowObject.requestAnimationFrame(sync));
+      const observer = new MutationObserver(scheduleSync);
       observer.observe(addSurface, {
         attributes: true,
         attributeFilter: ['hidden'],
@@ -342,7 +385,20 @@ function initializeDesktopVisualCohesion({
         subtree: true
       });
     }
-    windowObject.matchMedia?.(DESKTOP_QUERY)?.addEventListener?.('change', sync);
+    const tray = documentObject.querySelector('#venue-tray');
+    if (tray && typeof MutationObserver === 'function') {
+      const trayObserver = new MutationObserver(scheduleSync);
+      trayObserver.observe(tray, {
+        attributes: true,
+        attributeFilter: ['class', 'data-state'],
+        childList: true,
+        subtree: true
+      });
+    }
+    windowObject.matchMedia?.(DESKTOP_QUERY)?.addEventListener?.('change', scheduleSync);
+    windowObject.addEventListener?.('resize', scheduleSync);
+    windowObject.CGBApp?.subscribe?.('rendered', scheduleSync);
+    windowObject.CGBApp?.subscribe?.('ready', scheduleSync);
   };
 
   if (documentObject.readyState === 'loading') {
