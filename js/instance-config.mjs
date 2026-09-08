@@ -1,5 +1,12 @@
 const freeze = (value) => Object.freeze(value);
 
+const emptyForm = (extra = {}) => freeze({
+  formUrl: '',
+  venueIdEntry: '',
+  venueNameEntry: '',
+  ...extra
+});
+
 export const CAL_INSTANCE_CONFIG = freeze({
   id: 'cal',
   namespace: 'cgb_v2',
@@ -44,6 +51,15 @@ export const CAL_INSTANCE_CONFIG = freeze({
       text: '#101626',
       textMuted: '#687280',
       watchPartySurface: '#fff8e6'
+    }),
+    legacyColors: freeze({
+      navy800: '#052b67',
+      navy700: '#153f78',
+      navy50: '#eef3f8',
+      gold500: '#e4a100',
+      gold200: '#f8d66e',
+      gold100: '#ffedb0',
+      ink700: '#354052'
     }),
     assets: freeze({
       mark: 'assets/cgb-mark.svg',
@@ -121,6 +137,7 @@ export const CAL_INSTANCE_CONFIG = freeze({
     browserId: 'cgb_v2_browser_id',
     fanIntentSelections: 'cgb_v2_fan_intent_selections',
     mapCamera: 'cgb_v2_map_camera',
+    lastGoodSnapshot: 'cgb_v2_last_good_snapshot',
     postgameExperience: 'cgb_v2_postgame_experience_v1'
   }),
 
@@ -146,6 +163,143 @@ export const CAL_INSTANCE_CONFIG = freeze({
   })
 });
 
-// This milestone intentionally exposes one active production instance only.
-// Selecting or generating another instance is a later productization step.
+export const TEST_INSTANCE_CONFIG = freeze({
+  id: 'test',
+  namespace: 'test_fox_bars_v1',
+
+  identity: freeze({
+    institutionName: 'Test University',
+    schoolName: 'Test University',
+    schoolShortName: 'Test U',
+    teamName: 'Test Foxes',
+    fanSingular: 'Fox',
+    fanPlural: 'Foxes',
+    productName: 'Test Fox Bars',
+    productShortName: 'TFB'
+  }),
+
+  terminology: freeze({
+    designatedVenueSingular: 'Fox Den',
+    designatedVenuePlural: 'Fox Dens',
+    designatedVenueBadge: 'FOX DEN',
+    communityLocationSingular: 'Community Spot',
+    communityLocationPlural: 'Community Spots',
+    communityLocationBadge: 'COMMUNITY SPOT',
+    fanAddedBadge: 'FAN-ADDED',
+    watchPartySingular: 'Watch Party',
+    watchPartyPlural: 'Watch Parties',
+    watchPartyBadge: 'WATCH PARTY'
+  }),
+
+  brand: freeze({
+    semanticColors: freeze({
+      primary: '#6b1d3a',
+      primaryDark: '#32101f',
+      primaryLight: '#f3dce5',
+      secondary: '#2bb3a3',
+      secondaryDark: '#17776d',
+      pageBackground: '#fbf7f2',
+      mobileSafeSurface: '#f2ebe5',
+      loadingBackground: '#24131b',
+      socialMuted: '#754458',
+      surface: '#ffffff',
+      textOnPrimary: '#ffffff',
+      text: '#21151a',
+      textMuted: '#76656d',
+      watchPartySurface: '#edf9f7'
+    }),
+    legacyColors: freeze({
+      navy800: '#552039',
+      navy700: '#7a3150',
+      navy50: '#f8eef2',
+      gold500: '#25998c',
+      gold200: '#8ddbd1',
+      gold100: '#c8eee9',
+      ink700: '#4f3b44'
+    }),
+    assets: freeze({
+      mark: 'assets/test-fox-mark.svg',
+      appIcon: 'assets/test-fox-mark.svg',
+      favicon: 'assets/test-fox-mark.svg',
+      socialCardsDirectory: 'assets/social-cards'
+    })
+  }),
+
+  geography: freeze({
+    label: 'Test City, TS',
+    defaultMap: freeze({ center: freeze([-105.012, 39.742]), zoom: 9.1 })
+  }),
+
+  site: freeze({
+    canonicalUrl: 'https://test-school.invalid/',
+    title: 'Test Fox Bars | Find Fox Dens & Watch Parties',
+    description: 'Find Fox Dens, Watch Parties, and fan-added places where Test U fans gather on game day.',
+    structuredDescription: 'Find Fox Dens, Watch Parties, and fan-added places where Test U fans gather on game day.',
+    contactEmail: '',
+    affiliationDisclaimer: 'Fictional local portability fixture — not a real school or public service',
+    social: freeze({
+      xHandle: '@TestFoxBars',
+      xUrl: 'https://test-school.invalid/social'
+    })
+  }),
+
+  integrations: freeze({
+    dataEndpoint: '',
+    mapTiler: freeze({
+      apiKey: CAL_INSTANCE_CONFIG.integrations.mapTiler.apiKey,
+      styleUrl: new URL('../styles/dataviz-test-instance.json', import.meta.url).href,
+      detailStyleId: CAL_INSTANCE_CONFIG.integrations.mapTiler.detailStyleId
+    }),
+    analytics: freeze({
+      measurementId: ''
+    }),
+    forms: freeze({
+      watchParty: emptyForm({ gameIdEntry: '' }),
+      calBarNomination: emptyForm(),
+      listingUpdate: emptyForm(),
+      watchPartyIssue: freeze({ formUrl: '', venueNameEntry: '', gameEntry: '', watchPartyIdEntry: '' }),
+      fanExperience: emptyForm(),
+      photo: emptyForm()
+    })
+  }),
+
+  storage: freeze({
+    dataEndpointOverride: 'test_fox_bars_public_data_url',
+    browserId: 'test_fox_bars_browser_id',
+    fanIntentSelections: 'test_fox_bars_fan_intent_selections',
+    mapCamera: 'test_fox_bars_map_camera',
+    lastGoodSnapshot: 'test_fox_bars_last_good_snapshot',
+    postgameExperience: 'test_fox_bars_postgame_experience_v1'
+  }),
+
+  analytics: freeze({
+    scriptElementId: 'test-fox-bars-google-analytics',
+    initializedFlag: '__TEST_FOX_BARS_GA_INITIALIZED__',
+    flowInitializedFlag: '__TEST_FOX_BARS_GA_FLOW_INITIALIZED__'
+  }),
+
+  schedule: freeze({
+    homeTimeZone: 'America/Denver'
+  }),
+
+  copy: freeze({
+    findCrowd: 'Find your Fox crowd'
+  }),
+
+  social: freeze({
+    brandLabel: 'TEST FOX BARS',
+    description: 'Find your Fox crowd. Join a nearby Watch Party, or plan one of your own.',
+    headline: 'Find your Fox crowd.',
+    support: 'Join a nearby Watch Party, or plan one of your own.'
+  })
+});
+
+export function resolveInstanceConfig(id) {
+  if (id === CAL_INSTANCE_CONFIG.id) return CAL_INSTANCE_CONFIG;
+  if (id === TEST_INSTANCE_CONFIG.id) return TEST_INSTANCE_CONFIG;
+  throw new Error(`Unknown instance id: ${String(id)}`);
+}
+
+// Production is intentionally hard-wired to Cal. The fictional fixture is selected
+// only by scripts/materialize-instance.mjs inside a disposable local output tree.
 export const ACTIVE_INSTANCE_CONFIG = CAL_INSTANCE_CONFIG;
