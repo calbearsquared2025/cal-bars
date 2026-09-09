@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <title>CGB Admin</title>
+    <link rel="icon" href="../assets/cgbfavicon.svg" type="image/svg+xml">
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f7f6f2;
+        color: #101626;
+      }
+      * { box-sizing: border-box; }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      main {
+        width: min(560px, 100%);
+        background: #fff;
+        border: 1px solid #d8dde6;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(1, 1, 51, .08);
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 20px 24px;
+        background: #002676;
+        color: #fff;
+        border-bottom: 3px solid #fdb515;
+      }
+      header img { width: 34px; height: 34px; }
+      header strong { font-size: 1rem; letter-spacing: .05em; }
+      section { padding: 28px 24px; }
+      h1 { margin: 0 0 8px; font-size: 1.6rem; }
+      p { margin: 0; line-height: 1.5; color: #687280; }
+      #admin-status {
+        margin-top: 24px;
+        color: #101626;
+        font-weight: 700;
+      }
+      #admin-status[data-state="error"] { color: #8b1e1e; }
+      #admin-account { margin-top: 8px; font-size: .9rem; }
+      #admin-detail { margin-top: 18px; }
+      dl {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 8px 16px;
+        margin: 0;
+      }
+      dt { font-weight: 700; }
+      dd { margin: 0; overflow-wrap: anywhere; }
+      .actions { display: flex; gap: 10px; margin-top: 24px; }
+      button {
+        appearance: none;
+        border: 1px solid #002676;
+        border-radius: 8px;
+        padding: 10px 14px;
+        background: #002676;
+        color: #fff;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.secondary { background: #fff; color: #002676; }
+      button:disabled { cursor: not-allowed; opacity: .55; }
+      [hidden] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="../assets/cgb-mark.svg" alt="">
+        <strong>CAL GOLDEN BARS</strong>
+      </header>
+      <section>
+        <h1>CGB Admin</h1>
+        <p>This authentication checkpoint verifies access before dashboard editing is enabled.</p>
+        <div id="admin-status" aria-live="polite">Loading authentication…</div>
+        <div id="admin-account"></div>
+        <div id="admin-detail"></div>
+        <div class="actions">
+          <button id="admin-sign-in" type="button">Sign in with Google</button>
+          <button id="admin-sign-out" class="secondary" type="button" hidden>Sign out</button>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="./admin-auth.mjs"></script>
+  </body>
+</html>
