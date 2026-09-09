@@ -6,94 +6,120 @@
     <meta name="robots" content="noindex,nofollow,noarchive">
     <title>CGB Admin</title>
     <link rel="icon" href="../assets/cgbfavicon.svg" type="image/svg+xml">
-    <style>
-      :root {
-        color-scheme: light;
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f7f6f2;
-        color: #101626;
-      }
-      * { box-sizing: border-box; }
-      body {
-        min-height: 100vh;
-        margin: 0;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-      }
-      main {
-        width: min(560px, 100%);
-        background: #fff;
-        border: 1px solid #d8dde6;
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 12px 30px rgba(1, 1, 51, .08);
-      }
-      header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 20px 24px;
-        background: #002676;
-        color: #fff;
-        border-bottom: 3px solid #fdb515;
-      }
-      header img { width: 34px; height: 34px; }
-      header strong { font-size: 1rem; letter-spacing: .05em; }
-      section { padding: 28px 24px; }
-      h1 { margin: 0 0 8px; font-size: 1.6rem; }
-      p { margin: 0; line-height: 1.5; color: #687280; }
-      #admin-status {
-        margin-top: 24px;
-        color: #101626;
-        font-weight: 700;
-      }
-      #admin-status[data-state="error"] { color: #8b1e1e; }
-      #admin-account { margin-top: 8px; font-size: .9rem; }
-      #admin-detail { margin-top: 18px; }
-      dl {
-        display: grid;
-        grid-template-columns: max-content 1fr;
-        gap: 8px 16px;
-        margin: 0;
-      }
-      dt { font-weight: 700; }
-      dd { margin: 0; overflow-wrap: anywhere; }
-      .actions { display: flex; gap: 10px; margin-top: 24px; }
-      button {
-        appearance: none;
-        border: 1px solid #002676;
-        border-radius: 8px;
-        padding: 10px 14px;
-        background: #002676;
-        color: #fff;
-        font: inherit;
-        font-weight: 700;
-        cursor: pointer;
-      }
-      button.secondary { background: #fff; color: #002676; }
-      button:disabled { cursor: not-allowed; opacity: .55; }
-      [hidden] { display: none !important; }
-    </style>
+    <link rel="stylesheet" href="./admin.css">
   </head>
   <body>
-    <main>
-      <header>
-        <img src="../assets/cgb-mark.svg" alt="">
-        <strong>CAL GOLDEN BARS</strong>
-      </header>
-      <section>
-        <h1>CGB Admin</h1>
-        <p>This authentication checkpoint verifies access before dashboard editing is enabled.</p>
-        <div id="admin-status" aria-live="polite">Loading authentication…</div>
-        <div id="admin-account"></div>
-        <div id="admin-detail"></div>
-        <div class="actions">
-          <button id="admin-sign-in" type="button">Sign in with Google</button>
-          <button id="admin-sign-out" class="secondary" type="button" hidden>Sign out</button>
+    <main id="auth-shell" class="auth-shell">
+      <section class="auth-card">
+        <header class="brand-bar">
+          <img src="../assets/cgb-mark.svg" alt="">
+          <strong>CAL GOLDEN BARS</strong>
+        </header>
+        <div class="auth-card__body">
+          <h1>CGB Admin</h1>
+          <p>Sign in with the Google account authorized for CGB Admin.</p>
+          <div id="admin-status" class="status" aria-live="polite">Loading authentication…</div>
+          <div id="admin-account" class="account"></div>
+          <div class="auth-actions">
+            <button id="admin-sign-in" type="button">Sign in with Google</button>
+            <button class="secondary admin-sign-out" type="button" hidden>Sign out</button>
+          </div>
         </div>
       </section>
     </main>
+
+    <div id="dashboard" class="dashboard" hidden>
+      <header class="dashboard-header">
+        <div class="dashboard-brand">
+          <img src="../assets/cgb-mark.svg" alt="">
+          <span>CAL GOLDEN BARS</span>
+          <strong>ADMIN</strong>
+        </div>
+        <div class="dashboard-account">
+          <span id="dashboard-account"></span>
+          <button class="text-button admin-sign-out" type="button">Sign out</button>
+        </div>
+      </header>
+
+      <nav class="admin-nav" aria-label="Admin sections">
+        <button class="admin-nav__item" type="button" data-view="overview" aria-selected="true">Overview</button>
+        <button class="admin-nav__item" type="button" data-view="venues" aria-selected="false">Venues</button>
+        <button class="admin-nav__item" type="button" data-view="watch-parties" aria-selected="false">Watch Parties</button>
+        <button class="admin-nav__item" type="button" data-view="activity" aria-selected="false">Activity</button>
+      </nav>
+
+      <main class="dashboard-main">
+        <section class="admin-view" data-panel="overview">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">Operational inbox</p>
+              <h1>Overview</h1>
+              <p id="overview-summary" class="view-copy"></p>
+            </div>
+            <button id="mark-all-reviewed" type="button" disabled>Mark all as reviewed</button>
+          </div>
+          <div class="filters">
+            <label>
+              Type
+              <select id="overview-type-filter">
+                <option value="all">All activity</option>
+              </select>
+            </label>
+          </div>
+          <div id="overview-list" class="activity-list"></div>
+        </section>
+
+        <section class="admin-view" data-panel="venues" hidden>
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">Next phase</p>
+              <h1>Venues</h1>
+              <p class="view-copy">Venue search, add, and editing will be enabled after the Overview and review-state foundation is accepted.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-view" data-panel="watch-parties" hidden>
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">Next phase</p>
+              <h1>Watch Parties</h1>
+              <p class="view-copy">Direct Watch Party management is not enabled in this phase.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-view" data-panel="activity" hidden>
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">History</p>
+              <h1>Activity</h1>
+              <p id="activity-summary" class="view-copy"></p>
+            </div>
+          </div>
+          <div class="filters filters--two">
+            <label>
+              Review status
+              <select id="activity-review-filter">
+                <option value="all">All</option>
+                <option value="unreviewed">Unreviewed</option>
+                <option value="reviewed">Reviewed</option>
+              </select>
+            </label>
+            <label>
+              Type
+              <select id="activity-type-filter">
+                <option value="all">All activity</option>
+              </select>
+            </label>
+          </div>
+          <div id="activity-list" class="activity-list"></div>
+        </section>
+      </main>
+
+      <div id="dashboard-status" class="dashboard-status" aria-live="polite"></div>
+    </div>
+
     <script type="module" src="./admin-auth.mjs"></script>
   </body>
 </html>

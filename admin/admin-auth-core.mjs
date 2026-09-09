@@ -5,6 +5,30 @@ export const FIREBASE_CONFIG_FIELDS = Object.freeze([
   'appId'
 ]);
 
+export const ADMIN_ACTIVITY_TYPES = Object.freeze([
+  'community_location',
+  'watch_party',
+  'fan_experience',
+  'photo',
+  'cal_bar_nomination',
+  'listing_update',
+  'missing_location',
+  'processing_error'
+]);
+
+export const ADMIN_ACTIVITY_LABELS = Object.freeze({
+  community_location: 'Community Location',
+  watch_party: 'Watch Party',
+  fan_experience: 'Fan Experience',
+  photo: 'Photo',
+  cal_bar_nomination: 'Cal Bar nomination',
+  listing_update: 'Listing update',
+  missing_location: 'Missing location',
+  processing_error: 'Processing error'
+});
+
+const REVIEW_KEY_PATTERN = /^[a-z0-9:_-]{1,160}$/;
+
 function clean(value) {
   return String(value ?? '').trim();
 }
@@ -22,6 +46,35 @@ export function buildAdminHealthRequest(idToken) {
   });
 }
 
+export function buildAdminActivityRequest(idToken) {
+  const token = clean(idToken);
+  if (!token) throw new Error('missing_id_token');
+  return Object.freeze({
+    action: 'adminActivity',
+    idToken: token
+  });
+}
+
+export function buildMarkReviewedRequest(idToken, activityKeys) {
+  const token = clean(idToken);
+  if (!token) throw new Error('missing_id_token');
+  if (!Array.isArray(activityKeys) || activityKeys.length < 1 || activityKeys.length > 500) {
+    throw new Error('invalid_activity_keys');
+  }
+  const seen = new Set();
+  const keys = activityKeys.map((value) => {
+    const key = clean(value);
+    if (!REVIEW_KEY_PATTERN.test(key) || seen.has(key)) throw new Error('invalid_activity_keys');
+    seen.add(key);
+    return key;
+  });
+  return Object.freeze({
+    action: 'markAdminReviewed',
+    idToken: token,
+    activityKeys: Object.freeze(keys)
+  });
+}
+
 export function validateAdminHealthResponse(payload) {
   if (!payload || payload.ok !== true || payload.action !== 'adminHealth') return null;
   const email = clean(payload.admin?.email);
@@ -35,6 +88,95 @@ export function validateAdminHealthResponse(payload) {
     displayName,
     venueCount,
     workbookReachable: true
+  });
+}
+
+function normalizeActivityItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  const key = clean(item.key);
+  const type = clean(item.type);
+  const title = clean(item.title);
+  const detail = clean(item.detail);
+  const source = clean(item.source);
+  const status = clean(item.status);
+  const occurredAt = clean(item.occurredAt);
+  const reviewedAt = clean(item.reviewedAt);
+  if (!REVIEW_KEY_PATTERN.test(key) || !ADMIN_ACTIVITY_TYPES.includes(type) || !title) return null;
+  if (occurredAt && Number.isNaN(Date.parse(occurredAt))) return null;
+  if (reviewedAt && Number.isNaN(Date.parse(reviewedAt))) return null;
+  if (Boolean(item.reviewed) !== Boolean(reviewedAt)) return null;
+  return Object.freeze({
+    key,
+    type,
+    title,
+    detail,
+    source,
+    status,
+    occurredAt,
+    reviewed: Boolean(item.reviewed),
+    reviewedAt
+  });
+}
+
+export function validateAdminActivityResponse(payload) {
+  if (!payload || payload.ok !== true || payload.action !== 'adminActivity' || !Array.isArray(payload.items)) {
+    return null;
+  }
+  const email = clean(payload.admin?.email);
+  if (!email) return null;
+  const items = payload.items.map(normalizeActivityItem);
+  if (items.some((item) => !item)) return null;
+  const total = Number(payload.counts?.total);
+  const reviewed = Number(payload.counts?.reviewed);
+  const unreviewed = Number(payload.counts?.unreviewed);
+  if (![total, reviewed, unreviewed].every(Number.isInteger) ||
+      total < 0 || reviewed < 0 || unreviewed < 0 ||
+      total !== items.length || reviewed + unreviewed !== total ||
+      reviewed !== items.filter((item) => item.reviewed).length) {
+    return null;
+  }
+  return Object.freeze({
+    email,
+    displayName: clean(payload.admin?.displayName),
+    items: Object.freeze(items),
+    counts: Object.freeze({ total, reviewed, unreviewed })
+  });
+}
+
+export function validateMarkReviewedResponse(payload) {
+  if (!payload || payload.ok !== true || payload.action !== 'markAdminReviewed' ||
+      !Array.isArray(payload.reviewedKeys)) return null;
+  const keys = payload.reviewedKeys.map(clean);
+  if (keys.length < 1 || keys.some((key) => !REVIEW_KEY_PATTERN.test(key))) return null;
+  const reviewedAt = clean(payload.reviewedAt);
+  if (!reviewedAt || Number.isNaN(Date.parse(reviewedAt))) return null;
+  const reviewedCount = Number(payload.reviewedCount);
+  if (!Number.isInteger(reviewedCount) || reviewedCount !== keys.length) return null;
+  return Object.freeze({
+    reviewedKeys: Object.freeze(keys),
+    reviewedCount,
+    newlyReviewedCount: Number(payload.newlyReviewedCount) || 0,
+    reviewedAt
+  });
+}
+
+export function filterAdminActivity(items, { type = 'all', review = 'all', overview = false } = {}) {
+  const list = Array.isArray(items) ? items : [];
+  return list.filter((item) => {
+    if (!item) return false;
+    if (overview && item.reviewed) return false;
+    if (type !== 'all' && item.type !== type) return false;
+    if (!overview && review === 'reviewed' && !item.reviewed) return false;
+    if (!overview && review === 'unreviewed' && item.reviewed) return false;
+    return true;
+  });
+}
+
+export function applyReviewedState(items, reviewedKeys, reviewedAt) {
+  const keySet = new Set(Array.isArray(reviewedKeys) ? reviewedKeys : []);
+  return (Array.isArray(items) ? items : []).map((item) => {
+    if (!item || !keySet.has(item.key)) return item;
+    return Object.freeze({ ...item, reviewed: true, reviewedAt });
   });
 }
 
