@@ -16,13 +16,29 @@ export const ADMIN_ACTIVITY_TYPES = Object.freeze([
   'processing_error'
 ]);
 
+export const ADMIN_ACTIVITY_FILTER_TYPES = Object.freeze([
+  'new_venue',
+  'new_watch_party',
+  'watch_party_update',
+  'venue_update',
+  'fan_experience',
+  'photo',
+  'cal_bar_nomination',
+  'missing_location',
+  'processing_error'
+]);
+
 export const ADMIN_ACTIVITY_LABELS = Object.freeze({
-  community_location: 'Community Location',
-  watch_party: 'Watch Party',
+  community_location: 'New Venue',
+  watch_party: 'New Watch Party',
+  listing_update: 'Venue Update',
+  new_venue: 'New Venue',
+  new_watch_party: 'New Watch Party',
+  watch_party_update: 'Watch Party Update',
+  venue_update: 'Venue Update',
   fan_experience: 'Fan Experience',
   photo: 'Photo',
   cal_bar_nomination: 'Cal Bar nomination',
-  listing_update: 'Listing update',
   missing_location: 'Missing location',
   processing_error: 'Processing error'
 });
@@ -160,14 +176,23 @@ export function validateMarkReviewedResponse(payload) {
   });
 }
 
-export function filterAdminActivity(items, { type = 'all', review = 'all', overview = false } = {}) {
+export function adminActivityDisplayType(item) {
+  if (!item) return '';
+  if (item.type === 'community_location') return 'new_venue';
+  if (item.type === 'watch_party') return 'new_watch_party';
+  if (item.type === 'listing_update') {
+    return item.source === 'Watch Party Problem Submission' ? 'watch_party_update' : 'venue_update';
+  }
+  return item.type;
+}
+
+export function filterAdminActivity(items, { type = 'all', review = 'all' } = {}) {
   const list = Array.isArray(items) ? items : [];
   return list.filter((item) => {
     if (!item) return false;
-    if (overview && item.reviewed) return false;
-    if (type !== 'all' && item.type !== type) return false;
-    if (!overview && review === 'reviewed' && !item.reviewed) return false;
-    if (!overview && review === 'unreviewed' && item.reviewed) return false;
+    if (type !== 'all' && adminActivityDisplayType(item) !== type) return false;
+    if (review === 'reviewed' && !item.reviewed) return false;
+    if (review === 'unreviewed' && item.reviewed) return false;
     return true;
   });
 }

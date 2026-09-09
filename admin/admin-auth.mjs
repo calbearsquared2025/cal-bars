@@ -10,8 +10,9 @@ import {
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
 import {
+  ADMIN_ACTIVITY_FILTER_TYPES,
   ADMIN_ACTIVITY_LABELS,
-  ADMIN_ACTIVITY_TYPES,
+  adminActivityDisplayType,
   adminErrorCopy,
   applyReviewedState,
   buildAdminActivityRequest,
@@ -35,14 +36,11 @@ const signOutButtons = [...document.querySelectorAll('.admin-sign-out')];
 const accountNode = document.querySelector('#admin-account');
 const dashboardAccountNode = document.querySelector('#dashboard-account');
 const dashboardStatusNode = document.querySelector('#dashboard-status');
-const overviewListNode = document.querySelector('#overview-list');
 const activityListNode = document.querySelector('#activity-list');
-const overviewSummaryNode = document.querySelector('#overview-summary');
 const activitySummaryNode = document.querySelector('#activity-summary');
-const overviewTypeFilter = document.querySelector('#overview-type-filter');
 const activityTypeFilter = document.querySelector('#activity-type-filter');
 const activityReviewFilter = document.querySelector('#activity-review-filter');
-const markAllReviewedButton = document.querySelector('#mark-all-reviewed');
+const activityBulkReviewButton = document.querySelector('#activity-bulk-review');
 const navButtons = [...document.querySelectorAll('.admin-nav__item')];
 const panels = [...document.querySelectorAll('[data-panel]')];
 
@@ -139,80 +137,114 @@ function formatStatus(value) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function createActivityCard(item) {
-  const card = document.createElement('article');
-  card.className = 'activity-card';
-  card.dataset.reviewed = String(item.reviewed);
+function compactDetail(value, maximum = 110) {
+  const text = String(value || '').trim();
+  if (text.length <= maximum) return text;
+  return `${text.slice(0, maximum - 1).trimEnd()}…`;
+}
 
-  const content = document.createElement('div');
-  const meta = document.createElement('div');
-  meta.className = 'activity-card__meta';
+function createActivityDetail(item) {
+  const text = String(item.detail || '').trim();
+  if (!text) return document.createTextNode('—');
+  if (text.length <= 110) return document.createTextNode(text);
 
-  const type = document.createElement('span');
-  type.className = 'activity-type';
-  type.textContent = ADMIN_ACTIVITY_LABELS[item.type] || 'Activity';
-  meta.append(type);
+  const details = document.createElement('details');
+  details.className = 'activity-detail';
+  const summary = document.createElement('summary');
+  summary.textContent = compactDetail(text);
+  const expanded = document.createElement('div');
+  expanded.textContent = text;
+  details.append(summary, expanded);
+  return details;
+}
 
+function createActivityRow(item) {
+  const row = document.createElement('tr');
+  row.dataset.reviewed = String(item.reviewed);
+
+  const dateCell = document.createElement('td');
+  dateCell.dataset.label = 'Date';
   const timestamp = document.createElement('time');
   timestamp.dateTime = item.occurredAt || '';
   timestamp.textContent = formatDate(item.occurredAt);
-  meta.append(timestamp);
+  dateCell.append(timestamp);
 
+  const typeCell = document.createElement('td');
+  typeCell.dataset.label = 'Type';
+  const type = document.createElement('span');
+  type.className = 'activity-type';
+  const displayType = adminActivityDisplayType(item);
+  type.textContent = ADMIN_ACTIVITY_LABELS[displayType] || ADMIN_ACTIVITY_LABELS[item.type] || 'Activity';
+  typeCell.append(type);
+
+  const itemCell = document.createElement('td');
+  itemCell.dataset.label = 'Item';
+  const title = document.createElement('strong');
+  title.textContent = item.title;
+  itemCell.append(title);
+
+  const detailCell = document.createElement('td');
+  detailCell.dataset.label = 'Detail';
+  detailCell.className = 'activity-detail-cell';
+  detailCell.append(createActivityDetail(item));
+
+  const statusCell = document.createElement('td');
+  statusCell.dataset.label = 'Status';
   if (item.status) {
     const status = document.createElement('span');
     status.className = 'status-chip';
     status.textContent = formatStatus(item.status);
-    meta.append(status);
+    statusCell.append(status);
+  } else {
+    statusCell.textContent = '—';
   }
 
-  const title = document.createElement('h2');
-  title.textContent = item.title;
-  content.append(meta, title);
-
-  if (item.detail) {
-    const detail = document.createElement('p');
-    detail.textContent = item.detail;
-    content.append(detail);
-  }
-
-  const action = document.createElement('div');
-  action.className = 'activity-card__action';
+  const reviewCell = document.createElement('td');
+  reviewCell.dataset.label = 'Review';
+  reviewCell.className = 'activity-review-cell';
   if (item.reviewed) {
     const label = document.createElement('span');
     label.className = 'reviewed-label';
     label.textContent = 'Reviewed';
-    action.append(label);
+    reviewCell.append(label);
   } else {
     const button = document.createElement('button');
     button.type = 'button';
     button.dataset.reviewKey = item.key;
     button.textContent = 'Mark reviewed';
-    action.append(button);
+    reviewCell.append(button);
   }
 
-  card.append(content, action);
-  return card;
+  row.append(dateCell, typeCell, itemCell, detailCell, statusCell, reviewCell);
+  return row;
 }
 
-function renderList(node, items, emptyCopy) {
+function renderActivityTable(node, items) {
   node.replaceChildren();
   if (!items.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = emptyCopy;
+    empty.textContent = 'No activity matches these filters.';
     node.append(empty);
     return;
   }
-  const fragment = document.createDocumentFragment();
-  items.forEach((item) => fragment.append(createActivityCard(item)));
-  node.append(fragment);
-}
 
-function currentOverviewItems() {
-  return filterAdminActivity(activityItems, {
-    overview: true,
-    type: overviewTypeFilter.value
+  const table = document.createElement('table');
+  table.className = 'activity-table';
+  const head = document.createElement('thead');
+  const headerRow = document.createElement('tr');
+  ['Date', 'Type', 'Item', 'Detail', 'Status', 'Review'].forEach((label) => {
+    const th = document.createElement('th');
+    th.scope = 'col';
+    th.textContent = label;
+    headerRow.append(th);
   });
+  head.append(headerRow);
+
+  const body = document.createElement('tbody');
+  items.forEach((item) => body.append(createActivityRow(item)));
+  table.append(head, body);
+  node.append(table);
 }
 
 function currentActivityItems() {
@@ -222,35 +254,31 @@ function currentActivityItems() {
   });
 }
 
+function currentBulkReviewKeys() {
+  return currentActivityItems().filter((item) => !item.reviewed).map((item) => item.key);
+}
+
 function renderDashboard() {
-  const overviewItems = currentOverviewItems();
   const historyItems = currentActivityItems();
   const reviewedCount = activityItems.filter((item) => item.reviewed).length;
   const unreviewedCount = activityItems.length - reviewedCount;
+  const bulkKeys = currentBulkReviewKeys();
 
-  overviewSummaryNode.textContent = unreviewedCount === 1
-    ? '1 item needs review.'
-    : `${unreviewedCount} items need review.`;
   activitySummaryNode.textContent = `${activityItems.length} total · ${unreviewedCount} unreviewed · ${reviewedCount} reviewed`;
-
-  markAllReviewedButton.disabled = overviewItems.length === 0;
-  markAllReviewedButton.textContent = overviewItems.length
-    ? `Mark ${overviewItems.length} as reviewed`
+  activityBulkReviewButton.disabled = bulkKeys.length === 0;
+  activityBulkReviewButton.textContent = bulkKeys.length
+    ? `Mark ${bulkKeys.length} as reviewed`
     : 'Mark all as reviewed';
 
-  renderList(overviewListNode, overviewItems, 'No unreviewed items match this filter.');
-  renderList(activityListNode, historyItems, 'No activity matches these filters.');
+  renderActivityTable(activityListNode, historyItems);
 }
 
 function populateTypeFilters() {
-  ADMIN_ACTIVITY_TYPES.forEach((type) => {
-    const label = ADMIN_ACTIVITY_LABELS[type] || type;
-    [overviewTypeFilter, activityTypeFilter].forEach((select) => {
-      const option = document.createElement('option');
-      option.value = type;
-      option.textContent = label;
-      select.append(option);
-    });
+  ADMIN_ACTIVITY_FILTER_TYPES.forEach((type) => {
+    const option = document.createElement('option');
+    option.value = type;
+    option.textContent = ADMIN_ACTIVITY_LABELS[type] || type;
+    activityTypeFilter.append(option);
   });
 }
 
@@ -278,7 +306,7 @@ async function loadAdminActivity(user) {
 
 async function markReviewed(keys) {
   if (!currentUser || !keys.length) return;
-  markAllReviewedButton.disabled = true;
+  activityBulkReviewButton.disabled = true;
   try {
     const idToken = await currentUser.getIdToken();
     const payload = await postAdmin(buildMarkReviewedRequest(idToken, keys));
@@ -310,22 +338,19 @@ function bindDashboardEvents() {
     });
   });
 
-  [overviewTypeFilter, activityTypeFilter, activityReviewFilter].forEach((control) => {
+  [activityTypeFilter, activityReviewFilter].forEach((control) => {
     control.addEventListener('change', renderDashboard);
   });
 
-  [overviewListNode, activityListNode].forEach((node) => {
-    node.addEventListener('click', (event) => {
-      const button = event.target.closest('[data-review-key]');
-      if (!button) return;
-      button.disabled = true;
-      markReviewed([button.dataset.reviewKey]);
-    });
+  activityListNode.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-review-key]');
+    if (!button) return;
+    button.disabled = true;
+    markReviewed([button.dataset.reviewKey]);
   });
 
-  markAllReviewedButton.addEventListener('click', () => {
-    const keys = currentOverviewItems().map((item) => item.key);
-    markReviewed(keys);
+  activityBulkReviewButton.addEventListener('click', () => {
+    markReviewed(currentBulkReviewKeys());
   });
 }
 

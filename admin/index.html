@@ -30,11 +30,11 @@
 
     <div id="dashboard" class="dashboard" hidden>
       <header class="dashboard-header">
-        <div class="dashboard-brand">
+        <a class="dashboard-brand" href="../" aria-label="Cal Golden Bars home">
           <img src="../assets/cgb-mark.svg" alt="">
           <span>CAL GOLDEN BARS</span>
           <strong>ADMIN</strong>
-        </div>
+        </a>
         <div class="dashboard-account">
           <span id="dashboard-account"></span>
           <button class="text-button admin-sign-out" type="button">Sign out</button>
@@ -42,40 +42,99 @@
       </header>
 
       <nav class="admin-nav" aria-label="Admin sections">
-        <button class="admin-nav__item" type="button" data-view="overview" aria-selected="true">Overview</button>
+        <button class="admin-nav__item" type="button" data-view="activity" aria-selected="true">Activity</button>
         <button class="admin-nav__item" type="button" data-view="venues" aria-selected="false">Venues</button>
         <button class="admin-nav__item" type="button" data-view="watch-parties" aria-selected="false">Watch Parties</button>
-        <button class="admin-nav__item" type="button" data-view="activity" aria-selected="false">Activity</button>
       </nav>
 
       <main class="dashboard-main">
-        <section class="admin-view" data-panel="overview">
+        <section class="admin-view" data-panel="activity">
           <div class="view-heading">
             <div>
-              <p class="eyebrow">Operational inbox</p>
-              <h1>Overview</h1>
-              <p id="overview-summary" class="view-copy"></p>
+              <p class="eyebrow">Operational log</p>
+              <h1>Activity</h1>
+              <p id="activity-summary" class="view-copy"></p>
             </div>
-            <button id="mark-all-reviewed" type="button" disabled>Mark all as reviewed</button>
+            <button id="activity-bulk-review" type="button" disabled>Mark all as reviewed</button>
           </div>
-          <div class="filters">
+          <div class="filters filters--two">
+            <label>
+              Review status
+              <select id="activity-review-filter">
+                <option value="all" selected>All</option>
+                <option value="unreviewed">Unreviewed</option>
+                <option value="reviewed">Reviewed</option>
+              </select>
+            </label>
             <label>
               Type
-              <select id="overview-type-filter">
+              <select id="activity-type-filter">
                 <option value="all">All activity</option>
               </select>
             </label>
           </div>
-          <div id="overview-list" class="activity-list"></div>
+          <div id="activity-list" class="activity-table-shell"></div>
         </section>
 
         <section class="admin-view" data-panel="venues" hidden>
           <div class="view-heading">
             <div>
-              <p class="eyebrow">Next phase</p>
+              <p class="eyebrow">Canonical records</p>
               <h1>Venues</h1>
-              <p class="view-copy">Venue search, add, and editing will be enabled after the Overview and review-state foundation is accepted.</p>
+              <p class="view-copy">Search, add, and edit Venue records and related fan content.</p>
             </div>
+            <button id="venue-add-toggle" type="button">+ Add Venue</button>
+          </div>
+
+          <section id="venue-add-panel" class="venue-add-panel" hidden>
+            <form id="venue-add-form" class="venue-add-form">
+              <label>
+                Find a place with MapTiler
+                <div class="venue-add-search-row">
+                  <input id="venue-add-search" type="search" autocomplete="off" placeholder="Venue name, city or address">
+                  <button type="submit">Search</button>
+                </div>
+              </label>
+            </form>
+            <div id="venue-add-results" class="venue-add-results"></div>
+          </section>
+
+          <div class="venue-toolbar">
+            <label class="venue-toolbar__search">
+              Search venues
+              <input id="venue-search" type="search" autocomplete="off" placeholder="Name, city, state or address">
+            </label>
+            <label>
+              Type
+              <select id="venue-type-filter">
+                <option value="all">All types</option>
+                <option value="cal_bar">Cal Bars</option>
+                <option value="community_location">Community Locations</option>
+              </select>
+            </label>
+            <label>
+              Publication
+              <select id="venue-status-filter">
+                <option value="active">Active</option>
+                <option value="all">All</option>
+                <option value="archived">Archived</option>
+              </select>
+            </label>
+            <label>
+              Sort
+              <select id="venue-sort">
+                <option value="az">A–Z</option>
+                <option value="nearest">Nearest</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="venue-workspace">
+            <aside id="venue-list" class="venue-list" aria-label="Venues"></aside>
+            <section class="venue-editor-shell">
+              <div id="venue-editor-empty" class="empty-state">Loading venues…</div>
+              <div id="venue-editor" class="venue-editor" hidden></div>
+            </section>
           </div>
         </section>
 
@@ -88,38 +147,12 @@
             </div>
           </div>
         </section>
-
-        <section class="admin-view" data-panel="activity" hidden>
-          <div class="view-heading">
-            <div>
-              <p class="eyebrow">History</p>
-              <h1>Activity</h1>
-              <p id="activity-summary" class="view-copy"></p>
-            </div>
-          </div>
-          <div class="filters filters--two">
-            <label>
-              Review status
-              <select id="activity-review-filter">
-                <option value="all">All</option>
-                <option value="unreviewed">Unreviewed</option>
-                <option value="reviewed">Reviewed</option>
-              </select>
-            </label>
-            <label>
-              Type
-              <select id="activity-type-filter">
-                <option value="all">All activity</option>
-              </select>
-            </label>
-          </div>
-          <div id="activity-list" class="activity-list"></div>
-        </section>
       </main>
 
       <div id="dashboard-status" class="dashboard-status" aria-live="polite"></div>
     </div>
 
     <script type="module" src="./admin-auth.mjs"></script>
+    <script type="module" src="./admin-venues.mjs"></script>
   </body>
 </html>
