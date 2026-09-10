@@ -3,9 +3,11 @@ import {
   GoogleAuthProvider,
   browserSessionPersistence,
   getAuth,
+  getRedirectResult,
   onAuthStateChanged,
   setPersistence,
   signInWithPopup,
+  signInWithRedirect,
   signOut
 } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 
@@ -50,6 +52,7 @@ let currentUser = null;
 let activityItems = [];
 let toastTimer = 0;
 let activityLoading = false;
+let redirectSignInFailed = false;
 
 function setStatus(message, { error = false } = {}) {
   statusNode.textContent = message;
@@ -467,6 +470,34 @@ function configurationReady() {
   return firebaseConfigIsComplete(firebaseConfig) && Boolean(adminEndpoint);
 }
 
+function prefersRedirectSignIn() {
+  const userAgent = String(navigator.userAgent || '');
+  const platform = String(navigator.platform || '');
+  const touchPoints = Number(navigator.maxTouchPoints || 0);
+  return /iPad|iPhone|iPod/i.test(userAgent) || (platform === 'MacIntel' && touchPoints > 1);
+}
+
+function popupShouldFallbackToRedirect(error) {
+  const code = String(error?.code || '');
+  return code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment';
+}
+
+async function startGoogleSignIn(provider) {
+  if (prefersRedirectSignIn()) {
+    await signInWithRedirect(auth, provider);
+    return;
+  }
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    if (popupShouldFallbackToRedirect(error)) {
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+    throw error;
+  }
+}
+
 async function initializeAdminAuth() {
   populateTypeFilters();
   bindDashboardEvents();
@@ -484,16 +515,23 @@ async function initializeAdminAuth() {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
 
+  try {
+    await getRedirectResult(auth);
+  } catch (_) {
+    redirectSignInFailed = true;
+  }
+
   signInButton.addEventListener('click', async () => {
     signInButton.disabled = true;
-    setStatus('Opening Google sign-in…');
+    setStatus(prefersRedirectSignIn() ? 'Continuing to Google sign-in…' : 'Opening Google sign-in…');
     try {
-      await signInWithPopup(auth, provider);
+      await startGoogleSignIn(provider);
     } catch (error) {
-      if (String(error?.code || '') !== 'auth/popup-closed-by-user') {
-        setStatus('Google sign-in did not complete.', { error: true });
-      } else {
+      const code = String(error?.code || '');
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
         setStatus('Sign in with the Google account authorized for CGB Admin.');
+      } else {
+        setStatus('Google sign-in did not complete.', { error: true });
       }
     } finally {
       signInButton.disabled = false;
@@ -514,8 +552,13 @@ async function initializeAdminAuth() {
   onAuthStateChanged(auth, (user) => {
     if (!user) {
       setSignedOutUi();
+      if (redirectSignInFailed) {
+        redirectSignInFailed = false;
+        setStatus('Google sign-in did not complete.', { error: true });
+      }
       return;
     }
+    redirectSignInFailed = false;
     currentUser = user;
     loadAdminActivity(user);
   });
