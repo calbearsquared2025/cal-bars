@@ -8,14 +8,23 @@ const FAN_ACTIONS = Object.freeze([
   'claimFanIntent',
   'getFanAttendance',
   'setFanAttendance',
-  'setFanAttendanceVisibility'
+  'setFanAttendanceVisibility',
+  'submitFanExperience',
+  'submitFanWatchParty'
 ]);
 const PUBLIC_PROFILE_STATUSES = Object.freeze(['private', 'public']);
 const ATTENDANCE_VISIBILITY_VALUES = Object.freeze(['anonymous', 'public']);
 const ATTENDANCE_ACTIONS = Object.freeze(['join', 'move', 'withdraw']);
+const WATCH_PARTY_ORGANIZER_TYPES = Object.freeze(['alumni_group', 'venue', 'other_organization', 'individual', 'unknown']);
+const WATCH_PARTY_SOURCE_TYPES = Object.freeze(['fan_submitted', 'venue_submitted', 'alumni_group_submitted']);
+const WATCH_PARTY_AGE_POLICIES = Object.freeze(['unknown', 'all_ages', '21_plus']);
+const WATCH_PARTY_SOUND_STATUSES = Object.freeze(['unknown', 'confirmed_on', 'confirmed_off']);
+const WATCH_PARTY_FEATURE_TAGS = Object.freeze(['rsvp_requested', 'cal_specials']);
 const VENUE_ID_PATTERN = /^venue_[a-f0-9]{24}$/;
 const GAME_ID_PATTERN = /^game_[a-f0-9]{24}$/;
 const BROWSER_ID_PATTERN = /^browser_[A-Za-z0-9_-]{16,128}$/;
+const CONTRIBUTION_REQUEST_PATTERN = /^req_[A-Za-z0-9_-]{16,80}$/;
+const WATCH_PARTY_ID_PATTERN = /^wp_[a-f0-9]{24}$/;
 const PRIVATE_RESPONSE_KEYS = new Set([
   'accountId', 'account_id', 'firebaseUid', 'firebase_uid', 'browserId', 'browser_id',
   'fan_intent_id', 'email', 'primary_email', 'idToken', 'id_token', 'workbook_id',
@@ -48,6 +57,29 @@ function responseContainsPrivateKeys(value) {
 function nonnegativeInteger(value) {
   const number = Number(value);
   return Number.isInteger(number) && number >= 0 ? number : null;
+}
+
+function exactKeys(extra, expected) {
+  return Object.keys(extra || {}).sort().join(',') === expected.slice().sort().join(',');
+}
+
+function boundedText(value, maximumLength, { required = false } = {}) {
+  const text = clean(value).replace(/\s+/g, ' ');
+  if ((required && !text) || text.length > maximumLength) throw new Error('invalid_fan_contribution');
+  return text;
+}
+
+function normalizeContributionRequestId(value) {
+  const id = clean(value);
+  if (!CONTRIBUTION_REQUEST_PATTERN.test(id)) throw new Error('invalid_fan_contribution');
+  return id;
+}
+
+function normalizeWatchPartyFeatureTags(values) {
+  if (!Array.isArray(values) || values.length > WATCH_PARTY_FEATURE_TAGS.length) throw new Error('invalid_fan_contribution');
+  const selected = [...new Set(values.map(clean))];
+  if (selected.some((value) => !WATCH_PARTY_FEATURE_TAGS.includes(value))) throw new Error('invalid_fan_contribution');
+  return WATCH_PARTY_FEATURE_TAGS.filter((tag) => selected.includes(tag));
 }
 
 export function firebaseConfigIsComplete(config) {
@@ -140,6 +172,47 @@ export function buildFanRequest(action, idToken, extra = {}) {
     if (!GAME_ID_PATTERN.test(gameId)) throw new Error('invalid_fan_attendance');
     payload.gameId = gameId;
     payload.visibility = normalizeAttendanceVisibility(extra.visibility);
+  } else if (normalizedAction === 'submitFanExperience') {
+    if (!exactKeys(extra, ['clientRequestId', 'venueId', 'text', 'displayName'])) throw new Error('invalid_fan_request');
+    const venueId = clean(extra.venueId);
+    if (!VENUE_ID_PATTERN.test(venueId)) throw new Error('invalid_fan_contribution');
+    payload.clientRequestId = normalizeContributionRequestId(extra.clientRequestId);
+    payload.venueId = venueId;
+    payload.text = boundedText(extra.text, 500, { required: true });
+    payload.displayName = boundedText(extra.displayName, 60);
+  } else if (normalizedAction === 'submitFanWatchParty') {
+    const expected = [
+      'clientRequestId', 'venueId', 'gameId', 'organizerName', 'organizerType', 'sourceType',
+      'officialEventUrl', 'eventStart', 'agePolicy', 'soundStatus', 'restrictionsNote',
+      'gameDayNote', 'featureTags'
+    ];
+    if (!exactKeys(extra, expected)) throw new Error('invalid_fan_request');
+    const venueId = clean(extra.venueId);
+    const gameId = clean(extra.gameId);
+    const organizerType = clean(extra.organizerType);
+    const sourceType = clean(extra.sourceType);
+    const agePolicy = clean(extra.agePolicy) || 'unknown';
+    const soundStatus = clean(extra.soundStatus) || 'unknown';
+    const officialEventUrl = clean(extra.officialEventUrl);
+    if (!VENUE_ID_PATTERN.test(venueId) || !GAME_ID_PATTERN.test(gameId) ||
+        !WATCH_PARTY_ORGANIZER_TYPES.includes(organizerType) || !WATCH_PARTY_SOURCE_TYPES.includes(sourceType) ||
+        !WATCH_PARTY_AGE_POLICIES.includes(agePolicy) || !WATCH_PARTY_SOUND_STATUSES.includes(soundStatus) ||
+        (officialEventUrl && (!/^https:\/\/[^\s]+$/i.test(officialEventUrl) || officialEventUrl.length > 2048))) {
+      throw new Error('invalid_fan_contribution');
+    }
+    payload.clientRequestId = normalizeContributionRequestId(extra.clientRequestId);
+    payload.venueId = venueId;
+    payload.gameId = gameId;
+    payload.organizerName = boundedText(extra.organizerName, 180, { required: true });
+    payload.organizerType = organizerType;
+    payload.sourceType = sourceType;
+    payload.officialEventUrl = officialEventUrl;
+    payload.eventStart = boundedText(extra.eventStart, 240);
+    payload.agePolicy = agePolicy;
+    payload.soundStatus = soundStatus;
+    payload.restrictionsNote = boundedText(extra.restrictionsNote, 1200);
+    payload.gameDayNote = boundedText(extra.gameDayNote, 1200);
+    payload.featureTags = normalizeWatchPartyFeatureTags(extra.featureTags);
   } else if (Object.keys(extra).length) {
     throw new Error('invalid_fan_request');
   }
@@ -169,6 +242,21 @@ export function validateFanFavoritesResponse(payload) {
   const venueIds = [...new Set(payload.venueIds.map(clean))];
   if (venueIds.some((venueId) => !VENUE_ID_PATTERN.test(venueId))) return null;
   return Object.freeze(venueIds);
+}
+
+export function validateFanContributionResponse(payload) {
+  if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true ||
+      !['submitFanExperience', 'submitFanWatchParty'].includes(payload.action)) return null;
+  const contributionType = clean(payload.contributionType);
+  const status = clean(payload.status);
+  const relatedRecordId = clean(payload.relatedRecordId);
+  if (!['fan_experience', 'watch_party'].includes(contributionType) || !['published', 'held'].includes(status)) return null;
+  if (contributionType === 'watch_party') {
+    if (status !== 'published' || !WATCH_PARTY_ID_PATTERN.test(relatedRecordId)) return null;
+  } else if (relatedRecordId && !/^account_native\|fc_[a-f0-9]{24}$/.test(relatedRecordId)) {
+    return null;
+  }
+  return Object.freeze({ contributionType, status, relatedRecordId });
 }
 
 export function validateFanAttendanceResponse(payload) {
@@ -251,6 +339,8 @@ export function fanErrorCopy(code) {
       return 'This game is no longer open for selections.';
     case 'fan_selection_conflict':
       return 'Your CGB selection changed on another device. Refresh and try again.';
+    case 'fan_invalid_request':
+      return 'Check the contribution details and try again.';
     case 'fan_not_configured':
       return 'CGB Accounts is not configured yet.';
     default:
