@@ -7,7 +7,7 @@ export const CGB_ACCOUNTS_CONFIG = Object.freeze({
   endpoint: '',
   firebase: Object.freeze({
     apiKey: 'AIzaSyDmnMf07f1GpbelgKiVnqfOFX_wvHZVBf4',
-    authDomain: 'cal-golden-bars.firebaseapp.com',
+    authDomain: 'auth.calgoldenbars.com',
     projectId: 'cal-golden-bars',
     appId: '1:415910801317:web:1feca3988c51637cd6024c'
   }),
