@@ -5,8 +5,10 @@ export const INTENT_SELECTIONS_STORAGE_KEY = ACTIVE_INSTANCE_CONFIG.storage.fanI
 
 const BROWSER_ID_PATTERN = /^browser_[A-Za-z0-9_-]{16,128}$/;
 const PRIVATE_RESPONSE_KEYS = new Set([
-  'browserId', 'browser_id', 'fan_intent_id', 'created_at', 'updated_at',
-  'archived_at', 'workbook_id', 'workbook_url', 'spreadsheet_id', 'spreadsheet_url'
+  'browserId', 'browser_id', 'fan_intent_id', 'accountId', 'account_id',
+  'firebaseUid', 'firebase_uid', 'email', 'primary_email', 'idToken', 'id_token',
+  'created_at', 'updated_at', 'archived_at', 'workbook_id', 'workbook_url',
+  'spreadsheet_id', 'spreadsheet_url'
 ]);
 
 export function isValidBrowserId(value) {

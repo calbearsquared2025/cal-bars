@@ -43,6 +43,7 @@ function initializeIdentity() {
 }
 
 function persistSelections(selections = appState.fanIntent.selections) {
+  if (appState.fanIntent.accountMode) return;
   storageSet(INTENT_SELECTIONS_STORAGE_KEY, JSON.stringify(selections));
 }
 
@@ -93,6 +94,12 @@ async function fetchJson(url, options = {}, timeoutMs = WRITE_TIMEOUT_MS) {
 }
 
 async function postIntent(operation) {
+  if (appState.fanIntent.accountMode) {
+    const accountResponse = await window.CGBAccountAttendance?.postIntent?.(operation);
+    if (!validateFanIntentResponse(accountResponse)) throw new Error('invalid_write_response');
+    return accountResponse;
+  }
+
   const endpoint = configuredEndpoint();
   if (!endpoint) {
     const error = new Error('not_configured');
@@ -353,7 +360,7 @@ export async function ensureFanIntentAttendance(venueId, gameId = appState.gameI
 
 function startSynchronization() {
   window.addEventListener('storage', (event) => {
-    if (event.key === INTENT_SELECTIONS_STORAGE_KEY) {
+    if (event.key === INTENT_SELECTIONS_STORAGE_KEY && !appState.fanIntent.accountMode) {
       appState.fanIntent.selections = parseStoredSelections(event.newValue);
       pruneSelections();
       window.CGBApp?.restoreSelection({ preserveCurrentWhenEmpty: false });
@@ -372,6 +379,9 @@ async function bootFanIntent() {
 
   initializeIdentity();
   pruneSelections();
+  window.dispatchEvent(new CustomEvent('cgb:fan-intent-ready', {
+    detail: Object.freeze({ ready: true })
+  }));
 
   controller = createFanIntentController({
     getState: () => appState,

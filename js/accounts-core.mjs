@@ -1,10 +1,53 @@
 const FIREBASE_REQUIRED_FIELDS = Object.freeze(['apiKey', 'authDomain', 'projectId', 'appId']);
-const FAN_ACTIONS = Object.freeze(['fanHealth', 'ensureFanAccount', 'saveFanProfile']);
+const FAN_ACTIONS = Object.freeze([
+  'fanHealth',
+  'ensureFanAccount',
+  'saveFanProfile',
+  'listFanFavorites',
+  'setFanFavorite',
+  'claimFanIntent',
+  'getFanAttendance',
+  'setFanAttendance',
+  'setFanAttendanceVisibility'
+]);
 const PUBLIC_PROFILE_STATUSES = Object.freeze(['private', 'public']);
 const ATTENDANCE_VISIBILITY_VALUES = Object.freeze(['anonymous', 'public']);
+const ATTENDANCE_ACTIONS = Object.freeze(['join', 'move', 'withdraw']);
+const VENUE_ID_PATTERN = /^venue_[a-f0-9]{24}$/;
+const GAME_ID_PATTERN = /^game_[a-f0-9]{24}$/;
+const BROWSER_ID_PATTERN = /^browser_[A-Za-z0-9_-]{16,128}$/;
+const PRIVATE_RESPONSE_KEYS = new Set([
+  'accountId', 'account_id', 'firebaseUid', 'firebase_uid', 'browserId', 'browser_id',
+  'fan_intent_id', 'email', 'primary_email', 'idToken', 'id_token', 'workbook_id',
+  'workbook_url', 'spreadsheet_id', 'spreadsheet_url'
+]);
 
 function clean(value) {
   return String(value ?? '').trim();
+}
+
+function normalizeProviderIds(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map(clean).filter((provider) => provider === 'google.com' || provider === 'twitter.com'))];
+}
+
+function normalizeAttendanceVisibility(value) {
+  const visibility = clean(value) || 'anonymous';
+  if (!ATTENDANCE_VISIBILITY_VALUES.includes(visibility)) throw new Error('invalid_attendance_visibility');
+  return visibility;
+}
+
+function responseContainsPrivateKeys(value) {
+  if (Array.isArray(value)) return value.some(responseContainsPrivateKeys);
+  if (!value || typeof value !== 'object') return false;
+  return Object.entries(value).some(([key, child]) =>
+    PRIVATE_RESPONSE_KEYS.has(key) || responseContainsPrivateKeys(child)
+  );
+}
+
+function nonnegativeInteger(value) {
+  const number = Number(value);
+  return Number.isInteger(number) && number >= 0 ? number : null;
 }
 
 export function firebaseConfigIsComplete(config) {
@@ -22,28 +65,19 @@ export function accountsConfigIsReady(config) {
   );
 }
 
-export function buildFanRequest(action, idToken, extra = {}) {
-  const normalizedAction = clean(action);
-  const token = clean(idToken);
-  if (!FAN_ACTIONS.includes(normalizedAction)) throw new Error('invalid_fan_action');
-  if (!token) throw new Error('missing_id_token');
-  return Object.freeze({ action: normalizedAction, idToken: token, ...extra });
-}
-
 export function normalizeFanProfileDraft(input = {}) {
   const displayName = clean(input.displayName);
   const avatarUrl = clean(input.avatarUrl);
   const homeCity = clean(input.homeCity);
   const xHandle = clean(input.xHandle).replace(/^@+/, '');
   const publicProfileStatus = clean(input.publicProfileStatus) || 'private';
-  const attendanceVisibilityDefault = clean(input.attendanceVisibilityDefault) || 'anonymous';
+  const attendanceVisibilityDefault = normalizeAttendanceVisibility(input.attendanceVisibilityDefault);
 
   if (!displayName || displayName.length > 80) throw new Error('invalid_display_name');
   if (avatarUrl && (!/^https:\/\//i.test(avatarUrl) || avatarUrl.length > 2048)) throw new Error('invalid_avatar_url');
   if (homeCity.length > 80) throw new Error('invalid_home_city');
   if (xHandle && !/^[A-Za-z0-9_]{1,30}$/.test(xHandle)) throw new Error('invalid_x_handle');
   if (!PUBLIC_PROFILE_STATUSES.includes(publicProfileStatus)) throw new Error('invalid_public_profile_status');
-  if (!ATTENDANCE_VISIBILITY_VALUES.includes(attendanceVisibilityDefault)) throw new Error('invalid_attendance_visibility');
 
   return Object.freeze({
     displayName,
@@ -53,6 +87,63 @@ export function normalizeFanProfileDraft(input = {}) {
     publicProfileStatus,
     attendanceVisibilityDefault
   });
+}
+
+export function buildFanRequest(action, idToken, extra = {}) {
+  const normalizedAction = clean(action);
+  const token = clean(idToken);
+  if (!FAN_ACTIONS.includes(normalizedAction)) throw new Error('invalid_fan_action');
+  if (!token) throw new Error('missing_id_token');
+  if (!extra || typeof extra !== 'object' || Array.isArray(extra)) throw new Error('invalid_fan_request');
+
+  const payload = { action: normalizedAction, idToken: token };
+  if (normalizedAction === 'saveFanProfile') {
+    const keys = Object.keys(extra);
+    if (keys.length !== 1 || keys[0] !== 'changes') throw new Error('invalid_fan_request');
+    payload.changes = normalizeFanProfileDraft(extra.changes);
+  } else if (normalizedAction === 'setFanFavorite') {
+    const keys = Object.keys(extra).sort();
+    if (keys.join(',') !== 'favorited,venueId') throw new Error('invalid_fan_request');
+    const venueId = clean(extra.venueId);
+    if (!VENUE_ID_PATTERN.test(venueId) || typeof extra.favorited !== 'boolean') throw new Error('invalid_favorite');
+    payload.venueId = venueId;
+    payload.favorited = extra.favorited;
+  } else if (normalizedAction === 'claimFanIntent') {
+    const keys = Object.keys(extra);
+    if (keys.length !== 1 || keys[0] !== 'browserId') throw new Error('invalid_fan_request');
+    const browserId = clean(extra.browserId);
+    if (!BROWSER_ID_PATTERN.test(browserId)) throw new Error('invalid_browser_id');
+    payload.browserId = browserId;
+  } else if (normalizedAction === 'setFanAttendance') {
+    const keys = Object.keys(extra).sort();
+    if (keys.join(',') !== 'attendanceAction,gameId,venueId,visibility') throw new Error('invalid_fan_request');
+    const attendanceAction = clean(extra.attendanceAction);
+    const gameId = clean(extra.gameId);
+    const venueId = clean(extra.venueId);
+    if (!ATTENDANCE_ACTIONS.includes(attendanceAction) || !GAME_ID_PATTERN.test(gameId)) {
+      throw new Error('invalid_fan_attendance');
+    }
+    if ((attendanceAction === 'join' || attendanceAction === 'move') && !VENUE_ID_PATTERN.test(venueId)) {
+      throw new Error('invalid_fan_attendance');
+    }
+    if (attendanceAction === 'withdraw' && venueId && !VENUE_ID_PATTERN.test(venueId)) {
+      throw new Error('invalid_fan_attendance');
+    }
+    payload.attendanceAction = attendanceAction;
+    payload.gameId = gameId;
+    payload.venueId = venueId;
+    payload.visibility = normalizeAttendanceVisibility(extra.visibility);
+  } else if (normalizedAction === 'setFanAttendanceVisibility') {
+    const keys = Object.keys(extra).sort();
+    if (keys.join(',') !== 'gameId,visibility') throw new Error('invalid_fan_request');
+    const gameId = clean(extra.gameId);
+    if (!GAME_ID_PATTERN.test(gameId)) throw new Error('invalid_fan_attendance');
+    payload.gameId = gameId;
+    payload.visibility = normalizeAttendanceVisibility(extra.visibility);
+  } else if (Object.keys(extra).length) {
+    throw new Error('invalid_fan_request');
+  }
+  return Object.freeze(payload);
 }
 
 export function validateFanAccountResponse(payload) {
@@ -67,12 +158,85 @@ export function validateFanAccountResponse(payload) {
     return null;
   }
 
-  const providers = Array.isArray(account.providers)
-    ? account.providers.map(clean).filter((provider) => provider === 'google.com' || provider === 'twitter.com')
-    : [];
+  const providers = normalizeProviderIds(account.providers);
   if (!providers.length) return null;
+  return Object.freeze({ ...profile, providers: Object.freeze(providers) });
+}
 
-  return Object.freeze({ ...profile, providers: Object.freeze([...new Set(providers)]) });
+export function validateFanFavoritesResponse(payload) {
+  if (!payload || payload.ok !== true || !['listFanFavorites', 'setFanFavorite'].includes(payload.action)) return null;
+  if (!Array.isArray(payload.venueIds)) return null;
+  const venueIds = [...new Set(payload.venueIds.map(clean))];
+  if (venueIds.some((venueId) => !VENUE_ID_PATTERN.test(venueId))) return null;
+  return Object.freeze(venueIds);
+}
+
+export function validateFanAttendanceResponse(payload) {
+  if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true || ![
+    'claimFanIntent', 'getFanAttendance', 'setFanAttendance', 'setFanAttendanceVisibility'
+  ].includes(payload.action)) return null;
+  if (!Array.isArray(payload.selections) || !Array.isArray(payload.fanCounts) ||
+      !Array.isArray(payload.venueHistoryCounts)) return null;
+
+  const selections = [];
+  const seenGames = new Set();
+  for (const row of payload.selections) {
+    if (!row || typeof row !== 'object') return null;
+    const gameId = clean(row.game_id);
+    const venueId = clean(row.venue_id);
+    const visibility = clean(row.visibility) || 'anonymous';
+    if (!GAME_ID_PATTERN.test(gameId) || !VENUE_ID_PATTERN.test(venueId) ||
+        !ATTENDANCE_VISIBILITY_VALUES.includes(visibility) || seenGames.has(gameId)) return null;
+    seenGames.add(gameId);
+    selections.push(Object.freeze({ game_id: gameId, venue_id: venueId, visibility }));
+  }
+
+  const fanCounts = [];
+  for (const row of payload.fanCounts) {
+    const count = nonnegativeInteger(row?.count);
+    const gameId = clean(row?.game_id);
+    const venueId = clean(row?.venue_id);
+    if (count === null || !GAME_ID_PATTERN.test(gameId) || !VENUE_ID_PATTERN.test(venueId)) return null;
+    fanCounts.push(Object.freeze({ game_id: gameId, venue_id: venueId, count }));
+  }
+
+  const venueHistoryCounts = [];
+  for (const row of payload.venueHistoryCounts) {
+    const pastGameCount = nonnegativeInteger(row?.past_game_count);
+    const venueId = clean(row?.venue_id);
+    if (pastGameCount === null || !VENUE_ID_PATTERN.test(venueId)) return null;
+    venueHistoryCounts.push(Object.freeze({ venue_id: venueId, past_game_count: pastGameCount }));
+  }
+
+  return Object.freeze({
+    selections: Object.freeze(selections),
+    fanCounts: Object.freeze(fanCounts),
+    venueHistoryCounts: Object.freeze(venueHistoryCounts)
+  });
+}
+
+export function validatePublicAttendanceResponse(payload) {
+  if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true || payload.action !== 'publicAttendance') return null;
+  const gameId = clean(payload.game_id);
+  const venueId = clean(payload.venue_id);
+  const count = nonnegativeInteger(payload.count);
+  if (!GAME_ID_PATTERN.test(gameId) || !VENUE_ID_PATTERN.test(venueId) || count === null) return null;
+  if (!Array.isArray(payload.attendees)) return null;
+  const attendees = [];
+  for (const attendee of payload.attendees) {
+    if (!attendee || typeof attendee !== 'object') return null;
+    const profileId = clean(attendee.profile_id);
+    const displayName = clean(attendee.display_name);
+    const avatarUrl = clean(attendee.avatar_url);
+    const homeCity = clean(attendee.home_city);
+    const xHandle = clean(attendee.x_handle).replace(/^@+/, '');
+    if (!/^profile_[a-f0-9]{24}$/.test(profileId) || !displayName || displayName.length > 80) return null;
+    if (avatarUrl && (!/^https:\/\//i.test(avatarUrl) || avatarUrl.length > 2048)) return null;
+    if (homeCity.length > 80 || (xHandle && !/^[A-Za-z0-9_]{1,30}$/.test(xHandle))) return null;
+    attendees.push(Object.freeze({ profileId, displayName, avatarUrl, homeCity, xHandle }));
+  }
+  if (attendees.length > count) return null;
+  return Object.freeze({ gameId, venueId, count, attendees: Object.freeze(attendees) });
 }
 
 export function fanErrorCopy(code) {
@@ -81,6 +245,12 @@ export function fanErrorCopy(code) {
       return 'Your CGB sign-in could not be verified.';
     case 'fan_account_suspended':
       return 'This CGB account is unavailable.';
+    case 'fan_invalid_venue':
+      return 'That venue is no longer available to save.';
+    case 'fan_game_not_open':
+      return 'This game is no longer open for selections.';
+    case 'fan_selection_conflict':
+      return 'Your CGB selection changed on another device. Refresh and try again.';
     case 'fan_not_configured':
       return 'CGB Accounts is not configured yet.';
     default:

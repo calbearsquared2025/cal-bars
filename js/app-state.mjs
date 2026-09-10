@@ -32,7 +32,9 @@ export const appState = {
     browserId: null,
     selections: {},
     pending: null,
-    retry: null
+    retry: null,
+    accountMode: false,
+    visibilityByGame: {}
   },
   externalSearch: {
     query: '',
@@ -147,6 +149,8 @@ export function resetAppStateForTests() {
   appState.fanIntent.selections = {};
   appState.fanIntent.pending = null;
   appState.fanIntent.retry = null;
+  appState.fanIntent.accountMode = false;
+  appState.fanIntent.visibilityByGame = {};
   appState.externalSearch.query = '';
   appState.externalSearch.results = [];
   appState.externalSearch.selected = null;
