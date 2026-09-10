@@ -84,6 +84,7 @@
 .accounts-section,
 .accounts-intro,
 .accounts-provider-actions,
+.accounts-email-form,
 .accounts-profile-form,
 .accounts-favorites,
 .accounts-connections { display: grid; gap: 12px; }
@@ -96,8 +97,10 @@
 .accounts-intro strong { color: var(--cal-blue); font-size: 1.05rem; }
 .accounts-intro p,
 .accounts-fine-print,
+.accounts-email-help,
 .accounts-empty { margin: 0; color: var(--muted); line-height: 1.45; }
-.accounts-fine-print { font-size: .76rem; }
+.accounts-fine-print,
+.accounts-email-help { font-size: .76rem; }
 .accounts-empty { font-size: .85rem; }
 
 .accounts-provider-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -109,7 +112,31 @@
   color: var(--cal-blue);
   font-weight: 800;
 }
-.accounts-provider-button--x { background: #111; color: white; border-color: #111; }
+
+.accounts-email-form {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f8fafc;
+}
+.accounts-email-form label { display: grid; gap: 5px; }
+.accounts-email-form label > span { color: var(--ink); font-size: .82rem; font-weight: 750; }
+.accounts-email-form input[type="email"] {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid #c7d0dd;
+  border-radius: 10px;
+  background: white;
+  color: var(--ink);
+  font-size: 16px;
+}
+.accounts-email-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
 
 .accounts-identity {
   justify-content: flex-start;
@@ -166,7 +193,23 @@
 .accounts-toggle span { line-height: 1.35; }
 .accounts-profile-save { justify-self: start; }
 
-.accounts-link-actions .secondary-button { width: 100%; }
+.accounts-connected-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.accounts-connected-method {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid #c7d0dd;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: var(--cal-blue);
+  font-size: .78rem;
+  font-weight: 800;
+}
 .accounts-sign-out { justify-self: start; }
 
 @media (max-width: 899px) {

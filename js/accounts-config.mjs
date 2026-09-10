@@ -11,5 +11,5 @@ export const CGB_ACCOUNTS_CONFIG = Object.freeze({
     projectId: 'cal-golden-bars',
     appId: '1:415910801317:web:1feca3988c51637cd6024c'
   }),
-  providers: Object.freeze(['google', 'twitter'])
+  providers: Object.freeze(['google', 'email'])
 });

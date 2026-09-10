@@ -12,15 +12,20 @@ import { appState, waitForApplicationReady } from './app-state.mjs';
 const REQUEST_TIMEOUT_MS = 12000;
 const FIREBASE_VERSION = '12.18.0';
 const GOOGLE_PROVIDER_ID = 'google.com';
-const TWITTER_PROVIDER_ID = 'twitter.com';
+const EMAIL_PROVIDER_ID = 'password';
+const EMAIL_SIGNIN_STORAGE_KEY = 'cgb.accounts.emailForSignIn';
+const EMAIL_LINK_QUERY_KEYS = Object.freeze([
+  'apiKey', 'oobCode', 'mode', 'lang', 'tenantId', 'continueUrl'
+]);
 
 let auth = null;
 let authModule = null;
+let googleProvider = null;
 let currentUser = null;
 let account = null;
 let favoriteVenueIds = [];
-let providers = null;
 let dom = null;
+let pendingEmailLinkUrl = '';
 
 function injectAccountsStyles() {
   if (document.querySelector('link[data-cgb-accounts-style]')) return;
@@ -79,8 +84,19 @@ function buildDialog() {
         </div>
         <div class="accounts-provider-actions">
           <button class="accounts-provider-button" type="button" data-account-provider="google">Continue with Google</button>
-          <button class="accounts-provider-button accounts-provider-button--x" type="button" data-account-provider="twitter">Continue with X</button>
+          <button class="accounts-provider-button" type="button" data-account-provider="email">Continue with email</button>
         </div>
+        <form class="accounts-email-form" hidden>
+          <label>
+            <span>Email address</span>
+            <input name="email" type="email" maxlength="254" required autocomplete="email" inputmode="email">
+          </label>
+          <p class="accounts-email-help">No password. We’ll send you a secure sign-in link.</p>
+          <div class="accounts-email-actions">
+            <button class="primary-button accounts-email-submit" type="submit">Email me a sign-in link</button>
+            <button class="text-button accounts-email-cancel" type="button">Cancel</button>
+          </div>
+        </form>
         <p class="accounts-fine-print">Your email and sign-in identifiers stay private. Public profile and attendance visibility are separate choices.</p>
       </section>
 
@@ -140,10 +156,10 @@ function buildDialog() {
           <div class="accounts-section__heading">
             <div>
               <span class="eyebrow">Sign-in</span>
-              <h3 id="accounts-connections-title">Connected accounts</h3>
+              <h3 id="accounts-connections-title">Sign-in methods</h3>
             </div>
           </div>
-          <div class="accounts-provider-actions accounts-link-actions"></div>
+          <div class="accounts-connected-methods"></div>
           <button class="text-button accounts-sign-out" type="button">Sign out</button>
         </section>
       </section>
@@ -166,6 +182,11 @@ function collectDom() {
     signedOut: dialog.querySelector('.accounts-signed-out'),
     signedIn: dialog.querySelector('.accounts-signed-in'),
     providerButtons: [...dialog.querySelectorAll('[data-account-provider]')],
+    emailForm: dialog.querySelector('.accounts-email-form'),
+    emailInput: dialog.querySelector('.accounts-email-form input[name="email"]'),
+    emailHelp: dialog.querySelector('.accounts-email-help'),
+    emailSubmit: dialog.querySelector('.accounts-email-submit'),
+    emailCancel: dialog.querySelector('.accounts-email-cancel'),
     avatar: dialog.querySelector('.accounts-avatar'),
     displayName: dialog.querySelector('.accounts-display-name'),
     email: dialog.querySelector('.accounts-email'),
@@ -173,7 +194,7 @@ function collectDom() {
     saveSelected: dialog.querySelector('.accounts-save-selected'),
     profileForm: dialog.querySelector('.accounts-profile-form'),
     profileSave: dialog.querySelector('.accounts-profile-save'),
-    linkActions: dialog.querySelector('.accounts-link-actions'),
+    connectedMethods: dialog.querySelector('.accounts-connected-methods'),
     signOut: dialog.querySelector('.accounts-sign-out')
   };
 }
@@ -202,14 +223,6 @@ async function postFan(payload) {
   } finally {
     window.clearTimeout(timeout);
   }
-}
-
-function providerFor(name) {
-  return providers?.[name] || null;
-}
-
-function providerIdsForUser(user = currentUser) {
-  return new Set((user?.providerData || []).map((item) => String(item?.providerId || '')).filter(Boolean));
 }
 
 async function currentToken(forceRefresh = false) {
@@ -314,21 +327,18 @@ function renderFavorites() {
 }
 
 function renderConnections() {
-  if (!dom?.linkActions || !account) return;
-  dom.linkActions.replaceChildren();
+  if (!dom?.connectedMethods || !account) return;
+  dom.connectedMethods.replaceChildren();
   const accountProviders = new Set(account.providers || []);
-  const choices = [
-    { id: GOOGLE_PROVIDER_ID, name: 'google', label: 'Google' },
-    { id: TWITTER_PROVIDER_ID, name: 'twitter', label: 'X' }
-  ];
-  choices.forEach((choice) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'secondary-button';
-    button.dataset.linkProvider = choice.name;
-    button.disabled = accountProviders.has(choice.id);
-    button.textContent = accountProviders.has(choice.id) ? `${choice.label} connected` : `Connect ${choice.label}`;
-    dom.linkActions.append(button);
+  [
+    { id: GOOGLE_PROVIDER_ID, label: 'Google' },
+    { id: EMAIL_PROVIDER_ID, label: 'Email link' }
+  ].forEach((choice) => {
+    if (!accountProviders.has(choice.id)) return;
+    const method = document.createElement('span');
+    method.className = 'accounts-connected-method';
+    method.textContent = choice.label;
+    dom.connectedMethods.append(method);
   });
 }
 
@@ -342,6 +352,23 @@ function fillProfileForm() {
   form.publicAttendance.checked = account.attendanceVisibilityDefault === 'public';
 }
 
+function hideEmailForm() {
+  if (!dom?.emailForm) return;
+  dom.emailForm.hidden = true;
+  dom.emailSubmit.disabled = false;
+  dom.emailInput.value = '';
+}
+
+function showEmailForm({ completing = false } = {}) {
+  if (!dom?.emailForm) return;
+  dom.emailForm.hidden = false;
+  dom.emailHelp.textContent = completing
+    ? 'Confirm the email address that received this sign-in link.'
+    : 'No password. We’ll send you a secure sign-in link.';
+  dom.emailSubmit.textContent = completing ? 'Finish sign in' : 'Email me a sign-in link';
+  window.setTimeout(() => dom.emailInput.focus(), 0);
+}
+
 function renderSignedOut() {
   account = null;
   favoriteVenueIds = [];
@@ -352,6 +379,12 @@ function renderSignedOut() {
   dom.launcherAvatar.replaceChildren(document.createTextNode('C'));
   dom.launcherAvatar.style.backgroundImage = '';
   setStatus('');
+  if (pendingEmailLinkUrl) {
+    showEmailForm({ completing: true });
+    setStatus('Confirm your email to finish signing in.');
+  } else {
+    hideEmailForm();
+  }
   dispatchAccountState();
 }
 
@@ -393,18 +426,37 @@ function readableError(error) {
   return fanErrorCopy(code);
 }
 
-async function signIn(name) {
-  const provider = providerFor(name);
-  if (!provider || !auth || !authModule) return;
-  setStatus(`Opening ${name === 'twitter' ? 'X' : 'Google'} sign-in…`);
+function prefersRedirectSignIn() {
+  const userAgent = String(navigator.userAgent || '');
+  const platform = String(navigator.platform || '');
+  const touchPoints = Number(navigator.maxTouchPoints || 0);
+  return /iPad|iPhone|iPod/i.test(userAgent) || (platform === 'MacIntel' && touchPoints > 1);
+}
+
+function popupShouldFallbackToRedirect(error) {
+  const code = String(error?.code || '');
+  return code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment';
+}
+
+async function startGoogleSignIn() {
+  if (!auth || !authModule || !googleProvider) return;
+  setStatus(prefersRedirectSignIn() ? 'Continuing to Google sign-in…' : 'Opening Google sign-in…');
   try {
-    await authModule.signInWithPopup(auth, provider);
-  } catch (error) {
-    const code = String(error?.code || '');
-    if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
-      await authModule.signInWithRedirect(auth, provider);
+    if (prefersRedirectSignIn()) {
+      await authModule.signInWithRedirect(auth, googleProvider);
       return;
     }
+    try {
+      await authModule.signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      if (popupShouldFallbackToRedirect(error)) {
+        await authModule.signInWithRedirect(auth, googleProvider);
+        return;
+      }
+      throw error;
+    }
+  } catch (error) {
+    const code = String(error?.code || '');
     if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
       setStatus('');
       return;
@@ -413,20 +465,76 @@ async function signIn(name) {
   }
 }
 
-async function linkProvider(name) {
-  const provider = providerFor(name);
-  if (!provider || !currentUser || !authModule) return;
-  setStatus(`Connecting ${name === 'twitter' ? 'X' : 'Google'}…`);
+function emailSignInReturnUrl() {
+  const url = new URL(window.location.href);
+  EMAIL_LINK_QUERY_KEYS.forEach((key) => url.searchParams.delete(key));
+  return url.toString();
+}
+
+function clearEmailLinkFromAddressBar() {
+  const cleanUrl = emailSignInReturnUrl();
+  window.history.replaceState(window.history.state, '', cleanUrl);
+}
+
+function savedEmailForSignIn() {
   try {
-    await authModule.linkWithPopup(currentUser, provider);
-    await refreshSignedInState();
-    setStatus('Connected.');
+    return String(window.localStorage.getItem(EMAIL_SIGNIN_STORAGE_KEY) || '').trim();
+  } catch (_) {
+    return '';
+  }
+}
+
+function rememberEmailForSignIn(email) {
+  try {
+    window.localStorage.setItem(EMAIL_SIGNIN_STORAGE_KEY, email);
+  } catch (_) {
+    // Cross-device completion can ask for the email again if storage is unavailable.
+  }
+}
+
+function forgetEmailForSignIn() {
+  try {
+    window.localStorage.removeItem(EMAIL_SIGNIN_STORAGE_KEY);
+  } catch (_) {
+    // No persisted email to clean up.
+  }
+}
+
+async function sendEmailLink(email) {
+  if (!auth || !authModule) return;
+  const normalizedEmail = String(email || '').trim();
+  if (!normalizedEmail) return;
+  dom.emailSubmit.disabled = true;
+  setStatus('Sending sign-in link…');
+  try {
+    await authModule.sendSignInLinkToEmail(auth, normalizedEmail, {
+      url: emailSignInReturnUrl(),
+      handleCodeInApp: true,
+      linkDomain: CGB_ACCOUNTS_CONFIG.firebase.authDomain
+    });
+    rememberEmailForSignIn(normalizedEmail);
+    hideEmailForm();
+    setStatus('Check your email for a CGB sign-in link.');
   } catch (error) {
-    const code = String(error?.code || '');
-    if (code === 'auth/credential-already-in-use' || code === 'auth/account-exists-with-different-credential') {
-      setStatus('That sign-in is already attached to another identity. Sign in with it directly; CGB will keep matching verified identities where possible.', { error: true });
-      return;
-    }
+    dom.emailSubmit.disabled = false;
+    setStatus(readableError(error), { error: true });
+  }
+}
+
+async function finishEmailLinkSignIn(email) {
+  if (!auth || !authModule || !pendingEmailLinkUrl) return;
+  const normalizedEmail = String(email || '').trim();
+  if (!normalizedEmail) return;
+  dom.emailSubmit.disabled = true;
+  setStatus('Finishing sign in…');
+  try {
+    await authModule.signInWithEmailLink(auth, normalizedEmail, pendingEmailLinkUrl);
+    pendingEmailLinkUrl = '';
+    forgetEmailForSignIn();
+    clearEmailLinkFromAddressBar();
+    hideEmailForm();
+  } catch (error) {
+    dom.emailSubmit.disabled = false;
     setStatus(readableError(error), { error: true });
   }
 }
@@ -487,7 +595,30 @@ function bindEvents() {
     if (event.target === dom.dialog) dom.dialog.close();
   });
   dom.providerButtons.forEach((button) => {
-    button.addEventListener('click', () => signIn(button.dataset.accountProvider));
+    button.addEventListener('click', () => {
+      if (button.dataset.accountProvider === 'google') {
+        void startGoogleSignIn();
+      } else if (button.dataset.accountProvider === 'email') {
+        showEmailForm();
+      }
+    });
+  });
+  dom.emailForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!dom.emailInput.reportValidity()) return;
+    if (pendingEmailLinkUrl) {
+      void finishEmailLinkSignIn(dom.emailInput.value);
+    } else {
+      void sendEmailLink(dom.emailInput.value);
+    }
+  });
+  dom.emailCancel.addEventListener('click', () => {
+    if (pendingEmailLinkUrl) {
+      pendingEmailLinkUrl = '';
+      clearEmailLinkFromAddressBar();
+    }
+    hideEmailForm();
+    setStatus('');
   });
   dom.profileForm.addEventListener('submit', saveProfile);
   dom.signOut.addEventListener('click', async () => {
@@ -507,10 +638,6 @@ function bindEvents() {
     const button = event.target.closest('[data-remove-favorite]');
     if (button) setFavorite(button.dataset.removeFavorite, false);
   });
-  dom.linkActions.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-link-provider]');
-    if (button && !button.disabled) linkProvider(button.dataset.linkProvider);
-  });
 }
 
 async function initializeFirebase() {
@@ -522,12 +649,17 @@ async function initializeFirebase() {
   auth = authModule.getAuth(firebaseApp);
   await authModule.setPersistence(auth, authModule.browserLocalPersistence);
 
-  const google = new authModule.GoogleAuthProvider();
-  google.setCustomParameters({ prompt: 'select_account' });
-  const twitter = new authModule.TwitterAuthProvider();
-  providers = { google, twitter };
+  googleProvider = new authModule.GoogleAuthProvider();
+  googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-  await authModule.getRedirectResult(auth).catch(() => null);
+  await authModule.getRedirectResult(auth).catch((error) => {
+    setStatus(readableError(error), { error: true });
+  });
+
+  if (authModule.isSignInWithEmailLink(auth, window.location.href)) {
+    pendingEmailLinkUrl = window.location.href;
+  }
+
   authModule.onAuthStateChanged(auth, async (user) => {
     currentUser = user || null;
     if (!user) {
@@ -540,6 +672,17 @@ async function initializeFirebase() {
       setStatus(readableError(error), { error: true });
     }
   });
+
+  if (pendingEmailLinkUrl) {
+    const savedEmail = savedEmailForSignIn();
+    if (savedEmail) {
+      await finishEmailLinkSignIn(savedEmail);
+    } else {
+      if (!dom.dialog.open) dom.dialog.showModal();
+      showEmailForm({ completing: true });
+      setStatus('Confirm your email to finish signing in.');
+    }
+  }
 }
 
 export async function initializeAccountsUi() {
