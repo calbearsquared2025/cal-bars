@@ -52,7 +52,7 @@ let currentUser = null;
 let activityItems = [];
 let toastTimer = 0;
 let activityLoading = false;
-let redirectSignInFailed = false;
+let redirectSignInErrorCode = '';
 
 function setStatus(message, { error = false } = {}) {
   statusNode.textContent = message;
@@ -482,6 +482,16 @@ function popupShouldFallbackToRedirect(error) {
   return code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment';
 }
 
+function safeFirebaseAuthErrorCode(error) {
+  const code = String(error?.code || error || '').trim();
+  return /^auth\/[a-z0-9-]+$/i.test(code) ? code : '';
+}
+
+function googleSignInFailureCopy(error) {
+  const code = safeFirebaseAuthErrorCode(error);
+  return code ? `Google sign-in did not complete. ${code}` : 'Google sign-in did not complete.';
+}
+
 async function startGoogleSignIn(provider) {
   if (prefersRedirectSignIn()) {
     await signInWithRedirect(auth, provider);
@@ -517,8 +527,8 @@ async function initializeAdminAuth() {
 
   try {
     await getRedirectResult(auth);
-  } catch (_) {
-    redirectSignInFailed = true;
+  } catch (error) {
+    redirectSignInErrorCode = safeFirebaseAuthErrorCode(error);
   }
 
   signInButton.addEventListener('click', async () => {
@@ -531,7 +541,7 @@ async function initializeAdminAuth() {
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
         setStatus('Sign in with the Google account authorized for CGB Admin.');
       } else {
-        setStatus('Google sign-in did not complete.', { error: true });
+        setStatus(googleSignInFailureCopy(error), { error: true });
       }
     } finally {
       signInButton.disabled = false;
@@ -552,13 +562,14 @@ async function initializeAdminAuth() {
   onAuthStateChanged(auth, (user) => {
     if (!user) {
       setSignedOutUi();
-      if (redirectSignInFailed) {
-        redirectSignInFailed = false;
-        setStatus('Google sign-in did not complete.', { error: true });
+      if (redirectSignInErrorCode) {
+        const code = redirectSignInErrorCode;
+        redirectSignInErrorCode = '';
+        setStatus(googleSignInFailureCopy(code), { error: true });
       }
       return;
     }
-    redirectSignInFailed = false;
+    redirectSignInErrorCode = '';
     currentUser = user;
     loadAdminActivity(user);
   });
