@@ -13,10 +13,6 @@ const REQUEST_TIMEOUT_MS = 12000;
 const FIREBASE_VERSION = '12.18.0';
 const GOOGLE_PROVIDER_ID = 'google.com';
 const EMAIL_PROVIDER_ID = 'password';
-const EMAIL_SIGNIN_STORAGE_KEY = 'cgb.accounts.emailForSignIn';
-const EMAIL_LINK_QUERY_KEYS = Object.freeze([
-  'apiKey', 'oobCode', 'mode', 'lang', 'tenantId', 'continueUrl'
-]);
 
 let auth = null;
 let authModule = null;
@@ -25,7 +21,7 @@ let currentUser = null;
 let account = null;
 let favoriteVenueIds = [];
 let dom = null;
-let pendingEmailLinkUrl = '';
+let pendingSignedOutStatus = null;
 
 function injectAccountsStyles() {
   if (document.querySelector('link[data-cgb-accounts-style]')) return;
@@ -91,9 +87,15 @@ function buildDialog() {
             <span>Email address</span>
             <input name="email" type="email" maxlength="254" required autocomplete="email" inputmode="email">
           </label>
-          <p class="accounts-email-help">No password. We’ll send you a secure sign-in link.</p>
+          <label>
+            <span>Password</span>
+            <input name="password" type="password" minlength="6" maxlength="128" required autocomplete="current-password">
+          </label>
+          <p class="accounts-email-help">Sign in, or create an account with at least 6 characters. New email accounts must be verified before My CGB opens.</p>
           <div class="accounts-email-actions">
-            <button class="primary-button accounts-email-submit" type="submit">Email me a sign-in link</button>
+            <button class="primary-button accounts-email-submit" type="submit">Sign in</button>
+            <button class="text-button accounts-email-create" type="button">Create account</button>
+            <button class="text-button accounts-email-reset" type="button">Forgot password?</button>
             <button class="text-button accounts-email-cancel" type="button">Cancel</button>
           </div>
         </form>
@@ -184,8 +186,10 @@ function collectDom() {
     providerButtons: [...dialog.querySelectorAll('[data-account-provider]')],
     emailForm: dialog.querySelector('.accounts-email-form'),
     emailInput: dialog.querySelector('.accounts-email-form input[name="email"]'),
-    emailHelp: dialog.querySelector('.accounts-email-help'),
+    passwordInput: dialog.querySelector('.accounts-email-form input[name="password"]'),
     emailSubmit: dialog.querySelector('.accounts-email-submit'),
+    emailCreate: dialog.querySelector('.accounts-email-create'),
+    emailReset: dialog.querySelector('.accounts-email-reset'),
     emailCancel: dialog.querySelector('.accounts-email-cancel'),
     avatar: dialog.querySelector('.accounts-avatar'),
     displayName: dialog.querySelector('.accounts-display-name'),
@@ -332,7 +336,7 @@ function renderConnections() {
   const accountProviders = new Set(account.providers || []);
   [
     { id: GOOGLE_PROVIDER_ID, label: 'Google' },
-    { id: EMAIL_PROVIDER_ID, label: 'Email link' }
+    { id: EMAIL_PROVIDER_ID, label: 'Email + password' }
   ].forEach((choice) => {
     if (!accountProviders.has(choice.id)) return;
     const method = document.createElement('span');
@@ -356,16 +360,16 @@ function hideEmailForm() {
   if (!dom?.emailForm) return;
   dom.emailForm.hidden = true;
   dom.emailSubmit.disabled = false;
+  dom.emailCreate.disabled = false;
+  dom.emailReset.disabled = false;
   dom.emailInput.value = '';
+  dom.passwordInput.value = '';
 }
 
-function showEmailForm({ completing = false } = {}) {
+function showEmailForm() {
   if (!dom?.emailForm) return;
+  pendingSignedOutStatus = null;
   dom.emailForm.hidden = false;
-  dom.emailHelp.textContent = completing
-    ? 'Confirm the email address that received this sign-in link.'
-    : 'No password. We’ll send you a secure sign-in link.';
-  dom.emailSubmit.textContent = completing ? 'Finish sign in' : 'Email me a sign-in link';
   window.setTimeout(() => dom.emailInput.focus(), 0);
 }
 
@@ -378,18 +382,18 @@ function renderSignedOut() {
   dom.launcherAvatar.textContent = 'C';
   dom.launcherAvatar.replaceChildren(document.createTextNode('C'));
   dom.launcherAvatar.style.backgroundImage = '';
-  setStatus('');
-  if (pendingEmailLinkUrl) {
-    showEmailForm({ completing: true });
-    setStatus('Confirm your email to finish signing in.');
+  if (pendingSignedOutStatus) {
+    setStatus(pendingSignedOutStatus.message, { error: pendingSignedOutStatus.error });
   } else {
-    hideEmailForm();
+    setStatus('');
   }
+  hideEmailForm();
   dispatchAccountState();
 }
 
 function renderSignedIn() {
   if (!account || !currentUser) return;
+  pendingSignedOutStatus = null;
   dom.signedOut.hidden = true;
   dom.signedIn.hidden = false;
   dom.launcherLabel.textContent = 'My CGB';
@@ -421,7 +425,14 @@ async function refreshSignedInState() {
 
 function readableError(error) {
   if (error?.name === 'AbortError') return fanErrorCopy('fan_backend_unavailable');
-  const code = String(error?.message || error?.code || 'fan_backend_unavailable');
+  const code = String(error?.code || error?.message || 'fan_backend_unavailable');
+  if (code === 'auth/email-already-in-use') return 'That email already has a CGB sign-in. Sign in instead.';
+  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+    return 'Email or password is incorrect.';
+  }
+  if (code === 'auth/weak-password') return 'Choose a password with at least 6 characters.';
+  if (code === 'auth/too-many-requests') return 'Too many sign-in attempts. Try again later.';
+  if (code === 'auth/user-disabled') return 'This sign-in is unavailable.';
   if (code.startsWith('auth/')) return 'Sign-in did not complete. Try again.';
   return fanErrorCopy(code);
 }
@@ -440,6 +451,7 @@ function popupShouldFallbackToRedirect(error) {
 
 async function startGoogleSignIn() {
   if (!auth || !authModule || !googleProvider) return;
+  pendingSignedOutStatus = null;
   setStatus(prefersRedirectSignIn() ? 'Continuing to Google sign-in…' : 'Opening Google sign-in…');
   try {
     if (prefersRedirectSignIn()) {
@@ -465,77 +477,75 @@ async function startGoogleSignIn() {
   }
 }
 
-function emailSignInReturnUrl() {
-  const url = new URL(window.location.href);
-  EMAIL_LINK_QUERY_KEYS.forEach((key) => url.searchParams.delete(key));
-  return url.toString();
+function emailActionSettings() {
+  return { url: new URL('/', window.location.origin).toString() };
 }
 
-function clearEmailLinkFromAddressBar() {
-  const cleanUrl = emailSignInReturnUrl();
-  window.history.replaceState(window.history.state, '', cleanUrl);
+function passwordProviderPresent(user) {
+  return Array.isArray(user?.providerData) && user.providerData.some((provider) => provider?.providerId === EMAIL_PROVIDER_ID);
 }
 
-function savedEmailForSignIn() {
-  try {
-    return String(window.localStorage.getItem(EMAIL_SIGNIN_STORAGE_KEY) || '').trim();
-  } catch (_) {
-    return '';
-  }
-}
-
-function rememberEmailForSignIn(email) {
-  try {
-    window.localStorage.setItem(EMAIL_SIGNIN_STORAGE_KEY, email);
-  } catch (_) {
-    // Cross-device completion can ask for the email again if storage is unavailable.
-  }
-}
-
-function forgetEmailForSignIn() {
-  try {
-    window.localStorage.removeItem(EMAIL_SIGNIN_STORAGE_KEY);
-  } catch (_) {
-    // No persisted email to clean up.
-  }
-}
-
-async function sendEmailLink(email) {
+async function signInWithEmailPassword(email, password) {
   if (!auth || !authModule) return;
   const normalizedEmail = String(email || '').trim();
-  if (!normalizedEmail) return;
+  if (!normalizedEmail || !password) return;
+  pendingSignedOutStatus = null;
   dom.emailSubmit.disabled = true;
-  setStatus('Sending sign-in link…');
+  setStatus('Signing in…');
   try {
-    await authModule.sendSignInLinkToEmail(auth, normalizedEmail, {
-      url: emailSignInReturnUrl(),
-      handleCodeInApp: true,
-      linkDomain: CGB_ACCOUNTS_CONFIG.firebase.authDomain
-    });
-    rememberEmailForSignIn(normalizedEmail);
-    hideEmailForm();
-    setStatus('Check your email for a CGB sign-in link.');
+    const credential = await authModule.signInWithEmailAndPassword(auth, normalizedEmail, password);
+    if (passwordProviderPresent(credential.user) && credential.user.emailVerified !== true) {
+      await authModule.sendEmailVerification(credential.user, emailActionSettings());
+      pendingSignedOutStatus = {
+        message: 'Verify your email before signing in. We sent you a new verification email.',
+        error: false
+      };
+      await authModule.signOut(auth);
+    }
   } catch (error) {
     dom.emailSubmit.disabled = false;
     setStatus(readableError(error), { error: true });
   }
 }
 
-async function finishEmailLinkSignIn(email) {
-  if (!auth || !authModule || !pendingEmailLinkUrl) return;
+async function createEmailPasswordAccount(email, password) {
+  if (!auth || !authModule) return;
   const normalizedEmail = String(email || '').trim();
-  if (!normalizedEmail) return;
-  dom.emailSubmit.disabled = true;
-  setStatus('Finishing sign in…');
+  if (!normalizedEmail || !password) return;
+  pendingSignedOutStatus = null;
+  dom.emailCreate.disabled = true;
+  setStatus('Creating account…');
   try {
-    await authModule.signInWithEmailLink(auth, normalizedEmail, pendingEmailLinkUrl);
-    pendingEmailLinkUrl = '';
-    forgetEmailForSignIn();
-    clearEmailLinkFromAddressBar();
-    hideEmailForm();
+    const credential = await authModule.createUserWithEmailAndPassword(auth, normalizedEmail, password);
+    await authModule.sendEmailVerification(credential.user, emailActionSettings());
+    pendingSignedOutStatus = {
+      message: 'Account created. Check your email to verify it, then sign in.',
+      error: false
+    };
+    await authModule.signOut(auth);
   } catch (error) {
-    dom.emailSubmit.disabled = false;
+    dom.emailCreate.disabled = false;
     setStatus(readableError(error), { error: true });
+  }
+}
+
+async function sendPasswordReset(email) {
+  if (!auth || !authModule) return;
+  const normalizedEmail = String(email || '').trim();
+  if (!normalizedEmail || !dom.emailInput.checkValidity()) {
+    dom.emailInput.reportValidity();
+    return;
+  }
+  pendingSignedOutStatus = null;
+  dom.emailReset.disabled = true;
+  setStatus('Sending password reset…');
+  try {
+    await authModule.sendPasswordResetEmail(auth, normalizedEmail, emailActionSettings());
+    setStatus('If that email has a CGB account, check your inbox for a password-reset link.');
+  } catch (error) {
+    setStatus(readableError(error), { error: true });
+  } finally {
+    dom.emailReset.disabled = false;
   }
 }
 
@@ -605,18 +615,17 @@ function bindEvents() {
   });
   dom.emailForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    if (!dom.emailInput.reportValidity()) return;
-    if (pendingEmailLinkUrl) {
-      void finishEmailLinkSignIn(dom.emailInput.value);
-    } else {
-      void sendEmailLink(dom.emailInput.value);
-    }
+    if (!dom.emailForm.reportValidity()) return;
+    void signInWithEmailPassword(dom.emailInput.value, dom.passwordInput.value);
+  });
+  dom.emailCreate.addEventListener('click', () => {
+    if (!dom.emailForm.reportValidity()) return;
+    void createEmailPasswordAccount(dom.emailInput.value, dom.passwordInput.value);
+  });
+  dom.emailReset.addEventListener('click', () => {
+    void sendPasswordReset(dom.emailInput.value);
   });
   dom.emailCancel.addEventListener('click', () => {
-    if (pendingEmailLinkUrl) {
-      pendingEmailLinkUrl = '';
-      clearEmailLinkFromAddressBar();
-    }
     hideEmailForm();
     setStatus('');
   });
@@ -656,11 +665,19 @@ async function initializeFirebase() {
     setStatus(readableError(error), { error: true });
   });
 
-  if (authModule.isSignInWithEmailLink(auth, window.location.href)) {
-    pendingEmailLinkUrl = window.location.href;
-  }
-
   authModule.onAuthStateChanged(auth, async (user) => {
+    if (user && passwordProviderPresent(user) && user.emailVerified !== true) {
+      currentUser = null;
+      account = null;
+      favoriteVenueIds = [];
+      pendingSignedOutStatus = pendingSignedOutStatus || {
+        message: 'Verify your email before signing in.',
+        error: false
+      };
+      await authModule.signOut(auth).catch(() => null);
+      renderSignedOut();
+      return;
+    }
     currentUser = user || null;
     if (!user) {
       renderSignedOut();
@@ -672,17 +689,6 @@ async function initializeFirebase() {
       setStatus(readableError(error), { error: true });
     }
   });
-
-  if (pendingEmailLinkUrl) {
-    const savedEmail = savedEmailForSignIn();
-    if (savedEmail) {
-      await finishEmailLinkSignIn(savedEmail);
-    } else {
-      if (!dom.dialog.open) dom.dialog.showModal();
-      showEmailForm({ completing: true });
-      setStatus('Confirm your email to finish signing in.');
-    }
-  }
 }
 
 export async function initializeAccountsUi() {

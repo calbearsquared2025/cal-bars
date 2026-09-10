@@ -4,7 +4,7 @@
 // is accepted for launch and the separate Fan API endpoint is deployed.
 export const CGB_ACCOUNTS_CONFIG = Object.freeze({
   enabled: false,
-  endpoint: '',
+  endpoint: 'https://script.google.com/macros/s/AKfycbyIkoxZAXNp36dEXOw5hKltLA8kgK3_07zg899QdEHJ5HSllkQDE_pY2vqOkMIA2nVL/exec',
   firebase: Object.freeze({
     apiKey: 'AIzaSyDmnMf07f1GpbelgKiVnqfOFX_wvHZVBf4',
     authDomain: 'auth.calgoldenbars.com',
