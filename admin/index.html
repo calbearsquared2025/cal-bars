@@ -45,6 +45,7 @@
         <button class="admin-nav__item" type="button" data-view="activity" aria-selected="true">Activity</button>
         <button class="admin-nav__item" type="button" data-view="venues" aria-selected="false">Venues</button>
         <button class="admin-nav__item" type="button" data-view="watch-parties" aria-selected="false">Watch Parties</button>
+        <button class="admin-nav__item" type="button" data-view="accounts" aria-selected="false">Accounts</button>
       </nav>
 
       <main class="dashboard-main">
@@ -147,6 +148,33 @@
             </div>
           </div>
         </section>
+
+        <section class="admin-view" data-panel="accounts" hidden>
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">Community safety</p>
+              <h1>Accounts</h1>
+              <p id="accounts-summary" class="view-copy">Account moderation loads when this tab is opened.</p>
+            </div>
+          </div>
+          <div class="filters filters--two">
+            <label>
+              Search accounts
+              <input id="accounts-search" type="search" autocomplete="off" placeholder="Name, email, city or X handle">
+            </label>
+            <label>
+              Account status
+              <select id="accounts-status-filter">
+                <option value="all">All accounts</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </label>
+          </div>
+          <div id="accounts-list" class="activity-table-shell">
+            <div class="empty-state">Open Accounts to load moderation data.</div>
+          </div>
+        </section>
       </main>
 
       <div id="dashboard-status" class="dashboard-status" aria-live="polite"></div>
@@ -154,5 +182,6 @@
 
     <script type="module" src="./admin-auth.mjs"></script>
     <script type="module" src="./admin-venues.mjs"></script>
+    <script type="module" src="./admin-accounts.mjs"></script>
   </body>
 </html>
