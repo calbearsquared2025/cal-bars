@@ -7,6 +7,8 @@
     <title>CGB Admin</title>
     <link rel="icon" href="../assets/cgbfavicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./admin.css">
+    <link rel="stylesheet" href="./admin-watch-parties.css">
+    <link rel="stylesheet" href="./admin-resources.css">
   </head>
   <body>
     <main id="auth-shell" class="auth-shell">
@@ -24,6 +26,7 @@
             <button id="admin-sign-in" type="button">Sign in with Google</button>
             <button class="secondary admin-sign-out" type="button" hidden>Sign out</button>
           </div>
+          <p><a href="../">← Return to Cal Golden Bars</a></p>
         </div>
       </section>
     </main>
@@ -46,21 +49,26 @@
         <button class="admin-nav__item" type="button" data-view="venues" aria-selected="false">Venues</button>
         <button class="admin-nav__item" type="button" data-view="watch-parties" aria-selected="false">Watch Parties</button>
         <button class="admin-nav__item" type="button" data-view="accounts" aria-selected="false">Accounts</button>
+        <button class="admin-nav__item" type="button" data-view="resources" aria-selected="false">Resources</button>
       </nav>
 
       <main class="dashboard-main">
         <section class="admin-view" data-panel="activity">
           <div class="view-heading">
             <div>
-              <p class="eyebrow">Operational log</p>
+              <p class="eyebrow">Operational inbox</p>
               <h1>Activity</h1>
               <p id="activity-summary" class="view-copy"></p>
             </div>
-            <button id="activity-bulk-review" type="button" disabled>Mark all as reviewed</button>
+            <div class="activity-heading-actions">
+              <button id="activity-refresh" class="secondary" type="button">Refresh</button>
+              <button id="activity-bulk-review" type="button" disabled>Mark all as reviewed</button>
+            </div>
           </div>
+          <p class="activity-inbox-note">Reviewed is only an admin inbox state. It does not approve, publish, unpublish, or otherwise change the public record.</p>
           <div class="filters filters--two">
             <label>
-              Review status
+              Inbox status
               <select id="activity-review-filter">
                 <option value="all" selected>All</option>
                 <option value="unreviewed">Unreviewed</option>
@@ -142,10 +150,42 @@
         <section class="admin-view" data-panel="watch-parties" hidden>
           <div class="view-heading">
             <div>
-              <p class="eyebrow">Next phase</p>
+              <p class="eyebrow">Canonical records</p>
               <h1>Watch Parties</h1>
-              <p class="view-copy">Direct Watch Party management is not enabled in this phase.</p>
+              <p id="watch-party-summary" class="view-copy">Browse and manage canonical Watch Party records.</p>
             </div>
+            <button id="watch-party-add" type="button">+ Add Watch Party</button>
+          </div>
+
+          <div class="watch-party-toolbar">
+            <label class="venue-toolbar__search">
+              Search Watch Parties
+              <input id="watch-party-search" type="search" autocomplete="off" placeholder="Venue, organizer, opponent or ID">
+            </label>
+            <label>
+              Game
+              <select id="watch-party-game-filter"><option value="all">All games</option></select>
+            </label>
+            <label>
+              Venue
+              <select id="watch-party-venue-filter"><option value="all">All venues</option></select>
+            </label>
+            <label>
+              Sort
+              <select id="watch-party-sort">
+                <option value="game_date" selected>Game date — soonest</option>
+                <option value="date_added">Date added — newest</option>
+                <option value="nearest">Nearest to me</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="venue-workspace watch-party-workspace">
+            <aside id="watch-party-list" class="venue-list" aria-label="Watch Parties"></aside>
+            <section class="venue-editor-shell">
+              <div id="watch-party-editor-empty" class="empty-state">Loading Watch Parties…</div>
+              <div id="watch-party-editor" class="venue-editor" hidden></div>
+            </section>
           </div>
         </section>
 
@@ -175,6 +215,40 @@
             <div class="empty-state">Open Accounts to load moderation data.</div>
           </div>
         </section>
+
+        <section class="admin-view" data-panel="resources" hidden>
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">Owner launchpad</p>
+              <h1>Resources</h1>
+              <p class="view-copy">Open the external tools used to operate Cal Golden Bars.</p>
+            </div>
+          </div>
+
+          <div class="resources-grid">
+            <a class="resource-card is-loading" data-admin-resource="workbook" aria-disabled="true" target="_blank" rel="noopener noreferrer">
+              <strong>Google Spreadsheet</strong>
+              <span>Canonical CGB data and private workflow tabs.</span>
+            </a>
+            <a class="resource-card is-loading" data-admin-resource="admin-script" aria-disabled="true" target="_blank" rel="noopener noreferrer">
+              <strong>Apps Script</strong>
+              <span>Admin backend deployment and server-side code.</span>
+            </a>
+            <a class="resource-card" href="https://analytics.google.com/analytics/web/" target="_blank" rel="noopener noreferrer">
+              <strong>Google Analytics</strong>
+              <span>Traffic and usage reporting.</span>
+            </a>
+            <a class="resource-card" href="https://cloud.maptiler.com/" target="_blank" rel="noopener noreferrer">
+              <strong>MapTiler</strong>
+              <span>Map tiles, geocoding, and account usage.</span>
+            </a>
+            <a class="resource-card" href="https://github.com/calbearsquared2025/cal-bars-source" target="_blank" rel="noopener noreferrer">
+              <strong>GitHub</strong>
+              <span>Source repository, pull requests, and Actions.</span>
+            </a>
+          </div>
+          <p id="resources-status" class="resources-status" aria-live="polite"></p>
+        </section>
       </main>
 
       <div id="dashboard-status" class="dashboard-status" aria-live="polite"></div>
@@ -182,6 +256,8 @@
 
     <script type="module" src="./admin-auth.mjs"></script>
     <script type="module" src="./admin-venues.mjs"></script>
+    <script type="module" src="./admin-watch-parties.mjs"></script>
     <script type="module" src="./admin-accounts.mjs"></script>
+    <script type="module" src="./admin-resources.mjs"></script>
   </body>
 </html>

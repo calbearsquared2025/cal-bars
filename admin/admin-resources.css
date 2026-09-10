@@ -1,0 +1,108 @@
+.activity-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.activity-action-cell,
+.activity-review-cell {
+  text-align: right;
+}
+
+.activity-action-cell button,
+.activity-review-cell button {
+  padding: 6px 9px;
+  font-size: .74rem;
+  white-space: nowrap;
+}
+
+.activity-table th:nth-child(6) { width: 142px; }
+.activity-table th:nth-child(7) { width: 125px; }
+
+.activity-inbox-note {
+  margin: -7px 0 18px;
+  color: var(--muted);
+  font-size: .8rem;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.resource-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 18px;
+  align-items: center;
+  min-height: 104px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.resource-card:hover {
+  border-color: var(--navy);
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.resource-card strong {
+  color: var(--navy-dark);
+  font-size: 1rem;
+}
+
+.resource-card span {
+  grid-column: 1;
+  color: var(--muted);
+  font-size: .82rem;
+  line-height: 1.35;
+}
+
+.resource-card::after {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  content: 'Open ↗';
+  color: var(--navy);
+  font-size: .78rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.resource-card.is-loading {
+  cursor: wait;
+  opacity: .58;
+  pointer-events: none;
+}
+
+.resource-card.is-loading::after {
+  content: 'Loading…';
+  color: var(--muted);
+}
+
+.resources-status {
+  min-height: 1.4em;
+  margin: 14px 2px 0;
+  color: var(--danger);
+  font-size: .8rem;
+}
+
+@media (max-width: 720px) {
+  .activity-heading-actions {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .activity-heading-actions button { width: 100%; }
+  .activity-action-cell,
+  .activity-review-cell { text-align: left; }
+  .activity-action-cell button,
+  .activity-review-cell button { justify-self: start; }
+
+  .resources-grid { grid-template-columns: 1fr; }
+  .resource-card { min-height: 92px; padding: 16px; }
+}

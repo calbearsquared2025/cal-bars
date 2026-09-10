@@ -44,6 +44,8 @@ export const ADMIN_ACTIVITY_LABELS = Object.freeze({
 });
 
 const REVIEW_KEY_PATTERN = /^[a-z0-9:_-]{1,160}$/;
+const VENUE_ID_PATTERN = /^venue_[0-9a-f]{24}$/;
+const WATCH_PARTY_ID_PATTERN = /^wp_[0-9a-f]{24}$/;
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -117,9 +119,13 @@ function normalizeActivityItem(item) {
   const status = clean(item.status);
   const occurredAt = clean(item.occurredAt);
   const reviewedAt = clean(item.reviewedAt);
+  const relatedVenueId = clean(item.relatedVenueId);
+  const relatedWatchPartyId = clean(item.relatedWatchPartyId);
   if (!REVIEW_KEY_PATTERN.test(key) || !ADMIN_ACTIVITY_TYPES.includes(type) || !title) return null;
   if (occurredAt && Number.isNaN(Date.parse(occurredAt))) return null;
   if (reviewedAt && Number.isNaN(Date.parse(reviewedAt))) return null;
+  if (relatedVenueId && !VENUE_ID_PATTERN.test(relatedVenueId)) return null;
+  if (relatedWatchPartyId && !WATCH_PARTY_ID_PATTERN.test(relatedWatchPartyId)) return null;
   if (Boolean(item.reviewed) !== Boolean(reviewedAt)) return null;
   return Object.freeze({
     key,
@@ -129,6 +135,8 @@ function normalizeActivityItem(item) {
     source,
     status,
     occurredAt,
+    relatedVenueId,
+    relatedWatchPartyId,
     reviewed: Boolean(item.reviewed),
     reviewedAt
   });

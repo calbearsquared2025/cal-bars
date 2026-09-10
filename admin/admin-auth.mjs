@@ -41,6 +41,7 @@ const activitySummaryNode = document.querySelector('#activity-summary');
 const activityTypeFilter = document.querySelector('#activity-type-filter');
 const activityReviewFilter = document.querySelector('#activity-review-filter');
 const activityBulkReviewButton = document.querySelector('#activity-bulk-review');
+const activityRefreshButton = document.querySelector('#activity-refresh');
 const navButtons = [...document.querySelectorAll('.admin-nav__item')];
 const panels = [...document.querySelectorAll('[data-panel]')];
 
@@ -48,6 +49,7 @@ let auth = null;
 let currentUser = null;
 let activityItems = [];
 let toastTimer = 0;
+let activityLoading = false;
 
 function setStatus(message, { error = false } = {}) {
   statusNode.textContent = message;
@@ -63,6 +65,7 @@ function setAccount(user) {
 function setSignedOutUi() {
   currentUser = null;
   activityItems = [];
+  activityLoading = false;
   setAccount(null);
   authShell.hidden = false;
   dashboard.hidden = true;
@@ -158,6 +161,21 @@ function createActivityDetail(item) {
   return details;
 }
 
+function createActivityAction(item) {
+  if (!item.relatedWatchPartyId && !item.relatedVenueId) return document.createTextNode('—');
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'secondary';
+  if (item.relatedWatchPartyId) {
+    button.dataset.openWatchParty = item.relatedWatchPartyId;
+    button.textContent = 'Open Watch Party';
+  } else {
+    button.dataset.openVenue = item.relatedVenueId;
+    button.textContent = 'Open Venue';
+  }
+  return button;
+}
+
 function createActivityRow(item) {
   const row = document.createElement('tr');
   row.dataset.reviewed = String(item.reviewed);
@@ -199,8 +217,13 @@ function createActivityRow(item) {
     statusCell.textContent = '—';
   }
 
+  const actionCell = document.createElement('td');
+  actionCell.dataset.label = 'Open';
+  actionCell.className = 'activity-action-cell';
+  actionCell.append(createActivityAction(item));
+
   const reviewCell = document.createElement('td');
-  reviewCell.dataset.label = 'Review';
+  reviewCell.dataset.label = 'Inbox';
   reviewCell.className = 'activity-review-cell';
   if (item.reviewed) {
     const label = document.createElement('span');
@@ -215,7 +238,7 @@ function createActivityRow(item) {
     reviewCell.append(button);
   }
 
-  row.append(dateCell, typeCell, itemCell, detailCell, statusCell, reviewCell);
+  row.append(dateCell, typeCell, itemCell, detailCell, statusCell, actionCell, reviewCell);
   return row;
 }
 
@@ -233,7 +256,7 @@ function renderActivityTable(node, items) {
   table.className = 'activity-table';
   const head = document.createElement('thead');
   const headerRow = document.createElement('tr');
-  ['Date', 'Type', 'Item', 'Detail', 'Status', 'Review'].forEach((label) => {
+  ['Date', 'Type', 'Item', 'Detail', 'Status', 'Open', 'Inbox'].forEach((label) => {
     const th = document.createElement('th');
     th.scope = 'col';
     th.textContent = label;
@@ -265,10 +288,11 @@ function renderDashboard() {
   const bulkKeys = currentBulkReviewKeys();
 
   activitySummaryNode.textContent = `${activityItems.length} total · ${unreviewedCount} unreviewed · ${reviewedCount} reviewed`;
-  activityBulkReviewButton.disabled = bulkKeys.length === 0;
+  activityBulkReviewButton.disabled = activityLoading || bulkKeys.length === 0;
   activityBulkReviewButton.textContent = bulkKeys.length
     ? `Mark ${bulkKeys.length} as reviewed`
     : 'Mark all as reviewed';
+  if (activityRefreshButton) activityRefreshButton.disabled = activityLoading;
 
   renderActivityTable(activityListNode, historyItems);
 }
@@ -282,25 +306,40 @@ function populateTypeFilters() {
   });
 }
 
-async function loadAdminActivity(user) {
-  setSignedInPendingUi(user);
-  setStatus('Loading CGB Admin…');
+async function loadAdminActivity(user, { refresh = false } = {}) {
+  if (activityLoading) return;
+  activityLoading = true;
+  if (!refresh) {
+    setSignedInPendingUi(user);
+    setStatus('Loading CGB Admin…');
+  } else {
+    renderDashboard();
+  }
   try {
-    const idToken = await user.getIdToken(true);
+    const idToken = await user.getIdToken(!refresh);
     const payload = await postAdmin(buildAdminActivityRequest(idToken));
-    if (payload.ok !== true) {
-      setStatus(adminErrorCopy(payload.error), { error: true });
-      return;
-    }
+    if (payload.ok !== true) throw new Error(payload.error || 'admin_backend_unavailable');
     const result = validateAdminActivityResponse(payload);
     if (!result) throw new Error('admin_backend_unavailable');
     activityItems = [...result.items];
-    showDashboard(user);
+    if (refresh) {
+      renderDashboard();
+      showToast('Activity refreshed.');
+    } else {
+      showDashboard(user);
+    }
   } catch (error) {
     const code = error?.name === 'AbortError'
       ? 'admin_backend_unavailable'
       : String(error?.message || 'admin_backend_unavailable');
-    setStatus(adminErrorCopy(code), { error: true });
+    if (refresh) {
+      showToast(adminErrorCopy(code), { error: true });
+    } else {
+      setStatus(adminErrorCopy(code), { error: true });
+    }
+  } finally {
+    activityLoading = false;
+    if (refresh && !dashboard.hidden) renderDashboard();
   }
 }
 
@@ -325,6 +364,62 @@ async function markReviewed(keys) {
   }
 }
 
+function openVenueFromActivity(venueId) {
+  const open = () => {
+    const node = [...document.querySelectorAll('#venue-list .venue-list-item[data-venue-id]')]
+      .find((item) => item.dataset.venueId === venueId);
+    if (!node) return false;
+    node.click();
+    node.scrollIntoView({ block: 'nearest' });
+    return true;
+  };
+  const search = document.querySelector('#venue-search');
+  const typeFilter = document.querySelector('#venue-type-filter');
+  const statusFilter = document.querySelector('#venue-status-filter');
+  if (search) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); }
+  if (typeFilter) { typeFilter.value = 'all'; typeFilter.dispatchEvent(new Event('change', { bubbles: true })); }
+  if (statusFilter) { statusFilter.value = 'all'; statusFilter.dispatchEvent(new Event('change', { bubbles: true })); }
+  document.querySelector('[data-view="venues"]')?.click();
+  if (open()) return;
+  const list = document.querySelector('#venue-list');
+  if (!list) return;
+  const observer = new MutationObserver(() => { if (open()) observer.disconnect(); });
+  observer.observe(list, { childList: true, subtree: true });
+  window.setTimeout(() => {
+    const found = open();
+    observer.disconnect();
+    if (!found) showToast('That Venue could not be opened.', { error: true });
+  }, 6000);
+}
+
+function openWatchPartyFromActivity(watchPartyId) {
+  const open = () => {
+    const node = [...document.querySelectorAll('#watch-party-list .venue-list-item[data-watch-party-id]')]
+      .find((item) => item.dataset.watchPartyId === watchPartyId);
+    if (!node) return false;
+    node.click();
+    node.scrollIntoView({ block: 'nearest' });
+    return true;
+  };
+  const search = document.querySelector('#watch-party-search');
+  const gameFilter = document.querySelector('#watch-party-game-filter');
+  const venueFilter = document.querySelector('#watch-party-venue-filter');
+  if (search) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); }
+  if (gameFilter) { gameFilter.value = 'all'; gameFilter.dispatchEvent(new Event('change', { bubbles: true })); }
+  if (venueFilter) { venueFilter.value = 'all'; venueFilter.dispatchEvent(new Event('change', { bubbles: true })); }
+  document.querySelector('[data-view="watch-parties"]')?.click();
+  if (open()) return;
+  const list = document.querySelector('#watch-party-list');
+  if (!list) return;
+  const observer = new MutationObserver(() => { if (open()) observer.disconnect(); });
+  observer.observe(list, { childList: true, subtree: true });
+  window.setTimeout(() => {
+    const found = open();
+    observer.disconnect();
+    if (!found) showToast('That Watch Party could not be opened.', { error: true });
+  }, 6000);
+}
+
 function bindDashboardEvents() {
   navButtons.forEach((button) => {
     button.addEventListener('click', () => {
@@ -343,14 +438,28 @@ function bindDashboardEvents() {
   });
 
   activityListNode.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-review-key]');
-    if (!button) return;
-    button.disabled = true;
-    markReviewed([button.dataset.reviewKey]);
+    const watchPartyButton = event.target.closest('[data-open-watch-party]');
+    if (watchPartyButton) {
+      openWatchPartyFromActivity(watchPartyButton.dataset.openWatchParty);
+      return;
+    }
+    const venueButton = event.target.closest('[data-open-venue]');
+    if (venueButton) {
+      openVenueFromActivity(venueButton.dataset.openVenue);
+      return;
+    }
+    const reviewButton = event.target.closest('[data-review-key]');
+    if (!reviewButton) return;
+    reviewButton.disabled = true;
+    markReviewed([reviewButton.dataset.reviewKey]);
   });
 
   activityBulkReviewButton.addEventListener('click', () => {
     markReviewed(currentBulkReviewKeys());
+  });
+
+  activityRefreshButton?.addEventListener('click', () => {
+    if (currentUser) loadAdminActivity(currentUser, { refresh: true });
   });
 }
 

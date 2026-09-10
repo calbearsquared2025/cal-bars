@@ -121,7 +121,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(0, 38, 118, 
 .venue-toolbar { display: grid; grid-template-columns: minmax(280px, 1fr) 170px 160px 140px; gap: 12px; margin-bottom: 16px; }
 .venue-toolbar__search { min-width: 0; }
 .venue-workspace { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: 18px; align-items: start; }
-.venue-list { display: grid; align-content: start; gap: 7px; height: calc(100vh - 250px); min-height: 420px; overflow: auto; padding-right: 3px; }
+.venue-list { position: sticky; top: 16px; display: grid; align-content: start; gap: 7px; height: calc(100vh - 32px); min-height: 420px; overflow: auto; padding-right: 3px; }
 .venue-list-item { display: grid; gap: 3px; width: 100%; text-align: left; background: var(--surface); color: var(--ink); border-color: var(--line); padding: 12px 13px; }
 .venue-list-item span { color: var(--muted); font-size: .84rem; font-weight: 450; }
 .venue-list-item small { color: #55606f; font-weight: 450; }
@@ -173,6 +173,19 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(0, 38, 118, 
 .dashboard-status[data-visible="true"] { opacity: 1; transform: translateY(0); }
 .dashboard-status[data-state="error"] { background: var(--danger); }
 
+@media (max-width: 960px) {
+  .activity-table-shell { overflow: visible; border: 0; background: transparent; }
+  .activity-table, .activity-table tbody, .activity-table tr, .activity-table td { display: block; width: 100%; }
+  .activity-table thead { display: none; }
+  .activity-table tbody { display: grid; gap: 8px; }
+  .activity-table tr { padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+  .activity-table tbody tr[data-reviewed="true"] { background: #fafafa; }
+  .activity-table td { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; padding: 4px 0; border: 0; }
+  .activity-table td::before { content: attr(data-label); color: var(--muted); font-size: .66rem; font-weight: 800; letter-spacing: .045em; text-transform: uppercase; }
+  .activity-review-cell { text-align: left; }
+  .activity-review-cell button { justify-self: start; }
+}
+
 @media (max-width: 900px) {
   .venue-toolbar { grid-template-columns: minmax(0, 1fr) repeat(3, minmax(130px, 1fr)); }
   .venue-toolbar__search { grid-column: 1 / -1; }
@@ -192,21 +205,11 @@ input:focus, select:focus, textarea:focus { outline: 2px solid rgba(0, 38, 118, 
   .view-heading > button { width: 100%; }
   .filters, .filters--two, .venue-toolbar { grid-template-columns: 1fr; }
   .venue-toolbar__search { grid-column: auto; }
-  .activity-table-shell { overflow: visible; border: 0; background: transparent; }
-  .activity-table, .activity-table tbody, .activity-table tr, .activity-table td { display: block; width: 100%; }
-  .activity-table thead { display: none; }
-  .activity-table tbody { display: grid; gap: 8px; }
-  .activity-table tr { padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
-  .activity-table tbody tr[data-reviewed="true"] { background: #fafafa; }
-  .activity-table td { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 8px; padding: 4px 0; border: 0; }
-  .activity-table td::before { content: attr(data-label); color: var(--muted); font-size: .66rem; font-weight: 800; letter-spacing: .045em; text-transform: uppercase; }
-  .activity-review-cell { text-align: left; }
-  .activity-review-cell button { justify-self: start; }
   .venue-add-search-row { grid-template-columns: 1fr; }
   .venue-add-confirm { align-items: stretch; flex-direction: column; }
   .venue-add-confirm button { width: 100%; }
   .venue-workspace { grid-template-columns: 1fr; }
-  .venue-list { height: auto; min-height: 0; max-height: 280px; }
+  .venue-list { position: static; top: auto; height: auto; min-height: 0; max-height: 280px; }
   .venue-field-grid, .venue-tag-grid { grid-template-columns: 1fr; }
   .venue-field--wide { grid-column: auto; }
   .venue-editor__title { padding: 18px 16px; }
