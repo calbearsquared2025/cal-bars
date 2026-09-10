@@ -2,7 +2,10 @@ import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
 import { accountsConfigIsReady } from './accounts-core.mjs';
 
 const HISTORY_CACHE_MS = 60000;
-const BADGE_IDS = new Set(['first_down', 'chain_mover', 'home_field', 'road_game', 'bowl_eligible']);
+const BADGE_IDS = new Set([
+  'first_down', 'chain_mover', 'home_field', 'road_game', 'bowl_eligible',
+  'play_caller', 'postgame_report'
+]);
 let currentSummary = null;
 let currentSummaryAt = 0;
 let signedIn = false;
