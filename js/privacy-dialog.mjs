@@ -1,5 +1,6 @@
 import './accounts-ui.mjs';
 import './account-attendance.mjs';
+import './account-history.mjs';
 import { connectFooterPopover } from './footer-popover.mjs';
 
 function addMobilePrivacySection(dialog) {
