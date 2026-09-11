@@ -3,10 +3,16 @@ import { accountsConfigIsReady } from './accounts-core.mjs';
 
 const HISTORY_CACHE_MS = 60000;
 const HISTORY_RETRY_DELAY_MS = 350;
-const BADGE_IDS = new Set([
-  'first_down', 'chain_mover', 'home_field', 'road_game', 'bowl_eligible',
-  'play_caller', 'postgame_report'
-]);
+const BADGE_ASSETS = Object.freeze({
+  first_down: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/First_Down.webp',
+  chain_mover: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Chain_Mover.webp',
+  home_field: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Home_Field.webp',
+  road_game: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150177/Road_Game.webp',
+  bowl_eligible: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150177/Bowl_Eligible.webp',
+  play_caller: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Play_Caller.webp',
+  postgame_report: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Postgame_Report.webp'
+});
+const BADGE_IDS = new Set(Object.keys(BADGE_ASSETS));
 
 let currentSummary = null;
 let currentSummaryAt = 0;
@@ -174,16 +180,26 @@ function renderSummary(summary) {
     const item = document.createElement('div');
     item.className = 'accounts-badge';
     item.dataset.earned = String(badge.earned);
+
+    const artwork = document.createElement('img');
+    artwork.className = 'accounts-badge__artwork';
+    artwork.src = BADGE_ASSETS[badge.id];
+    artwork.alt = `${badge.label} achievement artwork`;
+    artwork.width = 512;
+    artwork.height = 512;
+
     const copy = document.createElement('div');
+    copy.className = 'accounts-badge__copy';
     const label = document.createElement('strong');
     label.textContent = badge.label;
     const description = document.createElement('span');
     description.textContent = badge.description;
     copy.append(label, description);
+
     const progress = document.createElement('span');
     progress.className = 'accounts-badge__progress';
     progress.textContent = badge.earned ? 'Earned' : `${badge.current} / ${badge.target}`;
-    item.append(copy, progress);
+    item.append(artwork, copy, progress);
     badges.append(item);
   });
   content.append(badgesHeading, badges);

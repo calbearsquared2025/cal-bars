@@ -48,18 +48,24 @@
   letter-spacing: .085em;
 }
 
-.accounts-badges,
+.accounts-badges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .accounts-game-history {
   display: grid;
   gap: 8px;
 }
 
 .accounts-badge {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 12px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 9px;
+  padding: 10px;
   border: 1px solid var(--cgb-neutral-200);
   border-radius: var(--radius-md);
   background: var(--brand-surface);
@@ -67,15 +73,33 @@
 
 .accounts-badge[data-earned="true"] {
   border-color: rgba(253,181,21,.72);
-  border-left: 4px solid var(--brand-secondary);
   background: var(--brand-watch-party-surface);
 }
 
-.accounts-badge > div,
+.accounts-badge__artwork {
+  display: block;
+  width: min(100%, 142px);
+  height: auto;
+  aspect-ratio: 1;
+  align-self: center;
+  object-fit: contain;
+}
+
+.accounts-badge[data-earned="false"] .accounts-badge__artwork {
+  filter: saturate(.3) contrast(.84);
+  opacity: .62;
+}
+
+.accounts-badge__copy,
 .accounts-game-row > div {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 3px;
+}
+
+.accounts-badge__copy {
+  align-content: start;
+  flex: 1 1 auto;
 }
 
 .accounts-badge strong,
@@ -83,7 +107,14 @@
   color: var(--brand-primary-dark);
 }
 
-.accounts-badge > div span,
+.accounts-badge__copy > strong {
+  font-family: var(--font-condensed);
+  font-size: .9rem;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.accounts-badge__copy > span,
 .accounts-game-row span {
   color: var(--brand-text-muted);
   font-size: .74rem;
@@ -91,10 +122,11 @@
 }
 
 .accounts-badge__progress {
-  flex: 0 0 auto;
   min-height: 28px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  align-self: start;
   padding: 5px 9px;
   border-radius: var(--radius-pill);
   background: var(--cgb-navy-50);
@@ -132,5 +164,35 @@
   .accounts-game-row {
     grid-template-columns: 1fr;
     gap: 5px;
+  }
+}
+
+@media (max-width: 359px) {
+  .accounts-badges {
+    gap: 7px;
+  }
+
+  .accounts-badge {
+    gap: 7px;
+    padding: 8px;
+  }
+
+  .accounts-badge__artwork {
+    width: min(100%, 118px);
+  }
+
+  .accounts-badge__copy > strong {
+    font-size: .84rem;
+  }
+
+  .accounts-badge__copy > span {
+    font-size: .69rem;
+    line-height: 1.25;
+  }
+
+  .accounts-badge__progress {
+    min-height: 26px;
+    padding: 4px 8px;
+    font-size: .68rem;
   }
 }
