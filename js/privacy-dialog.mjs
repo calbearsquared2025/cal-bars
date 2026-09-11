@@ -1,4 +1,5 @@
 import './account-dialog-interactions.mjs';
+import './account-avatar-policy.mjs';
 import './accounts-ui.mjs';
 import './account-attendance.mjs';
 import './account-history.mjs';
