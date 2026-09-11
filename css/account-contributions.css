@@ -63,6 +63,47 @@
 .account-contribution-note { margin: 0; }
 .account-contribution-submit { justify-self: start; }
 
+.party-module .account-watch-party-claim {
+  justify-self: start;
+  margin: .15rem 0 0;
+  padding: 0;
+  color: var(--cgb-navy-900);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+
+.party-module .account-watch-party-claim:hover,
+.party-module .account-watch-party-claim:focus-visible {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.party-module .account-watch-party-claim:disabled {
+  color: var(--cgb-ink-500);
+  cursor: wait;
+  text-decoration: none;
+}
+
+.party-module .account-watch-party-claim-status {
+  justify-self: start;
+  margin-top: .15rem;
+  color: var(--cgb-ink-500);
+  font-size: .75rem;
+  line-height: 1.25;
+}
+
+#venue-tray .selected-card > .party-module .account-watch-party-claim,
+#venue-tray .selected-card > .party-module .account-watch-party-claim-status {
+  font-size: .67rem;
+}
+
 @media (max-width: 899px) {
   .account-contribution-submit { width: 100%; }
 }

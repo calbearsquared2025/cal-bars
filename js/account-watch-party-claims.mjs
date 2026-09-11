@@ -10,6 +10,8 @@ let accountSignedIn = false;
 let renderRevision = 0;
 let dialog = null;
 let dialogContext = null;
+let partyModuleObserver = null;
+let partyModuleRenderQueued = false;
 
 function injectStyles() {
   if (document.querySelector('link[data-cgb-account-contributions-style]')) return;
@@ -25,7 +27,7 @@ function clean(value) {
 }
 
 function selectedWatchParty() {
-  if (!appState.detailMode || !appState.snapshot || !appState.gameId || !appState.selectedVenueId) return null;
+  if (!appState.snapshot || !appState.gameId || !appState.selectedVenueId) return null;
   return (appState.snapshot.watchParties || []).find((party) =>
     party?.game_id === appState.gameId &&
     party?.venue_id === appState.selectedVenueId &&
@@ -42,8 +44,9 @@ function selectedGame() {
   return (appState.snapshot?.games || []).find((game) => game?.game_id === appState.gameId) || null;
 }
 
-function claimTarget() {
-  return document.querySelector('.detail-contribution .detail-contribution__actions');
+function claimTarget(context) {
+  return [...document.querySelectorAll('.party-module[data-watch-party-id]')]
+    .find((module) => module.dataset.watchPartyId === context?.watchPartyId) || null;
 }
 
 function clearClaimUi() {
@@ -53,7 +56,7 @@ function clearClaimUi() {
 function makeClaimButton(label, context, { disabled = false } = {}) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.className = 'secondary-button';
+  button.className = 'account-watch-party-claim';
   button.dataset.accountWatchPartyClaim = context.watchPartyId;
   button.textContent = label;
   button.disabled = disabled;
@@ -63,7 +66,7 @@ function makeClaimButton(label, context, { disabled = false } = {}) {
 function makeClaimStatus(label, context) {
   const status = document.createElement('span');
   status.dataset.accountWatchPartyClaim = context.watchPartyId;
-  status.className = 'account-contribution-note';
+  status.className = 'account-watch-party-claim-status';
   status.textContent = label;
   return status;
 }
@@ -81,42 +84,58 @@ function claimContext() {
   });
 }
 
-function revealContributionSection(target) {
-  const section = target?.closest('.detail-contribution');
-  if (section) section.hidden = false;
-}
-
 function renderSignedOutClaim(context, target) {
   const button = makeClaimButton('Claim this Watch Party', context);
   button.addEventListener('click', () => {
     document.querySelector('#cgb-account-button')?.click();
   });
   target.append(button);
-  revealContributionSection(target);
 }
 
 function renderState(context, target, state) {
   if (state.managementRole === 'owner' || state.managementRole === 'manager') {
     target.append(makeClaimStatus('You manage this Watch Party.', context));
-    revealContributionSection(target);
     return;
   }
   if (state.claimStatus === 'pending') {
     target.append(makeClaimStatus('Your claim is pending review.', context));
-    revealContributionSection(target);
     return;
   }
   const button = makeClaimButton('Claim this Watch Party', context);
   button.addEventListener('click', () => openClaimDialog(context));
   target.append(button);
-  revealContributionSection(target);
+}
+
+function nodeContainsPartyModule(node) {
+  if (node?.nodeType !== Node.ELEMENT_NODE) return false;
+  if (node.matches?.('.party-module[data-watch-party-id]')) return true;
+  return Boolean(node.querySelector?.('.party-module[data-watch-party-id]'));
+}
+
+function queueClaimRender() {
+  if (partyModuleRenderQueued) return;
+  partyModuleRenderQueued = true;
+  queueMicrotask(() => {
+    partyModuleRenderQueued = false;
+    void renderClaimUi();
+  });
+}
+
+function observePartyModuleReplacement() {
+  if (partyModuleObserver || !document.body) return;
+  partyModuleObserver = new MutationObserver((mutations) => {
+    const partyModuleAdded = mutations.some((mutation) =>
+      [...mutation.addedNodes].some(nodeContainsPartyModule));
+    if (partyModuleAdded) queueClaimRender();
+  });
+  partyModuleObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 async function renderClaimUi() {
   const revision = ++renderRevision;
   clearClaimUi();
   const context = claimContext();
-  const target = claimTarget();
+  const target = claimTarget(context);
   if (!context || !target || !context.watchPartyId) return;
 
   if (!accountSignedIn || !window.CGBAccounts?.isSignedIn?.()) {
@@ -126,7 +145,6 @@ async function renderClaimUi() {
 
   const loading = makeClaimButton('Checking claim status…', context, { disabled: true });
   target.append(loading);
-  revealContributionSection(target);
   try {
     const payload = await window.CGBAccounts.request('getFanWatchPartyClaimState', {
       watchPartyId: context.watchPartyId
@@ -135,13 +153,18 @@ async function renderClaimUi() {
     if (payload?.ok !== true) throw new Error(payload?.error || 'fan_backend_unavailable');
     const state = validateFanWatchPartyClaimResponse(payload);
     if (!state) throw new Error('fan_backend_unavailable');
-    loading.remove();
-    renderState(context, target, state);
+    const liveTarget = claimTarget(context);
+    if (!liveTarget) return;
+    clearClaimUi();
+    renderState(context, liveTarget, state);
   } catch (_) {
     if (revision !== renderRevision || claimContext()?.watchPartyId !== context.watchPartyId) return;
-    loading.disabled = false;
-    loading.textContent = 'Claim this Watch Party';
-    loading.addEventListener('click', () => openClaimDialog(context), { once: true });
+    const liveTarget = claimTarget(context);
+    if (!liveTarget) return;
+    clearClaimUi();
+    const retry = makeClaimButton('Claim this Watch Party', context);
+    retry.addEventListener('click', () => openClaimDialog(context), { once: true });
+    liveTarget.append(retry);
   }
 }
 
@@ -254,6 +277,7 @@ async function handleClaimSubmit(event) {
 export function initializeAccountWatchPartyClaims() {
   if (!accountsConfigIsReady(CGB_ACCOUNTS_CONFIG)) return false;
   injectStyles();
+  observePartyModuleReplacement();
   subscribeAppEvent('rendered', () => { void renderClaimUi(); });
   window.addEventListener('cgb:account-state', (event) => {
     accountSignedIn = event.detail?.signedIn === true;
