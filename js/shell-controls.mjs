@@ -155,6 +155,9 @@ function syncContributionStructure() {
 function updateResponsiveCommandLabels() {
   const mobile = isMobileLayout();
   const venue = selectedVenue();
+  const desktopInlineAdd = !mobile &&
+    document.body.dataset.commandSurface === 'add' &&
+    document.body.dataset.searchMode === 'add-location';
   const labels = mobile
     ? { map: 'Map', search: 'Search', add: 'Add', list: 'List', about: 'About' }
     : { map: 'Selected', search: 'Search', add: `Add to ${PRODUCT_SHORT_NAME}`, list: 'Locations', about: 'About' };
@@ -174,7 +177,7 @@ function updateResponsiveCommandLabels() {
   const addTitle = document.querySelector('#add-surface-title');
   const addIntro = document.querySelector('#add-surface > .command-surface__shell > .command-surface__intro');
   if (addTitle) addTitle.textContent = mobile ? 'Add to the map' : `Add to ${PRODUCT_NAME}`;
-  if (addIntro) {
+  if (addIntro && !desktopInlineAdd) {
     addIntro.textContent = mobile
       ? 'Choose what you would like to add or correct.'
       : venue
@@ -185,12 +188,12 @@ function updateResponsiveCommandLabels() {
   if (dom.addCalBarTitle) {
     dom.addCalBarTitle.textContent = mobile ? 'Tell us about this location' : 'Tell us about a location';
   }
-  if (dom.addSomewhereElseTitle) {
+  if (dom.addSomewhereElseTitle && !desktopInlineAdd) {
     dom.addSomewhereElseTitle.textContent = mobile
       ? 'Add somewhere else'
       : venue ? 'Add somewhere else' : 'New location';
   }
-  if (dom.addSomewhereElseIntro) {
+  if (dom.addSomewhereElseIntro && !desktopInlineAdd) {
     dom.addSomewhereElseIntro.hidden = !mobile;
     dom.addSomewhereElseIntro.textContent = `Search for a place that isn’t listed in ${PRODUCT_NAME} yet.`;
   }

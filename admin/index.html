@@ -48,6 +48,7 @@
         <button class="admin-nav__item" type="button" data-view="activity" aria-selected="true">Activity</button>
         <button class="admin-nav__item" type="button" data-view="venues" aria-selected="false">Venues</button>
         <button class="admin-nav__item" type="button" data-view="watch-parties" aria-selected="false">Watch Parties</button>
+        <button class="admin-nav__item" type="button" data-view="watch-party-claims" aria-selected="false" hidden>Claims</button>
         <button class="admin-nav__item" type="button" data-view="accounts" aria-selected="false">Accounts</button>
         <button class="admin-nav__item" type="button" data-view="resources" aria-selected="false">Resources</button>
       </nav>
@@ -189,6 +190,31 @@
           </div>
         </section>
 
+        <section class="admin-view" data-panel="watch-party-claims" hidden>
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">Organizer access</p>
+              <h1>Watch Party Claims</h1>
+              <p id="watch-party-claims-summary" class="view-copy">Claims load when this tab is opened.</p>
+            </div>
+            <button id="watch-party-claims-refresh" class="secondary" type="button">Refresh</button>
+          </div>
+          <div class="filters">
+            <label>
+              Claim status
+              <select id="watch-party-claims-status-filter">
+                <option value="pending" selected>Pending review</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="all">All claims</option>
+              </select>
+            </label>
+          </div>
+          <div id="watch-party-claims-list" class="activity-table-shell">
+            <div class="empty-state">Open Claims to load review data.</div>
+          </div>
+        </section>
+
         <section class="admin-view" data-panel="accounts" hidden>
           <div class="view-heading">
             <div>
@@ -257,6 +283,7 @@
     <script type="module" src="./admin-auth.mjs"></script>
     <script type="module" src="./admin-venues.mjs"></script>
     <script type="module" src="./admin-watch-parties.mjs"></script>
+    <script type="module" src="./admin-watch-party-claims.mjs"></script>
     <script type="module" src="./admin-accounts.mjs"></script>
     <script type="module" src="./admin-resources.mjs"></script>
   </body>

@@ -1,0 +1,55 @@
+@media (max-width: 899px) {
+  #privacy-dialog {
+    width: min(calc(100vw - 24px), 34rem);
+    max-height: 78dvh;
+    margin: auto;
+    overflow: hidden;
+    color: var(--cgb-ink-900, var(--ink));
+    background: var(--cgb-warm-50, #fbfaf7);
+    border: 1px solid var(--cgb-neutral-200, var(--line));
+    border-radius: var(--radius-lg, 20px);
+    box-shadow: var(--shadow-lg, var(--shadow));
+  }
+
+  #privacy-dialog .dialog-shell {
+    max-height: 78dvh;
+    padding: 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #privacy-dialog .dialog-header {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--cgb-neutral-200, var(--line));
+  }
+
+  #privacy-dialog .dialog-header h2 {
+    margin: 0;
+    color: var(--cgb-navy-950, var(--cal-blue-dark));
+    font-family: var(--font-display, ui-serif, Georgia, serif);
+    font-size: clamp(1.65rem, 7vw, 2.05rem);
+    line-height: 1;
+  }
+
+  #privacy-dialog p {
+    margin: 12px 0 0;
+    color: var(--cgb-ink-700, var(--muted));
+    font-family: var(--font-ui, ui-sans-serif, system-ui, sans-serif);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  #privacy-dialog a,
+  .about-surface__content .about-privacy-link .text-button {
+    color: var(--cgb-navy-900, var(--cal-blue));
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+  }
+
+  .about-surface__content .about-privacy-link {
+    margin-top: 14px;
+  }
+}

@@ -10,16 +10,23 @@ const FAN_ACTIONS = Object.freeze([
   'setFanAttendance',
   'setFanAttendanceVisibility',
   'submitFanExperience',
-  'submitFanWatchParty'
+  'submitFanWatchParty',
+  'getFanWatchPartyClaimState',
+  'submitFanWatchPartyClaim'
 ]);
 const PUBLIC_PROFILE_STATUSES = Object.freeze(['private', 'public']);
 const ATTENDANCE_VISIBILITY_VALUES = Object.freeze(['anonymous', 'public']);
 const ATTENDANCE_ACTIONS = Object.freeze(['join', 'move', 'withdraw']);
 const WATCH_PARTY_ORGANIZER_TYPES = Object.freeze(['alumni_group', 'venue', 'other_organization', 'individual', 'unknown']);
-const WATCH_PARTY_SOURCE_TYPES = Object.freeze(['fan_submitted', 'venue_submitted', 'alumni_group_submitted']);
+const WATCH_PARTY_SUBMITTER_RELATIONSHIPS = Object.freeze(['organizer', 'representative', 'sharer']);
 const WATCH_PARTY_AGE_POLICIES = Object.freeze(['unknown', 'all_ages', '21_plus']);
 const WATCH_PARTY_SOUND_STATUSES = Object.freeze(['unknown', 'confirmed_on', 'confirmed_off']);
 const WATCH_PARTY_FEATURE_TAGS = Object.freeze(['rsvp_requested', 'cal_specials']);
+const WATCH_PARTY_CLAIM_RELATIONSHIPS = Object.freeze([
+  'organizer', 'alumni_group_representative', 'venue_representative', 'other'
+]);
+const WATCH_PARTY_CLAIM_STATUSES = Object.freeze(['pending', 'approved', 'rejected']);
+const WATCH_PARTY_MANAGEMENT_ROLES = Object.freeze(['owner', 'manager']);
 const VENUE_ID_PATTERN = /^venue_[a-f0-9]{24}$/;
 const GAME_ID_PATTERN = /^game_[a-f0-9]{24}$/;
 const BROWSER_ID_PATTERN = /^browser_[A-Za-z0-9_-]{16,128}$/;
@@ -80,6 +87,13 @@ function normalizeWatchPartyFeatureTags(values) {
   const selected = [...new Set(values.map(clean))];
   if (selected.some((value) => !WATCH_PARTY_FEATURE_TAGS.includes(value))) throw new Error('invalid_fan_contribution');
   return WATCH_PARTY_FEATURE_TAGS.filter((tag) => selected.includes(tag));
+}
+
+function normalizeHttpUrl(value) {
+  const url = clean(value);
+  if (!url) return '';
+  if (url.length > 2048 || !/^https?:\/\/[^\s]+$/i.test(url)) throw new Error('invalid_watch_party_claim');
+  return url;
 }
 
 export function firebaseConfigIsComplete(config) {
@@ -182,7 +196,7 @@ export function buildFanRequest(action, idToken, extra = {}) {
     payload.displayName = boundedText(extra.displayName, 60);
   } else if (normalizedAction === 'submitFanWatchParty') {
     const expected = [
-      'clientRequestId', 'venueId', 'gameId', 'organizerName', 'organizerType', 'sourceType',
+      'clientRequestId', 'venueId', 'gameId', 'organizerName', 'organizerType', 'submitterRelationship',
       'officialEventUrl', 'eventStart', 'agePolicy', 'soundStatus', 'restrictionsNote',
       'gameDayNote', 'featureTags'
     ];
@@ -190,12 +204,13 @@ export function buildFanRequest(action, idToken, extra = {}) {
     const venueId = clean(extra.venueId);
     const gameId = clean(extra.gameId);
     const organizerType = clean(extra.organizerType);
-    const sourceType = clean(extra.sourceType);
+    const submitterRelationship = clean(extra.submitterRelationship);
     const agePolicy = clean(extra.agePolicy) || 'unknown';
     const soundStatus = clean(extra.soundStatus) || 'unknown';
     const officialEventUrl = clean(extra.officialEventUrl);
     if (!VENUE_ID_PATTERN.test(venueId) || !GAME_ID_PATTERN.test(gameId) ||
-        !WATCH_PARTY_ORGANIZER_TYPES.includes(organizerType) || !WATCH_PARTY_SOURCE_TYPES.includes(sourceType) ||
+        !WATCH_PARTY_ORGANIZER_TYPES.includes(organizerType) ||
+        !WATCH_PARTY_SUBMITTER_RELATIONSHIPS.includes(submitterRelationship) ||
         !WATCH_PARTY_AGE_POLICIES.includes(agePolicy) || !WATCH_PARTY_SOUND_STATUSES.includes(soundStatus) ||
         (officialEventUrl && (!/^https:\/\/[^\s]+$/i.test(officialEventUrl) || officialEventUrl.length > 2048))) {
       throw new Error('invalid_fan_contribution');
@@ -205,7 +220,7 @@ export function buildFanRequest(action, idToken, extra = {}) {
     payload.gameId = gameId;
     payload.organizerName = boundedText(extra.organizerName, 180, { required: true });
     payload.organizerType = organizerType;
-    payload.sourceType = sourceType;
+    payload.submitterRelationship = submitterRelationship;
     payload.officialEventUrl = officialEventUrl;
     payload.eventStart = boundedText(extra.eventStart, 240);
     payload.agePolicy = agePolicy;
@@ -213,6 +228,25 @@ export function buildFanRequest(action, idToken, extra = {}) {
     payload.restrictionsNote = boundedText(extra.restrictionsNote, 1200);
     payload.gameDayNote = boundedText(extra.gameDayNote, 1200);
     payload.featureTags = normalizeWatchPartyFeatureTags(extra.featureTags);
+  } else if (normalizedAction === 'getFanWatchPartyClaimState') {
+    if (!exactKeys(extra, ['watchPartyId'])) throw new Error('invalid_fan_request');
+    const watchPartyId = clean(extra.watchPartyId);
+    if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId)) throw new Error('invalid_watch_party_claim');
+    payload.watchPartyId = watchPartyId;
+  } else if (normalizedAction === 'submitFanWatchPartyClaim') {
+    if (!exactKeys(extra, ['watchPartyId', 'claimantName', 'relationship', 'explanation', 'supportingUrl'])) {
+      throw new Error('invalid_fan_request');
+    }
+    const watchPartyId = clean(extra.watchPartyId);
+    const relationship = clean(extra.relationship);
+    if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId) || !WATCH_PARTY_CLAIM_RELATIONSHIPS.includes(relationship)) {
+      throw new Error('invalid_watch_party_claim');
+    }
+    payload.watchPartyId = watchPartyId;
+    payload.claimantName = boundedText(extra.claimantName, 120, { required: true });
+    payload.relationship = relationship;
+    payload.explanation = boundedText(extra.explanation, 1200);
+    payload.supportingUrl = normalizeHttpUrl(extra.supportingUrl);
   } else if (Object.keys(extra).length) {
     throw new Error('invalid_fan_request');
   }
@@ -257,6 +291,20 @@ export function validateFanContributionResponse(payload) {
     return null;
   }
   return Object.freeze({ contributionType, status, relatedRecordId });
+}
+
+export function validateFanWatchPartyClaimResponse(payload) {
+  if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true || ![
+    'getFanWatchPartyClaimState', 'submitFanWatchPartyClaim'
+  ].includes(payload.action)) return null;
+  const watchPartyId = clean(payload.watchPartyId);
+  const managementRole = clean(payload.managementRole);
+  const claimStatus = clean(payload.claimStatus);
+  if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId) ||
+      (managementRole && !WATCH_PARTY_MANAGEMENT_ROLES.includes(managementRole)) ||
+      (claimStatus && !WATCH_PARTY_CLAIM_STATUSES.includes(claimStatus))) return null;
+  if (payload.action === 'submitFanWatchPartyClaim' && claimStatus !== 'pending') return null;
+  return Object.freeze({ watchPartyId, managementRole, claimStatus });
 }
 
 export function validateFanAttendanceResponse(payload) {
@@ -339,6 +387,12 @@ export function fanErrorCopy(code) {
       return 'This game is no longer open for selections.';
     case 'fan_selection_conflict':
       return 'Your CGB selection changed on another device. Refresh and try again.';
+    case 'fan_watch_party_not_claimable':
+      return 'This Watch Party is not available to claim.';
+    case 'fan_claim_already_pending':
+      return 'Your claim for this Watch Party is already pending review.';
+    case 'fan_already_manager':
+      return 'You already manage this Watch Party.';
     case 'fan_invalid_request':
       return 'Check the contribution details and try again.';
     case 'fan_not_configured':
