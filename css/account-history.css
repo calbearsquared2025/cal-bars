@@ -1,6 +1,6 @@
 .accounts-season-content {
   display: grid;
-  gap: 14px;
+  gap: 16px;
 }
 
 .accounts-stats {
@@ -11,33 +11,41 @@
 
 .accounts-stat {
   min-width: 0;
-  padding: 10px 8px;
-  border-radius: 12px;
-  background: #eef3f8;
+  padding: 11px 8px 10px;
+  border: 1px solid var(--cgb-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--cgb-navy-50);
   text-align: center;
 }
 
 .accounts-stat strong {
   display: block;
-  color: var(--cal-blue);
-  font-size: 1.35rem;
-  line-height: 1;
+  color: var(--brand-primary-dark);
+  font-family: var(--font-condensed);
+  font-size: 1.8rem;
+  font-weight: 900;
+  line-height: .9;
 }
 
 .accounts-stat span {
   display: block;
-  margin-top: 5px;
-  color: var(--muted);
+  margin-top: 6px;
+  color: var(--brand-text-muted);
+  font-family: var(--font-condensed);
   font-size: .68rem;
-  font-weight: 750;
-  line-height: 1.15;
+  font-weight: 850;
+  letter-spacing: .045em;
+  line-height: 1.05;
+  text-transform: uppercase;
 }
 
 .accounts-subheading {
-  color: var(--cal-blue);
+  color: var(--brand-primary-dark);
+  font-family: var(--font-condensed);
   font-size: .82rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: .055em;
+  letter-spacing: .085em;
 }
 
 .accounts-badges,
@@ -51,14 +59,16 @@
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  padding: 10px 11px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  padding: 11px 12px;
+  border: 1px solid var(--cgb-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--brand-surface);
 }
 
 .accounts-badge[data-earned="true"] {
   border-color: rgba(253,181,21,.72);
-  background: rgba(253,181,21,.1);
+  border-left: 4px solid var(--brand-secondary);
+  background: var(--brand-watch-party-surface);
 }
 
 .accounts-badge > div,
@@ -70,22 +80,36 @@
 
 .accounts-badge strong,
 .accounts-game-row strong {
-  color: var(--cal-blue);
+  color: var(--brand-primary-dark);
 }
 
 .accounts-badge > div span,
 .accounts-game-row span {
-  color: var(--muted);
+  color: var(--brand-text-muted);
   font-size: .74rem;
   line-height: 1.3;
 }
 
 .accounts-badge__progress {
   flex: 0 0 auto;
-  color: var(--cal-blue);
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--cgb-navy-50);
+  color: var(--brand-primary);
+  font-family: var(--font-condensed);
   font-size: .72rem;
-  font-weight: 850;
+  font-weight: 900;
+  letter-spacing: .035em;
   white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.accounts-badge[data-earned="true"] .accounts-badge__progress {
+  background: var(--brand-secondary);
+  color: var(--brand-primary-dark);
 }
 
 .accounts-game-row {
@@ -93,7 +117,7 @@
   grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--cgb-neutral-200);
 }
 
 .accounts-game-row:last-child {

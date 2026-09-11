@@ -14,6 +14,7 @@ export function connectFooterPopover({
   if (!dialog || !button || typeof window === 'undefined' || typeof document === 'undefined') return null;
 
   const media = window.matchMedia(mediaQuery);
+  let restoreFocusOnClose = false;
 
   const clear = () => {
     dialog.classList.remove('about-dialog--footer-popover');
@@ -23,8 +24,8 @@ export function connectFooterPopover({
 
   const close = ({ restoreFocus = false } = {}) => {
     if (!dialog.open || !dialog.classList.contains('about-dialog--footer-popover')) return false;
+    restoreFocusOnClose = restoreFocus;
     dialog.close();
-    if (restoreFocus) button.focus();
     return true;
   };
 
@@ -71,9 +72,17 @@ export function connectFooterPopover({
   };
 
   button.addEventListener('click', toggle, { capture: true });
-  dialog.addEventListener('close', clear);
   dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) dialog.close();
+    if (event.target.closest?.('[data-dialog-close]')) restoreFocusOnClose = media.matches;
+  }, { capture: true });
+  dialog.addEventListener('close', () => {
+    clear();
+    if (restoreFocusOnClose && media.matches) button.focus({ preventScroll: true });
+    restoreFocusOnClose = false;
+  });
+  dialog.addEventListener('click', (event) => {
+    if (event.target !== dialog) return;
+    if (!close({ restoreFocus: true })) dialog.close();
   });
 
   document.addEventListener('click', (event) => {

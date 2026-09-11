@@ -21,7 +21,7 @@
 
   #privacy-dialog .dialog-header {
     padding-bottom: 12px;
-    border-bottom: 1px solid var(--cgb-neutral-200, var(--line));
+    border-bottom: 2px solid var(--brand-secondary);
   }
 
   #privacy-dialog .dialog-header h2 {
