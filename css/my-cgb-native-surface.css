@@ -1,0 +1,190 @@
+body[data-cgb-accounts-enabled="true"] #my-cgb-surface[hidden] {
+  display: none !important;
+}
+
+.venue-tray[data-my-cgb-open="true"] {
+  overflow: hidden;
+}
+
+.venue-tray[data-my-cgb-open="true"] > :not(#my-cgb-surface) {
+  display: none !important;
+}
+
+.my-cgb-surface {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--brand-surface);
+  -webkit-overflow-scrolling: touch;
+}
+
+.my-cgb-surface .accounts-shell {
+  width: 100%;
+  max-height: none;
+  min-height: 100%;
+  overflow: visible;
+  padding: 20px;
+  border: 0;
+  border-radius: 0;
+  background: var(--brand-surface);
+  box-shadow: none;
+}
+
+.my-cgb-surface .accounts-header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  margin: -20px -20px 0;
+  border-radius: 0;
+}
+
+.my-cgb-surface .accounts-close {
+  display: none !important;
+}
+
+.my-cgb-surface .accounts-provider-actions,
+.my-cgb-surface .accounts-email-form {
+  display: none !important;
+}
+
+.my-cgb-surface .my-cgb-sign-in {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.my-cgb-surface .my-cgb-profile-section .accounts-profile-form {
+  display: none !important;
+}
+
+.my-cgb-edit-profile {
+  flex: 0 0 auto;
+}
+
+.my-cgb-desktop-add {
+  display: none;
+}
+
+.accounts-dialog--profile .accounts-signed-in > :not(.my-cgb-profile-section),
+.accounts-dialog--profile .accounts-signed-out,
+.accounts-dialog--profile .accounts-connections {
+  display: none !important;
+}
+
+.accounts-dialog--profile .my-cgb-profile-section {
+  display: grid !important;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.accounts-dialog--profile .my-cgb-edit-profile {
+  display: none;
+}
+
+.accounts-dialog--profile .accounts-profile-form {
+  display: grid !important;
+}
+
+.accounts-dialog--auth .accounts-signed-in {
+  display: none !important;
+}
+
+.accounts-dialog--auth .my-cgb-sign-in {
+  display: none !important;
+}
+
+body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
+  stroke-width: 1.9;
+}
+
+@media (max-width: 899px) {
+  .my-cgb-surface .accounts-shell {
+    padding: 18px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .my-cgb-surface .accounts-header {
+    margin: -18px -16px 0;
+    padding: 18px 16px 16px;
+    border-radius: 0;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .opening-stat[hidden] {
+    display: none !important;
+  }
+}
+
+@media (min-width: 900px) {
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body[data-cgb-accounts-enabled="true"] #mobile-list-button {
+    grid-column: 1;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #mobile-map-button {
+    grid-column: 2;
+    border-right: 0;
+    border-radius: 0;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #mobile-add-button {
+    display: none !important;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #mobile-about-button {
+    grid-row: 1;
+    grid-column: 3;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 1px solid rgba(1, 1, 51, .18);
+    border-left: 0;
+    border-radius: 0 9px 9px 0;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .my-cgb-desktop-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: max-content;
+    min-height: 34px;
+    margin-top: 12px;
+    padding: 7px 11px;
+    color: var(--cgb-white, #fff);
+    background: rgba(255, 255, 255, .055);
+    border: 1px solid rgba(255, 255, 255, .38);
+    border-radius: var(--radius-sm, 8px);
+    font-size: .72rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .my-cgb-desktop-add:hover,
+  body[data-cgb-accounts-enabled="true"] .my-cgb-desktop-add:focus-visible {
+    background: rgba(255, 255, 255, .08);
+    border-color: var(--cgb-gold-400, #fdb515);
+  }
+
+  .my-cgb-desktop-add__mark {
+    color: var(--cgb-gold-400, #fdb515);
+    font-size: 1rem;
+    font-weight: 900;
+    line-height: .8;
+  }
+
+  .venue-tray[data-my-cgb-open="true"] {
+    height: calc(100dvh - var(--header-height) - var(--footer-height) - 74px);
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .my-cgb-surface .accounts-shell {
+    padding-bottom: 28px;
+  }
+}

@@ -34,7 +34,7 @@ function ensureFallbackStyles(documentObject) {
     .map-fallback {
       position: absolute;
       inset: 0;
-      z-index: 50;
+      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;

@@ -181,7 +181,27 @@
     border-radius: 0 !important;
     box-shadow: none !important;
   }
-  /* Search, Add, List, and About share one mobile destination-title component. */
+
+  /* My CGB is a mobile destination surface like Add, not a partial-height map tray. */
+  body[data-command-surface="my-cgb"] #map-view > #venue-tray.venue-tray[data-my-cgb-open="true"] {
+    position: fixed !important;
+    z-index: 47 !important;
+    inset: var(--header-height) 0 var(--footer-height) 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding-bottom: 0 !important;
+    overflow: hidden !important;
+    background: var(--cgb-white, #fff) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  /* Search, Add, List, About, and My CGB share the settled mobile destination header. */
   body[data-command-surface="search"] .command-surface__shell,
   body[data-command-surface="add"] .command-surface__shell,
   body[data-command-surface="about"] .command-surface__shell {
@@ -347,7 +367,8 @@
   body[data-command-surface="search"],
   body[data-command-surface="add"],
   body[data-command-surface="list"],
-  body[data-command-surface="about"] {
+  body[data-command-surface="about"],
+  body[data-command-surface="my-cgb"] {
     --header-height: calc(94px + env(safe-area-inset-top, 0px));
   }
 
@@ -356,7 +377,8 @@
   body[data-command-surface="search"] .site-header,
   body[data-command-surface="add"] .site-header,
   body[data-command-surface="list"] .site-header,
-  body[data-command-surface="about"] .site-header {
+  body[data-command-surface="about"] .site-header,
+  body[data-command-surface="my-cgb"] .site-header {
     height: var(--header-height) !important;
     min-height: var(--header-height) !important;
     display: block !important;
@@ -450,7 +472,8 @@
   body[data-command-surface="search"] .opening-stat,
   body[data-command-surface="add"] .opening-stat,
   body[data-command-surface="list"] .opening-stat,
-  body[data-command-surface="about"] .opening-stat {
+  body[data-command-surface="about"] .opening-stat,
+  body[data-command-surface="my-cgb"] .opening-stat {
     display: none !important;
   }
 }

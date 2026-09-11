@@ -158,6 +158,32 @@ function initializeNavigation() {
   });
 }
 
+async function initializeAccountsBundle() {
+  const { CGB_ACCOUNTS_CONFIG } = await import('./accounts-config.mjs');
+  if (CGB_ACCOUNTS_CONFIG.enabled !== true) return false;
+  const { accountsConfigIsReady } = await import('./accounts-core.mjs');
+  if (!accountsConfigIsReady(CGB_ACCOUNTS_CONFIG)) return false;
+  await import('./accounts-ui.mjs');
+  await Promise.all([
+    import('./account-attendance.mjs'),
+    import('./account-history.mjs'),
+    import('./account-contributions.mjs'),
+    import('./account-watch-party-claims.mjs'),
+    import('./account-dialog-interactions.mjs')
+  ]);
+  await import('./my-cgb-native-surface.mjs');
+  return true;
+}
+
+function scheduleAccountsBundle() {
+  const start = () => { void initializeAccountsBundle(); };
+  if (document.readyState === 'complete') {
+    window.setTimeout(start, 0);
+    return;
+  }
+  window.addEventListener('load', start, { once: true });
+}
+
 function initialize() {
   initializeNavigation();
   observeTrayState();
@@ -175,6 +201,7 @@ function initialize() {
     sync();
     syncNavigation();
   });
+  scheduleAccountsBundle();
 }
 
 if (document.readyState === 'loading') {
