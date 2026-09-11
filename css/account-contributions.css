@@ -86,8 +86,8 @@
 }
 
 .party-module .account-watch-party-claim:disabled {
-  color: var(--cgb-ink-500);
-  cursor: wait;
+  visibility: hidden;
+  cursor: default;
   text-decoration: none;
 }
 
