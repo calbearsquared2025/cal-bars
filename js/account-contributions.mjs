@@ -205,11 +205,13 @@ function renderWatchParty(context) {
     ['other_organization', 'Other organization'],
     ['unknown', 'Not sure']
   ]);
-  const sourceType = select('sourceType', [
-    ['fan_submitted', 'I am organizing it or sharing it as a fan'],
-    ['alumni_group_submitted', 'I represent the alumni group hosting it'],
-    ['venue_submitted', 'I represent the venue hosting it']
+  const submitterRelationship = select('submitterRelationship', [
+    ['', 'Choose one'],
+    ['organizer', 'I’m organizing/hosting this'],
+    ['representative', 'I represent the organization or venue hosting this'],
+    ['sharer', 'I’m sharing someone else’s event']
   ]);
+  submitterRelationship.required = true;
   const officialEventUrl = input('officialEventUrl', { type: 'url', maxLength: 2048, placeholder: 'https://…' });
   const eventStart = input('eventStart', { maxLength: 240, placeholder: '4:30 PM PT' });
   const agePolicy = select('agePolicy', [
@@ -237,11 +239,11 @@ function renderWatchParty(context) {
   attendance.classList.add('account-contribution-attendance');
   const privacy = document.createElement('p');
   privacy.className = 'account-contribution-note';
-  privacy.textContent = 'Your account association stays private. Valid Watch Parties publish through the same canonical CGB rules as the existing submission flow.';
+  privacy.textContent = 'Your account association stays private. If you’re organizing this or represent the host, CGB privately records you as the Watch Party owner. Sharing someone else’s event does not grant management access.';
   form.append(
     field('Organizer or host name', organizerName),
     field('Who is organizing it?', organizerType),
-    field('Your relationship to the Watch Party', sourceType),
+    field('Your relationship to the Watch Party', submitterRelationship),
     field('Official event or RSVP link', officialEventUrl, 'Optional'),
     field('Event start or suggested arrival time', eventStart, 'Optional. Include a timezone, such as 4:30 PM PT.'),
     field('Age policy', agePolicy),
@@ -318,7 +320,7 @@ async function handleSubmit(event) {
         gameId: context.gameId,
         organizerName: clean(data.get('organizerName')),
         organizerType: clean(data.get('organizerType')),
-        sourceType: clean(data.get('sourceType')),
+        submitterRelationship: clean(data.get('submitterRelationship')),
         officialEventUrl: clean(data.get('officialEventUrl')),
         eventStart: clean(data.get('eventStart')),
         agePolicy: clean(data.get('agePolicy')),
