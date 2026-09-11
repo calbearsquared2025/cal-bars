@@ -2,10 +2,12 @@ import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
 import { accountsConfigIsReady } from './accounts-core.mjs';
 
 const HISTORY_CACHE_MS = 60000;
+const HISTORY_RETRY_DELAY_MS = 350;
 const BADGE_IDS = new Set([
   'first_down', 'chain_mover', 'home_field', 'road_game', 'bowl_eligible',
   'play_caller', 'postgame_report'
 ]);
+
 let currentSummary = null;
 let currentSummaryAt = 0;
 let signedIn = false;
@@ -44,9 +46,8 @@ function validateSeasonSummary(payload) {
       normalizedStats.venuesVisited > normalizedStats.gamesWatched ||
       normalizedStats.citiesVisited > normalizedStats.gamesWatched) return null;
 
-  if (!Array.isArray(summary.badges) || !Array.isArray(summary.history) || summary.badges.length > 12 || summary.history.length > 40) {
-    return null;
-  }
+  if (!Array.isArray(summary.badges) || !Array.isArray(summary.history) ||
+      summary.badges.length > 12 || summary.history.length > 40) return null;
 
   const badges = [];
   const seenBadges = new Set();
@@ -106,27 +107,22 @@ function injectStyles() {
   document.head.append(link);
 }
 
-function ensureSection() {
-  const signedInSurface = document.querySelector('.accounts-signed-in');
-  const identity = signedInSurface?.querySelector('.accounts-identity');
-  if (!signedInSurface || !identity) return null;
-  let section = signedInSurface.querySelector('.accounts-season');
-  if (section) return section;
-  section = document.createElement('section');
-  section.className = 'accounts-section accounts-season';
-  section.setAttribute('aria-labelledby', 'accounts-season-title');
-  section.innerHTML = `
-    <div class="accounts-section__heading">
-      <div>
-        <span class="eyebrow">Your season</span>
-        <h3 id="accounts-season-title">CGB Season</h3>
-      </div>
-    </div>
-    <div class="accounts-season-content">
-      <p class="accounts-empty">Your completed game history will build here as the season moves.</p>
-    </div>`;
-  identity.insertAdjacentElement('afterend', section);
-  return section;
+function seasonSection() {
+  return document.querySelector('.accounts-signed-in .accounts-season');
+}
+
+function renderLoading() {
+  const section = seasonSection();
+  const content = section?.querySelector('.accounts-season-content');
+  const title = section?.querySelector('#accounts-season-title');
+  if (!section || !content || !title || currentSummary) return;
+  section.dataset.loading = 'true';
+  title.textContent = 'CGB Season';
+  const loading = document.createElement('p');
+  loading.className = 'accounts-empty';
+  loading.dataset.seasonLoading = 'true';
+  loading.textContent = 'Loading your season…';
+  content.replaceChildren(loading);
 }
 
 function statCard(value, label) {
@@ -141,11 +137,12 @@ function statCard(value, label) {
 }
 
 function renderSummary(summary) {
-  const section = ensureSection();
+  const section = seasonSection();
   if (!section) return;
   const content = section.querySelector('.accounts-season-content');
   const title = section.querySelector('#accounts-season-title');
   if (!content || !title) return;
+  delete section.dataset.loading;
   content.replaceChildren();
   title.textContent = summary?.season ? `${summary.season} CGB Season` : 'CGB Season';
 
@@ -224,6 +221,27 @@ function renderSummary(summary) {
   content.append(historyHeading, history);
 }
 
+function delay(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
+
+function acceptAttendanceResponse(payload) {
+  if (!signedIn) return null;
+  const summary = validateSeasonSummary(payload);
+  if (!summary) return null;
+  currentSummary = summary;
+  currentSummaryAt = Date.now();
+  renderSummary(summary);
+  return summary;
+}
+
+async function requestSeasonSummary() {
+  const response = await window.CGBAccounts.request('getFanAttendance');
+  const summary = validateSeasonSummary(response);
+  if (!summary) throw new Error('invalid_season_summary');
+  return summary;
+}
+
 async function loadSummary({ force = false } = {}) {
   if (!enabled() || !signedIn || !window.CGBAccounts?.request) return null;
   const revision = accountStateRevision;
@@ -232,56 +250,66 @@ async function loadSummary({ force = false } = {}) {
     return currentSummary;
   }
   if (requestInFlight?.revision === revision) return requestInFlight.promise;
+  if (!currentSummary) renderLoading();
 
   let promise;
   promise = (async () => {
-    try {
-      const response = await window.CGBAccounts.request('getFanAttendance');
-      const summary = validateSeasonSummary(response);
-      if (revision !== accountStateRevision || !signedIn) return null;
-      currentSummary = summary;
-      currentSummaryAt = Date.now();
-      renderSummary(summary);
-      return summary;
-    } catch (_) {
-      if (revision === accountStateRevision && signedIn) renderSummary(null);
-      return null;
-    } finally {
-      if (requestInFlight?.promise === promise) requestInFlight = null;
+    let lastError = null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const summary = await requestSeasonSummary();
+        if (revision !== accountStateRevision || !signedIn) return null;
+        currentSummary = summary;
+        currentSummaryAt = Date.now();
+        renderSummary(summary);
+        return summary;
+      } catch (error) {
+        lastError = error;
+        if (revision !== accountStateRevision || !signedIn) return null;
+        if (attempt === 0) {
+          console.warn('CGB season history load failed; retrying once.', error);
+          await delay(HISTORY_RETRY_DELAY_MS);
+          if (revision !== accountStateRevision || !signedIn) return null;
+        }
+      }
     }
-  })();
+
+    console.error('CGB season history unavailable after retry.', lastError);
+    if (revision === accountStateRevision && signedIn) renderSummary(null);
+    return null;
+  })().finally(() => {
+    if (requestInFlight?.promise === promise) requestInFlight = null;
+  });
   requestInFlight = { revision, promise };
   return promise;
 }
 
-function handleAccountState(event) {
+function setAccountState(nextSignedIn) {
+  const normalized = nextSignedIn === true;
+  if (signedIn === normalized && normalized) return;
+  signedIn = normalized;
   accountStateRevision += 1;
-  signedIn = event?.detail?.signedIn === true;
+  requestInFlight = null;
   if (!signedIn) {
     currentSummary = null;
     currentSummaryAt = 0;
     return;
   }
-  void loadSummary({ force: true });
+  if (currentSummary) renderSummary(currentSummary);
+  else renderLoading();
 }
 
 function initializeAccountHistory() {
   if (!enabled()) return false;
   injectStyles();
-  window.addEventListener('cgb:account-state', handleAccountState);
-  document.addEventListener('click', (event) => {
-    if (!event.target.closest('#cgb-account-button')) return;
-    if (signedIn) void loadSummary();
-  });
-  if (window.CGBAccounts?.isSignedIn?.()) {
-    signedIn = true;
-    void loadSummary({ force: true });
-  }
   return true;
 }
 
 window.CGBAccountHistory = Object.freeze({
-  refresh: () => loadSummary({ force: true }),
+  setAccountState,
+  acceptAttendanceResponse,
+  refresh: (options = {}) => loadSummary({ force: options.force === true }),
+  render: () => currentSummary ? renderSummary(currentSummary) : renderLoading(),
   getSummary: () => currentSummary
 });
 

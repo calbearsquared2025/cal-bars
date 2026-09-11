@@ -1,9 +1,12 @@
 import './account-dialog-interactions.mjs';
 import './account-avatar-policy.mjs';
 import './accounts-ui.mjs';
+import './my-cgb-native-surface.mjs';
 import './account-favorites-navigation.mjs';
+import './account-profile-polish.mjs';
 import './account-attendance.mjs';
 import './account-history.mjs';
+import './my-cgb-render-controller.mjs';
 import './account-contributions.mjs';
 import './account-watch-party-claims.mjs';
 import { connectFooterPopover } from './footer-popover.mjs';

@@ -1,0 +1,49 @@
+.my-cgb-bootstrap-status {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 132px;
+  margin: 0;
+  padding: 28px 0 36px;
+  color: var(--brand-text-muted);
+  font-size: .85rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.my-cgb-bootstrap-status::before {
+  content: "";
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  border: 2px solid var(--cgb-neutral-300);
+  border-top-color: var(--brand-secondary);
+  border-radius: 50%;
+  animation: my-cgb-bootstrap-spin .8s linear infinite;
+}
+
+.accounts-shell[data-my-cgb-pending="true"] {
+  align-content: start;
+}
+
+.accounts-shell[data-my-cgb-pending="true"] > .accounts-status,
+.accounts-shell[data-my-cgb-pending="true"] .accounts-signed-out,
+.accounts-shell[data-my-cgb-pending="true"] .accounts-signed-in {
+  display: none !important;
+}
+
+.accounts-shell[data-my-cgb-pending="true"] .my-cgb-bootstrap-status {
+  display: flex;
+}
+
+@keyframes my-cgb-bootstrap-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .my-cgb-bootstrap-status::before {
+    animation: none;
+    border-top-color: var(--brand-primary);
+  }
+}

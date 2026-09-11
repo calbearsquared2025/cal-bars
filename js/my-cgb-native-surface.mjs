@@ -44,11 +44,20 @@ function commandLabel(button) {
 function syncNavButton() {
   if (!navButton) return;
   navButton.dataset.command = ACCOUNT_COMMAND;
+  navButton.dataset.commandReady = 'true';
   navButton.setAttribute('aria-label', 'My CGB');
   const label = commandLabel(navButton);
   if (label) label.textContent = 'My CGB';
   const use = navButton.querySelector('use');
   if (use) use.setAttribute('href', 'assets/icons.svg#icon-users');
+}
+
+function resolveNavigationGate() {
+  navButton = document.querySelector('#mobile-about-button');
+  if (!navButton) return false;
+  if (enabled()) syncNavButton();
+  else navButton.dataset.commandReady = 'true';
+  return true;
 }
 
 function syncHeaderLauncher() {
@@ -375,6 +384,7 @@ function connectApp() {
 }
 
 export function initializeMyCgbNativeSurface() {
+  resolveNavigationGate();
   if (!enabled()) return false;
   injectStyles();
   if (!ensureSurface()) {
@@ -397,6 +407,8 @@ window.CGBMyCgbSurface = Object.freeze({
   close: () => closeNativeSurface({ restoreFocus: true }),
   isOpen: () => open
 });
+
+resolveNavigationGate();
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeMyCgbNativeSurface, { once: true });

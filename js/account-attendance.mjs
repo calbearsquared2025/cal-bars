@@ -15,6 +15,7 @@ let accountSignedIn = false;
 let accountProfile = null;
 let accountStateRevision = 0;
 let syncInFlight = null;
+let lastSyncResult = null;
 let visibilityWritePending = false;
 
 function enabled() {
@@ -82,39 +83,41 @@ function invalidatePublicAttendance(gameId, venueId = null) {
   });
 }
 
-async function requestAccountAttendance(action, extra = {}) {
+async function requestAccountAttendance(action, extra = {}, { includePayload = false } = {}) {
   const response = await window.CGBAccounts?.request?.(action, extra);
   if (!response?.ok) throw new Error(response?.error || 'fan_backend_unavailable');
   const validated = validateFanAttendanceResponse(response);
   if (!validated) throw new Error('fan_backend_unavailable');
-  return validated;
+  return includePayload ? { validated, payload: response } : validated;
 }
 
 async function synchronizeAccountAttendance() {
-  if (!enabled() || !accountSignedIn || !appState.fanIntent.browserId || !window.CGBAccounts?.isSignedIn?.()) return false;
+  if (!enabled() || !accountSignedIn || !appState.fanIntent.browserId || !window.CGBAccounts?.isSignedIn?.()) return null;
   const revision = accountStateRevision;
+  if (lastSyncResult?.revision === revision) return lastSyncResult.payload;
   if (syncInFlight?.revision === revision) return syncInFlight.promise;
 
   let promise;
   promise = (async () => {
     try {
-      const validated = await requestAccountAttendance('claimFanIntent', {
+      const result = await requestAccountAttendance('claimFanIntent', {
         browserId: appState.fanIntent.browserId
-      });
-      if (revision !== accountStateRevision || !accountSignedIn || !window.CGBAccounts?.isSignedIn?.()) return false;
-      applyAttendanceState(validated);
+      }, { includePayload: true });
+      if (revision !== accountStateRevision || !accountSignedIn || !window.CGBAccounts?.isSignedIn?.()) return null;
+      applyAttendanceState(result.validated);
       appState.fanIntent.accountMode = true;
       // The private account is now canonical for this browser's prior selections.
       // Do not leave a second anonymous selection state that could double-count later.
       storageRemove(INTENT_SELECTIONS_STORAGE_KEY);
       window.CGBApp?.restoreSelection?.({ preserveCurrentWhenEmpty: false });
       window.CGBApp?.render?.();
-      return true;
+      lastSyncResult = { revision, payload: result.payload };
+      return result.payload;
     } catch (error) {
       if (revision === accountStateRevision && accountSignedIn) {
         console.error('CGB account attendance sync failed.', error);
       }
-      return false;
+      return null;
     } finally {
       if (syncInFlight?.promise === promise) syncInFlight = null;
     }
@@ -294,6 +297,8 @@ async function handleVisibilityChange(event) {
 
 function handleAccountState(event) {
   accountStateRevision += 1;
+  syncInFlight = null;
+  lastSyncResult = null;
   const wasAccountMode = appState.fanIntent.accountMode;
   accountStateKnown = true;
   accountSignedIn = event?.detail?.signedIn === true;

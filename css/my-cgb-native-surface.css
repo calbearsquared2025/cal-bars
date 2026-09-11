@@ -2,6 +2,10 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-surface[hidden] {
   display: none !important;
 }
 
+body[data-command-surface="my-cgb"] #map-fallback.map-fallback--loading {
+  display: none !important;
+}
+
 .venue-tray[data-my-cgb-open="true"] {
   overflow: hidden;
 }
