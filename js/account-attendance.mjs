@@ -13,6 +13,7 @@ const publicAttendancePending = new Map();
 let accountStateKnown = false;
 let accountSignedIn = false;
 let accountProfile = null;
+let accountStateRevision = 0;
 let syncInFlight = null;
 let visibilityWritePending = false;
 
@@ -91,12 +92,16 @@ async function requestAccountAttendance(action, extra = {}) {
 
 async function synchronizeAccountAttendance() {
   if (!enabled() || !accountSignedIn || !appState.fanIntent.browserId || !window.CGBAccounts?.isSignedIn?.()) return false;
-  if (syncInFlight) return syncInFlight;
-  syncInFlight = (async () => {
+  const revision = accountStateRevision;
+  if (syncInFlight?.revision === revision) return syncInFlight.promise;
+
+  let promise;
+  promise = (async () => {
     try {
       const validated = await requestAccountAttendance('claimFanIntent', {
         browserId: appState.fanIntent.browserId
       });
+      if (revision !== accountStateRevision || !accountSignedIn || !window.CGBAccounts?.isSignedIn?.()) return false;
       applyAttendanceState(validated);
       appState.fanIntent.accountMode = true;
       // The private account is now canonical for this browser's prior selections.
@@ -106,13 +111,16 @@ async function synchronizeAccountAttendance() {
       window.CGBApp?.render?.();
       return true;
     } catch (error) {
-      console.error('CGB account attendance sync failed.', error);
+      if (revision === accountStateRevision && accountSignedIn) {
+        console.error('CGB account attendance sync failed.', error);
+      }
       return false;
     } finally {
-      syncInFlight = null;
+      if (syncInFlight?.promise === promise) syncInFlight = null;
     }
   })();
-  return syncInFlight;
+  syncInFlight = { revision, promise };
+  return promise;
 }
 
 async function postIntent(operation) {
@@ -264,28 +272,33 @@ async function renderPresence() {
 async function handleVisibilityChange(event) {
   const checkbox = event.target.closest('input[data-account-visibility]');
   if (!checkbox || !appState.fanIntent.accountMode || visibilityWritePending) return;
+  const revision = accountStateRevision;
   const gameId = checkbox.dataset.accountVisibility;
   const visibility = checkbox.checked ? 'public' : 'anonymous';
   visibilityWritePending = true;
   checkbox.disabled = true;
   try {
     const validated = await requestAccountAttendance('setFanAttendanceVisibility', { gameId, visibility });
+    if (revision !== accountStateRevision || !accountSignedIn) return;
     applyAttendanceState(validated);
     invalidatePublicAttendance(gameId);
     window.CGBApp?.render?.();
   } catch (error) {
+    if (revision !== accountStateRevision || !accountSignedIn) return;
     window.CGBApp?.showStatus?.('Could not change attendance visibility.', 4000);
     window.CGBApp?.render?.();
   } finally {
-    visibilityWritePending = false;
+    if (revision === accountStateRevision) visibilityWritePending = false;
   }
 }
 
 function handleAccountState(event) {
+  accountStateRevision += 1;
   const wasAccountMode = appState.fanIntent.accountMode;
   accountStateKnown = true;
   accountSignedIn = event?.detail?.signedIn === true;
   accountProfile = event?.detail?.profile || null;
+  visibilityWritePending = false;
   if (!accountSignedIn) {
     // Accounts UI renders a provisional signed-out surface before Firebase resolves.
     // Only clear client attendance after a real account-backed session had become canonical.

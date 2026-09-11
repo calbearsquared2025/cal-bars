@@ -22,6 +22,7 @@ let account = null;
 let favoriteVenueIds = [];
 let dom = null;
 let pendingSignedOutStatus = null;
+let authStateRevision = 0;
 
 function injectAccountsStyles() {
   if (document.querySelector('link[data-cgb-accounts-style]')) return;
@@ -229,9 +230,17 @@ async function postFan(payload) {
   }
 }
 
+async function tokenForUser(user, forceRefresh = false) {
+  if (!user) throw new Error('fan_unauthorized');
+  return user.getIdToken(forceRefresh);
+}
+
 async function currentToken(forceRefresh = false) {
-  if (!currentUser) throw new Error('fan_unauthorized');
-  return currentUser.getIdToken(forceRefresh);
+  return tokenForUser(currentUser, forceRefresh);
+}
+
+function authStateIsCurrent(user, revision) {
+  return revision === authStateRevision && currentUser === user;
 }
 
 function clientProfile() {
@@ -257,28 +266,30 @@ function dispatchAccountState() {
 }
 
 async function requestFanAction(action, extra = {}) {
-  const token = await currentToken();
-  return postFan(buildFanRequest(action, token, extra));
+  const user = currentUser;
+  const revision = authStateRevision;
+  const token = await tokenForUser(user);
+  const response = await postFan(buildFanRequest(action, token, extra));
+  if (!authStateIsCurrent(user, revision)) throw new Error('fan_unauthorized');
+  return response;
 }
 
-async function loadAccount() {
-  const token = await currentToken(true);
+async function loadAccount(user) {
+  const token = await tokenForUser(user, true);
   const response = await postFan(buildFanRequest('ensureFanAccount', token));
   if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
   const validated = validateFanAccountResponse(response);
   if (!validated) throw new Error('fan_backend_unavailable');
-  account = validated;
-  return account;
+  return validated;
 }
 
-async function loadFavorites() {
-  const token = await currentToken();
+async function loadFavorites(user) {
+  const token = await tokenForUser(user);
   const response = await postFan(buildFanRequest('listFanFavorites', token));
   if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
   const validated = validateFanFavoritesResponse(response);
   if (!validated) throw new Error('fan_backend_unavailable');
-  favoriteVenueIds = [...validated];
-  return favoriteVenueIds;
+  return [...validated];
 }
 
 function venueById(venueId) {
@@ -416,11 +427,19 @@ function renderSignedIn() {
   dispatchAccountState();
 }
 
-async function refreshSignedInState() {
+async function refreshSignedInState(user, revision) {
   setStatus('Loading My CGB…');
-  await Promise.all([loadAccount(), waitForApplicationReady().catch(() => null)]);
-  await loadFavorites();
+  const [loadedAccount] = await Promise.all([
+    loadAccount(user),
+    waitForApplicationReady().catch(() => null)
+  ]);
+  if (!authStateIsCurrent(user, revision)) return false;
+  const loadedFavorites = await loadFavorites(user);
+  if (!authStateIsCurrent(user, revision)) return false;
+  account = loadedAccount;
+  favoriteVenueIds = [...loadedFavorites];
   renderSignedIn();
+  return true;
 }
 
 function readableError(error) {
@@ -551,7 +570,9 @@ async function sendPasswordReset(email) {
 
 async function saveProfile(event) {
   event.preventDefault();
-  if (!account || !currentUser) return;
+  const user = currentUser;
+  const revision = authStateRevision;
+  if (!account || !user) return;
   dom.profileSave.disabled = true;
   try {
     const fields = dom.profileForm.elements;
@@ -563,15 +584,17 @@ async function saveProfile(event) {
       publicProfileStatus: fields.publicProfile.checked ? 'public' : 'private',
       attendanceVisibilityDefault: fields.publicAttendance.checked ? 'public' : 'anonymous'
     });
-    const token = await currentToken();
+    const token = await tokenForUser(user);
     const response = await postFan(buildFanRequest('saveFanProfile', token, { changes }));
     if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
     const validated = validateFanAccountResponse(response);
     if (!validated) throw new Error('fan_backend_unavailable');
+    if (!authStateIsCurrent(user, revision)) return;
     account = validated;
     renderSignedIn();
     setStatus('Profile saved.');
   } catch (error) {
+    if (!authStateIsCurrent(user, revision)) return;
     setStatus(readableError(error), { error: true });
   } finally {
     dom.profileSave.disabled = false;
@@ -579,18 +602,22 @@ async function saveProfile(event) {
 }
 
 async function setFavorite(venueId, favorited) {
-  if (!currentUser) return;
+  const user = currentUser;
+  const revision = authStateRevision;
+  if (!user) return;
   setStatus(favorited ? 'Saving favorite…' : 'Removing favorite…');
   try {
-    const token = await currentToken();
+    const token = await tokenForUser(user);
     const response = await postFan(buildFanRequest('setFanFavorite', token, { venueId, favorited }));
     if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
     const validated = validateFanFavoritesResponse(response);
     if (!validated) throw new Error('fan_backend_unavailable');
+    if (!authStateIsCurrent(user, revision)) return;
     favoriteVenueIds = [...validated];
     renderFavorites();
     setStatus(favorited ? 'Favorite saved.' : 'Favorite removed.');
   } catch (error) {
+    if (!authStateIsCurrent(user, revision)) return;
     setStatus(readableError(error), { error: true });
   }
 }
@@ -666,6 +693,7 @@ async function initializeFirebase() {
   });
 
   authModule.onAuthStateChanged(auth, async (user) => {
+    const revision = ++authStateRevision;
     if (user && passwordProviderPresent(user) && user.emailVerified !== true) {
       currentUser = null;
       account = null;
@@ -675,17 +703,21 @@ async function initializeFirebase() {
         error: false
       };
       await authModule.signOut(auth).catch(() => null);
+      if (revision !== authStateRevision) return;
       renderSignedOut();
       return;
     }
     currentUser = user || null;
+    account = null;
+    favoriteVenueIds = [];
     if (!user) {
       renderSignedOut();
       return;
     }
     try {
-      await refreshSignedInState();
+      await refreshSignedInState(user, revision);
     } catch (error) {
+      if (!authStateIsCurrent(user, revision)) return;
       setStatus(readableError(error), { error: true });
     }
   });

@@ -9,6 +9,7 @@ const BADGE_IDS = new Set([
 let currentSummary = null;
 let currentSummaryAt = 0;
 let signedIn = false;
+let accountStateRevision = 0;
 let requestInFlight = null;
 
 function enabled() {
@@ -225,30 +226,36 @@ function renderSummary(summary) {
 
 async function loadSummary({ force = false } = {}) {
   if (!enabled() || !signedIn || !window.CGBAccounts?.request) return null;
+  const revision = accountStateRevision;
   if (!force && currentSummary && Date.now() - currentSummaryAt < HISTORY_CACHE_MS) {
     renderSummary(currentSummary);
     return currentSummary;
   }
-  if (requestInFlight) return requestInFlight;
-  requestInFlight = (async () => {
+  if (requestInFlight?.revision === revision) return requestInFlight.promise;
+
+  let promise;
+  promise = (async () => {
     try {
       const response = await window.CGBAccounts.request('getFanAttendance');
       const summary = validateSeasonSummary(response);
+      if (revision !== accountStateRevision || !signedIn) return null;
       currentSummary = summary;
       currentSummaryAt = Date.now();
       renderSummary(summary);
       return summary;
     } catch (_) {
-      renderSummary(null);
+      if (revision === accountStateRevision && signedIn) renderSummary(null);
       return null;
     } finally {
-      requestInFlight = null;
+      if (requestInFlight?.promise === promise) requestInFlight = null;
     }
   })();
-  return requestInFlight;
+  requestInFlight = { revision, promise };
+  return promise;
 }
 
 function handleAccountState(event) {
+  accountStateRevision += 1;
   signedIn = event?.detail?.signedIn === true;
   if (!signedIn) {
     currentSummary = null;
