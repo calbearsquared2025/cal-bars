@@ -1,14 +1,3 @@
-import './account-dialog-interactions.mjs';
-import './account-avatar-policy.mjs';
-import './accounts-ui.mjs';
-import './account-avatar-picker.mjs';
-import './my-cgb-native-surface.mjs';
-import './account-favorites-navigation.mjs';
-import './account-profile-polish.mjs';
-import './account-profile-onboarding.mjs';
-import './account-attendance.mjs';
-import './account-public-community.mjs';
-import './account-contributions.mjs';
 import { connectFooterPopover } from './footer-popover.mjs';
 
 function initializePrivacyDialog() {
