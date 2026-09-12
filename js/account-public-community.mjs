@@ -1,6 +1,7 @@
 import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
 import { accountsConfigIsReady, validatePublicAttendanceResponse } from './accounts-core.mjs';
 import { isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
+import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const STYLE_ATTR = 'data-cgb-public-community-style';
 const CACHE_MS = 60000;
@@ -125,14 +126,20 @@ async function fetchLeaderboard({ force = false } = {}) {
   requestInFlight = (async () => {
     const url = new URL(CGB_ACCOUNTS_CONFIG.endpoint);
     url.searchParams.set('action', 'publicLeaderboard');
-    const response = await fetch(url, { method: 'GET', cache: 'no-store' });
-    const payload = await response.json().catch(() => null);
-    if (!response.ok) return null;
-    const validated = validateLeaderboard(payload);
-    if (!validated) return null;
-    leaderboard = validated;
-    leaderboardAt = Date.now();
-    return leaderboard;
+    markCgbPerformance('cgb:leaderboard:request:start');
+    try {
+      const response = await fetch(url, { method: 'GET', cache: 'no-store' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) return null;
+      const validated = validateLeaderboard(payload);
+      if (!validated) return null;
+      leaderboard = validated;
+      leaderboardAt = Date.now();
+      return leaderboard;
+    } finally {
+      markCgbPerformance('cgb:leaderboard:request:complete');
+      measureCgbPerformance('cgb:leaderboard:request', 'cgb:leaderboard:request:start', 'cgb:leaderboard:request:complete');
+    }
   })().finally(() => {
     requestInFlight = null;
   });
@@ -190,6 +197,7 @@ function setView(next, { focus = false } = {}) {
   const shell = document.querySelector('.accounts-shell');
   syncViewState(shell);
   if (focus) shell?.querySelector(`[data-my-cgb-view-target="${next}"]`)?.focus({ preventScroll: true });
+  if (next === 'leaderboard') void renderLeaderboard();
   return true;
 }
 
@@ -485,20 +493,26 @@ function handleAttendeeActivation(event) {
   void openAttendeeProfile(avatar);
 }
 
-async function renderAll({ force = false } = {}) {
+function syncCommunitySurface() {
   const shell = document.querySelector('.accounts-shell');
-  if (!shell) return false;
+  if (!shell) return null;
   const section = ensureViewStructure(shell);
+  prepareAttendeeAvatars();
+  return section;
+}
+
+async function renderLeaderboard({ force = false } = {}) {
+  const section = syncCommunitySurface();
   if (!section) return false;
   const data = await fetchLeaderboard({ force }).catch(() => null);
   renderSection(section, data);
-  prepareAttendeeAvatars();
   return true;
 }
 
 function handleAccountState(event) {
   currentProfile = event?.detail?.signedIn === true ? event.detail?.profile || null : null;
-  void renderAll({ force: true });
+  syncCommunitySurface();
+  if (currentView === 'leaderboard') void renderLeaderboard({ force: true });
 }
 
 function handleDocumentPointer(event) {
@@ -537,7 +551,7 @@ function initializeWhenReady(attempt = 0) {
   initialized = true;
   injectStyles();
   currentProfile = window.CGBAccounts?.getProfile?.() || null;
-  ensureViewStructure(shell);
+  syncCommunitySurface();
   window.addEventListener('cgb:account-state', handleAccountState);
   document.addEventListener('pointerdown', handleDocumentPointer, { capture: true });
   document.addEventListener('click', handleAttendeeActivation);
@@ -549,11 +563,12 @@ function initializeWhenReady(attempt = 0) {
   });
   attendeeObserver.observe(document.body, { childList: true, subtree: true });
   prepareAttendeeAvatars();
-  void renderAll();
 }
 
 window.CGBPublicCommunity = Object.freeze({
-  refresh: () => renderAll({ force: true }),
+  refresh: () => currentView === 'leaderboard'
+    ? renderLeaderboard({ force: true })
+    : Promise.resolve(Boolean(syncCommunitySurface())),
   setView,
   validateLeaderboard
 });

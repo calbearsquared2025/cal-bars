@@ -1,10 +1,12 @@
 import { gameRouteParam } from './core.mjs';
+import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const observedMaps = new WeakSet();
 const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
 const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
 const LOADING_FADE_MS = 240;
+let loadingCoverHiddenMarked = false;
 const FALLBACK_MODE_CLASSES = Object.freeze([
   'map-fallback--loading',
   'map-fallback--failure',
@@ -239,6 +241,10 @@ export function hideMapLoading({
     if (fallback.classList?.contains?.('map-fallback--failure')) return;
     fallback.hidden = true;
     setFallbackMode(fallback, null);
+    if (!loadingCoverHiddenMarked) {
+      loadingCoverHiddenMarked = markCgbPerformance('cgb:cover:hidden');
+      measureCgbPerformance('cgb:boot-to-cover-hidden', 'cgb:boot:start', 'cgb:cover:hidden');
+    }
   };
 
   const reveal = () => {

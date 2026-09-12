@@ -37,6 +37,9 @@ import { legacyActivitySeason, venueActivityPresentation } from './venue-activit
 import { createIcon } from './icons.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
+import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
+
+markCgbPerformance('cgb:app:module-start');
 
 const runtimeConfig = readRuntimeConfig();
 const MAPTILER_KEY = runtimeConfig.mapTiler.apiKey;
@@ -54,6 +57,8 @@ let previousMobileLayout = MOBILE_MEDIA.matches;
 let lastExpandedTrayState = null;
 let searchHelperTimer = null;
 let searchHelperReady = false;
+let initialMapConstructionMarked = false;
+let initialMapLoadMarked = false;
 
 function configureMapTilerSdk() {
   const sdk = window.maptilersdk;
@@ -151,7 +156,14 @@ async function loadSnapshot() {
 
   if (configured) {
     try {
-      const live = await fetchJson(configured);
+      markCgbPerformance('cgb:snapshot:request:start');
+      let live;
+      try {
+        live = await fetchJson(configured);
+      } finally {
+        markCgbPerformance('cgb:snapshot:request:complete');
+        measureCgbPerformance('cgb:snapshot:request', 'cgb:snapshot:request:start', 'cgb:snapshot:request:complete');
+      }
       if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
       storageSet(LAST_GOOD_KEY, JSON.stringify(live));
       return setCanonicalSnapshot(live, 'live');
@@ -354,6 +366,9 @@ function initMap() {
   const bounds = new sdk.LngLatBounds();
   state.snapshot.venues.forEach((venue) => bounds.extend([Number(venue.longitude), Number(venue.latitude)]));
 
+  if (!initialMapConstructionMarked) {
+    initialMapConstructionMarked = markCgbPerformance('cgb:map:construct:start');
+  }
   state.map = new sdk.Map({
     container: dom.map,
     style: MAPTILER_STYLE,
@@ -371,6 +386,10 @@ function initMap() {
   state.map.addControl(new sdk.NavigationControl({ showCompass: false }), 'top-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
   state.map.on('load', () => {
+    if (!initialMapLoadMarked) {
+      initialMapLoadMarked = markCgbPerformance('cgb:map:load');
+      measureCgbPerformance('cgb:map-construct-to-load', 'cgb:map:construct:start', 'cgb:map:load');
+    }
     renderMarkers();
     if (!isMobileLayout() && state.selectedVenueId) focusReturnedDetailVenue(selectedVenue());
   });
@@ -1525,14 +1544,21 @@ function wireEvents() {
 }
 
 async function boot() {
+  markCgbPerformance('cgb:boot:start');
   cacheDom();
   wireEvents();
   try {
     await loadSnapshot();
+    markCgbPerformance('cgb:snapshot:ready');
+    measureCgbPerformance('cgb:boot-to-snapshot-ready', 'cgb:boot:start', 'cgb:snapshot:ready');
     initializeRoute();
     renderAll();
+    markCgbPerformance('cgb:render:initial-complete');
+    measureCgbPerformance('cgb:snapshot-ready-to-initial-render', 'cgb:snapshot:ready', 'cgb:render:initial-complete');
     dom.app.setAttribute('aria-busy', 'false');
     markApplicationReady();
+    markCgbPerformance('cgb:app:ready');
+    measureCgbPerformance('cgb:boot-to-app-ready', 'cgb:boot:start', 'cgb:app:ready');
     if (state.dataSource !== 'live') console.info(`CGB v2 using ${state.dataSource} data.`);
   } catch (error) {
     console.error(error);

@@ -9,6 +9,7 @@ import {
 } from './accounts-core.mjs';
 import { CGB_AVATAR_PRESETS, isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
 import { appState, waitForApplicationReady } from './app-state.mjs';
+import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const REQUEST_TIMEOUT_MS = 12000;
 const FIREBASE_VERSION = '12.18.0';
@@ -655,6 +656,7 @@ function bindEvents() {
 }
 
 async function initializeFirebase() {
+  markCgbPerformance('cgb:firebase:init:start');
   const appUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`;
   const authUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`;
   const [appModule, loadedAuthModule] = await Promise.all([import(appUrl), import(authUrl)]);
@@ -699,6 +701,8 @@ async function initializeFirebase() {
       setStatus(readableError(error), { error: true });
     }
   });
+  markCgbPerformance('cgb:firebase:init:ready');
+  measureCgbPerformance('cgb:firebase:init', 'cgb:firebase:init:start', 'cgb:firebase:init:ready');
 }
 
 export async function initializeAccountsUi() {
