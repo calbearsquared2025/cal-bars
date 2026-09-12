@@ -12,6 +12,7 @@ import { appState, waitForApplicationReady } from './app-state.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const REQUEST_TIMEOUT_MS = 12000;
+const ACCOUNT_HYDRATION_TIMEOUT_MS = 30000;
 const FIREBASE_VERSION = '12.18.0';
 const GOOGLE_PROVIDER_ID = 'google.com';
 const EMAIL_PROVIDER_ID = 'password';
@@ -247,9 +248,9 @@ function logFanDiagnostic(context, error) {
   console.warn(`${context}: ${fanClientErrorCode(error)}`);
 }
 
-async function postFan(payload) {
+async function postFan(payload, timeoutMs = REQUEST_TIMEOUT_MS) {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(CGB_ACCOUNTS_CONFIG.endpoint, {
       method: 'POST',
@@ -316,7 +317,10 @@ async function requestFanAction(action, extra = {}) {
 
 async function loadAccount(user) {
   const token = await tokenForUser(user, true);
-  const response = await postFan(buildFanRequest('ensureFanAccount', token));
+  const response = await postFan(
+    buildFanRequest('ensureFanAccount', token),
+    ACCOUNT_HYDRATION_TIMEOUT_MS
+  );
   if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
   const validated = validateFanAccountResponse(response);
   if (!validated) throw new Error('fan_schema_mismatch');
