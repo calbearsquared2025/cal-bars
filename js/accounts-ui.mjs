@@ -773,6 +773,7 @@ async function saveProfile(event) {
     account = validated;
     renderSignedIn();
     setStatus('Profile saved.');
+    window.dispatchEvent(new CustomEvent('cgb:profile-saved'));
   } catch (error) {
     if (!authStateIsCurrent(user, revision)) return;
     setStatus(readableError(error), { error: true });

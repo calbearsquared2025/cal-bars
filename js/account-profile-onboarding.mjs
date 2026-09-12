@@ -4,7 +4,6 @@ const STYLE_ATTR = 'data-cgb-account-profile-onboarding-style';
 let onboardingActive = false;
 let promptedForCurrentSession = false;
 let currentProfile = null;
-let statusObserver = null;
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -128,18 +127,12 @@ function handleAccountState(event) {
   if (!onboardingActive) openOnboarding();
 }
 
-function observeSaveStatus() {
-  const status = document.querySelector('#cgb-account-dialog .accounts-status');
-  if (!status || statusObserver) return;
-  statusObserver = new MutationObserver(() => {
-    if (clean(status.textContent) !== 'Profile saved.') return;
-    const dialog = document.querySelector('#cgb-account-dialog');
-    const isProfileEditor = dialog?.classList.contains('accounts-dialog--profile');
-    if (!onboardingActive && !isProfileEditor) return;
-    if (onboardingActive) cleanupOnboardingPresentation();
-    if (dialog?.open) dialog.close();
-  });
-  statusObserver.observe(status, { childList: true, characterData: true, subtree: true });
+function handleProfileSaved() {
+  const dialog = document.querySelector('#cgb-account-dialog');
+  const isProfileEditor = dialog?.classList.contains('accounts-dialog--profile');
+  if (!onboardingActive && !isProfileEditor) return;
+  if (onboardingActive) cleanupOnboardingPresentation();
+  if (dialog?.open) dialog.close();
 }
 
 function initializeWhenReady(attempt = 0) {
@@ -150,7 +143,7 @@ function initializeWhenReady(attempt = 0) {
   }
   if (!dialog) return;
   injectStyles();
-  observeSaveStatus();
+  window.addEventListener('cgb:profile-saved', handleProfileSaved);
   dialog.addEventListener('close', cleanupOnboardingPresentation);
   window.addEventListener('cgb:account-state', handleAccountState);
   currentProfile = window.CGBAccounts?.getProfile?.() || null;
