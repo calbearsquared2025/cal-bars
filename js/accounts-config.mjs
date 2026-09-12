@@ -28,13 +28,21 @@ function storedIosAuthDiagnostic() {
   }
 }
 
+function requestedIosAuthDiagnosticMode() {
+  if (typeof window === 'undefined') return '';
+  const requested = new URLSearchParams(window.location.search).get('cgbAuthTest');
+  if (requested === 'popup') return 'popup';
+  if (requested === '1') return 'redirect';
+  return '';
+}
+
 function readIosAuthDiagnostic() {
   if (typeof window === 'undefined') return null;
+  const requestedMode = requestedIosAuthDiagnosticMode();
   const stored = storedIosAuthDiagnostic();
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('cgbAuthTest') === '1') {
-    if (stored) return stored;
-    const state = { startedAt: Date.now(), phase: 'ready' };
+  if (requestedMode) {
+    if (stored?.mode === requestedMode) return stored;
+    const state = { startedAt: Date.now(), phase: 'ready', mode: requestedMode };
     window.localStorage.setItem(IOS_AUTH_DIAGNOSTIC_KEY, JSON.stringify(state));
     return state;
   }
@@ -88,15 +96,37 @@ function hasPersistedFirebaseUser(apiKey) {
   return false;
 }
 
+function forcePopupDiagnosticRouting() {
+  const overrides = {
+    userAgent: 'CGB iOS popup diagnostic',
+    platform: 'CGBDiagnostic',
+    maxTouchPoints: 0
+  };
+  Object.entries(overrides).forEach(([property, value]) => {
+    try {
+      Object.defineProperty(navigator, property, { configurable: true, value });
+    } catch {
+      // The diagnostic remains safe if Safari declines an override; the banner will expose the failed test path.
+    }
+  });
+}
+
 function installIosGoogleSignInHotfix() {
   if (typeof document === 'undefined' || !isIosBrowser()) return;
   const diagnostic = readIosAuthDiagnostic();
   if (diagnostic) {
+    if (diagnostic.mode === 'popup') forcePopupDiagnosticRouting();
+
     document.addEventListener('click', (event) => {
       const button = event.target?.closest?.('[data-account-provider="google"]');
       if (!button) return;
-      writeIosAuthDiagnosticPhase('redirect-started');
-      showDiagnostic('redirect started; continue with Google');
+      if (diagnostic.mode === 'popup') {
+        writeIosAuthDiagnosticPhase('popup-started');
+        showDiagnostic('popup started; complete Google sign-in');
+      } else {
+        writeIosAuthDiagnosticPhase('redirect-started');
+        showDiagnostic('redirect started; continue with Google');
+      }
     }, true);
 
     window.addEventListener('cgb:account-state', (event) => {
@@ -112,6 +142,12 @@ function installIosGoogleSignInHotfix() {
       if (window.CGBAccounts?.isSignedIn?.()) {
         writeIosAuthDiagnosticPhase('account-ready');
         showDiagnostic('CGB account ready');
+        return;
+      }
+      if (latest.mode === 'popup') {
+        if (latest.phase !== 'popup-started') {
+          showDiagnostic('popup test ready — open My CGB and continue with Google');
+        }
         return;
       }
       if (latest.phase !== 'redirect-started') {
@@ -130,11 +166,15 @@ function installIosGoogleSignInHotfix() {
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
-        showDiagnostic('ready — open My CGB and continue with Google');
+        showDiagnostic(diagnostic.mode === 'popup'
+          ? 'popup test ready — open My CGB and continue with Google'
+          : 'ready — open My CGB and continue with Google');
         window.setTimeout(inspect, 3000);
       }, { once: true });
     } else {
-      showDiagnostic('ready — open My CGB and continue with Google');
+      showDiagnostic(diagnostic.mode === 'popup'
+        ? 'popup test ready — open My CGB and continue with Google'
+        : 'ready — open My CGB and continue with Google');
       window.setTimeout(inspect, 3000);
     }
     return;
