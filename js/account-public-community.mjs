@@ -205,8 +205,9 @@ function ensureViewStructure(shell) {
   if (!shell) return null;
   const signedOut = shell.querySelector('.accounts-signed-out');
   const signedIn = shell.querySelector('.accounts-signed-in');
+  const authenticatedError = shell.querySelector('.accounts-authenticated-error');
   const header = shell.querySelector('.accounts-header');
-  if (!signedOut || !signedIn || !header) return null;
+  if (!signedOut || !signedIn || !authenticatedError || !header) return null;
 
   let tabs = shell.querySelector('.my-cgb-view-tabs');
   if (!tabs) {
@@ -237,7 +238,7 @@ function ensureViewStructure(shell) {
     profileView.setAttribute('role', 'tabpanel');
     profileView.setAttribute('aria-labelledby', 'my-cgb-profile-tab');
     signedOut.insertAdjacentElement('beforebegin', profileView);
-    profileView.append(signedOut, signedIn);
+    profileView.append(signedOut, authenticatedError, signedIn);
   }
 
   let leaderboardView = shell.querySelector('#my-cgb-leaderboard-view');
