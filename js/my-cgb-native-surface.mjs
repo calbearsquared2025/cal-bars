@@ -1,4 +1,5 @@
 import { ensureMyCgbFeaturesLoaded } from './my-cgb-feature-loader.mjs';
+import { markCgbPerformance } from './performance.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const ACCOUNT_COMMAND = 'my-cgb';
@@ -218,15 +219,16 @@ function currentSelectedVenueId() {
 
 async function revealNativeSurface() {
   if (!open || !surface || !shell) return false;
-  try {
-    if (window.CGBAccounts?.isSignedIn?.()) await ensureMyCgbFeaturesLoaded();
-  } catch (error) {
-    console.error('CGB My CGB feature load failed.', error);
-  }
   if (!open || dialog?.open || transientMode) return false;
   moveShellHome();
   surface.hidden = false;
+  markCgbPerformance('cgb:my-cgb:shell:visible');
   refreshSelectedFavoriteAction();
+  if (window.CGBAccounts?.isSignedIn?.()) {
+    void ensureMyCgbFeaturesLoaded().catch((error) => {
+      console.error('CGB My CGB feature load failed.', error);
+    });
+  }
   const title = shell.querySelector('#cgb-account-title');
   if (title) {
     title.tabIndex = -1;
@@ -237,6 +239,7 @@ async function revealNativeSurface() {
 
 function showNativeSurface(opener = null) {
   if (!ensureSurface()) return Promise.resolve(false);
+  void window.CGBAccounts?.start?.();
   if (!open) {
     returnSurface = document.body.dataset.commandSurface || 'map';
     selectedVenueAtOpen = currentSelectedVenueId();

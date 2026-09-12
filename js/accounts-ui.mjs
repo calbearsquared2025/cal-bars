@@ -38,6 +38,9 @@ let favoritesRequestRevision = 0;
 let dom = null;
 let pendingSignedOutStatus = null;
 let authStateRevision = 0;
+let uiInitialized = false;
+let accountStartupPromise = null;
+let deferredStartupScheduled = false;
 
 function injectAccountsStyles() {
   if (document.querySelector('link[data-cgb-accounts-style]')) return;
@@ -549,6 +552,7 @@ async function refreshFavorites(user, revision) {
     favoritesLoadState = 'ready';
     favoritesErrorCode = '';
     renderFavorites();
+    markCgbPerformance('cgb:accounts:favorites:ready');
     return true;
   } catch (error) {
     if (!authStateIsCurrent(user, revision) || requestRevision !== favoritesRequestRevision) return false;
@@ -566,6 +570,8 @@ async function refreshSignedInState(user, revision) {
   const loadedAccount = await loadAccount(user);
   if (!authStateIsCurrent(user, revision)) return false;
   account = loadedAccount;
+  markCgbPerformance('cgb:accounts:core:ready');
+  measureCgbPerformance('cgb:accounts:core-hydration', 'cgb:firebase:init:start', 'cgb:accounts:core:ready');
   favoriteVenueIds = [];
   favoritesLoadState = 'loading';
   favoritesErrorCode = '';
@@ -621,7 +627,7 @@ function popupShouldFallbackToRedirect(error) {
 }
 
 async function startGoogleSignIn() {
-  if (!auth || !authModule || !googleProvider) return;
+  if ((!auth || !authModule || !googleProvider) && !await startAccountInitialization()) return;
   pendingSignedOutStatus = null;
   setStatus(prefersRedirectSignIn() ? 'Continuing to Google sign-in…' : 'Opening Google sign-in…');
   try {
@@ -657,7 +663,7 @@ function passwordProviderPresent(user) {
 }
 
 async function signInWithEmailPassword(email, password) {
-  if (!auth || !authModule) return;
+  if ((!auth || !authModule) && !await startAccountInitialization()) return;
   const normalizedEmail = String(email || '').trim();
   if (!normalizedEmail || !password) return;
   pendingSignedOutStatus = null;
@@ -680,7 +686,7 @@ async function signInWithEmailPassword(email, password) {
 }
 
 async function createEmailPasswordAccount(email, password) {
-  if (!auth || !authModule) return;
+  if ((!auth || !authModule) && !await startAccountInitialization()) return;
   const normalizedEmail = String(email || '').trim();
   if (!normalizedEmail || !password) return;
   pendingSignedOutStatus = null;
@@ -701,7 +707,7 @@ async function createEmailPasswordAccount(email, password) {
 }
 
 async function sendPasswordReset(email) {
-  if (!auth || !authModule) return;
+  if ((!auth || !authModule) && !await startAccountInitialization()) return;
   const normalizedEmail = String(email || '').trim();
   if (!normalizedEmail || !dom.emailInput.checkValidity()) {
     dom.emailInput.reportValidity();
@@ -887,31 +893,54 @@ async function initializeFirebase() {
   measureCgbPerformance('cgb:firebase:init', 'cgb:firebase:init:start', 'cgb:firebase:init:ready');
 }
 
+function scheduleDeferredAccountStartup() {
+  if (deferredStartupScheduled || accountStartupPromise) return;
+  deferredStartupScheduled = true;
+  const start = () => { void startAccountInitialization(); };
+  if (window.CGBPublicLaunchUsable === true) {
+    queueMicrotask(start);
+    return;
+  }
+  window.addEventListener('cgb:public-usable', start, { once: true });
+}
+
 export async function initializeAccountsUi() {
   if (!accountsConfigIsReady(CGB_ACCOUNTS_CONFIG)) return false;
+  if (uiInitialized) return true;
   injectAccountsStyles();
   dom = collectDom();
   if (!dom) return false;
   bindEvents();
   renderSignedOut();
-  try {
-    await initializeFirebase();
-    return true;
-  } catch (error) {
-    setStatus('CGB Accounts could not start.', { error: true });
-    return false;
-  }
+  uiInitialized = true;
+  scheduleDeferredAccountStartup();
+  return true;
+}
+
+export function startAccountInitialization() {
+  if (!accountsConfigIsReady(CGB_ACCOUNTS_CONFIG)) return Promise.resolve(false);
+  if (!uiInitialized && !initializeAccountsUi()) return Promise.resolve(false);
+  if (accountStartupPromise) return accountStartupPromise;
+  accountStartupPromise = initializeFirebase()
+    .then(() => true)
+    .catch((error) => {
+      setStatus('CGB Accounts could not start.', { error: true });
+      console.warn(`CGB Accounts startup failed: ${fanClientErrorCode(error)}`);
+      return false;
+    });
+  return accountStartupPromise;
 }
 
 window.CGBAccounts = Object.freeze({
   isSignedIn: () => Boolean(currentUser && account),
+  start: startAccountInitialization,
   getIdToken: (forceRefresh = false) => currentToken(forceRefresh),
   getProfile: () => clientProfile(),
   request: (action, extra = {}) => requestFanAction(action, extra)
 });
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => { void initializeAccountsUi(); }, { once: true });
+  document.addEventListener('DOMContentLoaded', initializeAccountsUi, { once: true });
 } else {
-  void initializeAccountsUi();
+  initializeAccountsUi();
 }

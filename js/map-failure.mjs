@@ -7,11 +7,20 @@ const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
 const LOADING_FADE_MS = 240;
 let loadingCoverHiddenMarked = false;
+let publicUsableMarked = false;
 const FALLBACK_MODE_CLASSES = Object.freeze([
   'map-fallback--loading',
   'map-fallback--failure',
   'map-fallback--leaving'
 ]);
+
+function markPublicUsable(windowObject = globalThis.window) {
+  if (publicUsableMarked || !windowObject) return;
+  publicUsableMarked = true;
+  markCgbPerformance('cgb:public:usable');
+  windowObject.CGBPublicLaunchUsable = true;
+  windowObject.dispatchEvent?.(new CustomEvent('cgb:public-usable'));
+}
 
 function element(documentObject, selector) {
   return documentObject?.querySelector?.(selector) || null;
@@ -245,6 +254,7 @@ export function hideMapLoading({
       loadingCoverHiddenMarked = markCgbPerformance('cgb:cover:hidden');
       measureCgbPerformance('cgb:boot-to-cover-hidden', 'cgb:boot:start', 'cgb:cover:hidden');
     }
+    markPublicUsable(windowObject);
   };
 
   const reveal = () => {
@@ -264,6 +274,7 @@ export function showMapUnavailable({
   app = globalThis.window?.CGBApp,
   documentObject = globalThis.document,
   consoleObject = globalThis.console,
+  windowObject = globalThis.window,
   error = null
 } = {}) {
   const mapContainer = element(documentObject, '#map');
@@ -289,6 +300,7 @@ export function showMapUnavailable({
   fallback.hidden = false;
   mapContainer.classList?.remove?.('map--loading');
   mapContainer.classList?.add?.('map--fallback');
+  markPublicUsable(windowObject);
   return true;
 }
 
@@ -304,7 +316,7 @@ export function attachMapFailureFallback({
   if (!map) {
     const container = element(documentObject, '#map');
     if (container?.classList?.contains?.('map--fallback')) {
-      showMapUnavailable({ app, documentObject, consoleObject });
+      showMapUnavailable({ app, documentObject, consoleObject, windowObject });
     }
     return false;
   }
@@ -326,7 +338,7 @@ export function attachMapFailureFallback({
       consoleObject?.warn?.('Map error', error);
       return;
     }
-    showMapUnavailable({ app, documentObject, consoleObject, error });
+    showMapUnavailable({ app, documentObject, consoleObject, windowObject, error });
   });
   return true;
 }

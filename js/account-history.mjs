@@ -1,5 +1,6 @@
 import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
 import { accountsConfigIsReady } from './accounts-core.mjs';
+import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const STYLE_ATTR = 'data-cgb-account-history-style';
 const HISTORY_CACHE_MS = 60_000;
@@ -175,6 +176,7 @@ function renderSummary(summary) {
     statItem(summary.stats.bestStreak, 'Best streak')
   );
   content.append(stats);
+  markCgbPerformance('cgb:my-cgb:season:visible');
 
   const badgesHeading = subsectionHeading('Achievements', 'Coaster Collection');
   const badges = document.createElement('div');
@@ -188,6 +190,9 @@ function renderSummary(summary) {
     artwork.className = 'accounts-badge__artwork';
     artwork.src = BADGE_ASSETS[badge.id];
     artwork.alt = `${badge.label} achievement artwork`;
+    artwork.loading = 'lazy';
+    artwork.decoding = 'async';
+    artwork.fetchPriority = 'low';
     artwork.width = 512;
     artwork.height = 512;
 
@@ -268,9 +273,16 @@ function acceptAttendanceResponse(payload) {
 }
 
 async function requestSeasonSummary() {
+  markCgbPerformance('cgb:my-cgb:season-request:start');
   const response = await window.CGBAccounts.request('getFanAttendance');
   const summary = validateSeasonSummary(response);
   if (!summary) throw new Error('invalid_season_summary');
+  markCgbPerformance('cgb:my-cgb:season-request:ready');
+  measureCgbPerformance(
+    'cgb:my-cgb:season-request',
+    'cgb:my-cgb:season-request:start',
+    'cgb:my-cgb:season-request:ready'
+  );
   return summary;
 }
 

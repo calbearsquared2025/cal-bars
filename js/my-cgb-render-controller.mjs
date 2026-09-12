@@ -153,7 +153,6 @@ function prepareSignedIn(profile) {
   }
 
   const runGeneration = ++generation;
-  setPending(true);
   window.CGBAccountHistory?.setAccountState?.(true);
   window.CGBAccountHistory?.render?.();
   window.CGBAccountProfilePolish?.sync?.();
@@ -184,7 +183,6 @@ export function initializeMyCgbRenderController() {
   if (!enabled()) return false;
   injectStyles();
   ensureFixedSignedInStructure();
-  setPending(true);
   window.addEventListener('cgb:account-state', handleAccountState);
 
   if (window.CGBAccounts?.isSignedIn?.()) {
