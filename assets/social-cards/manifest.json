@@ -7,108 +7,108 @@
       "game_id": "game_9e8f4860c6a256c0fae6007d",
       "slug": "ucla",
       "title": "Cal vs. UCLA",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 15,
-      "image": "assets/social-cards/ucla-1ba95373ae.png",
+      "image": "assets/social-cards/ucla-c30ab03a15.png",
       "page": "share/ucla/index.html"
     },
     {
       "game_id": "game_64902a48440e55522742d631",
       "slug": "syracuse",
       "title": "Cal at Syracuse",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 14,
-      "image": "assets/social-cards/syracuse-3355bb9267.png",
+      "image": "assets/social-cards/syracuse-b060044a62.png",
       "page": "share/syracuse/index.html"
     },
     {
       "game_id": "game_98623ba154f59012256c39ac",
       "slug": "wagner",
       "title": "Cal vs. Wagner",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 11,
-      "image": "assets/social-cards/wagner-70b8e25086.png",
+      "image": "assets/social-cards/wagner-d97c5c982f.png",
       "page": "share/wagner/index.html"
     },
     {
       "game_id": "game_bf8616724877adc20fb78ac9",
       "slug": "clemson",
       "title": "Cal vs. Clemson",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 9,
-      "image": "assets/social-cards/clemson-7bfad6ca13.png",
+      "image": "assets/social-cards/clemson-d11613a62d.png",
       "page": "share/clemson/index.html"
     },
     {
       "game_id": "game_416f957fa7bbd325fa2d9b13",
       "slug": "unlv",
       "title": "Cal at UNLV",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 10,
-      "image": "assets/social-cards/unlv-9e8f56d286.png",
+      "image": "assets/social-cards/unlv-66b550d1b1.png",
       "page": "share/unlv/index.html"
     },
     {
       "game_id": "game_d865a3e1eac52bbbd848d545",
       "slug": "virginia-tech",
       "title": "Cal vs. Virginia Tech",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 5,
-      "image": "assets/social-cards/virginia-tech-2269db141b.png",
+      "image": "assets/social-cards/virginia-tech-cdd63e9f7f.png",
       "page": "share/virginia-tech/index.html"
     },
     {
       "game_id": "game_2d86d2a1538503a070d1ee68",
       "slug": "wake-forest",
       "title": "Cal vs. Wake Forest",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 4,
-      "image": "assets/social-cards/wake-forest-1bee6c3ee5.png",
+      "image": "assets/social-cards/wake-forest-1c4e5f0920.png",
       "page": "share/wake-forest/index.html"
     },
     {
       "game_id": "game_5f8281482583c43917f6f2a5",
       "slug": "smu",
       "title": "Cal at SMU",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 5,
-      "image": "assets/social-cards/smu-b8568d610d.png",
+      "image": "assets/social-cards/smu-22c1c3a095.png",
       "page": "share/smu/index.html"
     },
     {
       "game_id": "game_6bc7b90491088cca24f8ca52",
       "slug": "nc-state",
       "title": "Cal at NC State",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 5,
-      "image": "assets/social-cards/nc-state-377642ec37.png",
+      "image": "assets/social-cards/nc-state-811a80d14c.png",
       "page": "share/nc-state/index.html"
     },
     {
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
       "slug": "virginia",
       "title": "Cal at Virginia",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 5,
-      "image": "assets/social-cards/virginia-ac2e7ceb36.png",
+      "image": "assets/social-cards/virginia-8f274a8255.png",
       "page": "share/virginia/index.html"
     },
     {
       "game_id": "game_ca62dd014907c6fdcc7520bd",
       "slug": "stanford",
       "title": "Cal vs. Stanford",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 6,
-      "image": "assets/social-cards/stanford-4e8248f120.png",
+      "image": "assets/social-cards/stanford-2e3aa6bb36.png",
       "page": "share/stanford/index.html"
     },
     {
       "game_id": "game_1535f732d3d1061b8e8cf07e",
       "slug": "pittsburgh",
       "title": "Cal vs. Pittsburgh",
-      "locations_mapped": 43,
+      "locations_mapped": 44,
       "watch_parties": 4,
-      "image": "assets/social-cards/pittsburgh-38a515aba3.png",
+      "image": "assets/social-cards/pittsburgh-4c483d6bc8.png",
       "page": "share/pittsburgh/index.html"
     }
   ]
