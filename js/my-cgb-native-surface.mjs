@@ -1,3 +1,5 @@
+import { ensureMyCgbFeaturesLoaded } from './my-cgb-feature-loader.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const ACCOUNT_COMMAND = 'my-cgb';
 const TRANSIENT_AUTH = 'auth';
@@ -214,28 +216,41 @@ function currentSelectedVenueId() {
   return String(window.CGBApp?.getState?.()?.selectedVenueId || '');
 }
 
-function showNativeSurface(opener = null) {
-  if (!ensureSurface()) return;
-  if (!open) {
-    returnSurface = document.body.dataset.commandSurface || 'map';
-    selectedVenueAtOpen = currentSelectedVenueId();
+async function revealNativeSurface() {
+  if (!open || !surface || !shell) return false;
+  try {
+    if (window.CGBAccounts?.isSignedIn?.()) await ensureMyCgbFeaturesLoaded();
+  } catch (error) {
+    console.error('CGB My CGB feature load failed.', error);
   }
-  open = true;
-  lastOpener = opener || lastOpener || navButton;
+  if (!open || dialog?.open || transientMode) return false;
   moveShellHome();
   surface.hidden = false;
-  tray.dataset.myCgbOpen = 'true';
-  document.body.dataset.commandSurface = ACCOUNT_COMMAND;
-  document.querySelector('#search-surface')?.setAttribute('hidden', '');
-  document.querySelector('#add-surface')?.setAttribute('hidden', '');
-  document.querySelector('#about-surface')?.setAttribute('hidden', '');
-  setCommandState(true);
   refreshSelectedFavoriteAction();
   const title = shell.querySelector('#cgb-account-title');
   if (title) {
     title.tabIndex = -1;
     window.requestAnimationFrame(() => title.focus({ preventScroll: true }));
   }
+  return true;
+}
+
+function showNativeSurface(opener = null) {
+  if (!ensureSurface()) return Promise.resolve(false);
+  if (!open) {
+    returnSurface = document.body.dataset.commandSurface || 'map';
+    selectedVenueAtOpen = currentSelectedVenueId();
+  }
+  open = true;
+  lastOpener = opener || lastOpener || navButton;
+  surface.hidden = true;
+  tray.dataset.myCgbOpen = 'true';
+  document.body.dataset.commandSurface = ACCOUNT_COMMAND;
+  document.querySelector('#search-surface')?.setAttribute('hidden', '');
+  document.querySelector('#add-surface')?.setAttribute('hidden', '');
+  document.querySelector('#about-surface')?.setAttribute('hidden', '');
+  setCommandState(true);
+  return revealNativeSurface();
 }
 
 function restorePreviousSurface() {
@@ -286,7 +301,7 @@ function restoreAfterTransient() {
   const opener = lastOpener;
   moveShellHome();
   if (mode === TRANSIENT_AUTH && !window.CGBAccounts?.isSignedIn?.()) clearAuthReturnIntent();
-  if (open && surface) surface.hidden = false;
+  if (open) void revealNativeSurface();
   if (opener?.isConnected) window.requestAnimationFrame(() => opener.focus({ preventScroll: true }));
 }
 

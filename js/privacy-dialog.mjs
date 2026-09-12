@@ -7,11 +7,8 @@ import './account-favorites-navigation.mjs';
 import './account-profile-polish.mjs';
 import './account-profile-onboarding.mjs';
 import './account-attendance.mjs';
-import './account-history.mjs';
-import './my-cgb-render-controller.mjs';
 import './account-public-community.mjs';
 import './account-contributions.mjs';
-import './account-deletion.mjs';
 import { connectFooterPopover } from './footer-popover.mjs';
 
 function initializePrivacyDialog() {
