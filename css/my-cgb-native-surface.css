@@ -122,6 +122,60 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
 @media (min-width: 900px) {
   body[data-cgb-accounts-enabled="true"] .mobile-command-bar {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    height: 56px;
+    min-height: 56px;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-list-button,
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-map-button,
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-about-button {
+    position: relative;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 0 8px;
+    color: rgba(255, 255, 255, .88) !important;
+    background: transparent !important;
+    font-family: var(--font-condensed, sans-serif);
+    font-size: .84rem;
+    font-weight: 800;
+    letter-spacing: .025em;
+    line-height: 1;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-list-button:hover:not(:disabled),
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-map-button:hover:not(:disabled),
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-about-button:hover:not(:disabled) {
+    color: var(--cgb-white, #fff) !important;
+    background: rgba(255, 255, 255, .08) !important;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > .mobile-command:focus-visible {
+    color: var(--cgb-white, #fff) !important;
+    background: rgba(255, 255, 255, .08) !important;
+    outline: 2px solid var(--cgb-gold-400, #fdb515);
+    outline-offset: -2px;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > .mobile-command[aria-current="page"] {
+    color: var(--cgb-white, #fff) !important;
+    background: transparent !important;
+    font-weight: 800;
+  }
+
+  body[data-cgb-accounts-enabled="true"] .mobile-command-bar > .mobile-command[aria-current="page"]::after {
+    content: '';
+    position: absolute;
+    right: 14px;
+    bottom: 1px;
+    left: 14px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--cgb-gold-400, #fdb515);
   }
 
   body[data-cgb-accounts-enabled="true"] #mobile-list-button {
@@ -149,6 +203,12 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     border: 1px solid rgba(1, 1, 51, .18);
     border-left: 0;
     border-radius: 0 9px 9px 0;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #mobile-about-button > .ui-icon {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
   }
 
   body[data-cgb-accounts-enabled="true"] .my-cgb-desktop-add {
