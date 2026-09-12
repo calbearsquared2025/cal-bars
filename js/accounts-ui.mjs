@@ -15,6 +15,16 @@ const REQUEST_TIMEOUT_MS = 12000;
 const FIREBASE_VERSION = '12.18.0';
 const GOOGLE_PROVIDER_ID = 'google.com';
 const EMAIL_PROVIDER_ID = 'password';
+const SAFE_FAN_DIAGNOSTIC_CODES = new Set([
+  'fan_account_deleted',
+  'fan_account_suspended',
+  'fan_backend_unavailable',
+  'fan_network_failure',
+  'fan_network_timeout',
+  'fan_not_configured',
+  'fan_schema_mismatch',
+  'fan_unauthorized'
+]);
 
 let auth = null;
 let authModule = null;
@@ -22,6 +32,9 @@ let googleProvider = null;
 let currentUser = null;
 let account = null;
 let favoriteVenueIds = [];
+let favoritesLoadState = 'idle';
+let favoritesErrorCode = '';
+let favoritesRequestRevision = 0;
 let dom = null;
 let pendingSignedOutStatus = null;
 let authStateRevision = 0;
@@ -86,6 +99,17 @@ function buildDialog() {
           </div>
         </form>
         <p class="accounts-fine-print">Your email and sign-in identifiers stay private. Public profile and attendance visibility are separate choices.</p>
+      </section>
+
+      <section class="accounts-authenticated-error" hidden>
+        <div class="accounts-intro">
+          <strong class="accounts-authenticated-error-title">You’re signed in. Your CGB data couldn’t load.</strong>
+          <p class="accounts-authenticated-error-detail">Retry to load your CGB account, or sign out.</p>
+        </div>
+        <div class="accounts-provider-actions">
+          <button class="primary-button accounts-core-retry" type="button">Retry</button>
+          <button class="text-button accounts-degraded-sign-out" type="button">Sign out</button>
+        </div>
       </section>
 
       <section class="accounts-signed-in" hidden>
@@ -169,6 +193,11 @@ function collectDom() {
     close: dialog.querySelector('.accounts-close'),
     status: dialog.querySelector('.accounts-status'),
     signedOut: dialog.querySelector('.accounts-signed-out'),
+    authenticatedError: dialog.querySelector('.accounts-authenticated-error'),
+    authenticatedErrorTitle: dialog.querySelector('.accounts-authenticated-error-title'),
+    authenticatedErrorDetail: dialog.querySelector('.accounts-authenticated-error-detail'),
+    coreRetry: dialog.querySelector('.accounts-core-retry'),
+    degradedSignOut: dialog.querySelector('.accounts-degraded-sign-out'),
     signedIn: dialog.querySelector('.accounts-signed-in'),
     providerButtons: [...dialog.querySelectorAll('[data-account-provider]')],
     emailForm: dialog.querySelector('.accounts-email-form'),
@@ -197,6 +226,19 @@ function setStatus(message = '', { error = false } = {}) {
   dom.status.hidden = !message;
 }
 
+function fanClientErrorCode(error) {
+  if (error?.name === 'AbortError') return 'fan_network_timeout';
+  if (error?.code === 'auth/network-request-failed') return 'fan_network_failure';
+  if (String(error?.code || '').startsWith('auth/')) return 'fan_unauthorized';
+  const code = String(error?.message || 'fan_backend_unavailable');
+  if (SAFE_FAN_DIAGNOSTIC_CODES.has(code)) return code;
+  return 'fan_backend_unavailable';
+}
+
+function logFanDiagnostic(context, error) {
+  console.warn(`${context}: ${fanClientErrorCode(error)}`);
+}
+
 async function postFan(payload) {
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -211,6 +253,10 @@ async function postFan(payload) {
     const body = await response.json().catch(() => null);
     if (!response.ok || !body) throw new Error('fan_backend_unavailable');
     return body;
+  } catch (error) {
+    if (error?.message === 'fan_backend_unavailable') throw error;
+    if (error?.name === 'AbortError') throw new Error('fan_network_timeout');
+    throw new Error('fan_network_failure');
   } finally {
     window.clearTimeout(timeout);
   }
@@ -265,7 +311,7 @@ async function loadAccount(user) {
   const response = await postFan(buildFanRequest('ensureFanAccount', token));
   if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
   const validated = validateFanAccountResponse(response);
-  if (!validated) throw new Error('fan_backend_unavailable');
+  if (!validated) throw new Error('fan_schema_mismatch');
   return validated;
 }
 
@@ -274,7 +320,7 @@ async function loadFavorites(user) {
   const response = await postFan(buildFanRequest('listFanFavorites', token));
   if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
   const validated = validateFanFavoritesResponse(response);
-  if (!validated) throw new Error('fan_backend_unavailable');
+  if (!validated) throw new Error('fan_schema_mismatch');
   return [...validated];
 }
 
@@ -282,12 +328,43 @@ function venueById(venueId) {
   return appState.snapshot?.venues?.find((venue) => venue.venue_id === venueId) || null;
 }
 
+function favoritesUnavailableCopy(code) {
+  if (code === 'fan_network_timeout') return 'Favorites took too long to load.';
+  if (code === 'fan_network_failure') return 'Favorites couldn’t reach CGB.';
+  return 'Favorites are temporarily unavailable.';
+}
+
 function renderFavorites() {
   if (!dom?.favorites) return;
   dom.favorites.replaceChildren();
   const selected = venueById(appState.selectedVenueId);
-  const selectedIsFavorite = selected && favoriteVenueIds.includes(selected.venue_id);
 
+  if (favoritesLoadState === 'loading') {
+    dom.saveSelected.hidden = true;
+    dom.saveSelected.dataset.venueId = '';
+    const loading = document.createElement('p');
+    loading.className = 'accounts-empty';
+    loading.textContent = 'Loading favorites…';
+    dom.favorites.append(loading);
+    return;
+  }
+
+  if (favoritesLoadState === 'error') {
+    dom.saveSelected.hidden = true;
+    dom.saveSelected.dataset.venueId = '';
+    const unavailable = document.createElement('p');
+    unavailable.className = 'accounts-empty';
+    unavailable.textContent = favoritesUnavailableCopy(favoritesErrorCode);
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.className = 'text-button';
+    retry.dataset.retryFavorites = 'true';
+    retry.textContent = 'Retry favorites';
+    dom.favorites.append(unavailable, retry);
+    return;
+  }
+
+  const selectedIsFavorite = selected && favoriteVenueIds.includes(selected.venue_id);
   if (selected && !selectedIsFavorite) {
     dom.saveSelected.hidden = false;
     dom.saveSelected.dataset.venueId = selected.venue_id;
@@ -374,10 +451,18 @@ function showEmailForm() {
   window.setTimeout(() => dom.emailInput.focus(), 0);
 }
 
+function resetFavoritesState() {
+  favoritesRequestRevision += 1;
+  favoriteVenueIds = [];
+  favoritesLoadState = 'idle';
+  favoritesErrorCode = '';
+}
+
 function renderSignedOut() {
   account = null;
-  favoriteVenueIds = [];
+  resetFavoritesState();
   dom.signedOut.hidden = false;
+  dom.authenticatedError.hidden = true;
   dom.signedIn.hidden = true;
   if (pendingSignedOutStatus) {
     setStatus(pendingSignedOutStatus.message, { error: pendingSignedOutStatus.error });
@@ -392,6 +477,7 @@ function renderSignedIn() {
   if (!account || !currentUser) return;
   pendingSignedOutStatus = null;
   dom.signedOut.hidden = true;
+  dom.authenticatedError.hidden = true;
   dom.signedIn.hidden = false;
   dom.displayName.textContent = account.displayName;
   dom.email.textContent = String(currentUser.email || 'Signed in');
@@ -409,23 +495,102 @@ function renderSignedIn() {
   dispatchAccountState();
 }
 
+function firebaseAuthenticatedLead(user) {
+  const providers = new Set(
+    Array.isArray(user?.providerData)
+      ? user.providerData.map((provider) => String(provider?.providerId || '')).filter(Boolean)
+      : []
+  );
+  if (providers.size === 1 && providers.has(GOOGLE_PROVIDER_ID)) return 'Signed in with Google.';
+  return 'You’re signed in.';
+}
+
+function coreHydrationDetail(code) {
+  if (code === 'fan_account_deleted') return 'This CGB account was deleted. Retry to check again, or sign out to use a different account.';
+  if (code === 'fan_unauthorized') return 'CGB couldn’t verify the current account session. Retry to refresh it, or sign out.';
+  if (code === 'fan_schema_mismatch') return 'CGB returned account data in an unexpected format. Retry, or sign out.';
+  if (code === 'fan_network_timeout') return 'CGB took too long to return your account data. Retry, or sign out.';
+  if (code === 'fan_network_failure') return 'CGB couldn’t reach the account service. Retry when your connection is available, or sign out.';
+  return 'The CGB account service is temporarily unavailable. Retry, or sign out.';
+}
+
+function renderAuthenticatedError(error) {
+  if (!currentUser) {
+    renderSignedOut();
+    return;
+  }
+  const code = fanClientErrorCode(error);
+  account = null;
+  resetFavoritesState();
+  pendingSignedOutStatus = null;
+  dom.signedOut.hidden = true;
+  dom.signedIn.hidden = true;
+  dom.authenticatedError.hidden = false;
+  dom.authenticatedErrorTitle.textContent = code === 'fan_account_deleted'
+    ? `${firebaseAuthenticatedLead(currentUser)} This CGB account was deleted.`
+    : `${firebaseAuthenticatedLead(currentUser)} Your CGB data couldn’t load.`;
+  dom.authenticatedErrorDetail.textContent = coreHydrationDetail(code);
+  setStatus('');
+}
+
+async function refreshFavorites(user, revision) {
+  if (!account || !authStateIsCurrent(user, revision)) return false;
+  const requestRevision = ++favoritesRequestRevision;
+  favoritesLoadState = 'loading';
+  favoritesErrorCode = '';
+  renderFavorites();
+  try {
+    const [loadedFavorites] = await Promise.all([
+      loadFavorites(user),
+      waitForApplicationReady().catch(() => null)
+    ]);
+    if (!authStateIsCurrent(user, revision) || requestRevision !== favoritesRequestRevision) return false;
+    favoriteVenueIds = [...loadedFavorites];
+    favoritesLoadState = 'ready';
+    favoritesErrorCode = '';
+    renderFavorites();
+    return true;
+  } catch (error) {
+    if (!authStateIsCurrent(user, revision) || requestRevision !== favoritesRequestRevision) return false;
+    favoriteVenueIds = [];
+    favoritesLoadState = 'error';
+    favoritesErrorCode = fanClientErrorCode(error);
+    renderFavorites();
+    logFanDiagnostic('CGB Favorites load failed', error);
+    return false;
+  }
+}
+
 async function refreshSignedInState(user, revision) {
   setStatus('Loading My CGB…');
-  const [loadedAccount] = await Promise.all([
-    loadAccount(user),
-    waitForApplicationReady().catch(() => null)
-  ]);
-  if (!authStateIsCurrent(user, revision)) return false;
-  const loadedFavorites = await loadFavorites(user);
+  const loadedAccount = await loadAccount(user);
   if (!authStateIsCurrent(user, revision)) return false;
   account = loadedAccount;
-  favoriteVenueIds = [...loadedFavorites];
+  favoriteVenueIds = [];
+  favoritesLoadState = 'loading';
+  favoritesErrorCode = '';
   renderSignedIn();
+  void refreshFavorites(user, revision);
   return true;
 }
 
+async function retryCoreHydration() {
+  const user = currentUser;
+  const revision = authStateRevision;
+  if (!user || !authStateIsCurrent(user, revision)) return;
+  dom.coreRetry.disabled = true;
+  try {
+    await refreshSignedInState(user, revision);
+  } catch (error) {
+    if (!authStateIsCurrent(user, revision)) return;
+    renderAuthenticatedError(error);
+    logFanDiagnostic('CGB core account hydration failed', error);
+  } finally {
+    if (authStateIsCurrent(user, revision)) dom.coreRetry.disabled = false;
+  }
+}
+
 function readableError(error) {
-  if (error?.name === 'AbortError') return fanErrorCopy('fan_backend_unavailable');
   const code = String(error?.code || error?.message || 'fan_backend_unavailable');
   if (code === 'auth/email-already-in-use') return 'That email already has a CGB sign-in. Sign in instead.';
   if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
@@ -435,7 +600,12 @@ function readableError(error) {
   if (code === 'auth/too-many-requests') return 'Too many sign-in attempts. Try again later.';
   if (code === 'auth/user-disabled') return 'This sign-in is unavailable.';
   if (code.startsWith('auth/')) return 'Sign-in did not complete. Try again.';
-  return fanErrorCopy(code);
+  const fanCode = fanClientErrorCode(error);
+  if (fanCode === 'fan_account_deleted') return 'This CGB account was deleted.';
+  if (fanCode === 'fan_schema_mismatch') return 'CGB account data is temporarily incompatible. Try again.';
+  if (fanCode === 'fan_network_timeout') return 'CGB Accounts took too long to respond. Try again.';
+  if (fanCode === 'fan_network_failure') return 'CGB Accounts couldn’t reach the service. Check your connection and try again.';
+  return fanErrorCopy(fanCode);
 }
 
 function prefersRedirectSignIn() {
@@ -571,7 +741,7 @@ async function saveProfile(event) {
     const response = await postFan(buildFanRequest('saveFanProfile', token, { changes }));
     if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
     const validated = validateFanAccountResponse(response);
-    if (!validated) throw new Error('fan_backend_unavailable');
+    if (!validated) throw new Error('fan_schema_mismatch');
     if (!authStateIsCurrent(user, revision)) return;
     account = validated;
     renderSignedIn();
@@ -587,21 +757,33 @@ async function saveProfile(event) {
 async function setFavorite(venueId, favorited) {
   const user = currentUser;
   const revision = authStateRevision;
-  if (!user) return;
+  if (!user || favoritesLoadState !== 'ready') return;
   setStatus(favorited ? 'Saving favorite…' : 'Removing favorite…');
   try {
     const token = await tokenForUser(user);
     const response = await postFan(buildFanRequest('setFanFavorite', token, { venueId, favorited }));
     if (response.ok !== true) throw new Error(response.error || 'fan_backend_unavailable');
     const validated = validateFanFavoritesResponse(response);
-    if (!validated) throw new Error('fan_backend_unavailable');
+    if (!validated) throw new Error('fan_schema_mismatch');
     if (!authStateIsCurrent(user, revision)) return;
     favoriteVenueIds = [...validated];
+    favoritesLoadState = 'ready';
+    favoritesErrorCode = '';
     renderFavorites();
     setStatus(favorited ? 'Favorite saved.' : 'Favorite removed.');
   } catch (error) {
     if (!authStateIsCurrent(user, revision)) return;
     setStatus(readableError(error), { error: true });
+  }
+}
+
+async function signOutCurrentUser(button) {
+  if (!auth || !authModule) return;
+  button.disabled = true;
+  try {
+    await authModule.signOut(auth);
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -636,20 +818,19 @@ function bindEvents() {
     setStatus('');
   });
   dom.profileForm.addEventListener('submit', saveProfile);
-  dom.signOut.addEventListener('click', async () => {
-    if (!auth || !authModule) return;
-    dom.signOut.disabled = true;
-    try {
-      await authModule.signOut(auth);
-    } finally {
-      dom.signOut.disabled = false;
-    }
-  });
+  dom.signOut.addEventListener('click', () => { void signOutCurrentUser(dom.signOut); });
+  dom.degradedSignOut.addEventListener('click', () => { void signOutCurrentUser(dom.degradedSignOut); });
+  dom.coreRetry.addEventListener('click', () => { void retryCoreHydration(); });
   dom.saveSelected.addEventListener('click', () => {
     const venueId = dom.saveSelected.dataset.venueId;
     if (venueId) setFavorite(venueId, true);
   });
   dom.favorites.addEventListener('click', (event) => {
+    const retry = event.target.closest('[data-retry-favorites]');
+    if (retry && currentUser && account) {
+      void refreshFavorites(currentUser, authStateRevision);
+      return;
+    }
     const button = event.target.closest('[data-remove-favorite]');
     if (button) setFavorite(button.dataset.removeFavorite, false);
   });
@@ -677,7 +858,7 @@ async function initializeFirebase() {
     if (user && passwordProviderPresent(user) && user.emailVerified !== true) {
       currentUser = null;
       account = null;
-      favoriteVenueIds = [];
+      resetFavoritesState();
       pendingSignedOutStatus = pendingSignedOutStatus || {
         message: 'Verify your email before signing in.',
         error: false
@@ -689,7 +870,7 @@ async function initializeFirebase() {
     }
     currentUser = user || null;
     account = null;
-    favoriteVenueIds = [];
+    resetFavoritesState();
     if (!user) {
       renderSignedOut();
       return;
@@ -698,7 +879,8 @@ async function initializeFirebase() {
       await refreshSignedInState(user, revision);
     } catch (error) {
       if (!authStateIsCurrent(user, revision)) return;
-      setStatus(readableError(error), { error: true });
+      renderAuthenticatedError(error);
+      logFanDiagnostic('CGB core account hydration failed', error);
     }
   });
   markCgbPerformance('cgb:firebase:init:ready');
