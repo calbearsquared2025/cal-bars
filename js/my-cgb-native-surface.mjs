@@ -1,17 +1,14 @@
-import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
-import { accountsConfigIsReady } from './accounts-core.mjs';
-
 const MOBILE_QUERY = '(max-width: 899px)';
 const ACCOUNT_COMMAND = 'my-cgb';
 const TRANSIENT_AUTH = 'auth';
 const TRANSIENT_PROFILE = 'profile';
+const AUTH_RETURN_SESSION_KEY = 'cgb:my-cgb:auth-return';
 const NAV_CLOSE_SELECTOR = '#mobile-map-button, #mobile-search-button, #mobile-add-button, #mobile-list-button, [data-command-close]';
 
 let tray = null;
 let surface = null;
 let dialog = null;
 let shell = null;
-let launcher = null;
 let navButton = null;
 let nativeSignIn = null;
 let editProfile = null;
@@ -24,10 +21,6 @@ let lastOpener = null;
 let selectedVenueAtOpen = '';
 let syncFrame = 0;
 
-function enabled() {
-  return accountsConfigIsReady(CGB_ACCOUNTS_CONFIG);
-}
-
 function injectStyles() {
   if (document.querySelector('link[data-cgb-my-cgb-native-style]')) return;
   const link = document.createElement('link');
@@ -37,37 +30,34 @@ function injectStyles() {
   document.head.append(link);
 }
 
+function setAuthReturnIntent() {
+  try {
+    window.sessionStorage.setItem(AUTH_RETURN_SESSION_KEY, ACCOUNT_COMMAND);
+  } catch {
+    // Session storage may be unavailable in restrictive browser modes.
+  }
+}
+
+function clearAuthReturnIntent() {
+  try {
+    window.sessionStorage.removeItem(AUTH_RETURN_SESSION_KEY);
+  } catch {
+    // Session storage may be unavailable in restrictive browser modes.
+  }
+}
+
+function consumeAuthReturnIntent() {
+  try {
+    if (window.sessionStorage.getItem(AUTH_RETURN_SESSION_KEY) !== ACCOUNT_COMMAND) return false;
+    window.sessionStorage.removeItem(AUTH_RETURN_SESSION_KEY);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function commandLabel(button) {
   return button?.querySelector('span:last-child') || null;
-}
-
-function syncNavButton() {
-  if (!navButton) return;
-  navButton.dataset.command = ACCOUNT_COMMAND;
-  navButton.dataset.commandReady = 'true';
-  navButton.setAttribute('aria-label', 'My CGB');
-  const label = commandLabel(navButton);
-  if (label) label.textContent = 'My CGB';
-  const use = navButton.querySelector('use');
-  if (use) use.setAttribute('href', 'assets/icons.svg#icon-users');
-}
-
-function resolveNavigationGate() {
-  navButton = document.querySelector('#mobile-about-button');
-  if (!navButton) return false;
-  if (enabled()) syncNavButton();
-  else navButton.dataset.commandReady = 'true';
-  return true;
-}
-
-function syncHeaderLauncher() {
-  if (!launcher) return;
-  launcher.hidden = true;
-  launcher.tabIndex = -1;
-  launcher.setAttribute('aria-hidden', 'true');
-  launcher.removeAttribute('aria-haspopup');
-  launcher.removeAttribute('aria-controls');
-  launcher.removeAttribute('aria-expanded');
 }
 
 function syncDesktopAddEntry() {
@@ -102,7 +92,6 @@ function ensureSurface() {
   tray = document.querySelector('#venue-tray');
   dialog = document.querySelector('#cgb-account-dialog');
   shell = dialog?.querySelector('.accounts-shell') || document.querySelector('.accounts-shell');
-  launcher = document.querySelector('#cgb-account-button');
   navButton = document.querySelector('#mobile-about-button');
   if (!tray || !dialog || !shell || !navButton) return false;
 
@@ -149,8 +138,6 @@ function ensureSurface() {
   }
 
   document.body.dataset.cgbAccountsEnabled = 'true';
-  syncNavButton();
-  syncHeaderLauncher();
   syncDesktopAddEntry();
   return true;
 }
@@ -280,6 +267,7 @@ function openTransient(mode, opener) {
   if (!dialog || !shell || dialog.open) return;
   transientMode = mode;
   lastOpener = opener || lastOpener;
+  if (mode === TRANSIENT_AUTH) setAuthReturnIntent();
   setNativeChrome(false);
   dialog.classList.toggle('accounts-dialog--auth', mode === TRANSIENT_AUTH);
   dialog.classList.toggle('accounts-dialog--profile', mode === TRANSIENT_PROFILE);
@@ -294,8 +282,10 @@ function openTransient(mode, opener) {
 
 function restoreAfterTransient() {
   if (!transientMode) return;
+  const mode = transientMode;
   const opener = lastOpener;
   moveShellHome();
+  if (mode === TRANSIENT_AUTH && !window.CGBAccounts?.isSignedIn?.()) clearAuthReturnIntent();
   if (open && surface) surface.hidden = false;
   if (opener?.isConnected) window.requestAnimationFrame(() => opener.focus({ preventScroll: true }));
 }
@@ -342,18 +332,26 @@ function handleKeydown(event) {
   }
 }
 
+function restoreCompletedAuthReturn() {
+  if (!window.CGBAccounts?.isSignedIn?.()) return false;
+  if (!consumeAuthReturnIntent()) return false;
+  if (!open) showNativeSurface(navButton);
+  return true;
+}
+
 function handleAccountState(event) {
-  if (transientMode === TRANSIENT_AUTH && event?.detail?.signedIn === true && dialog?.open) {
+  const signedIn = event?.detail?.signedIn === true;
+  const restoreNative = signedIn && consumeAuthReturnIntent();
+  if (transientMode === TRANSIENT_AUTH && signedIn && dialog?.open) {
     dialog.close();
   }
+  if (restoreNative && !open) showNativeSurface(navButton);
   scheduleSync();
 }
 
 function scheduleSync() {
   window.cancelAnimationFrame(syncFrame);
   syncFrame = window.requestAnimationFrame(() => {
-    syncNavButton();
-    syncHeaderLauncher();
     syncDesktopAddEntry();
     if (!open) return;
     tray?.setAttribute('data-my-cgb-open', 'true');
@@ -384,8 +382,6 @@ function connectApp() {
 }
 
 export function initializeMyCgbNativeSurface() {
-  resolveNavigationGate();
-  if (!enabled()) return false;
   injectStyles();
   if (!ensureSurface()) {
     window.setTimeout(initializeMyCgbNativeSurface, 25);
@@ -397,6 +393,7 @@ export function initializeMyCgbNativeSurface() {
   dialog.addEventListener('close', restoreAfterTransient);
   window.addEventListener('cgb:account-state', handleAccountState);
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', scheduleSync);
+  restoreCompletedAuthReturn();
   connectApp();
   scheduleSync();
   return true;
@@ -407,8 +404,6 @@ window.CGBMyCgbSurface = Object.freeze({
   close: () => closeNativeSurface({ restoreFocus: true }),
   isOpen: () => open
 });
-
-resolveNavigationGate();
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeMyCgbNativeSurface, { once: true });

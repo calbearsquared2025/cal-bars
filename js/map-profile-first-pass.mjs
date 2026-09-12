@@ -1,5 +1,3 @@
-import './marker-overlap-spread.mjs';
-
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
 
@@ -17,6 +15,57 @@ function installStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek {
+        position: absolute !important;
+        z-index: 46 !important;
+        inset: auto 0 0 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        height: 96px !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        border-radius: 22px 22px 0 0 !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle {
+        height: 18px !important;
+        display: grid !important;
+        pointer-events: auto !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle span {
+        width: 34px !important;
+        height: 4px !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-peek {
+        padding: 0 10px 7px !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary {
+        min-height: 70px !important;
+        grid-template-columns: 26px minmax(0, 1fr) auto !important;
+        gap: 9px !important;
+        padding: 2px 12px 8px !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__marker {
+        width: 20px !important;
+        height: 20px !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__copy strong {
+        font-size: .96rem !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__copy small {
+        font-size: .64rem !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__chevron {
+        display: none !important;
+      }
+
       body[data-command-surface="add"] #map-view > #venue-tray.venue-tray {
         display: none !important;
       }

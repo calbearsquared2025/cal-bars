@@ -1,188 +1,206 @@
 .accounts-season-content {
   display: grid;
-  gap: 16px;
+  gap: 18px;
 }
 
 .accounts-stats {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  gap: 0;
+  padding: 2px 0 4px;
 }
 
 .accounts-stat {
   min-width: 0;
-  padding: 11px 8px 10px;
-  border: 1px solid var(--cgb-neutral-200);
-  border-radius: var(--radius-md);
-  background: var(--cgb-navy-50);
+  padding: 4px 6px;
   text-align: center;
+}
+
+.accounts-stat + .accounts-stat {
+  border-left: 1px solid var(--cgb-neutral-200);
 }
 
 .accounts-stat strong {
   display: block;
   color: var(--brand-primary-dark);
   font-family: var(--font-condensed);
-  font-size: 1.8rem;
+  font-size: 1.65rem;
   font-weight: 900;
   line-height: .9;
 }
 
 .accounts-stat span {
   display: block;
-  margin-top: 6px;
+  margin-top: 5px;
   color: var(--brand-text-muted);
   font-family: var(--font-condensed);
-  font-size: .68rem;
+  font-size: .61rem;
   font-weight: 850;
   letter-spacing: .045em;
   line-height: 1.05;
   text-transform: uppercase;
 }
 
-.accounts-subheading {
+.accounts-season-subheading {
+  align-items: end;
+  margin-top: 4px;
+}
+
+.accounts-season-subheading h4 {
+  margin: 2px 0 0;
   color: var(--brand-primary-dark);
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  line-height: 1.08;
+}
+
+.accounts-season-subheading .eyebrow {
+  color: var(--brand-text-muted);
   font-family: var(--font-condensed);
-  font-size: .82rem;
-  font-weight: 900;
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .09em;
   text-transform: uppercase;
-  letter-spacing: .085em;
 }
 
 .accounts-badges {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.accounts-game-history {
-  display: grid;
-  gap: 8px;
+  gap: 18px 14px;
 }
 
 .accounts-badge {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 9px;
-  padding: 10px;
-  border: 1px solid var(--cgb-neutral-200);
-  border-radius: var(--radius-md);
-  background: var(--brand-surface);
-}
-
-.accounts-badge[data-earned="true"] {
-  border-color: rgba(253,181,21,.72);
-  background: var(--brand-watch-party-surface);
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-content: start;
+  gap: 7px;
+  padding: 0 0 4px;
+  background: transparent;
 }
 
 .accounts-badge__artwork {
   display: block;
-  width: min(100%, 142px);
+  width: min(100%, 160px);
   height: auto;
   aspect-ratio: 1;
-  align-self: center;
+  justify-self: center;
   object-fit: contain;
 }
 
 .accounts-badge[data-earned="false"] .accounts-badge__artwork {
-  filter: saturate(.3) contrast(.84);
-  opacity: .62;
-}
-
-.accounts-badge__copy,
-.accounts-game-row > div {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
+  filter: grayscale(.72) saturate(.25) contrast(.86);
+  opacity: .58;
 }
 
 .accounts-badge__copy {
+  min-width: 0;
+  display: grid;
   align-content: start;
-  flex: 1 1 auto;
-}
-
-.accounts-badge strong,
-.accounts-game-row strong {
-  color: var(--brand-primary-dark);
+  gap: 3px;
 }
 
 .accounts-badge__copy > strong {
+  color: var(--brand-primary-dark);
   font-family: var(--font-condensed);
-  font-size: .9rem;
+  font-size: .94rem;
   font-weight: 900;
   line-height: 1.05;
 }
 
-.accounts-badge__copy > span,
-.accounts-game-row span {
+.accounts-badge__copy > span {
   color: var(--brand-text-muted);
   font-size: .74rem;
   line-height: 1.3;
 }
 
 .accounts-badge__progress {
-  min-height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  align-self: start;
-  padding: 5px 9px;
-  border-radius: var(--radius-pill);
-  background: var(--cgb-navy-50);
-  color: var(--brand-primary);
+  justify-self: start;
+  color: var(--brand-text-muted);
   font-family: var(--font-condensed);
   font-size: .72rem;
   font-weight: 900;
   letter-spacing: .035em;
-  white-space: nowrap;
+  line-height: 1;
   text-transform: uppercase;
 }
 
 .accounts-badge[data-earned="true"] .accounts-badge__progress {
-  background: var(--brand-secondary);
+  color: var(--brand-secondary-dark, #b57d00);
+}
+
+.accounts-game-history {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.accounts-game-history th {
+  padding: 0 8px 7px 0;
+  color: var(--brand-text-muted);
+  font-family: var(--font-condensed);
+  font-size: .68rem;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.accounts-game-history th:last-child,
+.accounts-game-history td:last-child {
+  padding-right: 0;
+}
+
+.accounts-game-history td {
+  width: 50%;
+  padding: 9px 8px 9px 0;
+  border-top: 1px solid var(--cgb-neutral-200);
+  vertical-align: top;
+}
+
+.accounts-game-history td strong,
+.accounts-game-history td span {
+  display: block;
+}
+
+.accounts-game-history td strong {
   color: var(--brand-primary-dark);
+  font-size: .82rem;
+  line-height: 1.2;
 }
 
-.accounts-game-row {
-  display: grid;
-  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--cgb-neutral-200);
-}
-
-.accounts-game-row:last-child {
-  border-bottom: 0;
+.accounts-game-history td span {
+  margin-top: 2px;
+  color: var(--brand-text-muted);
+  font-size: .72rem;
+  line-height: 1.25;
 }
 
 @media (max-width: 899px) {
-  .accounts-stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .accounts-stat {
+    padding-inline: 3px;
   }
 
-  .accounts-game-row {
-    grid-template-columns: 1fr;
-    gap: 5px;
+  .accounts-stat strong {
+    font-size: 1.45rem;
+  }
+
+  .accounts-stat span {
+    font-size: .56rem;
   }
 }
 
 @media (max-width: 359px) {
   .accounts-badges {
-    gap: 7px;
-  }
-
-  .accounts-badge {
-    gap: 7px;
-    padding: 8px;
+    gap: 14px 10px;
   }
 
   .accounts-badge__artwork {
-    width: min(100%, 118px);
+    width: min(100%, 132px);
   }
 
   .accounts-badge__copy > strong {
-    font-size: .84rem;
+    font-size: .86rem;
   }
 
   .accounts-badge__copy > span {
@@ -190,9 +208,11 @@
     line-height: 1.25;
   }
 
-  .accounts-badge__progress {
-    min-height: 26px;
-    padding: 4px 8px;
-    font-size: .68rem;
+  .accounts-stat strong {
+    font-size: 1.3rem;
+  }
+
+  .accounts-stat span {
+    font-size: .52rem;
   }
 }

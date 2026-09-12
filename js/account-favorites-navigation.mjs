@@ -82,16 +82,10 @@ function syncProfileFavoriteAction(button) {
 }
 
 function openSignIn() {
-  if (window.CGBMyCgbSurface?.open) {
-    window.CGBMyCgbSurface.open();
-    window.requestAnimationFrame(() => {
-      const signIn = document.querySelector('.my-cgb-sign-in');
-      if (signIn) signIn.click();
-      else document.querySelector('#cgb-account-button')?.click();
-    });
-    return;
-  }
-  document.querySelector('#cgb-account-button')?.click();
+  window.CGBMyCgbSurface?.open?.();
+  window.requestAnimationFrame(() => {
+    document.querySelector('.my-cgb-sign-in')?.click();
+  });
 }
 
 function buildFavoriteRow(venue) {

@@ -1,0 +1,97 @@
+.accounts-dialog--onboarding .accounts-shell {
+  gap: 14px;
+}
+
+.accounts-onboarding-intro {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--cgb-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--cgb-navy-50);
+}
+
+.accounts-onboarding-intro strong {
+  color: var(--brand-primary-dark);
+  font-family: var(--font-condensed);
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.accounts-onboarding-intro p,
+.accounts-onboarding-privacy span,
+.accounts-display-name-help {
+  margin: 0;
+  color: var(--brand-text-muted);
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
+.accounts-dialog--onboarding .accounts-onboarding-optional {
+  display: none;
+}
+
+.accounts-onboarding-privacy {
+  display: grid;
+  gap: 2px;
+  padding-top: 4px;
+  border-top: 1px solid var(--cgb-neutral-200);
+}
+
+.accounts-onboarding-privacy strong {
+  color: var(--brand-primary-dark);
+  font-family: var(--font-condensed);
+  font-size: .9rem;
+  font-weight: 900;
+}
+
+.accounts-avatar-choice--initials,
+.accounts-avatar-choice--google {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.accounts-profile-form .accounts-avatar-choice--initials > .accounts-avatar-initials {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: var(--brand-primary-dark);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 8vw, 3.25rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .015em;
+}
+
+.accounts-avatar-choice--initials input:checked + .accounts-avatar-initials {
+  border-color: var(--brand-secondary-dark);
+  box-shadow: 0 0 0 2px var(--cgb-neutral-0), 0 0 0 4px var(--brand-secondary-dark);
+}
+
+.accounts-avatar-choice--initials input:focus-visible + .accounts-avatar-initials {
+  outline: 2px solid var(--brand-primary-dark);
+  outline-offset: 3px;
+}
+
+.accounts-profile-form .accounts-avatar-choice > .accounts-avatar-choice__label {
+  font-size: .68rem;
+  font-weight: 800;
+}
+
+.accounts-dialog--onboarding .accounts-avatar-options {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 520px) {
+  .accounts-dialog--onboarding .accounts-avatar-options {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

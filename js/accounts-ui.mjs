@@ -7,6 +7,7 @@ import {
   validateFanAccountResponse,
   validateFanFavoritesResponse
 } from './accounts-core.mjs';
+import { CGB_AVATAR_PRESETS, isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
 import { appState, waitForApplicationReady } from './app-state.mjs';
 
 const REQUEST_TIMEOUT_MS = 12000;
@@ -33,29 +34,12 @@ function injectAccountsStyles() {
   document.head.append(link);
 }
 
-function buildLauncher() {
-  const brandRow = document.querySelector('.site-header__brand-row');
-  const aboutButton = document.querySelector('#header-about-button');
-  if (!brandRow || !aboutButton) return null;
-
-  const button = document.createElement('button');
-  button.id = 'cgb-account-button';
-  button.type = 'button';
-  button.className = 'account-launcher';
-  button.setAttribute('aria-haspopup', 'dialog');
-  button.setAttribute('aria-controls', 'cgb-account-dialog');
-  button.setAttribute('aria-label', 'Open My CGB');
-
-  const avatar = document.createElement('span');
-  avatar.className = 'account-launcher__avatar';
-  avatar.setAttribute('aria-hidden', 'true');
-  avatar.textContent = 'C';
-  const label = document.createElement('span');
-  label.className = 'account-launcher__label';
-  label.textContent = 'Sign in';
-  button.append(avatar, label);
-  brandRow.insertBefore(button, aboutButton);
-  return button;
+function avatarPresetMarkup() {
+  return CGB_AVATAR_PRESETS.map((preset, index) => `
+    <label class="accounts-avatar-choice">
+      <input name="avatarUrl" type="radio" value="${preset.url}">
+      <img src="${preset.url}" alt="Avatar option ${index + 1}" loading="lazy" decoding="async">
+    </label>`).join('');
 }
 
 function buildDialog() {
@@ -135,6 +119,11 @@ function buildDialog() {
               <span>Display name</span>
               <input name="displayName" type="text" maxlength="80" required autocomplete="nickname">
             </label>
+            <fieldset class="accounts-avatar-picker">
+              <legend>Public avatar</legend>
+              <div class="accounts-avatar-options">${avatarPresetMarkup()}</div>
+              <small>Choose the CGB avatar other Bears will see on the leaderboard and public attendance.</small>
+            </fieldset>
             <label>
               <span>Home city <small>optional</small></span>
               <input name="homeCity" type="text" maxlength="80" autocomplete="address-level2">
@@ -172,13 +161,9 @@ function buildDialog() {
 }
 
 function collectDom() {
-  const launcher = buildLauncher();
   const dialog = buildDialog();
-  if (!launcher || !dialog) return null;
+  if (!dialog) return null;
   return {
-    launcher,
-    launcherAvatar: launcher.querySelector('.account-launcher__avatar'),
-    launcherLabel: launcher.querySelector('.account-launcher__label'),
     dialog,
     close: dialog.querySelector('.accounts-close'),
     status: dialog.querySelector('.accounts-status'),
@@ -365,6 +350,10 @@ function fillProfileForm() {
   form.xHandle.value = account.xHandle ? `@${account.xHandle}` : '';
   form.publicProfile.checked = account.publicProfileStatus === 'public';
   form.publicAttendance.checked = account.attendanceVisibilityDefault === 'public';
+  const selectedAvatar = isCgbAvatarPresetUrl(account.avatarUrl) ? account.avatarUrl : '';
+  [...dom.profileForm.querySelectorAll('input[name="avatarUrl"]')].forEach((input) => {
+    input.checked = input.value === selectedAvatar;
+  });
 }
 
 function hideEmailForm() {
@@ -389,10 +378,6 @@ function renderSignedOut() {
   favoriteVenueIds = [];
   dom.signedOut.hidden = false;
   dom.signedIn.hidden = true;
-  dom.launcherLabel.textContent = 'Sign in';
-  dom.launcherAvatar.textContent = 'C';
-  dom.launcherAvatar.replaceChildren(document.createTextNode('C'));
-  dom.launcherAvatar.style.backgroundImage = '';
   if (pendingSignedOutStatus) {
     setStatus(pendingSignedOutStatus.message, { error: pendingSignedOutStatus.error });
   } else {
@@ -407,13 +392,9 @@ function renderSignedIn() {
   pendingSignedOutStatus = null;
   dom.signedOut.hidden = true;
   dom.signedIn.hidden = false;
-  dom.launcherLabel.textContent = 'My CGB';
-  const initial = account.displayName.slice(0, 1).toUpperCase() || 'C';
-  dom.launcherAvatar.replaceChildren(document.createTextNode(initial));
-  dom.launcherAvatar.style.backgroundImage = account.avatarUrl ? `url("${account.avatarUrl.replace(/"/g, '')}")` : '';
   dom.displayName.textContent = account.displayName;
   dom.email.textContent = String(currentUser.email || 'Signed in');
-  if (account.avatarUrl) {
+  if (isCgbAvatarPresetUrl(account.avatarUrl)) {
     dom.avatar.src = account.avatarUrl;
     dom.avatar.hidden = false;
   } else {
@@ -576,9 +557,10 @@ async function saveProfile(event) {
   dom.profileSave.disabled = true;
   try {
     const fields = dom.profileForm.elements;
+    const selectedAvatar = String(fields.avatarUrl?.value || '').trim();
     const changes = normalizeFanProfileDraft({
       displayName: fields.displayName.value,
-      avatarUrl: account.avatarUrl,
+      avatarUrl: isCgbAvatarPresetUrl(selectedAvatar) ? selectedAvatar : '',
       homeCity: fields.homeCity.value,
       xHandle: fields.xHandle.value,
       publicProfileStatus: fields.publicProfile.checked ? 'public' : 'private',
@@ -623,10 +605,6 @@ async function setFavorite(venueId, favorited) {
 }
 
 function bindEvents() {
-  dom.launcher.addEventListener('click', () => {
-    renderFavorites();
-    dom.dialog.showModal();
-  });
   dom.close.addEventListener('click', () => dom.dialog.close());
   dom.dialog.addEventListener('click', (event) => {
     if (event.target === dom.dialog) dom.dialog.close();
@@ -734,7 +712,6 @@ export async function initializeAccountsUi() {
     await initializeFirebase();
     return true;
   } catch (error) {
-    dom.launcher.disabled = true;
     setStatus('CGB Accounts could not start.', { error: true });
     return false;
   }

@@ -141,13 +141,11 @@ function initializeNavigation() {
   const searchButton = document.querySelector('#mobile-search-button');
   const addButton = document.querySelector('#mobile-add-button');
   const listButton = document.querySelector('#mobile-list-button');
-  const aboutButton = document.querySelector('#mobile-about-button');
 
   mapButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('map')));
   searchButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('search')));
   addButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('add')));
   listButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('list')));
-  aboutButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('about')));
 
   document.querySelector('#browse-locations-button')?.addEventListener('click', openListFromMap, { capture: true });
   const trayHandle = document.querySelector('#tray-handle');

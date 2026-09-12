@@ -1,8 +1,9 @@
 import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
 import { accountsConfigIsReady } from './accounts-core.mjs';
 
-const HISTORY_CACHE_MS = 60000;
-const HISTORY_RETRY_DELAY_MS = 350;
+const STYLE_ATTR = 'data-cgb-account-history-style';
+const HISTORY_CACHE_MS = 60_000;
+const HISTORY_RETRY_DELAY_MS = 180;
 const BADGE_ASSETS = Object.freeze({
   first_down: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/First_Down.webp',
   chain_mover: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Chain_Mover.webp',
@@ -12,7 +13,7 @@ const BADGE_ASSETS = Object.freeze({
   play_caller: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Play_Caller.webp',
   postgame_report: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Postgame_Report.webp'
 });
-const BADGE_IDS = new Set(Object.keys(BADGE_ASSETS));
+const VISIBLE_BADGE_IDS = new Set(Object.keys(BADGE_ASSETS).filter((id) => id !== 'bowl_eligible'));
 
 let currentSummary = null;
 let currentSummaryAt = 0;
@@ -24,122 +25,125 @@ function enabled() {
   return accountsConfigIsReady(CGB_ACCOUNTS_CONFIG);
 }
 
-function clean(value) {
-  return String(value ?? '').trim();
-}
-
-function nonnegativeInteger(value) {
-  const number = Number(value);
-  return Number.isInteger(number) && number >= 0 ? number : null;
-}
-
-function validateSeasonSummary(payload) {
-  const summary = payload?.seasonSummary;
-  if (!payload || payload.ok !== true || !summary || typeof summary !== 'object') return null;
-  const season = nonnegativeInteger(summary.season);
-  const stats = summary.stats;
-  if (season === null || !stats || typeof stats !== 'object') return null;
-
-  const normalizedStats = {
-    gamesWatched: nonnegativeInteger(stats.games_watched),
-    venuesVisited: nonnegativeInteger(stats.venues_visited),
-    citiesVisited: nonnegativeInteger(stats.cities_visited),
-    currentStreak: nonnegativeInteger(stats.current_streak),
-    bestStreak: nonnegativeInteger(stats.best_streak)
-  };
-  if (Object.values(normalizedStats).some((value) => value === null)) return null;
-  if (normalizedStats.currentStreak > normalizedStats.bestStreak ||
-      normalizedStats.venuesVisited > normalizedStats.gamesWatched ||
-      normalizedStats.citiesVisited > normalizedStats.gamesWatched) return null;
-
-  if (!Array.isArray(summary.badges) || !Array.isArray(summary.history) ||
-      summary.badges.length > 12 || summary.history.length > 40) return null;
-
-  const badges = [];
-  const seenBadges = new Set();
-  for (const badge of summary.badges) {
-    const id = clean(badge?.id);
-    const label = clean(badge?.label);
-    const description = clean(badge?.description);
-    const current = nonnegativeInteger(badge?.current);
-    const target = nonnegativeInteger(badge?.target);
-    if (!BADGE_IDS.has(id) || seenBadges.has(id) || !label || label.length > 40 ||
-        !description || description.length > 140 || current === null || target === null || target < 1 ||
-        current > target || typeof badge?.earned !== 'boolean' || badge.earned !== (current >= target)) return null;
-    seenBadges.add(id);
-    badges.push(Object.freeze({ id, label, description, current, target, earned: badge.earned }));
-  }
-
-  const history = [];
-  const seenGames = new Set();
-  for (const row of summary.history) {
-    const gameId = clean(row?.game_id);
-    const venueId = clean(row?.venue_id);
-    const rowSeason = nonnegativeInteger(row?.season);
-    const scheduleOrder = nonnegativeInteger(row?.schedule_order);
-    const opponentName = clean(row?.opponent_name);
-    const gameDate = clean(row?.game_date);
-    const homeAway = clean(row?.home_away);
-    const venueName = clean(row?.venue_name);
-    const city = clean(row?.city);
-    const region = clean(row?.region);
-    if (!/^game_[a-f0-9]{24}$/.test(gameId) || !/^venue_[a-f0-9]{24}$/.test(venueId) ||
-        seenGames.has(gameId) || rowSeason !== season || scheduleOrder === null || !opponentName ||
-        opponentName.length > 80 || !/^\d{4}-\d{2}-\d{2}$/.test(gameDate) ||
-        !['home', 'away'].includes(homeAway) || !venueName || venueName.length > 120 ||
-        city.length > 80 || region.length > 80) return null;
-    seenGames.add(gameId);
-    history.push(Object.freeze({
-      gameId, venueId, season: rowSeason, scheduleOrder, opponentName, gameDate,
-      homeAway, venueName, city, region
-    }));
-  }
-
-  if (history.length !== normalizedStats.gamesWatched) return null;
-  return Object.freeze({
-    season,
-    stats: Object.freeze(normalizedStats),
-    badges: Object.freeze(badges),
-    history: Object.freeze(history)
-  });
-}
-
 function injectStyles() {
-  if (document.querySelector('link[data-cgb-account-history-style]')) return;
+  if (document.querySelector(`link[${STYLE_ATTR}]`)) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = 'css/account-history.css';
-  link.dataset.cgbAccountHistoryStyle = 'true';
+  link.setAttribute(STYLE_ATTR, 'true');
   document.head.append(link);
 }
 
 function seasonSection() {
-  return document.querySelector('.accounts-signed-in .accounts-season');
+  return document.querySelector('.accounts-season');
 }
 
 function renderLoading() {
   const section = seasonSection();
-  const content = section?.querySelector('.accounts-season-content');
-  const title = section?.querySelector('#accounts-season-title');
-  if (!section || !content || !title || currentSummary) return;
+  if (!section) return;
+  const content = section.querySelector('.accounts-season-content');
+  const title = section.querySelector('#accounts-season-title');
+  if (!content || !title) return;
   section.dataset.loading = 'true';
   title.textContent = 'CGB Season';
+  content.replaceChildren();
   const loading = document.createElement('p');
-  loading.className = 'accounts-empty';
-  loading.dataset.seasonLoading = 'true';
-  loading.textContent = 'Loading your season…';
-  content.replaceChildren(loading);
+  loading.className = 'accounts-empty accounts-season-loading';
+  loading.textContent = 'Loading season…';
+  content.append(loading);
 }
 
-function statCard(value, label) {
-  const card = document.createElement('div');
-  card.className = 'accounts-stat';
+function finiteNonNegativeInteger(value) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 0) return null;
+  return parsed;
+}
+
+function safeText(value, maximumLength = 120) {
+  const text = String(value ?? '').trim();
+  return text.length <= maximumLength ? text : '';
+}
+
+function validateBadge(value) {
+  if (!value || typeof value !== 'object') return null;
+  const id = safeText(value.id, 40);
+  const label = safeText(value.label, 80);
+  const description = safeText(value.description, 180);
+  const current = finiteNonNegativeInteger(value.current);
+  const target = finiteNonNegativeInteger(value.target);
+  if (!BADGE_ASSETS[id] || !label || !description || current === null || target === null || target < 1 ||
+      current > target || typeof value.earned !== 'boolean' || value.earned !== (current >= target)) return null;
+  return {
+    id,
+    label,
+    description,
+    earned: value.earned === true,
+    current,
+    target
+  };
+}
+
+function validateHistoryEntry(value) {
+  if (!value || typeof value !== 'object') return null;
+  const gameId = safeText(value.game_id ?? value.gameId, 80);
+  const opponentName = safeText(value.opponent_name ?? value.opponentName, 100);
+  const gameDate = safeText(value.game_date ?? value.gameDate, 40);
+  const homeAway = safeText(value.home_away ?? value.homeAway, 10);
+  const venueName = safeText(value.venue_name ?? value.venueName, 120);
+  const city = safeText(value.city, 100);
+  const region = safeText(value.region, 80);
+  if (!gameId || !opponentName || !gameDate || !venueName || !['home', 'away'].includes(homeAway)) return null;
+  return { gameId, opponentName, gameDate, homeAway, venueName, city, region };
+}
+
+function validateSeasonSummary(payload) {
+  const summary = payload?.seasonSummary;
+  if (!summary || typeof summary !== 'object') return null;
+  const season = finiteNonNegativeInteger(summary.season);
+  const stats = summary.stats;
+  if (!stats || typeof stats !== 'object') return null;
+  const gamesWatched = finiteNonNegativeInteger(stats.games_watched ?? stats.gamesWatched);
+  const venuesVisited = finiteNonNegativeInteger(stats.venues_visited ?? stats.venuesVisited);
+  const citiesVisited = finiteNonNegativeInteger(stats.cities_visited ?? stats.citiesVisited);
+  const currentStreak = finiteNonNegativeInteger(stats.current_streak ?? stats.currentStreak);
+  const bestStreak = finiteNonNegativeInteger(stats.best_streak ?? stats.bestStreak);
+  if ([season, gamesWatched, venuesVisited, citiesVisited, currentStreak, bestStreak].some((value) => value === null)) return null;
+  if (!Array.isArray(summary.badges) || !Array.isArray(summary.history)) return null;
+  const badges = summary.badges.map(validateBadge);
+  const history = summary.history.map(validateHistoryEntry);
+  if (badges.some((value) => !value) || history.some((value) => !value)) return null;
+  if (new Set(badges.map((badge) => badge.id)).size !== badges.length) return null;
+  return {
+    season,
+    stats: { gamesWatched, venuesVisited, citiesVisited, currentStreak, bestStreak },
+    badges,
+    history
+  };
+}
+
+function statItem(value, label) {
+  const item = document.createElement('div');
+  item.className = 'accounts-stat';
   const number = document.createElement('strong');
   number.textContent = String(value);
   const copy = document.createElement('span');
   copy.textContent = label;
-  card.append(number, copy);
-  return card;
+  item.append(number, copy);
+  return item;
+}
+
+function subsectionHeading(eyebrowText, titleText) {
+  const heading = document.createElement('div');
+  heading.className = 'accounts-section__heading accounts-season-subheading';
+  const copy = document.createElement('div');
+  const eyebrow = document.createElement('span');
+  eyebrow.className = 'eyebrow';
+  eyebrow.textContent = eyebrowText;
+  const title = document.createElement('h4');
+  title.textContent = titleText;
+  copy.append(eyebrow, title);
+  heading.append(copy);
+  return heading;
 }
 
 function renderSummary(summary) {
@@ -150,6 +154,7 @@ function renderSummary(summary) {
   if (!content || !title) return;
   delete section.dataset.loading;
   content.replaceChildren();
+  queueMicrotask(() => window.CGBAccountProfilePolish?.sync?.());
   title.textContent = summary?.season ? `${summary.season} CGB Season` : 'CGB Season';
 
   if (!summary) {
@@ -163,20 +168,18 @@ function renderSummary(summary) {
   const stats = document.createElement('div');
   stats.className = 'accounts-stats';
   stats.append(
-    statCard(summary.stats.gamesWatched, 'Games'),
-    statCard(summary.stats.venuesVisited, 'Venues'),
-    statCard(summary.stats.citiesVisited, 'Cities'),
-    statCard(summary.stats.currentStreak, 'Current streak'),
-    statCard(summary.stats.bestStreak, 'Best streak')
+    statItem(summary.stats.gamesWatched, 'Games'),
+    statItem(summary.stats.venuesVisited, 'Venues'),
+    statItem(summary.stats.citiesVisited, 'Cities'),
+    statItem(summary.stats.currentStreak, 'Current streak'),
+    statItem(summary.stats.bestStreak, 'Best streak')
   );
   content.append(stats);
 
-  const badgesHeading = document.createElement('strong');
-  badgesHeading.className = 'accounts-subheading';
-  badgesHeading.textContent = 'Achievements';
+  const badgesHeading = subsectionHeading('Achievements', 'Coaster Collection');
   const badges = document.createElement('div');
   badges.className = 'accounts-badges';
-  summary.badges.forEach((badge) => {
+  summary.badges.filter((badge) => VISIBLE_BADGE_IDS.has(badge.id)).forEach((badge) => {
     const item = document.createElement('div');
     item.className = 'accounts-badge';
     item.dataset.earned = String(badge.earned);
@@ -204,36 +207,49 @@ function renderSummary(summary) {
   });
   content.append(badgesHeading, badges);
 
-  const historyHeading = document.createElement('strong');
-  historyHeading.className = 'accounts-subheading';
-  historyHeading.textContent = 'Games watched';
-  const history = document.createElement('div');
-  history.className = 'accounts-game-history';
+  const historyHeading = subsectionHeading('Your games', 'Games watched');
   if (!summary.history.length) {
     const empty = document.createElement('p');
     empty.className = 'accounts-empty';
     empty.textContent = 'Your completed game history will build here as the season moves.';
-    history.append(empty);
-  } else {
-    [...summary.history].reverse().forEach((entry) => {
-      const row = document.createElement('div');
-      row.className = 'accounts-game-row';
-      const game = document.createElement('div');
-      const opponent = document.createElement('strong');
-      opponent.textContent = `${entry.homeAway === 'away' ? 'at' : 'vs.'} ${entry.opponentName}`;
-      const date = document.createElement('span');
-      date.textContent = entry.gameDate;
-      game.append(opponent, date);
-      const venue = document.createElement('div');
-      const venueName = document.createElement('strong');
-      venueName.textContent = entry.venueName;
-      const place = document.createElement('span');
-      place.textContent = [entry.city, entry.region].filter(Boolean).join(', ');
-      venue.append(venueName, place);
-      row.append(game, venue);
-      history.append(row);
-    });
+    content.append(historyHeading, empty);
+    return;
   }
+
+  const history = document.createElement('table');
+  history.className = 'accounts-game-history';
+  const caption = document.createElement('caption');
+  caption.className = 'sr-only';
+  caption.textContent = 'Games watched this season';
+  const head = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  const gameHead = document.createElement('th');
+  gameHead.scope = 'col';
+  gameHead.textContent = 'Game';
+  const venueHead = document.createElement('th');
+  venueHead.scope = 'col';
+  venueHead.textContent = 'Watched at';
+  headRow.append(gameHead, venueHead);
+  head.append(headRow);
+  const body = document.createElement('tbody');
+  [...summary.history].reverse().forEach((entry) => {
+    const row = document.createElement('tr');
+    const game = document.createElement('td');
+    const opponent = document.createElement('strong');
+    opponent.textContent = `${entry.homeAway === 'away' ? 'at' : 'vs.'} ${entry.opponentName}`;
+    const date = document.createElement('span');
+    date.textContent = entry.gameDate;
+    game.append(opponent, date);
+    const venue = document.createElement('td');
+    const venueName = document.createElement('strong');
+    venueName.textContent = entry.venueName;
+    const place = document.createElement('span');
+    place.textContent = [entry.city, entry.region].filter(Boolean).join(', ');
+    venue.append(venueName, place);
+    row.append(game, venue);
+    body.append(row);
+  });
+  history.append(caption, head, body);
   content.append(historyHeading, history);
 }
 

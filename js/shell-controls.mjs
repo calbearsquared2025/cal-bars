@@ -609,7 +609,6 @@ function cacheDom() {
     if (button.id === 'mobile-search-button') button.dataset.command = 'search';
     if (button.id === 'mobile-add-button') button.dataset.command = 'add';
     if (button.id === 'mobile-list-button') button.dataset.command = 'list';
-    if (button.id === 'mobile-about-button') button.dataset.command = 'about';
   });
   return Object.entries(dom).every(([key, value]) => key === 'commandButtons' ? value.length === 5 : Boolean(value));
 }
@@ -630,7 +629,6 @@ function initializeShellControls() {
   document.querySelector('#mobile-search-button')?.addEventListener('click', () => showSearch());
   document.querySelector('#mobile-add-button')?.addEventListener('click', showAdd);
   document.querySelector('#mobile-list-button')?.addEventListener('click', showList);
-  document.querySelector('#mobile-about-button')?.addEventListener('click', showAbout);
   dom.addLocationSearch.addEventListener('click', showAddLocationSearch);
   document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
 

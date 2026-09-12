@@ -28,6 +28,7 @@ body[data-command-surface="my-cgb"] #map-fallback.map-fallback--loading {
   width: 100%;
   max-height: none;
   min-height: 100%;
+  align-content: start;
   overflow: visible;
   padding: 20px;
   border: 0;

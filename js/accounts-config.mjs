@@ -1,9 +1,9 @@
 // Browser-visible Accounts & Community configuration.
 // Firebase web configuration is public client configuration, not a credential.
-// The feature remains disabled until the complete Accounts & Community bundle
-// is accepted for launch and the separate Fan API endpoint is deployed.
+// Accounts & Community is enabled in production; the separate Fan API remains
+// the authenticated data boundary for account-scoped actions.
 export const CGB_ACCOUNTS_CONFIG = Object.freeze({
-  enabled: false,
+  enabled: true,
   endpoint: 'https://script.google.com/macros/s/AKfycbyIkoxZAXNp36dEXOw5hKltLA8kgK3_07zg899QdEHJ5HSllkQDE_pY2vqOkMIA2nVL/exec',
   firebase: Object.freeze({
     apiKey: 'AIzaSyDmnMf07f1GpbelgKiVnqfOFX_wvHZVBf4',

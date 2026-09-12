@@ -1,0 +1,386 @@
+.my-cgb-view-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-primary-dark, #003262) 16%, transparent);
+}
+
+.my-cgb-view-tabs button {
+  position: relative;
+  min-height: 42px;
+  padding: 10px 8px 9px;
+  color: var(--brand-text-muted, #657083);
+  background: transparent;
+  border: 0;
+  font-family: var(--font-condensed, inherit);
+  font-size: .74rem;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.my-cgb-view-tabs button[aria-selected="true"] {
+  color: var(--brand-primary-dark, #003262);
+}
+
+.my-cgb-view-tabs button[aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 3px;
+  background: var(--brand-secondary-dark, #fdb515);
+  border-radius: 999px 999px 0 0;
+}
+
+.my-cgb-view-tabs button:focus-visible {
+  outline: 2px solid var(--brand-secondary-dark, #fdb515);
+  outline-offset: -2px;
+}
+
+.accounts-shell:not(.accounts-shell--native) .my-cgb-view-tabs,
+.accounts-shell:not(.accounts-shell--native) .public-community-panel {
+  display: none !important;
+}
+
+.accounts-shell--native[data-my-cgb-view="profile"] .public-community-panel,
+.accounts-shell--native[data-my-cgb-view="leaderboard"] .my-cgb-profile-view {
+  display: none !important;
+}
+
+.public-community-panel {
+  padding-top: 16px;
+}
+
+.public-community-section {
+  display: grid;
+  gap: 12px;
+}
+
+.public-community-heading {
+  margin-bottom: 0;
+}
+
+.public-community-intro,
+.public-community-status {
+  margin: 0;
+  color: var(--text-muted, #5f6570);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.public-community-list {
+  display: grid;
+  border-top: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.public-community-row {
+  appearance: none;
+  display: grid;
+  grid-template-columns: 2.2rem 2.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.public-community-row:hover,
+.public-community-row:focus-visible {
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+.public-community-row:focus-visible {
+  outline: 2px solid var(--brand-gold, #fdb515);
+  outline-offset: 2px;
+}
+
+.public-community-rank {
+  font-family: var(--font-display, inherit);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.public-community-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--brand-navy, #003262);
+  color: #fff;
+  font-family: var(--font-display, inherit);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+img.public-community-avatar {
+  display: block;
+  object-fit: cover;
+  background: transparent;
+}
+
+.public-community-avatar--large {
+  width: 60px;
+  height: 60px;
+  font-size: 1.35rem;
+}
+
+.account-attendee-avatar[data-public-bear-ready="true"] {
+  cursor: pointer;
+}
+
+.account-attendee-avatar[data-public-bear-ready="true"]:focus-visible {
+  outline: 2px solid var(--brand-gold, #fdb515);
+  outline-offset: 2px;
+}
+
+.public-community-name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.public-community-games {
+  color: var(--text-muted, #5f6570);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.public-community-games strong {
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.public-bear-dialog {
+  position: fixed;
+  inset: auto;
+  width: min(360px, calc(100vw - 24px));
+  max-width: none;
+  max-height: min(520px, calc(100dvh - 24px));
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--brand-navy, #003262) 18%, transparent);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--brand-text, #1f2730);
+  box-shadow: 0 16px 42px rgb(0 0 0 / 0.22);
+  z-index: 2200;
+}
+
+.public-bear-dialog::backdrop {
+  display: none;
+}
+
+.public-bear-shell {
+  display: grid;
+  gap: 0;
+  max-height: inherit;
+  overflow: auto;
+  background: #fff;
+}
+
+.public-bear-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px 8px 14px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+}
+
+.public-bear-header h2 {
+  margin: 0;
+  color: var(--text-muted, #5f6570);
+  font-family: var(--font-condensed, inherit);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.public-bear-header .public-bear-close {
+  flex: 0 0 auto;
+}
+
+.public-bear-content {
+  display: grid;
+  gap: 13px;
+  padding: 14px;
+}
+
+.public-bear-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.public-bear-identity > div {
+  display: grid;
+  gap: 2px;
+}
+
+.public-bear-identity strong {
+  font-family: var(--font-display, inherit);
+  font-size: 1.25rem;
+  line-height: 1.05;
+}
+
+.public-bear-rank {
+  color: var(--text-muted, #5f6570);
+  font-size: 0.78rem;
+}
+
+.public-bear-x-profile {
+  justify-self: start;
+  color: var(--brand-primary, #003262);
+  font-size: .8rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.public-bear-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+  border-block: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.public-bear-stats > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px 5px;
+  text-align: center;
+}
+
+.public-bear-stats > div + div {
+  border-left: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.public-bear-stats dt {
+  color: var(--text-muted, #5f6570);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.public-bear-stats dd {
+  margin: 0;
+  font-family: var(--font-display, inherit);
+  font-size: 1.15rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.public-bear-achievements-heading {
+  display: grid;
+  gap: 1px;
+}
+
+.public-bear-achievements-heading strong {
+  color: var(--brand-primary-dark, #003262);
+  font-family: var(--font-display, inherit);
+  font-size: 1rem;
+  line-height: 1.1;
+}
+
+.public-bear-achievements {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.public-bear-badge {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.public-bear-badge img {
+  display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.public-bear-badge figcaption {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.public-bear-badge figcaption strong {
+  font-size: 0.82rem;
+}
+
+.public-bear-badge figcaption span {
+  color: var(--text-muted, #5f6570);
+  font-size: 0.7rem;
+  line-height: 1.25;
+}
+
+@media (max-width: 520px) {
+  .my-cgb-view-tabs button {
+    min-height: 40px;
+    font-size: .7rem;
+  }
+
+  .public-community-row {
+    grid-template-columns: 2rem 2.25rem minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .public-community-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .public-community-avatar--large {
+    width: 58px;
+    height: 58px;
+  }
+
+  .public-community-games {
+    font-size: 0.84rem;
+  }
+
+  .public-bear-dialog {
+    width: min(340px, calc(100vw - 20px));
+    max-height: min(480px, calc(100dvh - 20px));
+  }
+
+  .public-bear-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .public-bear-stats > div:nth-child(3) {
+    border-left: 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  .public-bear-stats > div:nth-child(4) {
+    border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  }
+
+  .public-bear-achievements {
+    grid-template-columns: 1fr;
+  }
+}
