@@ -202,16 +202,13 @@ function syncTransientTitle() {
   if (!dialog || !title || !eyebrow) return;
 
   let nextTitle = 'My CGB';
-  let nextEyebrow = 'Cal Golden Bars';
   if (dialog.classList.contains('accounts-dialog--auth')) {
     nextTitle = 'Sign in';
-    nextEyebrow = 'My CGB';
   } else if (dialog.classList.contains('accounts-dialog--profile')) {
     nextTitle = 'Edit profile';
-    nextEyebrow = 'My CGB';
   }
   if (title.textContent !== nextTitle) title.textContent = nextTitle;
-  if (eyebrow.textContent !== nextEyebrow) eyebrow.textContent = nextEyebrow;
+  if (eyebrow.textContent !== 'Cal Golden Bars') eyebrow.textContent = 'Cal Golden Bars';
 }
 
 function sync() {

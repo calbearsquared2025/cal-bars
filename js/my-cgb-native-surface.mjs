@@ -190,6 +190,10 @@ function moveShellHome() {
   surface.append(shell);
   transientMode = '';
   dialog?.classList.remove('accounts-dialog--auth', 'accounts-dialog--profile');
+  const eyebrow = shell.querySelector('.accounts-header .eyebrow');
+  const title = shell.querySelector('#cgb-account-title');
+  if (eyebrow) eyebrow.textContent = 'Cal Golden Bars';
+  if (title) title.textContent = 'My CGB';
 }
 
 function refreshSelectedFavoriteAction() {
