@@ -15,6 +15,7 @@ const REQUEST_TIMEOUT_MS = 12000;
 const FIREBASE_VERSION = '12.18.0';
 const GOOGLE_PROVIDER_ID = 'google.com';
 const EMAIL_PROVIDER_ID = 'password';
+const ANONYMOUS_PROVIDER_ID = 'anonymous';
 const SAFE_FAN_DIAGNOSTIC_CODES = new Set([
   'fan_account_deleted',
   'fan_account_suspended',
@@ -78,11 +79,15 @@ function buildDialog() {
       <section class="accounts-signed-out">
         <div class="accounts-intro">
           <strong>Make Cal Golden Bars yours.</strong>
-          <p>Save favorite places and build your game-day history. Browsing CGB still works without an account.</p>
+          <p>Create a profile to save favorite places, keep your attendance history, and build your CGB progress. Browsing still works without an account.</p>
         </div>
         <div class="accounts-provider-actions">
           <button class="accounts-provider-button" type="button" data-account-provider="google">Continue with Google</button>
           <button class="accounts-provider-button" type="button" data-account-provider="email">Continue with email</button>
+          <button class="accounts-provider-button accounts-provider-button--anonymous" type="button" data-account-provider="anonymous">
+            <span>Continue without email</span>
+            <small>Private, device-based profile</small>
+          </button>
         </div>
         <form class="accounts-email-form" hidden>
           <label>
@@ -101,7 +106,7 @@ function buildDialog() {
             <button class="text-button accounts-email-cancel" type="button">Cancel</button>
           </div>
         </form>
-        <p class="accounts-fine-print">Your email and sign-in identifiers stay private. Public profile and attendance visibility are separate choices.</p>
+        <p class="accounts-fine-print">No-email profiles stay on this browser and cannot be recovered on another device. Your sign-in identifiers stay private. Public profile and attendance visibility are separate choices.</p>
       </section>
 
       <section class="accounts-authenticated-error" hidden>
@@ -413,7 +418,8 @@ function renderConnections() {
   const accountProviders = new Set(account.providers || []);
   [
     { id: GOOGLE_PROVIDER_ID, label: 'Google' },
-    { id: EMAIL_PROVIDER_ID, label: 'Email + password' }
+    { id: EMAIL_PROVIDER_ID, label: 'Email + password' },
+    { id: ANONYMOUS_PROVIDER_ID, label: 'No-email profile · this device only' }
   ].forEach((choice) => {
     if (!accountProviders.has(choice.id)) return;
     const method = document.createElement('span');
@@ -483,7 +489,7 @@ function renderSignedIn() {
   dom.authenticatedError.hidden = true;
   dom.signedIn.hidden = false;
   dom.displayName.textContent = account.displayName;
-  dom.email.textContent = String(currentUser.email || 'Signed in');
+  dom.email.textContent = String(currentUser.email || 'No email · this device only');
   if (isCgbAvatarPresetUrl(account.avatarUrl)) {
     dom.avatar.src = account.avatarUrl;
     dom.avatar.hidden = false;
@@ -654,6 +660,17 @@ async function startGoogleSignIn() {
   }
 }
 
+async function startAnonymousSignIn() {
+  if ((!auth || !authModule) && !await startAccountInitialization()) return;
+  pendingSignedOutStatus = null;
+  setStatus('Creating your private CGB profile…');
+  try {
+    await authModule.signInAnonymously(auth);
+  } catch (error) {
+    setStatus(readableError(error), { error: true });
+  }
+}
+
 function emailActionSettings() {
   return { url: new URL('/', window.location.origin).toString() };
 }
@@ -804,6 +821,8 @@ function bindEvents() {
         void startGoogleSignIn();
       } else if (button.dataset.accountProvider === 'email') {
         showEmailForm();
+      } else if (button.dataset.accountProvider === 'anonymous') {
+        void startAnonymousSignIn();
       }
     });
   });

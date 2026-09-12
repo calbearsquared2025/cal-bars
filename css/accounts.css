@@ -211,6 +211,19 @@
   background: var(--cgb-navy-50);
 }
 
+.accounts-provider-button--anonymous {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 2px;
+  border-color: rgba(253,181,21,.72);
+  background: var(--cgb-navy-50);
+}
+.accounts-provider-button--anonymous small {
+  color: var(--brand-text-muted);
+  font-size: .72rem;
+  font-weight: 650;
+}
+
 .accounts-email-form {
   padding: 14px;
   border: 1px solid var(--cgb-neutral-200);

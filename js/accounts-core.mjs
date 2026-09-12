@@ -45,7 +45,9 @@ function clean(value) {
 
 function normalizeProviderIds(values) {
   if (!Array.isArray(values)) return [];
-  return [...new Set(values.map(clean).filter((provider) => provider === 'google.com' || provider === 'password'))];
+  return [...new Set(values.map(clean).filter((provider) =>
+    provider === 'google.com' || provider === 'password' || provider === 'anonymous'
+  ))];
 }
 
 function normalizeAttendanceVisibility(value) {
@@ -108,7 +110,8 @@ export function accountsConfigIsReady(config) {
     firebaseConfigIsComplete(config?.firebase) &&
     Array.isArray(config?.providers) &&
     config.providers.includes('google') &&
-    config.providers.includes('email')
+    config.providers.includes('email') &&
+    config.providers.includes('anonymous')
   );
 }
 

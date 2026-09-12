@@ -69,7 +69,7 @@ function buildDialog() {
       </div>
       <p class="account-delete-copy">Your CGB profile, email, Favorites, personal attendance history, season statistics and other account data will be permanently deleted.</p>
       <p class="account-delete-copy">Anonymous attendance and useful community contributions may be retained so CGB can preserve aggregate venue and event information, but they will no longer be linked to you.</p>
-      <p class="account-delete-copy">To protect your account, you’ll be asked to confirm your sign-in before deletion.</p>
+      <p class="account-delete-copy">If your profile uses Google or email, you’ll be asked to confirm your sign-in before deletion.</p>
       <label class="account-delete-password" hidden>
         <span>Confirm your password</span>
         <input type="password" autocomplete="current-password" maxlength="128">
@@ -135,6 +135,7 @@ async function openDeleteDialog() {
 }
 
 async function reauthenticate(authModule, user) {
+  if (user.isAnonymous === true) return;
   const providers = providerIds(user);
   if (providers.has(GOOGLE_PROVIDER_ID)) {
     const provider = new authModule.GoogleAuthProvider();
