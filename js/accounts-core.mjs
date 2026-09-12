@@ -11,6 +11,7 @@ const FAN_ACTIONS = Object.freeze([
   'setFanAttendanceVisibility',
   'submitFanExperience',
   'submitFanWatchParty',
+  'deleteFanAccount',
   'getFanWatchPartyClaimState',
   'submitFanWatchPartyClaim'
 ]);
@@ -143,7 +144,9 @@ export function buildFanRequest(action, idToken, extra = {}) {
   if (!extra || typeof extra !== 'object' || Array.isArray(extra)) throw new Error('invalid_fan_request');
 
   const payload = { action: normalizedAction, idToken: token };
-  if (normalizedAction === 'saveFanProfile') {
+  if (normalizedAction === 'deleteFanAccount') {
+    if (!exactKeys(extra, [])) throw new Error('invalid_fan_request');
+  } else if (normalizedAction === 'saveFanProfile') {
     const keys = Object.keys(extra);
     if (keys.length !== 1 || keys[0] !== 'changes') throw new Error('invalid_fan_request');
     payload.changes = normalizeFanProfileDraft(extra.changes);
