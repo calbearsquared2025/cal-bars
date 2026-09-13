@@ -1,5 +1,32 @@
 /* Milestone 8A — authoritative mobile interaction and visual correction layer. */
 
+.cgb-safe-area-fill {
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  right: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.cgb-safe-area-fill--top {
+  top: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--cgb-navy-950, #010133);
+}
+
+.cgb-safe-area-fill--bottom {
+  bottom: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: var(--cgb-white, #fff);
+}
+
+@media (min-width: 900px) {
+  .cgb-safe-area-fill {
+    display: none;
+  }
+}
+
 .map-actions {
   display: none;
 }

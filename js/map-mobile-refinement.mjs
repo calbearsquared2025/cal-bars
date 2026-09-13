@@ -15,7 +15,6 @@ const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
 const REGIONAL_FOCUS_MAX_ZOOM = 9.75;
 const MAP_ACTION_GAP = 12;
-const STYLE_ID = 'cgb-map-mobile-refinement';
 const MAP_CAMERA_STORAGE_KEY = 'cgb_v2_map_camera';
 const VENUE_FOCUS_SUPPRESSION_MS = 900;
 
@@ -194,21 +193,6 @@ function captureCameraBeforeVenueNavigation(event) {
     return;
   }
   captureMapCamera();
-}
-
-function installStyles() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    @media (max-width: 899px) {
-      #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > .icon-button {
-        display: none !important;
-      }
-
-    }
-  `;
-  document.head.append(style);
 }
 
 function selectedVenue(venueId, state = appState()) {
@@ -591,7 +575,6 @@ function observeSelectedTrayGeometry() {
 }
 
 function sync() {
-  installStyles();
   const restoredCamera = attachMapCameraTracking();
   updatePreviewIntent();
   requestAnimationFrame(updatePreviewIntent);
@@ -638,7 +621,6 @@ function handleViewportGeometryChange() {
 }
 
 function initialize() {
-  installStyles();
   observeSelectedTrayGeometry();
   document.addEventListener('click', markDetailReturnForCamera, { capture: true });
   document.addEventListener('click', captureCameraBeforeVenueNavigation, { capture: true });

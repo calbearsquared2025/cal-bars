@@ -556,6 +556,10 @@ body[data-view="detail"] #app {
     display: none;
   }
 
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header > .icon-button {
+    display: none !important;
+  }
+
   .selected-card .venue-location {
     display: flex;
     flex-wrap: wrap;

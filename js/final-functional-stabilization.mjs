@@ -1,6 +1,5 @@
 import './map-zoom-coordination.mjs';
 
-const STYLE_ID = 'cgb-final-functional-stabilization';
 const CONTEXTUAL_ADD_SELECTOR = [
   '#add-watch-party-button',
   '#add-cal-bar-button',
@@ -22,43 +21,6 @@ function appState() {
 function venueById(venueId, state = appState()) {
   if (!venueId || !state?.snapshot?.venues) return null;
   return state.snapshot.venues.find((venue) => venue.venue_id === venueId) || null;
-}
-
-function installStyles() {
-  let style = document.getElementById(STYLE_ID);
-  if (!style) {
-    style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = `
-      .cgb-safe-area-fill {
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        right: 0;
-        display: block;
-        pointer-events: none;
-      }
-
-      .cgb-safe-area-fill--top {
-        top: 0;
-        height: env(safe-area-inset-top, 0px);
-        background: var(--cgb-navy-950, #010133);
-      }
-
-      .cgb-safe-area-fill--bottom {
-        bottom: 0;
-        height: env(safe-area-inset-bottom, 0px);
-        background: var(--cgb-white, #fff);
-      }
-
-      @media (min-width: 900px) {
-        .cgb-safe-area-fill {
-          display: none;
-        }
-      }
-    `;
-  }
-  document.head.append(style);
 }
 
 function ensureSafeAreaFills() {
@@ -114,7 +76,6 @@ function restoreContextForAddAction(event) {
 function schedulePostRender() {
   window.cancelAnimationFrame(postRenderFrame);
   postRenderFrame = window.requestAnimationFrame(() => {
-    installStyles();
     ensureSafeAreaFills();
     syncAddContext();
   });
@@ -144,7 +105,6 @@ function connectApp() {
 
 function initialize() {
   queueMicrotask(() => {
-    installStyles();
     ensureSafeAreaFills();
   });
 
