@@ -5,6 +5,7 @@ const observedMaps = new WeakSet();
 const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
 const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
+const LOADING_COPY = 'Loading map…';
 const LOADING_FADE_MS = 240;
 let loadingCoverHiddenMarked = false;
 let publicUsableMarked = false;
@@ -61,6 +62,16 @@ function ensureFallbackStyles(documentObject) {
     .map-fallback--loading {
       opacity: 1;
       transition: opacity ${LOADING_FADE_MS}ms ease;
+    }
+
+    .map-fallback--loading::after {
+      content: "${LOADING_COPY}";
+      flex: 0 0 auto;
+      color: rgba(255, 255, 255, .84);
+      font-size: clamp(.85rem, 1.5vw, 1rem);
+      font-weight: 600;
+      letter-spacing: .02em;
+      line-height: 1.2;
     }
 
     .map-fallback--loading.map-fallback--leaving {
