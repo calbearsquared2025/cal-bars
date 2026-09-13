@@ -8,6 +8,7 @@ export const CGB_AVATAR_PRESETS = Object.freeze([
 
 const PRESET_URLS = new Set(CGB_AVATAR_PRESETS.map((preset) => preset.url));
 const GOOGLE_PUBLIC_AVATAR_HASH = '#cgb-public-google';
+const GOOGLE_PROVIDER_ID = 'google.com';
 
 function googlePhotoUrl(value) {
   const text = String(value || '').trim();
@@ -22,6 +23,13 @@ function googlePhotoUrl(value) {
   const hostname = url.hostname.toLowerCase();
   if (hostname !== 'googleusercontent.com' && !hostname.endsWith('.googleusercontent.com')) return '';
   return url.toString();
+}
+
+export function googleProviderAvatarUrl(user) {
+  const providers = Array.isArray(user?.providerData) ? user.providerData : [];
+  const googleProvider = providers.find((provider) => provider?.providerId === GOOGLE_PROVIDER_ID);
+  if (!googleProvider) return '';
+  return googlePhotoUrl(googleProvider.photoURL) || googlePhotoUrl(user?.photoURL);
 }
 
 export function explicitGoogleAvatarUrl(value) {

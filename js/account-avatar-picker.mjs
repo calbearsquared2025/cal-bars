@@ -1,6 +1,7 @@
 import {
   CGB_AVATAR_PRESETS,
   explicitGoogleAvatarUrl,
+  googleProviderAvatarUrl,
   isCgbAvatarPresetUrl,
   tagGoogleAvatarUrl
 } from './account-avatar-presets.mjs';
@@ -155,8 +156,7 @@ async function connectFirebase(attempt = 0) {
     authConnected = true;
     const auth = authModule.getAuth(apps[0]);
     authModule.onAuthStateChanged(auth, (user) => {
-      const hasGoogle = Array.isArray(user?.providerData) && user.providerData.some((provider) => provider?.providerId === 'google.com');
-      currentGoogleAvatarUrl = hasGoogle ? clean(user?.photoURL) : '';
+      currentGoogleAvatarUrl = googleProviderAvatarUrl(user);
       renderAccountAvatarPicker();
     });
   } catch (_) {
