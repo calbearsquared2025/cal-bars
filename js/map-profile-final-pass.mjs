@@ -71,58 +71,8 @@ function installStyles() {
     }
 
     @media (max-width: 899px) {
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1fr) !important;
-        gap: 9px !important;
-        padding: 0 14px 14px !important;
-        overflow: hidden !important;
-        background: var(--cgb-white) !important;
-        border-bottom: 0 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .selected-card__header {
-        grid-column: 1 / -1 !important;
-        grid-row: 1 !important;
-        margin: 0 !important;
-        padding: 8px 0 0 !important;
-        background: transparent !important;
-        border-left: 0 !important;
-        border-bottom: 0 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card h2 {
-        display: block !important;
-        margin: 4px 0 3px !important;
-        overflow: visible !important;
-        font-size: clamp(1.3rem, 6vw, 1.72rem) !important;
-        line-height: 1.08 !important;
-        -webkit-box-orient: initial !important;
-        -webkit-line-clamp: unset !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .venue-location {
-        display: block !important;
-        margin: 0 !important;
-        font-size: .78rem !important;
-        line-height: 1.25 !important;
-      }
-
-      .selected-card__directions-inline {
-        min-height: 0 !important;
-        display: inline !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        color: var(--cgb-navy-900) !important;
-        font-weight: 800 !important;
-        text-decoration: underline !important;
-        text-decoration-thickness: 1px !important;
-        text-underline-offset: 3px !important;
-      }
-
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .party-module,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party,
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card__plan-party {
         grid-column: 1 / -1 !important;
       }
 
@@ -229,76 +179,6 @@ function installStyles() {
         text-underline-offset: 3px !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row {
-        display: grid !important;
-        grid-template-columns: minmax(0, 1.6fr) minmax(128px, 1fr) !important;
-        gap: 8px !important;
-        margin-top: 0 !important;
-        margin-inline: 4px;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .intent-button {
-        grid-column: 1 !important;
-        grid-row: 1 !important;
-        min-height: 50px !important;
-        margin: 0 !important;
-        font-family: var(--font-condensed, var(--font-display)) !important;
-        font-size: 1rem !important;
-        font-weight: 900 !important;
-        letter-spacing: .015em !important;
-        text-transform: uppercase !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .intent-button:not([aria-pressed="true"]) {
-        color: var(--cgb-white) !important;
-        background: var(--cgb-navy-950) !important;
-        border-color: var(--cgb-navy-950) !important;
-      }
-
-      .intent-button__main {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
-      }
-
-      .intent-button__main .ui-icon {
-        width: 18px !important;
-        height: 18px !important;
-      }
-
-      .intent-button__undo {
-        margin-left: 6px !important;
-        font-size: .68rem !important;
-        font-weight: 700 !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share {
-        grid-column: 2 !important;
-        grid-row: 1 !important;
-        width: 100%;
-        min-width: 0;
-        min-height: 50px !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 7px !important;
-        color: var(--cgb-navy-900) !important;
-        background: var(--cgb-white) !important;
-        border: 1px solid var(--cgb-neutral-300) !important;
-        border-radius: 11px !important;
-        font-size: .78rem !important;
-        font-weight: 800 !important;
-        line-height: 1.05 !important;
-        text-transform: uppercase !important;
-      }
-
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .action-row > .selected-card__share .ui-icon {
-        width: 17px !important;
-        height: 17px !important;
-        display: inline-block !important;
-      }
-
       html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card + #venue-detail.venue-detail--selected-continuation {
         border-top: 0 !important;
       }
@@ -307,16 +187,6 @@ function installStyles() {
         border-top: 0 !important;
       }
 
-      @media (max-width: 359px) {
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card {
-          gap: 7px !important;
-          padding-inline: 10px !important;
-        }
-
-        body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count--empty {
-          min-height: 58px !important;
-        }
-      }
     }
   `;
   document.head.append(style);
