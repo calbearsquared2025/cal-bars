@@ -1,3 +1,4 @@
+import './google-form-host.mjs';
 import { observeExternalVenueCommit } from './external-watch-party-cta-core.mjs';
 import {
   INTENT_SELECTIONS_STORAGE_KEY,
