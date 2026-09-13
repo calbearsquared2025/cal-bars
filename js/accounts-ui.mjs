@@ -7,7 +7,7 @@ import {
   validateFanAccountResponse,
   validateFanFavoritesResponse
 } from './accounts-core.mjs';
-import { CGB_AVATAR_PRESETS, isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
+import { CGB_AVATAR_PRESETS, googleProviderAvatarUrl, isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
 import { appState, waitForApplicationReady } from './app-state.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
@@ -297,11 +297,17 @@ function clientProfile() {
   });
 }
 
+function clientGoogleAvatarUrl() {
+  if (!currentUser || !account) return '';
+  return googleProviderAvatarUrl(currentUser);
+}
+
 function dispatchAccountState() {
   window.dispatchEvent(new CustomEvent('cgb:account-state', {
     detail: Object.freeze({
       signedIn: Boolean(currentUser && account),
-      profile: clientProfile()
+      profile: clientProfile(),
+      googleAvatarUrl: clientGoogleAvatarUrl()
     })
   }));
 }
@@ -960,6 +966,7 @@ window.CGBAccounts = Object.freeze({
   start: startAccountInitialization,
   getIdToken: (forceRefresh = false) => currentToken(forceRefresh),
   getProfile: () => clientProfile(),
+  getGoogleAvatarUrl: () => clientGoogleAvatarUrl(),
   request: (action, extra = {}) => requestFanAction(action, extra)
 });
 

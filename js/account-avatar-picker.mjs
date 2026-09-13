@@ -1,15 +1,12 @@
 import {
   CGB_AVATAR_PRESETS,
   explicitGoogleAvatarUrl,
-  googleProviderAvatarUrl,
   isCgbAvatarPresetUrl,
   tagGoogleAvatarUrl
 } from './account-avatar-presets.mjs';
 
-const FIREBASE_VERSION = '12.18.0';
 let currentProfile = null;
 let currentGoogleAvatarUrl = '';
-let authConnected = false;
 
 function clean(value) {
   return String(value ?? '').trim();
@@ -138,31 +135,10 @@ function updateInitialsPreview(form) {
 }
 
 function handleAccountState(event) {
-  currentProfile = event?.detail?.signedIn === true ? event.detail?.profile || null : null;
+  const signedIn = event?.detail?.signedIn === true;
+  currentProfile = signedIn ? event.detail?.profile || null : null;
+  currentGoogleAvatarUrl = signedIn ? clean(event.detail?.googleAvatarUrl) : '';
   renderAccountAvatarPicker();
-}
-
-async function connectFirebase(attempt = 0) {
-  if (authConnected) return;
-  try {
-    const appUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`;
-    const authUrl = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`;
-    const [appModule, authModule] = await Promise.all([import(appUrl), import(authUrl)]);
-    const apps = appModule.getApps();
-    if (!apps.length) {
-      if (attempt < 100) window.setTimeout(() => { void connectFirebase(attempt + 1); }, 25);
-      return;
-    }
-    authConnected = true;
-    const auth = authModule.getAuth(apps[0]);
-    authModule.onAuthStateChanged(auth, (user) => {
-      currentGoogleAvatarUrl = googleProviderAvatarUrl(user);
-      renderAccountAvatarPicker();
-    });
-  } catch (_) {
-    currentGoogleAvatarUrl = '';
-    renderAccountAvatarPicker();
-  }
 }
 
 function initialize(attempt = 0) {
@@ -174,10 +150,10 @@ function initialize(attempt = 0) {
   if (!form) return;
 
   currentProfile = window.CGBAccounts?.getProfile?.() || null;
+  currentGoogleAvatarUrl = clean(window.CGBAccounts?.getGoogleAvatarUrl?.());
   renderAccountAvatarPicker(form);
   form.elements.displayName?.addEventListener('input', () => updateInitialsPreview(form), { passive: true });
   window.addEventListener('cgb:account-state', handleAccountState);
-  void connectFirebase();
 }
 
 window.CGBAccountAvatarPicker = Object.freeze({
