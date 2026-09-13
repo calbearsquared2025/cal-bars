@@ -1,5 +1,6 @@
 import { ensureMyCgbFeaturesLoaded } from './my-cgb-feature-loader.mjs';
 import { markCgbPerformance } from './performance.mjs';
+import { setCommandSurface } from './command-surface.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const ACCOUNT_COMMAND = 'my-cgb';
@@ -252,7 +253,7 @@ function showNativeSurface(opener = null) {
   lastOpener = opener || lastOpener || navButton;
   surface.hidden = true;
   tray.dataset.myCgbOpen = 'true';
-  document.body.dataset.commandSurface = ACCOUNT_COMMAND;
+  setCommandSurface(document, ACCOUNT_COMMAND);
   document.querySelector('#search-surface')?.setAttribute('hidden', '');
   document.querySelector('#add-surface')?.setAttribute('hidden', '');
   document.querySelector('#about-surface')?.setAttribute('hidden', '');
@@ -261,7 +262,7 @@ function showNativeSurface(opener = null) {
 }
 
 function restorePreviousSurface() {
-  document.body.dataset.commandSurface = returnSurface || 'map';
+  setCommandSurface(document, returnSurface || 'map');
   const surfaceByCommand = {
     search: '#search-surface',
     add: '#add-surface',
@@ -377,7 +378,7 @@ function scheduleSync() {
     syncDesktopAddEntry();
     if (!open) return;
     tray?.setAttribute('data-my-cgb-open', 'true');
-    document.body.dataset.commandSurface = ACCOUNT_COMMAND;
+    setCommandSurface(document, ACCOUNT_COMMAND);
     setCommandState(true);
   });
 }

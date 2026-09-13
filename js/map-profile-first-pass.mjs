@@ -1,3 +1,5 @@
+import { setCommandSurface } from './command-surface.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
 
@@ -133,7 +135,7 @@ function setTrayState(next) {
 }
 
 function setCommandActive(command) {
-  document.body.dataset.commandSurface = command;
+  setCommandSurface(document, command);
   document.querySelectorAll('.mobile-command').forEach((button) => {
     const active = button.dataset.command === command ||
       (button.id === `mobile-${command}-button`);

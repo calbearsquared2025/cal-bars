@@ -24,6 +24,7 @@ import {
 } from './watch-party-attendance-handoff.mjs';
 import { readRuntimeConfig } from './config.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+import { setCommandSurface } from './command-surface.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const CONTRIBUTION_INTENTS = Object.freeze({
@@ -238,7 +239,7 @@ function setSurface(next, { focus = false } = {}) {
   dom.searchSurface.hidden = next !== 'search';
   dom.addSurface.hidden = next !== 'add';
   dom.aboutSurface.hidden = next !== 'about';
-  document.body.dataset.commandSurface = next;
+  setCommandSurface(document, next);
   moveSearchForm();
   updateCommandState();
 
@@ -670,7 +671,7 @@ function initializeShellControls() {
       dom.searchSurface.hidden = true;
       dom.addSurface.hidden = true;
       dom.aboutSurface.hidden = true;
-      document.body.dataset.commandSurface = 'map';
+      setCommandSurface(document, 'map');
       normalizeDesktopTray();
     }
     updateCommandState();

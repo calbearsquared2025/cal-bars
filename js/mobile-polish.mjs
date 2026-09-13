@@ -1,4 +1,5 @@
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+import { setCommandSurface } from './command-surface.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const VALID_VIEWS = new Set(['map', 'search', 'add', 'list', 'about']);
@@ -92,7 +93,7 @@ function normalizeSearchLabels() {
 function setActiveView(next) {
   if (!isMobile() || !VALID_VIEWS.has(next)) return;
   activeView = next;
-  document.body.dataset.commandSurface = next;
+  setCommandSurface(document, next);
 }
 
 function visibleSurface() {
