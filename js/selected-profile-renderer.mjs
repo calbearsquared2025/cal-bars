@@ -6,15 +6,10 @@ import {
 } from './core.mjs';
 import { createIcon } from './icons.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
+import { formatVenueDistance } from './venue-location-presentation.mjs';
 import { venueActivityPresentation } from './venue-activity-core.mjs';
 import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';
 import { createWatchPartyModule } from './watch-party-renderer.mjs';
-
-function formatDistance(distance) {
-  if (!Number.isFinite(distance)) return '';
-  if (distance < 0.1) return 'Nearby';
-  return `${distance.toFixed(distance < 10 ? 1 : 0)} mi away`;
-}
 
 function createBadges(venue, party, documentObject) {
   const badges = documentObject.createElement('span');
@@ -213,7 +208,7 @@ export function createSelectedVenueCard({
 
   const location = documentObject.createElement('p');
   location.className = 'venue-location';
-  const distanceCopy = formatDistance(distance);
+  const distanceCopy = formatVenueDistance(distance);
   const compactLocation = compactVenueLocation(venue);
   if (mobile) {
     const street = [venue?.address_line_1, venue?.address_line_2].filter(Boolean).join(', ');

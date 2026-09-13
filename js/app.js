@@ -37,6 +37,7 @@ import { legacyActivitySeason, venueActivityPresentation } from './venue-activit
 import { createIcon } from './icons.mjs';
 import { firstUsMapTilerResult } from './map-geocoding-core.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
+import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
@@ -619,16 +620,6 @@ function setTrayState(next, { animate = false } = {}) {
   return changed;
 }
 
-function formatDistance(distance) {
-  if (!Number.isFinite(distance)) return '';
-  if (distance < 0.1) return 'Nearby';
-  return `${distance.toFixed(distance < 10 ? 1 : 0)} mi away`;
-}
-
-function directionsUrl(venue) {
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${venue.latitude},${venue.longitude}`)}`;
-}
-
 function createBadges(venue, party) {
   const badges = document.createElement('span');
   badges.className = 'venue-badges';
@@ -829,7 +820,7 @@ function renderSelectedCard() {
     mobile: isMobileLayout(),
     distance,
     detailHref: buildVenueUrl(venue.slug, selectedGame(), location.href),
-    directionsHref: directionsUrl(venue),
+    directionsHref: venueDirectionsUrl(venue),
     onCollapse: () => setTrayState('peek', { animate: true }),
     onShare: () => shareVenue(venue),
     documentObject: document
@@ -894,7 +885,7 @@ function renderLocationList(query = state.listQuery) {
     name.textContent = venue.name;
     info.append(name);
     const meta = document.createElement('span');
-    meta.textContent = [venue.city, venue.region, formatDistance(distance)].filter(Boolean).join(' · ');
+    meta.textContent = [venue.city, venue.region, formatVenueDistance(distance)].filter(Boolean).join(' · ');
     info.append(meta);
     top.append(info);
     const count = document.createElement('span');
@@ -997,7 +988,7 @@ function renderVenueProfile() {
   address.className = 'detail-address';
   const directions = document.createElement('a');
   directions.className = 'detail-directions-inline';
-  directions.href = directionsUrl(venue);
+  directions.href = venueDirectionsUrl(venue);
   directions.target = '_blank';
   directions.rel = 'noopener';
   directions.append(createIcon('directions'), document.createTextNode(addressLabel));
