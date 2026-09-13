@@ -611,43 +611,38 @@ body[data-view="detail"] #app {
     font-weight: 800;
   }
 
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) {
-    min-height: 48px !important;
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-content: center !important;
-    align-items: baseline !important;
-    justify-content: flex-start !important;
-    justify-items: normal !important;
-    gap: 2px 5px !important;
-    margin: 1px 0 0 !important;
-    padding: 3px 0 !important;
-    text-align: left !important;
+  .selected-card > .bear-count:not(.bear-count--empty) {
+    min-height: 48px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: baseline;
+    justify-content: flex-start;
+    gap: 2px 5px;
+    margin: 1px 0 0;
+    padding: 3px 0;
+    text-align: left;
   }
 
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
-    align-self: baseline !important;
-    justify-self: auto !important;
-    font-size: 1.9rem !important;
-    line-height: .9 !important;
+  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
+    align-self: baseline;
+    font-size: 1.9rem;
+    line-height: .9;
   }
 
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
-    align-self: baseline !important;
-    justify-self: auto !important;
-    padding-top: 0 !important;
-    font-size: .74rem !important;
+  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
+    align-self: baseline;
+    font-size: .74rem;
   }
 
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending,
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
-    align-self: baseline !important;
-    justify-self: auto !important;
-    font-size: .62rem !important;
+  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending,
+  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+    align-self: baseline;
+    font-size: .62rem;
   }
 
-  #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
-    color: var(--cgb-ink-500) !important;
+  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+    color: var(--cgb-ink-500);
   }
 
   .selected-card > .bear-count--empty {
@@ -712,15 +707,15 @@ body[data-view="detail"] #app {
   }
 
   .location-card__count {
-    color: var(--cgb-navy-900, #0b2856) !important;
-    font-size: .66rem !important;
-    font-weight: 700 !important;
+    color: var(--cgb-navy-900, #0b2856);
+    font-size: .66rem;
+    font-weight: 700;
     letter-spacing: 0;
     text-transform: none;
   }
 
   .location-card__party {
-    color: var(--cgb-ink-500, #657083) !important;
+    color: var(--cgb-ink-500, #657083);
     font-weight: 600;
   }
 

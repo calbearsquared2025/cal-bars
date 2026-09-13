@@ -211,9 +211,8 @@ a { color: inherit; }
 .location-card__top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
 .location-card__top > div { display: grid; gap: 4px; min-width: 0; }
 .location-card strong { color: var(--cal-blue); font-size: .98rem; }
-.location-card span:not(.venue-badge) { color: var(--muted); font-size: .76rem; }
-.location-card__count { flex: 0 1 170px; color: var(--cal-blue) !important; font-weight: 850; line-height: 1.25; text-align: right; }
-.location-card__party { color: #674800 !important; font-weight: 700; }
+.location-card__top > div > span:not(.venue-badge),
+.location-card__description { color: var(--muted); font-size: .76rem; }
 .empty-state { color: var(--muted); padding: 20px; text-align: center; }
 
 .detail-view { min-height: calc(100dvh - var(--header-height) - var(--footer-height)); padding: 18px 14px 40px; background: linear-gradient(180deg, #eef3f8, #ffffff 320px); }

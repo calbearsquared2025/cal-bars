@@ -819,17 +819,9 @@ textarea {
   font-weight: 850;
 }
 
-.location-card span:not(.venue-badge) {
+.location-card__top > div > span:not(.venue-badge),
+.location-card__description {
   color: var(--cgb-ink-500);
-}
-
-.location-card__count {
-  color: var(--cgb-navy-800) !important;
-  font-size: var(--text-xs) !important;
-}
-
-.location-card__party {
-  color: var(--cgb-gold-600) !important;
 }
 
 .empty-state {

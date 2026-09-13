@@ -144,22 +144,25 @@
   letter-spacing: -.01em;
 }
 
-.location-card span:not(.venue-badge) {
+.location-card__top > div > span:not(.venue-badge),
+.location-card__description {
   color: var(--cgb-ink-500);
   font-size: var(--text-xs);
 }
 
 .location-card__count {
-  color: var(--cgb-navy-950) !important;
+  flex: 0 1 170px;
+  color: var(--cgb-navy-950);
   font-family: var(--font-condensed);
-  font-size: .68rem !important;
-  font-weight: 850 !important;
+  font-size: .68rem;
+  font-weight: 850;
+  line-height: 1.25;
   text-align: right;
   text-transform: uppercase;
 }
 
 .location-card__party {
-  color: var(--cgb-gold-600) !important;
+  color: var(--cgb-gold-600);
   font-weight: 750;
 }
 
