@@ -36,6 +36,7 @@ import {
 import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 import { createIcon } from './icons.mjs';
 import { firstUsMapTilerResult } from './map-geocoding-core.mjs';
+import { nearbyLocationControlPresentation, normalizedUserLocation } from './nearby-location-core.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
@@ -209,13 +210,6 @@ function selectedGame() {
 
 function selectedVenue() {
   return state.snapshot.venues.find((venue) => venue.venue_id === state.selectedVenueId) || null;
-}
-
-function normalizedUserLocation(origin = state.origin) {
-  const lat = Number(origin?.lat);
-  const lon = Number(origin?.lon);
-  if (origin?.label !== 'your location' || !Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-  return { lat, lon, label: 'your location' };
 }
 
 function rememberNearbyOrigin(origin = state.origin) {
@@ -829,20 +823,17 @@ function renderSelectedCard() {
 }
 
 function renderLocationControl() {
-  const usingNearby = Boolean(normalizedUserLocation(state.origin));
-  const filteringSearch = Boolean(state.listQuery || (state.origin && !usingNearby));
-  const browsingAll = !usingNearby && !filteringSearch;
-  const canRestoreNearby = !usingNearby && Boolean(normalizedUserLocation(state.nearbyOrigin));
+  const presentation = nearbyLocationControlPresentation({
+    origin: state.origin,
+    nearbyOrigin: state.nearbyOrigin,
+    query: state.listQuery,
+    radiusMiles: NEARBY_RADIUS_MILES
+  });
+  const { usingNearby, browsingAll } = presentation;
   dom.listLocationNearby.setAttribute('aria-pressed', String(usingNearby));
   dom.listLocationAll.setAttribute('aria-pressed', String(browsingAll));
-  dom.listLocationNearby.setAttribute('aria-label', usingNearby
-    ? `Near me selected, showing locations within ${NEARBY_RADIUS_MILES} miles`
-    : canRestoreNearby
-      ? 'Show nearby locations using your saved location'
-      : 'Use my location to show nearby locations');
-  dom.listLocationAll.setAttribute('aria-label', browsingAll
-    ? 'All locations selected'
-    : 'Show all mapped locations');
+  dom.listLocationNearby.setAttribute('aria-label', presentation.nearbyLabel);
+  dom.listLocationAll.setAttribute('aria-label', presentation.allLabel);
 }
 
 function renderLocationList(query = state.listQuery) {
