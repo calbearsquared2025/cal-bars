@@ -1,4 +1,8 @@
-import { setCommandSurface } from './command-surface.mjs';
+import {
+  setActiveCommand,
+  setCommandSurface,
+  setPrimarySurfaceVisibility
+} from './command-surface.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
@@ -136,13 +140,7 @@ function setTrayState(next) {
 
 function setCommandActive(command) {
   setCommandSurface(document, command);
-  document.querySelectorAll('.mobile-command').forEach((button) => {
-    const active = button.dataset.command === command ||
-      (button.id === `mobile-${command}-button`);
-    button.classList.toggle('mobile-command--active', active);
-    if (active) button.setAttribute('aria-current', 'page');
-    else button.removeAttribute('aria-current');
-  });
+  setActiveCommand(document, command);
 }
 
 function openListSurface(event) {
@@ -150,9 +148,7 @@ function openListSurface(event) {
   event.preventDefault();
   event.stopImmediatePropagation();
 
-  document.querySelector('#search-surface')?.setAttribute('hidden', '');
-  document.querySelector('#add-surface')?.setAttribute('hidden', '');
-  document.querySelector('#about-surface')?.setAttribute('hidden', '');
+  setPrimarySurfaceVisibility(document, 'list');
   setTrayState('full');
   setCommandActive('list');
 }

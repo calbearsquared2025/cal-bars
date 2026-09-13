@@ -24,7 +24,11 @@ import {
 } from './watch-party-attendance-handoff.mjs';
 import { readRuntimeConfig } from './config.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
-import { setCommandSurface } from './command-surface.mjs';
+import {
+  setActiveCommand,
+  setCommandSurface,
+  setPrimarySurfaceVisibility
+} from './command-surface.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const CONTRIBUTION_INTENTS = Object.freeze({
@@ -226,19 +230,12 @@ function updateCommandState() {
       ? 'list'
       : 'map';
 
-  dom.commandButtons.forEach((button) => {
-    const command = button.dataset.command;
-    const isActive = command === active && (mobile || command !== 'add');
-    button.classList.toggle('mobile-command--active', isActive);
-    button.setAttribute('aria-current', isActive ? 'page' : 'false');
-  });
+  setActiveCommand(document, mobile || active !== 'add' ? active : null);
 }
 
 function setSurface(next, { focus = false } = {}) {
   currentSurface = next;
-  dom.searchSurface.hidden = next !== 'search';
-  dom.addSurface.hidden = next !== 'add';
-  dom.aboutSurface.hidden = next !== 'about';
+  setPrimarySurfaceVisibility(document, next);
   setCommandSurface(document, next);
   moveSearchForm();
   updateCommandState();
@@ -534,9 +531,7 @@ function syncViewState() {
   document.body.dataset.view = detailVisible ? 'detail' : 'map';
 
   if (detailVisible) {
-    dom.searchSurface.hidden = true;
-    dom.addSurface.hidden = true;
-    dom.aboutSurface.hidden = true;
+    setPrimarySurfaceVisibility(document, null);
   } else {
     normalizeDesktopTray();
   }
@@ -668,9 +663,7 @@ function initializeShellControls() {
     moveSearchForm();
     if (!isMobileLayout()) {
       currentSurface = 'map';
-      dom.searchSurface.hidden = true;
-      dom.addSurface.hidden = true;
-      dom.aboutSurface.hidden = true;
+      setPrimarySurfaceVisibility(document, null);
       setCommandSurface(document, 'map');
       normalizeDesktopTray();
     }

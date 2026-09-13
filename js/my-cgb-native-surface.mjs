@@ -1,6 +1,10 @@
 import { ensureMyCgbFeaturesLoaded } from './my-cgb-feature-loader.mjs';
 import { markCgbPerformance } from './performance.mjs';
-import { setCommandSurface } from './command-surface.mjs';
+import {
+  setActiveCommand,
+  setCommandSurface,
+  setPrimarySurfaceVisibility
+} from './command-surface.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const ACCOUNT_COMMAND = 'my-cgb';
@@ -148,34 +152,11 @@ function ensureSurface() {
 
 function setCommandState(active) {
   if (!navButton) return;
-  if (active) {
-    document.querySelectorAll('.mobile-command').forEach((button) => {
-      button.classList.remove('mobile-command--active');
-      button.removeAttribute('aria-current');
-    });
-    navButton.classList.add('mobile-command--active');
-    navButton.setAttribute('aria-current', 'page');
-    return;
-  }
-  navButton.classList.remove('mobile-command--active');
-  navButton.removeAttribute('aria-current');
+  setActiveCommand(document, active ? ACCOUNT_COMMAND : null);
 }
 
 function restoreCommandHighlight() {
-  const targetBySurface = {
-    map: '#mobile-map-button',
-    search: '#mobile-search-button',
-    add: '#mobile-add-button',
-    list: '#mobile-list-button'
-  };
-  const target = document.querySelector(targetBySurface[returnSurface] || '');
-  if (!target) return;
-  document.querySelectorAll('.mobile-command').forEach((button) => {
-    button.classList.remove('mobile-command--active');
-    button.removeAttribute('aria-current');
-  });
-  target.classList.add('mobile-command--active');
-  target.setAttribute('aria-current', 'page');
+  setActiveCommand(document, returnSurface);
 }
 
 function setNativeChrome(native) {
@@ -254,22 +235,14 @@ function showNativeSurface(opener = null) {
   surface.hidden = true;
   tray.dataset.myCgbOpen = 'true';
   setCommandSurface(document, ACCOUNT_COMMAND);
-  document.querySelector('#search-surface')?.setAttribute('hidden', '');
-  document.querySelector('#add-surface')?.setAttribute('hidden', '');
-  document.querySelector('#about-surface')?.setAttribute('hidden', '');
+  setPrimarySurfaceVisibility(document, ACCOUNT_COMMAND);
   setCommandState(true);
   return revealNativeSurface();
 }
 
 function restorePreviousSurface() {
   setCommandSurface(document, returnSurface || 'map');
-  const surfaceByCommand = {
-    search: '#search-surface',
-    add: '#add-surface',
-    about: '#about-surface'
-  };
-  const selector = surfaceByCommand[returnSurface];
-  if (selector) document.querySelector(selector)?.removeAttribute('hidden');
+  setPrimarySurfaceVisibility(document, returnSurface || 'map');
 }
 
 function closeNativeSurface({ restoreSurface = true, restoreFocus = false } = {}) {
