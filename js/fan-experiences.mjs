@@ -7,6 +7,7 @@ import {
   buildCalBarNominationPrefillUrl,
   resolveCalBarNominationVenue
 } from './cal-bar-nomination-core.mjs';
+import { syncSelectedProfileActivitySection } from './selected-profile-activity.mjs';
 
 const SECTION_SELECTOR = '[data-fan-experiences]';
 const MOBILE_WHAT_TO_KNOW_STYLE_ID = 'cgb-mobile-what-to-know';
@@ -278,8 +279,9 @@ function placeSection(detail, section) {
   else detail.prepend(section);
 }
 
-function finalizeMobileCommunityPresentation({ detail, state, venue, documentObject }) {
+function finalizeCommunityPresentation({ detail, state, venue, documentObject }) {
   syncMobileWhatToKnow({ detail, state, venue, documentObject });
+  syncSelectedProfileActivitySection({ detail, state, venue, documentObject });
 }
 
 export function renderFanExperiences({ app = window.CGBApp, documentObject = document } = {}) {
@@ -321,7 +323,7 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
     const share = createShareLink(documentObject, href);
     if (share) section.append(share);
     placeSection(detail, section);
-    finalizeMobileCommunityPresentation({ detail, state, venue, documentObject });
+    finalizeCommunityPresentation({ detail, state, venue, documentObject });
     return section;
   }
 
@@ -354,6 +356,6 @@ export function renderFanExperiences({ app = window.CGBApp, documentObject = doc
   const share = createShareLink(documentObject, href);
   if (share) section.append(share);
   placeSection(detail, section);
-  finalizeMobileCommunityPresentation({ detail, state, venue, documentObject });
+  finalizeCommunityPresentation({ detail, state, venue, documentObject });
   return section;
 }

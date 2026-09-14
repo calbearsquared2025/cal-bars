@@ -1,14 +1,15 @@
-export function publicAttendeePresentation({ attendees = [], displayedTotal = 0, visibleLimit = 5 } = {}) {
+export function publicAttendeePresentation({ attendees = [], displayedTotal = 0, namedLimit = 2 } = {}) {
   const total = Math.max(0, Math.trunc(Number(displayedTotal) || 0));
-  const limit = Math.max(1, Math.trunc(Number(visibleLimit) || 5));
+  const limit = Math.max(0, Math.trunc(Number(namedLimit) || 0));
   const publicAttendees = Array.isArray(attendees) ? attendees.slice(0, total) : [];
-  const visibleAttendees = publicAttendees.slice(0, limit);
+  const namedAttendees = publicAttendees.slice(0, limit);
+  const avatarOnlyAttendees = publicAttendees.slice(namedAttendees.length);
 
   return Object.freeze({
     total,
     publicAttendees,
-    visibleAttendees,
-    extra: Math.max(0, total - visibleAttendees.length),
-    names: publicAttendees.slice(0, 3)
+    namedAttendees,
+    avatarOnlyAttendees,
+    anonymousCount: Math.max(0, total - publicAttendees.length)
   });
 }

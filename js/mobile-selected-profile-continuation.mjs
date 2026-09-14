@@ -236,11 +236,12 @@ function placeSupportingPhoto(detail) {
   const photo = detail?.querySelector?.(':scope > .detail-photo');
   if (!photo) return false;
   const community = detail.querySelector(':scope > .detail-fan-experiences');
+  const cgbActivity = detail.querySelector(':scope > .detail-cgb-activity');
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const contribution = detail.querySelector(':scope > .detail-contribution');
   photo.classList.remove('detail-photo--mobile-opening', 'detail-photo--mobile-deferred', 'detail-profile-media--desktop');
   photo.classList.add('detail-photo--supporting');
-  const cursor = community || editorial || detail.querySelector(':scope > .detail-hero');
+  const cursor = cgbActivity || community || editorial || detail.querySelector(':scope > .detail-hero');
   cursor?.after(photo);
   if (contribution && photo.nextElementSibling !== contribution) photo.after(contribution);
   return true;

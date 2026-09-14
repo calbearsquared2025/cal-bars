@@ -1,15 +1,24 @@
 .account-attendees {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
   min-width: 0;
+  display: grid;
+  gap: 0.3rem;
   margin-top: 0.45rem;
 }
 
-.account-attendee-stack {
-  display: flex;
+.account-attendee-person {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
   align-items: center;
-  flex: 0 0 auto;
+  gap: 0.4rem;
+}
+
+.account-attendee-overflow {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
 }
 
 .account-attendee-avatar,
@@ -19,6 +28,7 @@
   justify-content: center;
   width: 30px;
   height: 30px;
+  flex: 0 0 auto;
   overflow: hidden;
   border: 2px solid currentColor;
   border-radius: var(--radius-pill);
@@ -29,8 +39,8 @@
   line-height: 1;
 }
 
-.account-attendee-avatar + .account-attendee-avatar,
-.account-attendee-avatar + .account-attendee-more {
+.account-attendee-overflow > .account-attendee-avatar + .account-attendee-avatar,
+.account-attendee-overflow > .account-attendee-avatar + .account-attendee-more {
   margin-left: -8px;
 }
 
@@ -46,14 +56,13 @@
   padding: 0 0.35rem;
 }
 
-.account-attendee-names {
+.account-attendee-name {
   min-width: 0;
-  overflow: hidden;
   font-size: 0.78rem;
   font-weight: 700;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .account-attendance-visibility {
@@ -89,18 +98,19 @@
 }
 
 @media (max-width: 899px) {
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header .bear-count--hero:not(.bear-count--empty) {
+    grid-row: 2 / 4;
+    align-self: center;
+    justify-self: center;
+  }
+
   body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header > div:first-child > .account-attendees {
     grid-column: 2;
     grid-row: 4;
     justify-self: center;
-    width: 100%;
+    width: min(100%, 150px);
     max-width: 100%;
-    margin: 5px 0 0;
-    gap: 0.4rem;
-  }
-
-  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header > div:first-child:has(> .account-attendees) > .venue-activity-history {
-    grid-row: 5;
+    margin: 8px 0 0;
   }
 }
 
@@ -118,7 +128,7 @@
   }
 
   body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > .account-attendees {
-    justify-content: center;
+    width: min(100%, 190px);
     max-width: 100%;
     margin: 0.55rem 0 0;
     color: var(--brand-text-on-primary);
@@ -127,9 +137,5 @@
   body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > .account-attendees .account-attendee-avatar,
   body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > .account-attendees .account-attendee-more {
     background: var(--brand-primary);
-  }
-
-  body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > .account-attendees .account-attendee-names {
-    max-width: 160px;
   }
 }

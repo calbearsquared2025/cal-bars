@@ -223,21 +223,29 @@ function renderPublicAttendees(host, attendance) {
   surface.replaceChildren();
   surface.setAttribute('aria-label', `${presentation.publicAttendees.length} Bears showing their CGB profiles`);
 
-  const stack = document.createElement('div');
-  stack.className = 'account-attendee-stack';
-  presentation.visibleAttendees.forEach((attendee) => stack.append(avatarElement(attendee)));
-  if (presentation.extra > 0) {
-    const more = document.createElement('span');
-    more.className = 'account-attendee-more';
-    more.textContent = `+${presentation.extra}`;
-    more.setAttribute('aria-label', `${presentation.extra} other Bears`);
-    stack.append(more);
-  }
+  presentation.namedAttendees.forEach((attendee) => {
+    const person = document.createElement('div');
+    person.className = 'account-attendee-person';
+    const name = document.createElement('span');
+    name.className = 'account-attendee-name';
+    name.textContent = attendee.displayName;
+    person.append(avatarElement(attendee), name);
+    surface.append(person);
+  });
 
-  const names = document.createElement('span');
-  names.className = 'account-attendee-names';
-  names.textContent = presentation.names.map((attendee) => attendee.displayName).join(' · ');
-  surface.append(stack, names);
+  if (presentation.avatarOnlyAttendees.length || presentation.anonymousCount > 0) {
+    const overflow = document.createElement('div');
+    overflow.className = 'account-attendee-overflow';
+    presentation.avatarOnlyAttendees.forEach((attendee) => overflow.append(avatarElement(attendee)));
+    if (presentation.anonymousCount > 0) {
+      const more = document.createElement('span');
+      more.className = 'account-attendee-more';
+      more.textContent = `+${presentation.anonymousCount}`;
+      more.setAttribute('aria-label', `${presentation.anonymousCount} anonymous Bears`);
+      overflow.append(more);
+    }
+    surface.append(overflow);
+  }
 
   if (!existing) {
     const count = attendanceCountElement(host);

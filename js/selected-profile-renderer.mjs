@@ -96,7 +96,7 @@ function createAttendance(state, game, venue, documentObject, { hero = false } =
   }
 
   let history = null;
-  if (view.secondary.length) {
+  if (view.secondary.length && view.kind !== 'positive') {
     history = documentObject.createElement('p');
     history.className = 'venue-activity-history';
     view.secondary.forEach((line, index) => {

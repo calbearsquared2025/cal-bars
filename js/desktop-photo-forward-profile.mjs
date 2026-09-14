@@ -149,6 +149,7 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   const activity = detail.querySelector(':scope > .activity-card') ||
     hero?.querySelector(':scope > .activity-card');
   const community = detail.querySelector(':scope > .detail-fan-experiences');
+  const cgbActivity = detail.querySelector(':scope > .detail-cgb-activity');
   const photo = detail.querySelector(':scope > .detail-photo');
   const contribution = detail.querySelector(':scope > .detail-contribution');
   if (!hero) return;
@@ -157,7 +158,7 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   delete detail.dataset.desktopPhotoForward;
   delete detail.dataset.desktopBalancedOpening;
   delete detail.dataset.desktopFallbackMap;
-  detail.dataset.desktopProfileArrangement = 'identity-attendance-party-what-to-know-editorial-community-photo-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-attendance-party-what-to-know-editorial-community-activity-photo-contribution';
 
   if (activity && activity.parentElement !== hero) hero.append(activity);
 
@@ -166,6 +167,7 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   cursor = placeAfter(cursor, whatToKnow);
   cursor = placeAfter(cursor, editorial);
   cursor = placeAfter(cursor, community);
+  cursor = placeAfter(cursor, cgbActivity);
   if (photo) {
     photo.classList.remove('detail-photo--desktop-opening');
     photo.classList.add('detail-profile-media--desktop', 'detail-photo--supporting');
