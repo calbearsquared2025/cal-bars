@@ -145,7 +145,8 @@
 }
 
 .location-card__top > div > span:not(.venue-badge),
-.location-card__description {
+.location-card__description,
+.location-card__history {
   color: var(--cgb-ink-500);
   font-size: var(--text-xs);
 }
