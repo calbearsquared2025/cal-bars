@@ -292,7 +292,37 @@
   letter-spacing: .09em;
   text-transform: uppercase;
 }
-.accounts-save-selected { max-width: 55%; text-align: right; }
+.accounts-save-selected {
+  flex: 0 1 auto;
+  align-self: flex-end;
+  max-width: min(66%, 280px);
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 6px 10px;
+  color: var(--brand-primary);
+  background: var(--brand-surface);
+  border: 1px solid var(--cgb-neutral-300);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  font-family: var(--font-condensed);
+  font-size: .74rem;
+  font-weight: 850;
+  letter-spacing: .015em;
+  line-height: 1.05;
+  text-align: center;
+  text-decoration: none;
+  text-wrap: balance;
+}
+.accounts-save-selected:hover,
+.accounts-save-selected:focus-visible {
+  color: var(--brand-primary-dark);
+  background: var(--cgb-navy-50);
+  border-color: var(--brand-primary);
+  text-decoration: none;
+}
 
 .accounts-favorite-row {
   padding: 11px 0;
@@ -369,5 +399,4 @@
   }
 
   .accounts-provider-actions { grid-template-columns: 1fr; }
-  .accounts-save-selected { max-width: 48%; font-size: .78rem; }
 }
