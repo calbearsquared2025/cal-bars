@@ -1,10 +1,11 @@
 import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
 import { accountsConfigIsReady, validatePublicAttendanceResponse } from './accounts-core.mjs';
-import { isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
+import { CGB_AVATAR_PRESETS, isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const STYLE_ATTR = 'data-cgb-public-community-style';
 const CACHE_MS = 60000;
+const SPARSE_COMMUNITY_THRESHOLD = 3;
 const PROFILE_ID_PATTERN = /^profile_[a-f0-9]{24}$/;
 const BADGE_ASSETS = Object.freeze({
   first_down: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/First_Down.webp',
@@ -246,6 +247,7 @@ function ensureViewStructure(shell) {
     leaderboardView = document.createElement('section');
     leaderboardView.id = 'my-cgb-leaderboard-view';
     leaderboardView.className = 'public-community-section public-community-panel';
+    leaderboardView.dataset.communityState = 'idle';
     leaderboardView.setAttribute('role', 'tabpanel');
     leaderboardView.setAttribute('aria-labelledby', 'my-cgb-leaderboard-tab');
     leaderboardView.innerHTML = `
@@ -421,31 +423,169 @@ function leaderboardRow(entry) {
   return row;
 }
 
-function renderSection(section, data) {
-  if (!section) return;
+function communitySectionParts(section) {
+  if (!section) return null;
+  const heading = section.querySelector('.public-community-heading h3');
   const intro = section.querySelector('.public-community-intro');
   const list = section.querySelector('.public-community-list');
   const status = section.querySelector('.public-community-status');
-  if (!intro || !list || !status) return;
+  if (!heading || !intro || !list || !status) return null;
+  return { heading, intro, list, status };
+}
 
+function setCommunityState(section, state) {
+  if (section) section.dataset.communityState = state;
+}
+
+function renderLoadingSection(section) {
+  const parts = communitySectionParts(section);
+  if (!parts) return;
+  const { heading, intro, list, status } = parts;
+  setCommunityState(section, 'loading');
+  heading.textContent = 'Season leaderboard';
+  intro.textContent = 'See how Bears are watching this season.';
+  list.replaceChildren();
+  for (let index = 0; index < 3; index += 1) {
+    const row = document.createElement('div');
+    row.className = 'public-community-skeleton-row';
+    row.setAttribute('aria-hidden', 'true');
+    ['rank', 'avatar', 'name', 'games'].forEach((part) => {
+      const placeholder = document.createElement('span');
+      placeholder.className = `public-community-skeleton public-community-skeleton--${part}`;
+      row.append(placeholder);
+    });
+    list.append(row);
+  }
+  status.textContent = 'Loading season standings…';
+}
+
+function sampleAvatarGroup() {
+  const group = document.createElement('div');
+  group.className = 'public-community-sample-avatars';
+  group.setAttribute('aria-hidden', 'true');
+  CGB_AVATAR_PRESETS.slice(0, 3).forEach((preset) => {
+    const image = document.createElement('img');
+    image.className = 'public-community-sample-avatar';
+    image.src = preset.url;
+    image.alt = '';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.fetchPriority = 'low';
+    image.width = 52;
+    image.height = 52;
+    group.append(image);
+  });
+  return group;
+}
+
+function browseFromCommunity() {
+  const mapButton = document.querySelector('#mobile-map-button');
+  const listButton = document.querySelector('#mobile-list-button');
+  const target = mapButton && !mapButton.disabled ? mapButton : listButton;
+  target?.click();
+}
+
+function sparseCommunityCallToAction() {
+  const callout = document.createElement('div');
+  callout.className = 'public-community-callout';
+  const title = document.createElement('strong');
+  const copy = document.createElement('p');
+  const action = document.createElement('button');
+  action.type = 'button';
+  action.className = 'primary-button public-community-cta';
+
+  if (!currentProfile) {
+    title.textContent = 'Join the CGB community';
+    copy.textContent = 'Track your Cal games, earn Coasters, and choose whether other Bears can see you.';
+    action.textContent = 'Create your profile';
+    action.classList.add('my-cgb-sign-in');
+  } else if (currentProfile.publicProfileStatus !== 'public') {
+    title.textContent = 'Want to appear with other Bears?';
+    copy.textContent = 'Your profile is private. You control whether it appears publicly.';
+    action.textContent = 'Review privacy settings';
+    action.classList.add('my-cgb-edit-profile');
+  } else {
+    title.textContent = 'You’re in. Keep building your season.';
+    copy.textContent = 'Keep logging the games you watch and help other Bears find the crowd.';
+    action.textContent = 'Find your next game-day spot';
+    action.addEventListener('click', browseFromCommunity);
+  }
+
+  callout.append(title, copy, action);
+  return callout;
+}
+
+function renderSparseSection(section) {
+  const parts = communitySectionParts(section);
+  if (!parts) return;
+  const { heading, intro, list, status } = parts;
+  setCommunityState(section, 'sparse');
+  heading.textContent = 'The Cal crowd is just getting started.';
+  intro.textContent = 'Track the games you watch, build your streak, and help Bears find each other on game day.';
+  list.replaceChildren();
+
+  const sparse = document.createElement('div');
+  sparse.className = 'public-community-sparse';
+  const note = document.createElement('p');
+  note.className = 'public-community-sparse-note';
+  note.textContent = 'Rankings will appear as more Bears take part.';
+  sparse.append(sampleAvatarGroup(), sparseCommunityCallToAction(), note);
+  list.append(sparse);
+  status.textContent = '';
+}
+
+function renderPopulatedSection(section, data) {
+  const parts = communitySectionParts(section);
+  if (!parts) return;
+  const { heading, intro, list, status } = parts;
+  setCommunityState(section, 'populated');
+  heading.textContent = 'Season leaderboard';
   intro.textContent = currentProfile
     ? currentProfile.publicProfileStatus === 'public'
       ? 'See how Bears are watching this season. Leaderboard rank is based on games watched.'
       : 'See how Bears are watching this season. Make your profile visible in Manage privacy to join the leaderboard.'
     : 'See how Bears are watching this season. Sign in from Profile to track games, build streaks, earn achievements, and join the leaderboard.';
-
   list.replaceChildren();
   status.textContent = '';
-  if (!data) {
-    status.textContent = 'Leaderboard unavailable right now.';
-    return;
-  }
-  if (!data.entries.length) {
-    status.textContent = 'No Bears are on the leaderboard yet.';
-    return;
-  }
-
   data.entries.forEach((entry) => list.append(leaderboardRow(entry)));
+}
+
+function renderErrorSection(section) {
+  const parts = communitySectionParts(section);
+  if (!parts) return;
+  const { heading, intro, list, status } = parts;
+  setCommunityState(section, 'error');
+  heading.textContent = 'Season leaderboard';
+  intro.textContent = '';
+  list.replaceChildren();
+
+  const message = document.createElement('div');
+  message.className = 'public-community-error';
+  const title = document.createElement('strong');
+  const copy = document.createElement('p');
+  const retry = document.createElement('button');
+  title.textContent = 'Season standings couldn’t load.';
+  copy.textContent = 'Your My CGB profile is still available.';
+  retry.type = 'button';
+  retry.className = 'text-button public-community-retry';
+  retry.textContent = 'Try again';
+  retry.addEventListener('click', () => { void renderLeaderboard({ force: true }); });
+  message.append(title, copy, retry);
+  list.append(message);
+  status.textContent = 'Season standings couldn’t load.';
+}
+
+function renderSection(section, data) {
+  if (!section) return;
+  if (!data) {
+    renderErrorSection(section);
+    return;
+  }
+  if (data.entries.length < SPARSE_COMMUNITY_THRESHOLD) {
+    renderSparseSection(section);
+    return;
+  }
+  renderPopulatedSection(section, data);
 }
 
 function prepareAttendeeAvatars(root = document) {
@@ -505,6 +645,12 @@ function syncCommunitySurface() {
 async function renderLeaderboard({ force = false } = {}) {
   const section = syncCommunitySurface();
   if (!section) return false;
+  const cacheIsFresh = !force && leaderboard && Date.now() - leaderboardAt < CACHE_MS;
+  if (cacheIsFresh) {
+    renderSection(section, leaderboard);
+    return true;
+  }
+  renderLoadingSection(section);
   const data = await fetchLeaderboard({ force }).catch(() => null);
   renderSection(section, data);
   return true;
