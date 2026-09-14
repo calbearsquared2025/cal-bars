@@ -5,7 +5,6 @@ const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
 const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
 const LOADING_FADE_MS = 240;
-const GENERIC_LOADING_CARD_SOURCE = new URL('../assets/cgb-loading-card.svg', import.meta.url).href;
 let loadingCoverHiddenMarked = false;
 let publicUsableMarked = false;
 const FALLBACK_MODE_CLASSES = Object.freeze([
@@ -32,6 +31,16 @@ function markCoverBoundary(windowObject = globalThis.window) {
 
 function element(documentObject, selector) {
   return documentObject?.querySelector?.(selector) || null;
+}
+
+function loadingCoverSource(documentObject) {
+  const preload = element(documentObject, '#cgb-loading-cover-preload');
+  return preload?.href || preload?.getAttribute?.('href') || '';
+}
+
+function localizeFallback(fallback) {
+  if (!fallback?.style) return;
+  fallback.style.zIndex = '1';
 }
 
 function ensureFallbackStyles(documentObject) {
@@ -166,8 +175,9 @@ function ensureFallbackContent({ fallback, documentObject, includeMessage }) {
     image = documentObject.createElement('img');
     image.id = 'map-fallback-card';
     image.className = 'map-fallback__card';
-    image.alt = 'Cal Golden Bars loading';
-    image.src = GENERIC_LOADING_CARD_SOURCE;
+    image.alt = '';
+    const source = loadingCoverSource(documentObject);
+    if (source) image.src = source;
     image.decoding = 'async';
     image.fetchPriority = 'high';
     image.width = 1200;
@@ -186,10 +196,6 @@ function ensureFallbackContent({ fallback, documentObject, includeMessage }) {
     else fallback.replaceChildren(image);
   }
 
-  // The initial document supplies a neutral CGB mark.  Do not replace it with
-  // a selected-game social card here: that would allow a stale card to visibly
-  // change during startup.  Social cards remain reserved for preview/share
-  // metadata, where a game-specific image is useful and safe.
   image.onload = () => { markCardLoaded(image, true); };
   image.onerror = () => { markCardLoaded(image, false); };
   if (image.complete && image.naturalWidth > 0) {
@@ -232,8 +238,12 @@ export function showMapLoading({
   if (fallback.hidden) fallback.hidden = false;
   mapContainer.classList?.remove?.('map--fallback');
   mapContainer.classList?.add?.('map--loading');
-  if (state?.publicDataUsable) fallback.classList?.add?.('map-fallback--local');
-  else fallback.classList?.remove?.('map-fallback--local');
+  if (state?.publicDataUsable) {
+    fallback.classList?.add?.('map-fallback--local');
+    localizeFallback(fallback);
+  } else {
+    fallback.classList?.remove?.('map-fallback--local');
+  }
   return true;
 }
 
@@ -247,6 +257,7 @@ export function localizeMapLoading({
   if (!state?.publicDataUsable || !fallback ||
       !fallback.classList?.contains?.('map-fallback--loading')) return false;
   fallback.classList.add?.('map-fallback--local');
+  localizeFallback(fallback);
   markCoverBoundary(windowObject);
   return true;
 }
