@@ -334,6 +334,14 @@ function renderApplication() {
   window.CGBApp?.render();
 }
 
+// Fan Intent changes only attendance data. Keep its optimistic and settled
+// updates scoped to the already-rendered attendance controls and activity copy,
+// rather than rebuilding the map, list, or selected profile.
+function renderAttendancePresentation() {
+  renderVenueActivity();
+  renderIntentButtons();
+}
+
 async function refreshAggregates() {
   if (appState.fanIntent.pending || document.visibilityState === 'hidden') return false;
   return window.CGBSnapshotRefresh?.refresh?.() || false;
@@ -387,7 +395,7 @@ async function bootFanIntent() {
     getState: () => appState,
     postIntent,
     persistSelections,
-    render: renderApplication,
+    render: renderAttendancePresentation,
     showStatus
   });
 

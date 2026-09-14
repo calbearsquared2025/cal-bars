@@ -8,7 +8,10 @@ import { createIcon } from './icons.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import { formatVenueDistance } from './venue-location-presentation.mjs';
 import { venueActivityPresentation } from './venue-activity-core.mjs';
-import { getWatchPartiesForVenueGame } from './watch-party-display-core.mjs';
+import {
+  getWatchPartiesForVenueGame,
+  markWatchPartyTrayRenderCurrent
+} from './watch-party-display-core.mjs';
 import { createWatchPartyModule } from './watch-party-renderer.mjs';
 
 function createBadges(venue, party, documentObject) {
@@ -271,5 +274,11 @@ export function createSelectedVenueCard({
     card.append(attendance.count);
     if (attendance.history) card.append(attendance.history);
   }
+
+  markWatchPartyTrayRenderCurrent(card, {
+    venueId: venue.venue_id,
+    gameId: state.gameId,
+    parties
+  });
   return card;
 }

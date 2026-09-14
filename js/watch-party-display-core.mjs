@@ -10,6 +10,21 @@ function confirmedStartTime(party) {
   return Number.isFinite(timestamp) ? timestamp : null;
 }
 
+function normalizedIdentityValue(value) {
+  return String(value ?? '').trim();
+}
+
+function watchPartyRenderVersions(parties) {
+  const versions = [];
+  for (const party of parties || []) {
+    const id = normalizedIdentityValue(party?.watch_party_id);
+    const updatedAt = normalizedIdentityValue(party?.updated_at);
+    if (!id || !updatedAt) return null;
+    versions.push([id, updatedAt]);
+  }
+  return versions;
+}
+
 export function getWatchPartiesForVenueGame(snapshot, gameId, venueId) {
   const seen = new Set();
 
@@ -39,4 +54,36 @@ export function getWatchPartiesForVenueGame(snapshot, gameId, venueId) {
       if (labelOrder !== 0) return labelOrder;
       return String(left.watch_party_id).localeCompare(String(right.watch_party_id));
     });
+}
+
+export function watchPartyTrayRenderKey({ venueId, gameId, parties } = {}) {
+  const normalizedVenueId = normalizedIdentityValue(venueId);
+  const normalizedGameId = normalizedIdentityValue(gameId);
+  const versions = watchPartyRenderVersions(parties);
+  if (!normalizedVenueId || !normalizedGameId || versions === null) return '';
+  return JSON.stringify([normalizedVenueId, normalizedGameId, versions]);
+}
+
+export function markWatchPartyTrayRenderCurrent(container, context) {
+  const key = watchPartyTrayRenderKey(context);
+  if (!container?.dataset || !key) return false;
+  container.dataset.watchPartyRenderKey = key;
+  return true;
+}
+
+export function isWatchPartyTrayRenderCurrent(container, context) {
+  const key = watchPartyTrayRenderKey(context);
+  if (!container?.dataset || !key || container.dataset.watchPartyRenderKey !== key) return false;
+
+  const expectedIds = (context?.parties || []).map((party) => normalizedIdentityValue(party?.watch_party_id));
+  if (expectedIds.some((id) => !id)) return false;
+
+  const modules = Array.from(container.querySelectorAll?.(':scope > .party-module') || []);
+  if (modules.length !== expectedIds.length) return false;
+  if (modules.some((module, index) => normalizedIdentityValue(module?.dataset?.watchPartyId) !== expectedIds[index])) {
+    return false;
+  }
+
+  const noPartyAction = container.querySelector?.(':scope > .selected-card__plan-party') || null;
+  return expectedIds.length === 0 ? Boolean(noPartyAction) : !noPartyAction;
 }
