@@ -62,12 +62,23 @@
   margin-bottom: 0;
 }
 
+.public-community-heading h3 {
+  margin: 0;
+  color: var(--brand-primary-dark, #003262);
+  font-family: var(--font-display, inherit);
+  font-size: 1.2rem;
+  line-height: 1.12;
+}
+
 .public-community-intro,
 .public-community-status {
   margin: 0;
   color: var(--text-muted, #5f6570);
-  font-size: 0.92rem;
   line-height: 1.45;
+}
+
+.public-community-status {
+  font-size: .76rem;
 }
 
 .public-community-list {
@@ -161,8 +172,8 @@
 .public-community-error strong {
   color: var(--brand-primary-dark, #003262);
   font-family: var(--font-display, inherit);
-  font-size: 1rem;
-  line-height: 1.15;
+  font-size: 1.18rem;
+  line-height: 1.08;
 }
 
 .public-community-callout p,
@@ -170,16 +181,11 @@
 .public-community-sparse-note {
   margin: 0;
   color: var(--text-muted, #5f6570);
-  line-height: 1.4;
-}
-
-.public-community-callout p,
-.public-community-error p {
-  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
 .public-community-sparse-note {
-  font-size: 0.78rem;
+  font-size: .76rem;
 }
 
 .public-community-cta,
