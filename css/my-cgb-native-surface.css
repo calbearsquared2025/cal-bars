@@ -211,7 +211,46 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     flex: 0 0 16px;
   }
 
+  body[data-cgb-accounts-enabled="true"] #tray-list .tray-list__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto auto;
+    align-items: start;
+    column-gap: 16px;
+    padding-bottom: 8px !important;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #tray-list .tray-list__heading {
+    display: contents;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #tray-list .tray-list__heading > .eyebrow {
+    grid-row: 1;
+    grid-column: 1 / -1;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #tray-list .tray-list__heading > h2 {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #tray-list .tray-list__intro {
+    grid-row: 3;
+    grid-column: 1 / -1;
+  }
+
+  body[data-cgb-accounts-enabled="true"] #tray-list .list-location-toggle {
+    grid-row: 4;
+    grid-column: 2;
+    align-self: end;
+    justify-self: end;
+    margin-top: 12px;
+  }
+
   body[data-cgb-accounts-enabled="true"] .my-cgb-desktop-add {
+    grid-row: 4;
+    grid-column: 1;
+    justify-self: start;
     display: inline-flex;
     align-items: center;
     justify-content: center;
