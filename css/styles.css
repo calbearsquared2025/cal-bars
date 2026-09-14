@@ -127,14 +127,23 @@ a { color: inherit; }
 .map--fallback { background: radial-gradient(circle at 30% 30%, #e7f0f5 0, #c8d8e4 48%, #b9ccd9 100%); }
 .map-fallback { position: absolute; inset: 0; display: grid; place-content: center; gap: 5px; text-align: center; color: var(--cal-blue); padding: 24px; }
 #map-fallback.map-fallback--loading::after {
-  content: "MAP LOADING";
+  content: "MAP LOADING.";
+  justify-self: center;
+  min-inline-size: 14ch;
   color: var(--brand-secondary, var(--cal-gold, #fdb515));
   font-family: var(--font-ui, Inter, "Avenir Next", Avenir, "Segoe UI", system-ui, sans-serif);
   font-size: clamp(.72rem, 1.6vw, .9rem);
   font-weight: 800;
   letter-spacing: .1em;
   line-height: 1;
+  text-align: left;
   text-transform: uppercase;
+  animation: cgb-map-loading-dots 1.35s steps(1, end) infinite;
+}
+@keyframes cgb-map-loading-dots {
+  0%, 33.332% { content: "MAP LOADING."; }
+  33.333%, 66.665% { content: "MAP LOADING.."; }
+  66.666%, 100% { content: "MAP LOADING..."; }
 }
 .maplibregl-ctrl-top-right { top: 145px; z-index: 42; }
 .maplibregl-ctrl-group { border-radius: 12px !important; overflow: hidden; box-shadow: 0 8px 20px rgba(0,25,79,.15) !important; }
@@ -298,5 +307,9 @@ a { color: inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  #map-fallback.map-fallback--loading::after {
+    content: "MAP LOADING...";
+    animation: none;
+  }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; }
 }
