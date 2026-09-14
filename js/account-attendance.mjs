@@ -4,6 +4,7 @@ import {
   validateFanAttendanceResponse,
   validatePublicAttendanceResponse
 } from './accounts-core.mjs';
+import { publicAttendeePresentation } from './account-attendance-presence-core.mjs';
 import { appState, subscribeAppEvent, waitForApplicationReady } from './app-state.mjs';
 import { INTENT_SELECTIONS_STORAGE_KEY } from './fan-intent-core.mjs';
 
@@ -187,9 +188,32 @@ function avatarElement(attendee) {
   return wrapper;
 }
 
-function renderPublicAttendees(card, attendance) {
-  const existing = card.querySelector(':scope .account-attendees');
-  if (!attendance?.attendees?.length) {
+function presenceHost() {
+  const desktopDetail = document.querySelector('#venue-detail[data-profile-presentation="desktop"][data-venue-id]');
+  if (desktopDetail) return desktopDetail;
+  return document.querySelector('.selected-card[data-venue-id]');
+}
+
+function attendanceCountElement(host) {
+  if (!host) return null;
+  if (host.matches?.('#venue-detail[data-profile-presentation="desktop"]')) {
+    return host.querySelector(':scope > .detail-hero > .activity-card > strong');
+  }
+  return host.querySelector('.bear-count--hero, .bear-count');
+}
+
+function displayedAttendanceCount(host) {
+  const value = Number(attendanceCountElement(host)?.querySelector('.bear-count__number')?.textContent);
+  return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
+}
+
+function renderPublicAttendees(host, attendance) {
+  const existing = host.querySelector(':scope .account-attendees');
+  const presentation = publicAttendeePresentation({
+    attendees: attendance?.attendees,
+    displayedTotal: displayedAttendanceCount(host)
+  });
+  if (!presentation.total || !presentation.publicAttendees.length) {
     existing?.remove();
     return;
   }
@@ -197,29 +221,26 @@ function renderPublicAttendees(card, attendance) {
   const surface = existing || document.createElement('div');
   surface.className = 'account-attendees';
   surface.replaceChildren();
-  surface.setAttribute('aria-label', `${attendance.attendees.length} Bears showing their CGB profiles`);
+  surface.setAttribute('aria-label', `${presentation.publicAttendees.length} Bears showing their CGB profiles`);
 
   const stack = document.createElement('div');
   stack.className = 'account-attendee-stack';
-  attendance.attendees.slice(0, 5).forEach((attendee) => stack.append(avatarElement(attendee)));
-  const hiddenVisible = Math.max(0, attendance.attendees.length - 5);
-  const anonymousOrHidden = Math.max(0, attendance.count - attendance.attendees.length);
-  const extra = hiddenVisible + anonymousOrHidden;
-  if (extra > 0) {
+  presentation.visibleAttendees.forEach((attendee) => stack.append(avatarElement(attendee)));
+  if (presentation.extra > 0) {
     const more = document.createElement('span');
     more.className = 'account-attendee-more';
-    more.textContent = `+${extra}`;
-    more.setAttribute('aria-label', `${extra} other Bears`);
+    more.textContent = `+${presentation.extra}`;
+    more.setAttribute('aria-label', `${presentation.extra} other Bears`);
     stack.append(more);
   }
 
   const names = document.createElement('span');
   names.className = 'account-attendee-names';
-  names.textContent = attendance.attendees.slice(0, 3).map((attendee) => attendee.displayName).join(' · ');
+  names.textContent = presentation.names.map((attendee) => attendee.displayName).join(' · ');
   surface.append(stack, names);
 
   if (!existing) {
-    const count = card.querySelector('.bear-count');
+    const count = attendanceCountElement(host);
     if (count) count.insertAdjacentElement('afterend', surface);
   }
 }
@@ -260,16 +281,16 @@ function renderVisibilityControl(card) {
 
 async function renderPresence() {
   if (!enabled()) return;
-  const card = document.querySelector('.selected-card[data-venue-id]');
-  if (!card || !appState.gameId) return;
-  renderVisibilityControl(card);
+  const host = presenceHost();
+  if (!host || !appState.gameId) return;
+  if (host.matches?.('.selected-card[data-venue-id]')) renderVisibilityControl(host);
   const gameId = appState.gameId;
-  const venueId = card.dataset.venueId;
+  const venueId = host.dataset.venueId;
   const attendance = await fetchPublicAttendance(gameId, venueId);
   if (!attendance) return;
-  const currentCard = document.querySelector(`.selected-card[data-venue-id="${CSS.escape(venueId)}"]`);
-  if (!currentCard || appState.gameId !== gameId) return;
-  renderPublicAttendees(currentCard, attendance);
+  const currentHost = presenceHost();
+  if (!currentHost || currentHost.dataset.venueId !== venueId || appState.gameId !== gameId) return;
+  renderPublicAttendees(currentHost, attendance);
 }
 
 async function handleVisibilityChange(event) {
