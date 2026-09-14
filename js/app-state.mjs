@@ -22,6 +22,7 @@ export const appState = {
   markers: new Map(),
   userMarker: null,
   detailMode: false,
+  publicDataUsable: false,
   dataSource: 'fallback',
   mapLayoutWaitFrames: 0,
   mapLayoutFrame: null,
@@ -51,7 +52,7 @@ let ready = false;
 let resolveReady;
 const readyPromise = new Promise((resolve) => { resolveReady = resolve; });
 
-function presentationSnapshot(snapshot) {
+export function presentationSnapshot(snapshot) {
   return {
     ...snapshot,
     venues: (snapshot.venues || []).map((venue) => {
@@ -144,6 +145,7 @@ export function resetAppStateForTests() {
   appState.trayState = 'peek';
   appState.locationFocusVenueId = null;
   appState.detailMode = false;
+  appState.publicDataUsable = false;
   appState.dataSource = 'fallback';
   appState.fanIntent.browserId = null;
   appState.fanIntent.selections = {};

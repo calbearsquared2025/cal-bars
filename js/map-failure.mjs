@@ -1,4 +1,3 @@
-import { gameRouteParam } from './core.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const observedMaps = new WeakSet();
@@ -6,6 +5,7 @@ const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
 const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
 const LOADING_FADE_MS = 240;
+const GENERIC_LOADING_CARD_SOURCE = new URL('../assets/cgb-loading-card.svg', import.meta.url).href;
 let loadingCoverHiddenMarked = false;
 let publicUsableMarked = false;
 const FALLBACK_MODE_CLASSES = Object.freeze([
@@ -20,6 +20,14 @@ function markPublicUsable(windowObject = globalThis.window) {
   markCgbPerformance('cgb:public:usable');
   windowObject.CGBPublicLaunchUsable = true;
   windowObject.dispatchEvent?.(new CustomEvent('cgb:public-usable'));
+}
+
+function markCoverBoundary(windowObject = globalThis.window) {
+  if (!loadingCoverHiddenMarked) {
+    loadingCoverHiddenMarked = markCgbPerformance('cgb:cover:hidden');
+    measureCgbPerformance('cgb:boot-to-cover-hidden', 'cgb:boot:start', 'cgb:cover:hidden');
+  }
+  markPublicUsable(windowObject);
 }
 
 function element(documentObject, selector) {
@@ -113,10 +121,6 @@ function ensureFallbackStyles(documentObject) {
   documentObject.head.append(style);
 }
 
-function selectedGame(state) {
-  return state?.snapshot?.games?.find?.((game) => game.game_id === state.gameId) || null;
-}
-
 function markCardLoaded(image, loaded) {
   image.className = loaded
     ? 'map-fallback__card map-fallback__card--loaded'
@@ -153,7 +157,7 @@ function createFailureMessage(documentObject) {
   return message;
 }
 
-function ensureFallbackContent({ fallback, state, documentObject, includeMessage }) {
+function ensureFallbackContent({ fallback, documentObject, includeMessage }) {
   if (!fallback || !documentObject?.createElement) return;
   ensureFallbackStyles(documentObject);
 
@@ -162,13 +166,16 @@ function ensureFallbackContent({ fallback, state, documentObject, includeMessage
     image = documentObject.createElement('img');
     image.id = 'map-fallback-card';
     image.className = 'map-fallback__card';
-    image.alt = '';
+    image.alt = 'Cal Golden Bars loading';
+    image.src = GENERIC_LOADING_CARD_SOURCE;
     image.decoding = 'async';
     image.fetchPriority = 'high';
     image.width = 1200;
     image.height = 630;
     fallback.replaceChildren(image);
   }
+
+  if (!image.className) image.className = 'map-fallback__card';
 
   let message = fallback.querySelector?.('.map-fallback__message') || null;
   if (includeMessage && !message) {
@@ -179,21 +186,13 @@ function ensureFallbackContent({ fallback, state, documentObject, includeMessage
     else fallback.replaceChildren(image);
   }
 
-  const game = selectedGame(state);
-  const slug = gameRouteParam(game);
-  if (!slug) {
-    if (image.complete && image.naturalWidth > 0) markCardLoaded(image, true);
-    return;
-  }
-
-  const source = new URL(`../assets/social-cards/${slug}.png`, import.meta.url).href;
+  // The initial document supplies a neutral CGB mark.  Do not replace it with
+  // a selected-game social card here: that would allow a stale card to visibly
+  // change during startup.  Social cards remain reserved for preview/share
+  // metadata, where a game-specific image is useful and safe.
   image.onload = () => { markCardLoaded(image, true); };
   image.onerror = () => { markCardLoaded(image, false); };
-
-  if (image.src !== source) {
-    markCardLoaded(image, false);
-    image.src = source;
-  } else if (image.complete && image.naturalWidth > 0) {
+  if (image.complete && image.naturalWidth > 0) {
     markCardLoaded(image, true);
   }
 }
@@ -228,11 +227,27 @@ export function showMapLoading({
   if (!mapContainer || !fallback) return false;
 
   const state = app?.getState?.();
-  ensureFallbackContent({ fallback, state, documentObject, includeMessage: false });
+  ensureFallbackContent({ fallback, documentObject, includeMessage: false });
   setFallbackMode(fallback, 'loading');
   if (fallback.hidden) fallback.hidden = false;
   mapContainer.classList?.remove?.('map--fallback');
   mapContainer.classList?.add?.('map--loading');
+  if (state?.publicDataUsable) fallback.classList?.add?.('map-fallback--local');
+  else fallback.classList?.remove?.('map-fallback--local');
+  return true;
+}
+
+export function localizeMapLoading({
+  app = globalThis.window?.CGBApp,
+  documentObject = globalThis.document,
+  windowObject = globalThis.window
+} = {}) {
+  const state = app?.getState?.();
+  const fallback = element(documentObject, '#map-fallback');
+  if (!state?.publicDataUsable || !fallback ||
+      !fallback.classList?.contains?.('map-fallback--loading')) return false;
+  fallback.classList.add?.('map-fallback--local');
+  markCoverBoundary(windowObject);
   return true;
 }
 
@@ -249,12 +264,9 @@ export function hideMapLoading({
   const finish = () => {
     if (fallback.classList?.contains?.('map-fallback--failure')) return;
     fallback.hidden = true;
+    fallback.classList?.remove?.('map-fallback--local');
     setFallbackMode(fallback, null);
-    if (!loadingCoverHiddenMarked) {
-      loadingCoverHiddenMarked = markCgbPerformance('cgb:cover:hidden');
-      measureCgbPerformance('cgb:boot-to-cover-hidden', 'cgb:boot:start', 'cgb:cover:hidden');
-    }
-    markPublicUsable(windowObject);
+    markCoverBoundary(windowObject);
   };
 
   const reveal = () => {
@@ -295,8 +307,9 @@ export function showMapUnavailable({
     state.userMarker = null;
   }
 
-  ensureFallbackContent({ fallback, state, documentObject, includeMessage: true });
+  ensureFallbackContent({ fallback, documentObject, includeMessage: true });
   setFallbackMode(fallback, 'failure');
+  fallback.classList?.remove?.('map-fallback--local');
   fallback.hidden = false;
   mapContainer.classList?.remove?.('map--loading');
   mapContainer.classList?.add?.('map--fallback');
@@ -326,7 +339,10 @@ export function attachMapFailureFallback({
 
   let loaded = Boolean(map.loaded?.());
   if (loaded) hideMapLoading({ documentObject, windowObject });
-  else showMapLoading({ app, documentObject });
+  else {
+    showMapLoading({ app, documentObject });
+    localizeMapLoading({ app, documentObject, windowObject });
+  }
 
   map.on('load', () => {
     loaded = true;
@@ -350,7 +366,11 @@ export function initializeMapFailureFallback({
   windowObject = globalThis.window
 } = {}) {
   if (!app?.subscribe) return false;
-  const attach = () => attachMapFailureFallback({ app, documentObject, consoleObject, windowObject });
+  const attach = () => {
+    const attached = attachMapFailureFallback({ app, documentObject, consoleObject, windowObject });
+    localizeMapLoading({ app, documentObject, windowObject });
+    return attached;
+  };
   app.subscribe('rendered', attach);
   app.subscribe('ready', attach);
   attach();
@@ -358,3 +378,10 @@ export function initializeMapFailureFallback({
 }
 
 if (globalThis.window?.CGBApp) initializeMapFailureFallback();
+
+
+if (typeof window !== 'undefined') {
+  window.CGBMapFailure = Object.freeze({
+    localize: () => localizeMapLoading()
+  });
+}

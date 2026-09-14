@@ -50,7 +50,7 @@
   <meta name="twitter:description" content="44 locations mapped · 11 Watch Parties. Find your Cal crowd.">
   <meta name="twitter:image" content="https://calgoldenbars.com/assets/social-cards/wagner-d97c5c982f.png">
   <!-- CGB current-game social metadata: end -->
-  <link id="cgb-loading-cover-preload" rel="preload" as="image" href="assets/social-cards/wagner-d97c5c982f.png" fetchpriority="high">
+  <link id="cgb-loading-cover-preload" rel="preload" as="image" href="assets/cgb-loading-card.svg" fetchpriority="high">
   <title>Cal Golden Bars | Find Cal Bars &amp; Watch Parties</title>
   <script type="application/ld+json">
     {
@@ -114,6 +114,13 @@
       opacity: 0;
     }
 
+    #map-fallback.map-fallback--loading.map-fallback--local {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      padding: clamp(18px, 4vw, 48px);
+    }
+
     #map-fallback.map-fallback--loading .map-fallback__card {
       display: block;
       width: min(92%, 960px);
@@ -148,7 +155,7 @@
   <header class="site-header">
     <div class="site-header__brand-row">
       <a class="brand" href="./" aria-label="Cal Golden Bars home">
-        <img class="brand-mark" src="assets/cgb-mark.svg" alt="">
+        <img class="brand-mark" src="assets/cgb-loading-card.svg" alt="">
         <span class="brand-name">CAL GOLDEN BARS</span>
       </a>
       <button id="header-about-button" class="header-menu-button" type="button" aria-label="About Cal Golden Bars">
@@ -216,8 +223,8 @@
           <img
             id="map-fallback-card"
             class="map-fallback__card map-fallback__card--loaded"
-            src="assets/social-cards/wagner-d97c5c982f.png"
-            alt=""
+            src="assets/cgb-loading-card.svg"
+            alt="Cal Golden Bars"
             width="1200"
             height="630"
             decoding="async"

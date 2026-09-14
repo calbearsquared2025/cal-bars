@@ -41,7 +41,15 @@ import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
+import {
+  currentLoadingCoverGameSlug,
+  publicSnapshotChanges,
+  readSavedSnapshot,
+  shouldUseSavedSnapshotAtStartup,
+  shouldUseStaticSnapshotAtStartup
+} from './snapshot-refresh.mjs';
 
+markCgbPerformance('cgb:navigation:start');
 markCgbPerformance('cgb:app:module-start');
 
 const runtimeConfig = readRuntimeConfig();
@@ -155,41 +163,63 @@ async function fetchJson(url, timeoutMs = 8000) {
 }
 
 async function loadSnapshot() {
+  markCgbPerformance('cgb:bootstrap:snapshot:start');
+  const search = window.location?.search || '';
+  const saved = readSavedSnapshot();
+  if (shouldUseSavedSnapshotAtStartup({
+    snapshot: saved,
+    search,
+    loadingCoverGameSlug: currentLoadingCoverGameSlug()
+  })) {
+    markCgbPerformance('cgb:snapshot:source:saved');
+    markCgbPerformance('cgb:bootstrap:snapshot:ready');
+    measureCgbPerformance(
+      'cgb:bootstrap-snapshot',
+      'cgb:bootstrap:snapshot:start',
+      'cgb:bootstrap:snapshot:ready'
+    );
+    return setCanonicalSnapshot(saved, 'last-known-good');
+  }
+
+  try {
+    markCgbPerformance('cgb:bootstrap:static-request:start');
+    const fallback = await fetchJson('data/fallback-v2.json');
+    markCgbPerformance('cgb:bootstrap:static-request:complete');
+    measureCgbPerformance(
+      'cgb:bootstrap-static-request',
+      'cgb:bootstrap:static-request:start',
+      'cgb:bootstrap:static-request:complete'
+    );
+    if (!shouldUseStaticSnapshotAtStartup({ snapshot: fallback, search })) {
+      throw new Error('Static fallback is stale or does not contain the requested game');
+    }
+    markCgbPerformance('cgb:snapshot:source:static-fallback');
+    markCgbPerformance('cgb:bootstrap:snapshot:ready');
+    measureCgbPerformance(
+      'cgb:bootstrap-snapshot',
+      'cgb:bootstrap:snapshot:start',
+      'cgb:bootstrap:snapshot:ready'
+    );
+    return setCanonicalSnapshot(fallback, 'fallback');
+  } catch (error) {
+    console.warn('Static snapshot unavailable or ineligible; trying the live endpoint.', error);
+  }
+
   const configured = configuredEndpoint();
-
-  if (configured) {
-    try {
-      markCgbPerformance('cgb:snapshot:request:start');
-      let live;
-      try {
-        live = await fetchJson(configured);
-      } finally {
-        markCgbPerformance('cgb:snapshot:request:complete');
-        measureCgbPerformance('cgb:snapshot:request', 'cgb:snapshot:request:start', 'cgb:snapshot:request:complete');
-      }
-      if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
-      storageSet(LAST_GOOD_KEY, JSON.stringify(live));
-      return setCanonicalSnapshot(live, 'live');
-    } catch (error) {
-      console.warn('Live snapshot unavailable; using last-known-good or fallback.', error);
-    }
-  }
-
-  const cached = storageGet(LAST_GOOD_KEY);
-  if (cached) {
-    try {
-      const snapshot = JSON.parse(cached);
-      if (validateSnapshotShape(snapshot)) {
-        return setCanonicalSnapshot(snapshot, 'last-known-good');
-      }
-    } catch (error) {
-      console.warn('Ignoring malformed last-known-good snapshot.', error);
-    }
-  }
-
-  const fallback = await fetchJson('data/fallback-v2.json');
-  if (!validateSnapshotShape(fallback)) throw new Error('Fallback snapshot is invalid');
-  return setCanonicalSnapshot(fallback, 'fallback');
+  if (!configured) throw new Error('No eligible public snapshot is available');
+  markCgbPerformance('cgb:snapshot:request:start');
+  const live = await fetchJson(configured);
+  markCgbPerformance('cgb:snapshot:request:complete');
+  measureCgbPerformance(
+    'cgb:snapshot:request',
+    'cgb:snapshot:request:start',
+    'cgb:snapshot:request:complete'
+  );
+  if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
+  storageSet(LAST_GOOD_KEY, JSON.stringify(live));
+  markCgbPerformance('cgb:snapshot:source:live');
+  markCgbPerformance('cgb:bootstrap:snapshot:ready');
+  return setCanonicalSnapshot(live, 'live');
 }
 
 async function refreshSnapshot({ restoreSelection = false } = {}) {
@@ -198,9 +228,16 @@ async function refreshSnapshot({ restoreSelection = false } = {}) {
   const live = await fetchJson(endpoint);
   if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
   storageSet(LAST_GOOD_KEY, JSON.stringify(live));
+  const changes = publicSnapshotChanges(state.snapshot, live);
   setCanonicalSnapshot(live, 'live');
-  if (restoreSelection) restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty: true });
-  renderAll();
+  const selectedBeforeRestore = state.selectedVenueId;
+  if (restoreSelection) {
+    restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty: true });
+  }
+  const selectionChanged = selectedBeforeRestore !== state.selectedVenueId;
+  if (changes.changed || selectionChanged) {
+    renderSnapshotRefresh(Object.assign({}, changes, { selectionChanged }));
+  }
   return true;
 }
 
@@ -304,28 +341,35 @@ function renderGameDialog() {
   });
 }
 
-function markerElement(venue) {
+function updateMarkerElement(button, venue) {
   const kind = markerKind(state.snapshot, state.gameId, venue);
   const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
-  const button = document.createElement('button');
-  button.type = 'button';
   button.className = `cgb-marker marker--${kind}`;
+  button.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
   button.setAttribute('aria-label', `${venue.name}, ${venueTypeLabel(venue)}. ${bearCountCopy(count)}`);
   button.dataset.venueId = venue.venue_id;
+
   const symbol = document.createElement('span');
   symbol.className = kind === 'watch-party' ? 'marker-star' : 'marker-pin';
   symbol.setAttribute('aria-hidden', 'true');
   if (kind === 'watch-party') symbol.textContent = '★';
-  button.append(symbol);
+  const children = [symbol];
   if (count > 0) {
     const badge = document.createElement('span');
     badge.className = 'marker-count';
     badge.textContent = count === 1 ? '1 Bear' : `${count} Bears`;
     badge.setAttribute('aria-hidden', 'true');
-    button.append(badge);
+    children.push(badge);
   }
-  button.addEventListener('click', () => selectVenue(venue.venue_id));
+  button.replaceChildren(...children);
   return button;
+}
+
+function markerElement(venue) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.addEventListener('click', () => selectVenue(venue.venue_id));
+  return updateMarkerElement(button, venue);
 }
 
 function initMap() {
@@ -442,15 +486,30 @@ function focusLocation(origin, nearby) {
 function renderMarkers() {
   const sdk = window.maptilersdk;
   if (!state.map || !sdk?.Marker) return;
-  state.markers.forEach((marker) => marker.remove());
-  state.markers.clear();
-  rankedMapVenues().forEach(({ venue }) => {
-    const element = markerElement(venue);
-    element.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
-    const marker = new sdk.Marker({ element, anchor: 'bottom' })
-      .setLngLat([Number(venue.longitude), Number(venue.latitude)])
-      .addTo(state.map);
-    state.markers.set(venue.venue_id, marker);
+  const ranked = rankedMapVenues();
+  const visibleIds = new Set(ranked.map(({ venue }) => venue.venue_id));
+
+  state.markers.forEach((marker, venueId) => {
+    if (visibleIds.has(venueId)) return;
+    marker.remove();
+    state.markers.delete(venueId);
+  });
+
+  ranked.forEach(({ venue }) => {
+    const coordinates = [Number(venue.longitude), Number(venue.latitude)];
+    let marker = state.markers.get(venue.venue_id);
+    if (!marker) {
+      const element = markerElement(venue);
+      marker = new sdk.Marker({ element, anchor: 'bottom' })
+        .setLngLat(coordinates)
+        .addTo(state.map);
+      state.markers.set(venue.venue_id, marker);
+      return;
+    }
+
+    const element = marker.getElement?.() || marker.options?.element;
+    if (element) updateMarkerElement(element, venue);
+    marker.setLngLat?.(coordinates);
   });
   renderUserMarker();
 }
@@ -762,9 +821,18 @@ function showManualCopy(text) {
   input.select();
 }
 
+function buildVenueShareUrl(venue, game) {
+  const slug = gameRouteParam(game);
+  if (!slug) return buildVenueUrl(venue.slug, game, location.href);
+
+  const url = new URL(`/share/${encodeURIComponent(slug)}/`, location.origin);
+  url.searchParams.set('venue', venue.slug);
+  return url.href;
+}
+
 function buildVenueSharePayload(venue) {
   const game = selectedGame();
-  const url = buildVenueUrl(venue.slug, game, location.href);
+  const url = buildVenueShareUrl(venue, game);
   const party = getWatchParty(state.snapshot, state.gameId, venue.venue_id);
   return {
     title: `${party ? 'Watch Party at ' : ''}${venue.name} · Cal Golden Bars`,
@@ -836,10 +904,65 @@ function renderLocationControl() {
   dom.listLocationAll.setAttribute('aria-label', presentation.allLabel);
 }
 
+function locationCardSignature({ venue, party, fanCount, distance }) {
+  return JSON.stringify({
+    venue,
+    party: party || null,
+    fanCount,
+    distance: Number.isFinite(distance) ? Number(distance.toFixed(2)) : null
+  });
+}
+
+function createLocationCard({ venue, party, fanCount, distance }, signature) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'location-card';
+  button.dataset.venueId = venue.venue_id;
+  button.dataset.publicSignature = signature;
+  const top = document.createElement('div');
+  top.className = 'location-card__top';
+  const info = document.createElement('div');
+  info.append(createBadges(venue, party));
+  const name = document.createElement('strong');
+  name.textContent = venue.name;
+  info.append(name);
+  const meta = document.createElement('span');
+  meta.textContent = [venue.city, venue.region, formatVenueDistance(distance)].filter(Boolean).join(' · ');
+  info.append(meta);
+  top.append(info);
+  const count = document.createElement('span');
+  count.className = 'location-card__count';
+  count.textContent = bearCountCopy(fanCount);
+  top.append(count);
+  button.append(top);
+  if (party) {
+    const host = document.createElement('span');
+    host.className = 'location-card__party';
+    host.textContent = `Hosted by ${party.organizer_name}`;
+    button.append(host);
+  } else if (venue.short_description) {
+    const desc = document.createElement('span');
+    desc.className = 'location-card__description';
+    desc.textContent = venue.short_description;
+    button.append(desc);
+  }
+  button.addEventListener('click', () => selectVenue(venue.venue_id));
+  return button;
+}
+
+function reconcileLocationList(nodes) {
+  nodes.forEach((node, index) => {
+    const current = dom.locationList.children[index] || null;
+    if (current !== node) dom.locationList.insertBefore(node, current);
+  });
+  while (dom.locationList.children.length > nodes.length) {
+    dom.locationList.lastElementChild.remove();
+  }
+}
+
 function renderLocationList(query = state.listQuery) {
   renderLocationControl();
   const ranked = rankedVisibleVenues(query);
-  dom.locationList.replaceChildren();
   dom.listHeading.textContent = query
     ? `${ranked.length} matching ${ranked.length === 1 ? 'location' : 'locations'}`
     : state.origin
@@ -858,46 +981,24 @@ function renderLocationList(query = state.listQuery) {
     } else {
       empty.textContent = 'No mapped locations match this search.';
     }
-    dom.locationList.append(empty);
+    reconcileLocationList([empty]);
     return;
   }
 
-  ranked.forEach(({ venue, party, fanCount, distance }) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'location-card';
-    button.dataset.venueId = venue.venue_id;
-    button.dataset.selected = String(venue.venue_id === state.selectedVenueId);
-    const top = document.createElement('div');
-    top.className = 'location-card__top';
-    const info = document.createElement('div');
-    info.append(createBadges(venue, party));
-    const name = document.createElement('strong');
-    name.textContent = venue.name;
-    info.append(name);
-    const meta = document.createElement('span');
-    meta.textContent = [venue.city, venue.region, formatVenueDistance(distance)].filter(Boolean).join(' · ');
-    info.append(meta);
-    top.append(info);
-    const count = document.createElement('span');
-    count.className = 'location-card__count';
-    count.textContent = bearCountCopy(fanCount);
-    top.append(count);
-    button.append(top);
-    if (party) {
-      const host = document.createElement('span');
-      host.className = 'location-card__party';
-      host.textContent = `Hosted by ${party.organizer_name}`;
-      button.append(host);
-    } else if (venue.short_description) {
-      const desc = document.createElement('span');
-      desc.className = 'location-card__description';
-      desc.textContent = venue.short_description;
-      button.append(desc);
-    }
-    button.addEventListener('click', () => selectVenue(venue.venue_id));
-    dom.locationList.append(button);
+  const existing = new Map(
+    [...dom.locationList.querySelectorAll('.location-card[data-venue-id]')]
+      .map((card) => [card.dataset.venueId, card])
+  );
+  const cards = ranked.map((entry) => {
+    const signature = locationCardSignature(entry);
+    const current = existing.get(entry.venue.venue_id);
+    const card = current?.dataset.publicSignature === signature
+      ? current
+      : createLocationCard(entry, signature);
+    card.dataset.selected = String(entry.venue.venue_id === state.selectedVenueId);
+    return card;
   });
+  reconcileLocationList(cards);
 }
 
 function renderTray() {
@@ -1031,6 +1132,36 @@ function emitRendered() {
     selectedVenueId: state.selectedVenueId,
     detailMode: state.detailMode
   });
+}
+
+function renderSnapshotRefresh({
+  changedVenueIds = [],
+  gamesChanged = false,
+  selectionChanged = false,
+  directEntryChanged = false
+} = {}) {
+  if (!state.snapshot) return;
+  const affected = new Set(changedVenueIds);
+  const selectedAffected = Boolean(state.selectedVenueId) &&
+    affected.has(state.selectedVenueId);
+
+  renderHeaderAndStats();
+  if (gamesChanged) renderGameDialog();
+  const mobile = isMobileLayout();
+  if (state.detailMode) {
+    if (selectedAffected || gamesChanged || selectionChanged || directEntryChanged) {
+      renderVenueProfile();
+    }
+    if (!mobile) renderLocationList();
+  } else {
+    if (state.trayState === 'selected' &&
+        (selectedAffected || gamesChanged || selectionChanged)) {
+      renderSelectedCard();
+    }
+    renderLocationList();
+  }
+  renderMarkers();
+  emitRendered();
 }
 
 function renderAll() {
@@ -1513,11 +1644,14 @@ async function boot() {
     initializeRoute();
     renderAll();
     markCgbPerformance('cgb:render:initial-complete');
+    markCgbPerformance('cgb:list-search:usable');
     measureCgbPerformance('cgb:snapshot-ready-to-initial-render', 'cgb:snapshot:ready', 'cgb:render:initial-complete');
+    measureCgbPerformance('cgb:boot-to-list-search-usable', 'cgb:boot:start', 'cgb:list-search:usable');
     dom.app.setAttribute('aria-busy', 'false');
-    markApplicationReady();
+    state.publicDataUsable = true;
     markCgbPerformance('cgb:app:ready');
     measureCgbPerformance('cgb:boot-to-app-ready', 'cgb:boot:start', 'cgb:app:ready');
+    markApplicationReady();
     if (state.dataSource !== 'live') console.info(`CGB v2 using ${state.dataSource} data.`);
   } catch (error) {
     console.error(error);
@@ -1536,6 +1670,7 @@ window.CGBApp = Object.freeze({
   getState: () => state,
   getSnapshot: () => state.snapshot,
   render: renderAll,
+  renderSnapshotRefresh,
   refreshSnapshot,
   focusLocation,
   showAllLocations,

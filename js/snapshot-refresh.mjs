@@ -1,4 +1,6 @@
 import './analytics.mjs';
+import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
+import { presentationSnapshot } from './app-state.mjs';
 import {
   gameRouteParam,
   selectDefaultGame,
@@ -16,7 +18,6 @@ export const STARTUP_ROLLOVER_GUARD_MS = 5 * 60 * 60 * 1000;
 
 const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
 const REFRESH_TIMEOUT_MS = 10000;
-const SAVED_STARTUP_ENDPOINT = 'data:application/json,%7B%7D';
 const PUBLIC_SNAPSHOT_KEYS = [
   'venues',
   'games',
@@ -168,15 +169,11 @@ function safeStorageSet(key, value) {
   try { window.localStorage.setItem(key, value); } catch (_) {}
 }
 
-function safeStorageRemove(key) {
-  try { window.localStorage.removeItem(key); } catch (_) {}
-}
-
 function configuredEndpoint() {
   return readRuntimeConfig().dataEndpoint;
 }
 
-function readSavedSnapshot() {
+export function readSavedSnapshot() {
   const cached = safeStorageGet(LAST_GOOD_KEY);
   if (!cached) return null;
   try {
@@ -187,7 +184,7 @@ function readSavedSnapshot() {
   }
 }
 
-function currentLoadingCoverGameSlug(documentObject = document) {
+export function currentLoadingCoverGameSlug(documentObject = document) {
   const preload = documentObject?.querySelector?.('#cgb-loading-cover-preload');
   const href = preload?.getAttribute?.('href') || preload?.href || '';
   const clean = String(href).split(/[?#]/)[0];
@@ -195,36 +192,32 @@ function currentLoadingCoverGameSlug(documentObject = document) {
   return filename.toLowerCase().endsWith('.png') ? filename.slice(0, -4) : '';
 }
 
-function prepareStartupEndpoint() {
-  const endpoint = configuredEndpoint();
-  const meta = document.querySelector('meta[name="cgb-data-endpoint"]');
-  const snapshot = readSavedSnapshot();
-  const fastStart = Boolean(endpoint && meta && shouldUseSavedSnapshotAtStartup({
-    snapshot,
-    search: window.location?.search || '',
-    loadingCoverGameSlug: currentLoadingCoverGameSlug()
-  }));
+export function shouldUseStaticSnapshotAtStartup({
+  snapshot,
+  search = '',
+  now = new Date(),
+  rolloverGuardMs = STARTUP_ROLLOVER_GUARD_MS
+} = {}) {
+  if (!validateSnapshotShape(snapshot)) return false;
 
-  if (!fastStart) {
-    return { endpoint, fastStart: false, restore() {} };
+  const requestedGame = String(new URLSearchParams(search).get('game') || '').trim();
+  if (requestedGame) {
+    const requestedSlug = requestedGame.toLowerCase();
+    return snapshot.games.some((game) =>
+      game?.game_id === requestedGame || gameRouteParam(game) === requestedSlug);
   }
 
-  const originalMetaContent = meta.content;
-  const storedEndpoint = safeStorageGet(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY);
-  if (storedEndpoint !== null) safeStorageRemove(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY);
-  meta.content = SAVED_STARTUP_ENDPOINT;
+  const defaultGame = selectDefaultGame(snapshot.games, now);
+  if (!defaultGame || defaultGame.game_status !== 'upcoming') return false;
 
-  let restored = false;
-  return {
-    endpoint,
-    fastStart: true,
-    restore() {
-      if (restored) return;
-      restored = true;
-      meta.content = originalMetaContent;
-      if (storedEndpoint !== null) safeStorageSet(DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, storedEndpoint);
-    }
-  };
+  const kickoffAt = Date.parse(defaultGame.kickoff_at || '');
+  const nowAt = now instanceof Date ? now.getTime() : new Date(now).getTime();
+  if (defaultGame.kickoff_status !== 'tbd' &&
+      Number.isFinite(kickoffAt) && Number.isFinite(nowAt) &&
+      nowAt >= kickoffAt + rolloverGuardMs) {
+    return false;
+  }
+  return true;
 }
 
 async function fetchJson(url, timeoutMs = REFRESH_TIMEOUT_MS) {
@@ -239,18 +232,67 @@ async function fetchJson(url, timeoutMs = REFRESH_TIMEOUT_MS) {
   }
 }
 
+function rowsByIdentity(rows, identityFields) {
+  const fields = Array.isArray(identityFields) ? identityFields : [identityFields];
+  const values = new Map();
+  (rows || []).forEach((row, index) => {
+    const parts = fields.map((field) => String(row?.[field] ?? ''));
+    const key = parts.some(Boolean) ? parts.join('::') : String(index);
+    values.set(key, row);
+  });
+  return values;
+}
+
+function changedRowVenueIds(leftRows, rightRows, identityFields = 'venue_id') {
+  const left = rowsByIdentity(leftRows, identityFields);
+  const right = rowsByIdentity(rightRows, identityFields);
+  const keys = new Set([...left.keys(), ...right.keys()]);
+  const venueIds = new Set();
+  keys.forEach((key) => {
+    const before = left.get(key);
+    const after = right.get(key);
+    if (JSON.stringify(before) === JSON.stringify(after)) return;
+    const beforeVenueId = String(before?.venue_id || '');
+    const afterVenueId = String(after?.venue_id || '');
+    if (beforeVenueId) venueIds.add(beforeVenueId);
+    if (afterVenueId) venueIds.add(afterVenueId);
+  });
+  return venueIds;
+}
+
+export function publicSnapshotChanges(left, right) {
+  left = presentationSnapshot(left || {});
+  right = presentationSnapshot(right || {});
+  const changedVenueIds = new Set();
+  [
+    changedRowVenueIds(left?.venues, right?.venues),
+    changedRowVenueIds(left?.watchParties, right?.watchParties, 'watch_party_id'),
+    changedRowVenueIds(left?.fanCounts, right?.fanCounts, ['game_id', 'venue_id']),
+    changedRowVenueIds(left?.venueHistoryCounts, right?.venueHistoryCounts),
+    changedRowVenueIds(left?.venueSeasonCounts, right?.venueSeasonCounts, ['season', 'venue_id']),
+    changedRowVenueIds(left?.fanExperiences, right?.fanExperiences, ['venue_id', 'text'])
+  ].forEach((ids) => ids.forEach((id) => changedVenueIds.add(id)));
+
+  return {
+    changed: !publicSnapshotsEqual(left, right),
+    changedVenueIds: [...changedVenueIds],
+    gamesChanged: JSON.stringify(left?.games || []) !== JSON.stringify(right?.games || [])
+  };
+}
+
 function applyPublicSnapshot(app, snapshot, dataSource = 'live') {
   const state = app.getState?.();
-  if (!state?.snapshot) return false;
+  if (!state?.snapshot) return { changed: false, changedVenueIds: [], gamesChanged: false };
 
-  const changed = !publicSnapshotsEqual(state.snapshot, snapshot);
+  const nextSnapshot = presentationSnapshot(snapshot);
+  const changes = publicSnapshotChanges(state.snapshot, nextSnapshot);
   PUBLIC_SNAPSHOT_KEYS.forEach((key) => {
-    state.snapshot[key] = snapshot[key];
+    state.snapshot[key] = nextSnapshot[key];
   });
-  if ('schemaVersion' in snapshot) state.snapshot.schemaVersion = snapshot.schemaVersion;
-  if ('generatedAt' in snapshot) state.snapshot.generatedAt = snapshot.generatedAt;
+  if ('schemaVersion' in nextSnapshot) state.snapshot.schemaVersion = nextSnapshot.schemaVersion;
+  if ('generatedAt' in nextSnapshot) state.snapshot.generatedAt = nextSnapshot.generatedAt;
   state.dataSource = dataSource;
-  return changed;
+  return changes;
 }
 
 function replaceUnavailableList(copy) {
@@ -332,22 +374,41 @@ function startRefreshController(endpoint) {
     if (inFlight) return inFlight;
 
     lastAttemptAt = Date.now();
+    markCgbPerformance('cgb:live-refresh:start');
+    markCgbPerformance('cgb:snapshot:request:start');
     inFlight = (async () => {
       const live = await fetchJson(endpoint);
       if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
 
       safeStorageSet(LAST_GOOD_KEY, JSON.stringify(live));
-      const changed = applyPublicSnapshot(app, live, 'live');
+      const changes = applyPublicSnapshot(app, live, 'live');
       const selectionChanged = app.restoreSelection?.({ preserveCurrentWhenEmpty: true }) === true;
-      const directEntryChanged = changed && restoreDirectEntryAfterRefresh(app);
+      const directEntryChanged = changes.changed && restoreDirectEntryAfterRefresh(app);
 
-      if (changed || selectionChanged || directEntryChanged) app.render?.();
+      if (changes.changed || selectionChanged || directEntryChanged) {
+        if (typeof app.renderSnapshotRefresh === 'function') {
+          app.renderSnapshotRefresh(Object.assign({}, changes, {
+            selectionChanged: selectionChanged,
+            directEntryChanged: directEntryChanged
+          }));
+        } else {
+          app.render?.();
+        }
+      }
       refreshFailed = false;
+      markCgbPerformance('cgb:snapshot:source:live');
+      markCgbPerformance('cgb:live-refresh:complete');
+      markCgbPerformance('cgb:snapshot:request:complete');
+      measureCgbPerformance('cgb:live-refresh', 'cgb:live-refresh:start', 'cgb:live-refresh:complete');
+      measureCgbPerformance('cgb:snapshot:request', 'cgb:snapshot:request:start', 'cgb:snapshot:request:complete');
       applyCopy();
       return true;
     })()
       .catch((error) => {
         refreshFailed = true;
+        markCgbPerformance('cgb:live-refresh:failed');
+        markCgbPerformance('cgb:snapshot:request:complete');
+        measureCgbPerformance('cgb:snapshot:request', 'cgb:snapshot:request:start', 'cgb:snapshot:request:complete');
         console.warn('Live snapshot refresh unavailable; retaining cached or fallback data.', error);
         applyCopy();
         return false;
@@ -377,25 +438,21 @@ function startRefreshController(endpoint) {
   return { refreshLive };
 }
 
-function initializeBrowserRefresh(startupEndpoint) {
+function initializeBrowserRefresh() {
   window.addEventListener('DOMContentLoaded', async () => {
     const ready = await waitForSnapshot();
-    startupEndpoint.restore();
     if (!ready) return;
-    browserRefreshController = startRefreshController(startupEndpoint.endpoint || configuredEndpoint());
-    if (startupEndpoint.fastStart) {
-      await browserRefreshController?.refreshLive({ force: true });
-    }
+    browserRefreshController = startRefreshController(configuredEndpoint());
+    void browserRefreshController?.refreshLive({ force: true });
   }, { once: true });
 }
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   clearDisallowedDataEndpointOverride({ hostname: window.location?.hostname });
-  const startupEndpoint = prepareStartupEndpoint();
   window.CGBSnapshotRefresh = Object.freeze({
     refresh() {
       return browserRefreshController?.refreshLive({ force: true }) || Promise.resolve(false);
     }
   });
-  initializeBrowserRefresh(startupEndpoint);
+  initializeBrowserRefresh();
 }
