@@ -449,8 +449,17 @@ body[data-view="detail"] #app {
     display: block;
     margin: 4px 0 3px;
     overflow: visible;
-    font-size: clamp(1.3rem, 6vw, 1.72rem);
-    line-height: 1.08;
+    color: var(--cgb-white);
+    font-family: var(--font-condensed, "Barlow Condensed", "Arial Narrow", sans-serif);
+    font-size: clamp(1.65rem, 8.3vw, 2.35rem);
+    font-weight: 900;
+    letter-spacing: -.025em;
+    line-height: .91;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+    text-wrap: balance;
+    text-transform: uppercase;
     -webkit-box-orient: initial;
     -webkit-line-clamp: unset;
   }
@@ -1053,10 +1062,6 @@ body[data-view="detail"] #app {
     padding: 2px 7px;
     font-size: .54rem;
     letter-spacing: .07em;
-    clip-path: polygon(0 0, calc(100% - .2rem) 0, 100% .2rem, 100% 100%, .2rem 100%, 0 calc(100% - .2rem));
-  }
-
-  .location-card .badge--fan-added::before {
     clip-path: polygon(0 0, calc(100% - .2rem) 0, 100% .2rem, 100% 100%, .2rem 100%, 0 calc(100% - .2rem));
   }
 

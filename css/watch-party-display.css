@@ -170,25 +170,6 @@
     border-bottom: 3px solid var(--cgb-gold-400) !important;
   }
 
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header h2 {
-    display: block !important;
-    margin: 6px 0 5px !important;
-    overflow: visible !important;
-    color: var(--cgb-white) !important;
-    font-family: var(--font-condensed, "Barlow Condensed", "Arial Narrow", sans-serif) !important;
-    font-size: clamp(1.95rem, 9.1vw, 2.55rem) !important;
-    font-weight: 900 !important;
-    letter-spacing: -.025em !important;
-    line-height: .91 !important;
-    overflow-wrap: break-word !important;
-    word-break: normal !important;
-    hyphens: none !important;
-    text-transform: uppercase !important;
-    text-wrap: balance;
-    -webkit-box-orient: initial !important;
-    -webkit-line-clamp: unset !important;
-  }
-
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-badges {
     overflow: visible !important;
   }
@@ -206,10 +187,6 @@
     color: var(--cgb-white, #fff) !important;
     background: transparent !important;
     border: 1px solid var(--cgb-white, #fff) !important;
-  }
-
-  html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-badge.badge--fan-added::before {
-    content: none !important;
   }
 
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-location {

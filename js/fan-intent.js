@@ -12,7 +12,12 @@ import {
 } from './fan-intent-core.mjs';
 import { createFanIntentController } from './fan-intent-controller.mjs';
 import { createIcon } from './icons.mjs';
-import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
+import {
+  getVenueSeasonCount,
+  legacyActivitySeason,
+  seasonActivityCopy,
+  venueActivityPresentation
+} from './venue-activity-core.mjs';
 import { readRuntimeConfig } from './config.mjs';
 
 const WRITE_TIMEOUT_MS = 10000;
@@ -262,12 +267,11 @@ function renderLocationCardActivity(game) {
     if (description && migratedHistory) description.hidden = true;
 
     const presentation = activityPresentation(game, venue, countLine.textContent);
-    if (game.game_status === 'completed') {
-      countLine.textContent = presentation.primary;
-    } else {
-      const fanCount = getFanCount(appState.snapshot, appState.gameId, venue.venue_id);
-      countLine.textContent = compactListFanCountCopy(fanCount);
-    }
+    const copy = game.game_status === 'completed'
+      ? seasonActivityCopy(getVenueSeasonCount(appState.snapshot, game.season, venue.venue_id))
+      : compactListFanCountCopy(getFanCount(appState.snapshot, appState.gameId, venue.venue_id));
+    countLine.textContent = copy;
+    countLine.hidden = !copy;
 
     const compactHistory = game.game_status === 'completed'
       ? []

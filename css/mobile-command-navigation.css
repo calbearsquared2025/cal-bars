@@ -3,19 +3,6 @@
   display: none;
 }
 
-.location-card__top > div {
-  flex: 1 1 auto;
-}
-
-.location-card .venue-badges {
-  flex-wrap: nowrap;
-}
-
-.location-card__count {
-  flex: 0 0 auto;
-  margin-left: auto;
-}
-
 @media (max-width: 899px) {
   body[data-view="detail"] .mobile-command-bar,
   body[data-view="detail"] .command-surface {

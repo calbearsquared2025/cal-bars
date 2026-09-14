@@ -1303,13 +1303,15 @@ function scheduleSearchHelper() {
 
 function renderSuggestions() {
   const query = dom.searchInput.value.trim();
+  const mobileSearchSurface = isMobileLayout() && document.body.dataset.commandSurface === 'search';
   dom.suggestions.replaceChildren();
   const showAddLocationAction = state.searchMode === 'existing' && searchHelperReady && Boolean(query);
   dom.addLocationSearch.hidden = !showAddLocationAction;
   if (!query) {
     resetSearchHelper();
-    state.listQuery = '';
     dom.searchDropdown.hidden = true;
+    if (mobileSearchSurface) return;
+    state.listQuery = '';
     renderLocationList();
     emitRendered();
     return;
@@ -1338,6 +1340,7 @@ function renderSuggestions() {
     dom.suggestions.append(button);
   });
   dom.searchDropdown.hidden = matches.length === 0 && !showAddLocationAction;
+  if (mobileSearchSurface) return;
   state.listQuery = query;
   renderLocationList();
   renderMarkers();
