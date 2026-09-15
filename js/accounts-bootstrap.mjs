@@ -1,3 +1,5 @@
+import './account-avatar-policy.mjs';
+import './accounts-ui.mjs';
 import './account-attendance.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
