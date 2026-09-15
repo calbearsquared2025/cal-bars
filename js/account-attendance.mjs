@@ -11,6 +11,7 @@ import { INTENT_SELECTIONS_STORAGE_KEY } from './fan-intent-core.mjs';
 const PUBLIC_ATTENDANCE_CACHE_MS = 30000;
 const publicAttendanceCache = new Map();
 const publicAttendancePending = new Map();
+let publicAttendanceRevision = 0;
 let accountStateKnown = false;
 let accountSignedIn = false;
 let accountProfile = null;
@@ -69,19 +70,13 @@ function currentVisibility(gameId) {
   return profileSnapshot()?.attendanceVisibilityDefault === 'public' ? 'public' : 'anonymous';
 }
 
-function cacheKey(gameId, venueId) {
-  return `${gameId}::${venueId}`;
+function cacheKey(gameId, venueId, revision = publicAttendanceRevision) {
+  return `${revision}::${gameId}::${venueId}`;
 }
 
-function invalidatePublicAttendance(gameId, venueId = null) {
-  if (!gameId) return;
-  if (venueId) {
-    publicAttendanceCache.delete(cacheKey(gameId, venueId));
-    return;
-  }
-  [...publicAttendanceCache.keys()].forEach((key) => {
-    if (key.startsWith(`${gameId}::`)) publicAttendanceCache.delete(key);
-  });
+function invalidatePublicAttendance() {
+  publicAttendanceRevision += 1;
+  publicAttendanceCache.clear();
 }
 
 async function requestAccountAttendance(action, extra = {}, { includePayload = false } = {}) {
@@ -110,6 +105,7 @@ async function synchronizeAccountAttendance() {
       // The private account is now canonical for this browser's prior selections.
       // Do not leave a second anonymous selection state that could double-count later.
       storageRemove(INTENT_SELECTIONS_STORAGE_KEY);
+      invalidatePublicAttendance();
       window.CGBApp?.restoreSelection?.({ preserveCurrentWhenEmpty: false });
       window.CGBApp?.render?.();
       lastSyncResult = { revision, payload: result.payload };
@@ -136,13 +132,14 @@ async function postIntent(operation) {
     visibility: currentVisibility(operation.gameId)
   });
   applyAttendanceState(validated);
-  invalidatePublicAttendance(operation.gameId);
+  invalidatePublicAttendance();
   return compatibilityResponse(validated, operation);
 }
 
 async function fetchPublicAttendance(gameId, venueId) {
   if (!enabled() || !gameId || !venueId) return null;
-  const key = cacheKey(gameId, venueId);
+  const revision = publicAttendanceRevision;
+  const key = cacheKey(gameId, venueId, revision);
   const cached = publicAttendanceCache.get(key);
   if (cached && Date.now() - cached.at < PUBLIC_ATTENDANCE_CACHE_MS) return cached.value;
   if (publicAttendancePending.has(key)) return publicAttendancePending.get(key);
@@ -157,7 +154,7 @@ async function fetchPublicAttendance(gameId, venueId) {
       const payload = await response.json().catch(() => null);
       if (!response.ok) return null;
       const validated = validatePublicAttendanceResponse(payload);
-      if (!validated) return null;
+      if (!validated || revision !== publicAttendanceRevision) return null;
       publicAttendanceCache.set(key, { at: Date.now(), value: validated });
       return validated;
     } catch (_) {
@@ -343,7 +340,7 @@ async function handleVisibilityChange(event) {
     const validated = await requestAccountAttendance('setFanAttendanceVisibility', { gameId, visibility });
     if (revision !== accountStateRevision || !accountSignedIn) return;
     applyAttendanceState(validated);
-    invalidatePublicAttendance(gameId);
+    invalidatePublicAttendance();
     window.CGBApp?.render?.();
   } catch (error) {
     if (revision !== accountStateRevision || !accountSignedIn) return;
@@ -410,7 +407,7 @@ window.CGBAccountAttendance = Object.freeze({
   postIntent,
   sync: synchronizeAccountAttendance,
   refreshPresence() {
-    if (appState.gameId && appState.selectedVenueId) invalidatePublicAttendance(appState.gameId, appState.selectedVenueId);
+    invalidatePublicAttendance();
     return renderPresence();
   }
 });

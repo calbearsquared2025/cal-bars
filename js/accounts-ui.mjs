@@ -13,6 +13,7 @@ import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const REQUEST_TIMEOUT_MS = 12000;
 const ACCOUNT_HYDRATION_TIMEOUT_MS = 30000;
+const ACCOUNT_HYDRATION_RETRY_DELAY_MS = 750;
 const FIREBASE_VERSION = '12.18.0';
 const GOOGLE_PROVIDER_ID = 'google.com';
 const EMAIL_PROVIDER_ID = 'password';
@@ -172,7 +173,7 @@ function buildDialog() {
             </label>
             <label class="accounts-toggle">
               <input name="publicAttendance" type="checkbox">
-              <span>Default future attendance to public. I can still change this for a game.</span>
+              <span>Default future attendance to public. I can still change this for each game.</span>
             </label>
             <button class="primary-button accounts-profile-save" type="submit">Save profile</button>
           </form>
@@ -246,6 +247,10 @@ function fanClientErrorCode(error) {
 
 function logFanDiagnostic(context, error) {
   console.warn(`${context}: ${fanClientErrorCode(error)}`);
+}
+
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
 
 async function postFan(payload, timeoutMs = REQUEST_TIMEOUT_MS) {
@@ -331,6 +336,20 @@ async function loadAccount(user) {
   const validated = validateFanAccountResponse(response);
   if (!validated) throw new Error('fan_schema_mismatch');
   return validated;
+}
+
+async function loadAccountWithTransientRetry(user, revision) {
+  try {
+    return await loadAccount(user);
+  } catch (error) {
+    if (fanClientErrorCode(error) !== 'fan_backend_unavailable' || !authStateIsCurrent(user, revision)) {
+      throw error;
+    }
+    logFanDiagnostic('CGB core account hydration retrying', error);
+    await wait(ACCOUNT_HYDRATION_RETRY_DELAY_MS);
+    if (!authStateIsCurrent(user, revision)) throw new Error('fan_unauthorized');
+    return loadAccount(user);
+  }
 }
 
 async function loadFavorites(user) {
@@ -492,6 +511,16 @@ function renderSignedOut() {
   dispatchAccountState();
 }
 
+function renderAuthenticatedLoading() {
+  account = null;
+  resetFavoritesState();
+  pendingSignedOutStatus = null;
+  dom.signedOut.hidden = true;
+  dom.authenticatedError.hidden = true;
+  dom.signedIn.hidden = true;
+  setStatus('Loading My CGB…');
+}
+
 function renderSignedIn() {
   if (!account || !currentUser) return;
   pendingSignedOutStatus = null;
@@ -582,8 +611,8 @@ async function refreshFavorites(user, revision) {
 }
 
 async function refreshSignedInState(user, revision) {
-  setStatus('Loading My CGB…');
-  const loadedAccount = await loadAccount(user);
+  renderAuthenticatedLoading();
+  const loadedAccount = await loadAccountWithTransientRetry(user, revision);
   if (!authStateIsCurrent(user, revision)) return false;
   account = loadedAccount;
   markCgbPerformance('cgb:accounts:core:ready');
