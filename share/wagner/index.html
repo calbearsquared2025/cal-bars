@@ -26,6 +26,13 @@
 </head>
 <body>
   <p>Opening <a href="../../?game=wagner">Cal vs. Wagner</a>…</p>
-  <script>window.location.replace("../../?game=wagner");</script>
+  <script>
+    (() => {
+      const destination = new URL("../../?game=wagner", window.location.href);
+      const venue = new URLSearchParams(window.location.search).get('venue');
+      if (venue) destination.searchParams.set('venue', venue);
+      window.location.replace(destination.href);
+    })();
+  </script>
 </body>
 </html>

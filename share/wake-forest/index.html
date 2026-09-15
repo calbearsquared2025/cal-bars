@@ -26,6 +26,13 @@
 </head>
 <body>
   <p>Opening <a href="../../?game=wake-forest">Cal vs. Wake Forest</a>…</p>
-  <script>window.location.replace("../../?game=wake-forest");</script>
+  <script>
+    (() => {
+      const destination = new URL("../../?game=wake-forest", window.location.href);
+      const venue = new URLSearchParams(window.location.search).get('venue');
+      if (venue) destination.searchParams.set('venue', venue);
+      window.location.replace(destination.href);
+    })();
+  </script>
 </body>
 </html>
