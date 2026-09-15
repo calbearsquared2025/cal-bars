@@ -1,15 +1,12 @@
-import './account-avatar-policy.mjs';
-import './accounts-ui.mjs';
-import './account-attendance.mjs';
+import './my-cgb-promo-shell.mjs';
+import './account-favorites-navigation.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 let loadPromise = null;
 let loaded = false;
 
 function markLoadTrigger(trigger) {
-  if (trigger === 'public-ready') {
-    markCgbPerformance('cgb:accounts-composition:load:trigger:public-ready');
-  } else if (trigger === 'user-demand') {
+  if (trigger === 'user-demand') {
     markCgbPerformance('cgb:accounts-composition:load:trigger:user-demand');
   }
 }
@@ -43,38 +40,24 @@ export function accountsLoaded() {
   return loaded;
 }
 
-function reportAccountsLoadFailure(error) {
-  console.error('CGB Accounts modules could not load.', error);
-}
-
-function schedulePostPublicReadyLoad() {
-  const start = () => {
-    void ensureAccountsLoaded('public-ready').catch(reportAccountsLoadFailure);
-  };
-  if (window.CGBPublicLaunchUsable === true) {
-    queueMicrotask(start);
-    return;
-  }
-  window.addEventListener('cgb:public-usable', start, { once: true });
-}
-
-function handleEarlyAccountDemand(event) {
-  const trigger = event.target.closest?.('#mobile-about-button');
-  if (!trigger || loaded) return;
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  trigger.setAttribute('aria-busy', 'true');
-  void ensureAccountsLoaded('user-demand')
-    .then(() => window.CGBMyCgbSurface?.open?.())
-    .catch(reportAccountsLoadFailure)
-    .finally(() => trigger.removeAttribute('aria-busy'));
-}
-
-document.addEventListener('click', handleEarlyAccountDemand, { capture: true });
-schedulePostPublicReadyLoad();
-
 window.CGBAccountsLoader = Object.freeze({
   load: ensureAccountsLoaded,
   isLoaded: accountsLoaded
 });
+
+function activateMobileSmokeHarnessAccounts() {
+  let smokeMode = '';
+  try {
+    smokeMode = new URLSearchParams(window.location.search).get('__cgb_smoke') || '';
+  } catch (_) {}
+  if (smokeMode !== 'mobile') return;
+  if (window.CGBPublicLaunchUsable !== true) {
+    window.setTimeout(activateMobileSmokeHarnessAccounts, 25);
+    return;
+  }
+  void ensureAccountsLoaded('smoke-harness').catch((error) => {
+    console.error('CGB smoke-harness Accounts activation failed.', error);
+  });
+}
+
+activateMobileSmokeHarnessAccounts();

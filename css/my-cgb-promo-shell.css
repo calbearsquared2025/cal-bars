@@ -1,0 +1,103 @@
+body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
+  display: none !important;
+}
+
+.venue-tray[data-my-cgb-promo-open="true"] {
+  overflow: hidden;
+}
+
+.venue-tray[data-my-cgb-promo-open="true"] > :not(#my-cgb-promo-surface) {
+  display: none !important;
+}
+
+.my-cgb-promo-surface {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--brand-surface);
+  -webkit-overflow-scrolling: touch;
+}
+
+.my-cgb-promo-shell {
+  display: grid;
+  align-content: start;
+  gap: 20px;
+  width: 100%;
+  min-height: 100%;
+  padding: 20px;
+  background: var(--brand-surface);
+}
+
+.my-cgb-promo-header {
+  margin: -20px -20px 0;
+  padding: 20px;
+  background: var(--brand-primary);
+  color: var(--cgb-white, #fff);
+}
+
+.my-cgb-promo-header .eyebrow {
+  color: var(--brand-accent);
+}
+
+.my-cgb-promo-header h2 {
+  margin: 2px 0 0;
+  color: inherit;
+  font-family: var(--font-display, serif);
+}
+
+.my-cgb-promo-intro {
+  display: grid;
+  gap: 6px;
+}
+
+.my-cgb-promo-intro strong {
+  font-family: var(--font-display, serif);
+  font-size: 1.2rem;
+  line-height: 1.15;
+}
+
+.my-cgb-promo-intro p,
+.my-cgb-promo-fine-print {
+  margin: 0;
+}
+
+.my-cgb-promo-benefits {
+  display: grid;
+  gap: 8px;
+}
+
+.my-cgb-promo-benefits span {
+  position: relative;
+  padding-left: 18px;
+  font-weight: 700;
+}
+
+.my-cgb-promo-benefits span::before {
+  content: '•';
+  position: absolute;
+  left: 2px;
+  color: var(--brand-accent);
+}
+
+.my-cgb-promo-activate {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.my-cgb-promo-fine-print {
+  font-size: .76rem;
+  opacity: .72;
+}
+
+@media (max-width: 899px) {
+  .my-cgb-promo-shell {
+    padding: 18px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .my-cgb-promo-header {
+    margin: -18px -16px 0;
+    padding: 18px 16px 16px;
+  }
+}
