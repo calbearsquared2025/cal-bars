@@ -3,6 +3,7 @@
 // installed by earlier modules.
 import './final-functional-stabilization.mjs';
 import './map-mobile-refinement.mjs';
+import './map-resume-recovery.mjs';
 import './map-profile-first-pass.mjs';
 import './mobile-tab-location-refinement.mjs';
 import './map-profile-aesthetic-refinement.mjs';
