@@ -5,6 +5,7 @@ const FALLBACK_STYLE_ID = 'cgb-map-fallback-style';
 const FALLBACK_HEADING = 'Map temporarily unavailable';
 const FALLBACK_COPY = 'Please use the location list while we work to get it back up and running.';
 const LOADING_FADE_MS = 240;
+const MAP_SDK_SCRIPT_SELECTOR = '#cgb-maptiler-sdk';
 let loadingCoverHiddenMarked = false;
 let publicUsableMarked = false;
 const FALLBACK_MODE_CLASSES = Object.freeze([
@@ -31,6 +32,17 @@ function markCoverBoundary(windowObject = globalThis.window) {
 
 function element(documentObject, selector) {
   return documentObject?.querySelector?.(selector) || null;
+}
+
+function mapSdkScript(documentObject) {
+  return element(documentObject, MAP_SDK_SCRIPT_SELECTOR);
+}
+
+function mapSdkPending(documentObject, windowObject) {
+  if (windowObject?.maptilersdk?.Map) return false;
+  const script = mapSdkScript(documentObject);
+  if (!script) return false;
+  return script.dataset?.cgbState !== 'failed';
 }
 
 function loadingCoverSource(documentObject) {
@@ -340,6 +352,11 @@ export function attachMapFailureFallback({
   if (!map) {
     const container = element(documentObject, '#map');
     if (container?.classList?.contains?.('map--fallback')) {
+      if (mapSdkPending(documentObject, windowObject)) {
+        showMapLoading({ app, documentObject });
+        localizeMapLoading({ app, documentObject, windowObject });
+        return false;
+      }
       showMapUnavailable({ app, documentObject, consoleObject, windowObject });
     }
     return false;
@@ -370,6 +387,46 @@ export function attachMapFailureFallback({
   return true;
 }
 
+function observeMapSdk({
+  app = globalThis.window?.CGBApp,
+  documentObject = globalThis.document,
+  consoleObject = globalThis.console,
+  windowObject = globalThis.window
+} = {}) {
+  const script = mapSdkScript(documentObject);
+  if (!script || script.dataset?.cgbObserved === 'true') return false;
+  script.dataset.cgbObserved = 'true';
+
+  const retry = () => {
+    script.dataset.cgbState = 'ready';
+    const container = element(documentObject, '#map');
+    container?.classList?.remove?.('map--fallback');
+    app?.render?.();
+    attachMapFailureFallback({ app, documentObject, consoleObject, windowObject });
+    localizeMapLoading({ app, documentObject, windowObject });
+  };
+
+  const fail = (event) => {
+    script.dataset.cgbState = 'failed';
+    showMapUnavailable({
+      app,
+      documentObject,
+      consoleObject,
+      windowObject,
+      error: event?.error || new Error('MapTiler SDK failed to load')
+    });
+  };
+
+  if (windowObject?.maptilersdk?.Map) {
+    retry();
+    return true;
+  }
+
+  script.addEventListener?.('load', retry, { once: true });
+  script.addEventListener?.('error', fail, { once: true });
+  return true;
+}
+
 export function initializeMapFailureFallback({
   app = globalThis.window?.CGBApp,
   documentObject = globalThis.document,
@@ -377,6 +434,7 @@ export function initializeMapFailureFallback({
   windowObject = globalThis.window
 } = {}) {
   if (!app?.subscribe) return false;
+  observeMapSdk({ app, documentObject, consoleObject, windowObject });
   const attach = () => {
     const attached = attachMapFailureFallback({ app, documentObject, consoleObject, windowObject });
     localizeMapLoading({ app, documentObject, windowObject });
