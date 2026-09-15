@@ -7,7 +7,10 @@ import { buildVenueUrl } from './core.mjs';
 import { appState } from './app-state.mjs';
 
 const STYLE_ATTR = 'data-cgb-account-favorites-navigation-style';
+const APP_CONNECT_RETRY_MS = 25;
 let favoriteVenueIds = new Set();
+let appLifecycleConnected = false;
+let appConnectTimer = 0;
 
 function injectStyles() {
   if (document.querySelector(`link[${STYLE_ATTR}]`)) return;
@@ -199,30 +202,45 @@ function syncProfileFavoriteActions() {
   document.querySelectorAll('.account-venue-favorite').forEach(syncProfileFavoriteAction);
 }
 
+function syncFavoriteSurfaces() {
+  enhanceFavorites(document);
+  enhanceSelectedProfiles(document);
+  syncFavoriteIdsFromDom();
+  syncProfileFavoriteActions();
+}
+
 function handleAccountState(event) {
+  enhanceFavorites(document);
+  enhanceSelectedProfiles(document);
   if (event.detail?.signedIn !== true) favoriteVenueIds = new Set();
   else syncFavoriteIdsFromDom();
   syncProfileFavoriteActions();
 }
 
+function connectAppLifecycle() {
+  if (appLifecycleConnected) return;
+  const app = window.CGBApp;
+  if (!app?.subscribe) {
+    if (!appConnectTimer) {
+      appConnectTimer = window.setTimeout(() => {
+        appConnectTimer = 0;
+        connectAppLifecycle();
+      }, APP_CONNECT_RETRY_MS);
+    }
+    return;
+  }
+
+  appLifecycleConnected = true;
+  app.subscribe('rendered', syncFavoriteSurfaces);
+  app.subscribe('ready', syncFavoriteSurfaces);
+  syncFavoriteSurfaces();
+}
+
 export function initializeAccountFavoritesNavigation() {
   if (!accountsConfigIsReady(CGB_ACCOUNTS_CONFIG)) return false;
   injectStyles();
-  enhanceFavorites(document);
-  syncFavoriteIdsFromDom();
-  enhanceSelectedProfiles(document);
-  syncProfileFavoriteActions();
-
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
-      if (node?.nodeType !== Node.ELEMENT_NODE) return;
-      enhanceFavorites(node);
-    }));
-    enhanceSelectedProfiles(document);
-    syncFavoriteIdsFromDom();
-    syncProfileFavoriteActions();
-  });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  syncFavoriteSurfaces();
+  connectAppLifecycle();
   window.addEventListener('cgb:account-state', handleAccountState);
   return true;
 }
