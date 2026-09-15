@@ -207,6 +207,23 @@ function displayedAttendanceCount(host) {
   return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
 }
 
+function ensureMobileAttendanceHero(host, count) {
+  if (!host?.matches?.('.selected-card[data-venue-id]') || !count?.classList?.contains('bear-count--hero')) return null;
+  const existing = count.closest('.selected-card__attendance-hero');
+  if (existing) return existing;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'selected-card__attendance-hero';
+  count.replaceWith(wrapper);
+  wrapper.append(count);
+  return wrapper;
+}
+
+function clearMobileAttendanceHero(host) {
+  const wrapper = host?.querySelector?.(':scope .selected-card__attendance-hero');
+  const count = wrapper?.querySelector?.(':scope > .bear-count--hero');
+  if (wrapper && count) wrapper.replaceWith(count);
+}
+
 function renderPublicAttendees(host, attendance) {
   const existing = host.querySelector(':scope .account-attendees');
   const presentation = publicAttendeePresentation({
@@ -215,6 +232,7 @@ function renderPublicAttendees(host, attendance) {
   });
   if (!presentation.total || !presentation.publicAttendees.length) {
     existing?.remove();
+    clearMobileAttendanceHero(host);
     return;
   }
 
@@ -234,8 +252,11 @@ function renderPublicAttendees(host, attendance) {
   });
 
   if (presentation.avatarOnlyAttendees.length || presentation.anonymousCount > 0) {
+    const loneAnonymousOverflow = presentation.avatarOnlyAttendees.length === 0 && presentation.anonymousCount > 0;
     const overflow = document.createElement('div');
-    overflow.className = 'account-attendee-overflow';
+    overflow.className = loneAnonymousOverflow
+      ? 'account-attendee-overflow account-attendee-overflow--anonymous-only'
+      : 'account-attendee-overflow';
     presentation.avatarOnlyAttendees.forEach((attendee) => overflow.append(avatarElement(attendee)));
     if (presentation.anonymousCount > 0) {
       const more = document.createElement('span');
@@ -243,13 +264,22 @@ function renderPublicAttendees(host, attendance) {
       more.textContent = `+${presentation.anonymousCount}`;
       more.setAttribute('aria-label', `${presentation.anonymousCount} anonymous Bears`);
       overflow.append(more);
+      if (loneAnonymousOverflow) {
+        const label = document.createElement('span');
+        label.className = 'account-attendee-overflow-label';
+        label.textContent = presentation.anonymousCount === 1 ? 'other' : 'others';
+        overflow.append(label);
+      }
     }
     surface.append(overflow);
   }
 
-  if (!existing) {
-    const count = attendanceCountElement(host);
-    if (count) count.insertAdjacentElement('afterend', surface);
+  const count = attendanceCountElement(host);
+  const mobileHero = ensureMobileAttendanceHero(host, count);
+  if (mobileHero) {
+    if (surface.parentElement !== mobileHero) mobileHero.append(surface);
+  } else if (!existing && count) {
+    count.insertAdjacentElement('afterend', surface);
   }
 }
 

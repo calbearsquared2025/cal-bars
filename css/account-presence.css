@@ -21,6 +21,12 @@
   justify-content: center;
 }
 
+.account-attendee-overflow--anonymous-only {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.4rem;
+}
+
 .account-attendee-avatar,
 .account-attendee-more {
   display: inline-flex;
@@ -56,7 +62,8 @@
   padding: 0 0.35rem;
 }
 
-.account-attendee-name {
+.account-attendee-name,
+.account-attendee-overflow-label {
   min-width: 0;
   font-size: 0.78rem;
   font-weight: 700;
@@ -98,19 +105,32 @@
 }
 
 @media (max-width: 899px) {
-  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header .bear-count--hero:not(.bear-count--empty) {
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header > div:first-child > .selected-card__attendance-hero {
+    grid-column: 2;
     grid-row: 2 / 4;
     align-self: center;
     justify-self: center;
-  }
-
-  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header > div:first-child > .account-attendees {
-    grid-column: 2;
-    grid-row: 4;
-    justify-self: center;
     width: min(100%, 150px);
     max-width: 100%;
-    margin: 8px 0 0;
+    display: grid;
+    gap: 9px;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__attendance-hero > .bear-count--hero:not(.bear-count--empty) {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: auto;
+    justify-self: center;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__attendance-hero > .account-attendees {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__attendance-hero .account-attendee-overflow {
+    justify-content: flex-start;
   }
 }
 

@@ -191,7 +191,6 @@ export function createSelectedVenueCard({
   mobile,
   distance,
   directionsHref,
-  onCollapse,
   onShare,
   documentObject = document
 }) {
@@ -240,13 +239,6 @@ export function createSelectedVenueCard({
   }
 
   header.append(heading);
-  const collapse = documentObject.createElement('button');
-  collapse.type = 'button';
-  collapse.className = 'icon-button';
-  collapse.setAttribute('aria-label', 'Collapse selected venue');
-  collapse.append(createIcon('chevron-down', { documentObject }));
-  collapse.addEventListener('click', onCollapse);
-  header.append(collapse);
   card.append(header);
 
   if (parties.length) {
