@@ -92,6 +92,25 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
 }
 
 @media (max-width: 899px) {
+  /* The demand-loading promo is the same My CGB destination, not the map tray underneath it. */
+  body[data-command-surface="my-cgb"] #map-view > #venue-tray.venue-tray[data-my-cgb-promo-open="true"] {
+    position: fixed !important;
+    z-index: 47 !important;
+    inset: var(--header-height) 0 var(--footer-height) 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding-bottom: 0 !important;
+    overflow: hidden !important;
+    background: var(--cgb-white, #fff) !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
   .my-cgb-promo-shell {
     padding: 18px 16px calc(28px + env(safe-area-inset-bottom, 0px));
   }
