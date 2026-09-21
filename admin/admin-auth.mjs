@@ -55,7 +55,9 @@ let activityLoading = false;
 let redirectSignInErrorCode = '';
 
 function setStatus(message, { error = false } = {}) {
-  statusNode.textContent = message;
+  const text = String(message || '').trim();
+  statusNode.textContent = text;
+  statusNode.hidden = !text;
   statusNode.dataset.state = error ? 'error' : 'normal';
 }
 
@@ -75,7 +77,7 @@ function setSignedOutUi() {
   signInButton.hidden = false;
   signInButton.disabled = false;
   signOutButtons.forEach((button) => { button.hidden = true; });
-  setStatus('Sign in with the Google account authorized for CGB Admin.');
+  setStatus('');
 }
 
 function setSignedInPendingUi(user) {
@@ -539,7 +541,7 @@ async function initializeAdminAuth() {
     } catch (error) {
       const code = String(error?.code || '');
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
-        setStatus('Sign in with the Google account authorized for CGB Admin.');
+        setStatus('');
       } else {
         setStatus(googleSignInFailureCopy(error), { error: true });
       }

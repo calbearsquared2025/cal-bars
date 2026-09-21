@@ -46,11 +46,10 @@ body {
 }
 
 .standalone-header__inner {
-  width: min(100%, 760px);
+  width: 100%;
   min-height: 62px;
   display: flex;
   align-items: center;
-  margin: 0 auto;
 }
 
 .standalone-brand {
@@ -78,17 +77,18 @@ body {
 }
 
 .standalone-main {
-  width: min(100%, 720px);
-  margin: 0 auto;
-  padding: clamp(28px, 7vh, 64px) max(18px, env(safe-area-inset-right, 0px)) 56px max(18px, env(safe-area-inset-left, 0px));
+  width: min(100%, 860px);
+  margin: 0;
+  padding: clamp(34px, 7vh, 68px) max(18px, env(safe-area-inset-right, 0px)) 64px max(18px, env(safe-area-inset-left, 0px));
 }
 
 .standalone-card {
-  padding: clamp(24px, 5vw, 38px);
-  background: var(--brand-surface);
-  border: 1px solid var(--brand-line);
-  border-radius: 20px;
-  box-shadow: 0 12px 28px rgba(0, 25, 79, .07);
+  max-width: 760px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .standalone-card h1 {
@@ -164,11 +164,6 @@ body {
     padding-top: 28px;
   }
 
-  .standalone-card {
-    padding: 24px 22px 26px;
-    border-radius: 18px;
-  }
-
   .standalone-card h1 {
     font-size: clamp(2rem, 10vw, 2.35rem);
   }
@@ -190,6 +185,11 @@ body {
 @media (min-width: 900px) {
   .standalone-header {
     padding-inline: 28px;
+  }
+
+  .standalone-main {
+    padding-left: 40px;
+    padding-right: 40px;
   }
 
   .standalone-header__inner {

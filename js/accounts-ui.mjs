@@ -85,7 +85,9 @@ function buildDialog() {
           <p>Create a profile to save favorite places, keep your attendance history, and build your CGB progress. Browsing still works without an account.</p>
         </div>
         <div class="accounts-provider-actions">
-          <button class="accounts-provider-button" type="button" data-account-provider="google">Continue with Google</button>
+          <button class="accounts-provider-button accounts-provider-button--google" type="button" data-account-provider="google" aria-label="Sign in with Google">
+            <img src="https://developers.google.com/static/identity/gsi/web/images/standard-button-white.png" width="354" height="80" alt="" referrerpolicy="no-referrer">
+          </button>
           <button class="accounts-provider-button" type="button" data-account-provider="email">Continue with email</button>
           <button class="accounts-provider-button accounts-provider-button--anonymous" type="button" data-account-provider="anonymous">
             <span>Continue without email</span>

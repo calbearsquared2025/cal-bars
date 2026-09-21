@@ -11,25 +11,32 @@
     <link rel="stylesheet" href="./admin-resources.css">
   </head>
   <body>
-    <main id="auth-shell" class="auth-shell">
-      <section class="auth-card">
-        <header class="brand-bar">
-          <img src="../assets/cgb-mark.svg" alt="">
-          <strong>CAL GOLDEN BARS</strong>
-        </header>
-        <div class="auth-card__body">
-          <h1>CGB Admin</h1>
-          <p>Sign in with the Google account authorized for CGB Admin.</p>
+    <div id="auth-shell" class="auth-shell">
+      <header class="auth-header">
+        <div class="auth-header__inner">
+          <a class="auth-brand" href="../" aria-label="Cal Golden Bars home">
+            <img src="../assets/cgb-mark.svg" alt="">
+            <span>CAL GOLDEN BARS</span>
+            <strong>ADMIN</strong>
+          </a>
+        </div>
+      </header>
+      <main class="auth-main">
+        <section class="auth-content" aria-labelledby="admin-auth-title">
+          <h1 id="admin-auth-title">CGB Admin</h1>
+          <p>Use the Google account authorized for CGB Admin.</p>
           <div id="admin-status" class="status" aria-live="polite">Loading authentication…</div>
           <div id="admin-account" class="account"></div>
           <div class="auth-actions">
-            <button id="admin-sign-in" type="button">Sign in with Google</button>
+            <button id="admin-sign-in" class="google-sign-in" type="button" aria-label="Sign in with Google">
+              <img src="https://developers.google.com/static/identity/gsi/web/images/standard-button-white.png" width="354" height="80" alt="" referrerpolicy="no-referrer">
+            </button>
             <button class="secondary admin-sign-out" type="button" hidden>Sign out</button>
           </div>
-          <p><a href="../">← Return to Cal Golden Bars</a></p>
-        </div>
-      </section>
-    </main>
+          <p class="auth-return"><a href="../">Return to Cal Golden Bars</a></p>
+        </section>
+      </main>
+    </div>
 
     <div id="dashboard" class="dashboard" hidden>
       <header class="dashboard-header">

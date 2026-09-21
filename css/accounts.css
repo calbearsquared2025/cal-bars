@@ -211,6 +211,29 @@
   background: var(--cgb-navy-50);
 }
 
+.accounts-provider-button--google {
+  justify-self: start;
+  min-height: 40px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  line-height: 0;
+}
+.accounts-provider-button--google:hover,
+.accounts-provider-button--google:focus-visible {
+  border-color: transparent;
+  background: transparent;
+}
+.accounts-provider-button--google img {
+  display: block;
+  width: 177px;
+  max-width: 100%;
+  height: auto;
+}
+
 .accounts-provider-button--anonymous {
   grid-column: 1 / -1;
   display: grid;
