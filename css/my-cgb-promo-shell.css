@@ -22,77 +22,190 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
 
 .my-cgb-promo-shell {
   display: grid;
-  align-content: start;
-  gap: 20px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-content: stretch;
+  gap: 0;
   width: 100%;
   min-height: 100%;
-  padding: 20px;
+  padding: 20px 20px 0;
   background: var(--brand-surface);
 }
 
 .my-cgb-promo-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   margin: -20px -20px 0;
-  padding: 20px;
-  background: var(--brand-primary);
-  color: var(--cgb-white, #fff);
+  padding: 20px 20px 18px;
+  border-bottom: 3px solid var(--brand-secondary);
+  background:
+    radial-gradient(circle at 12% -35%, rgba(253,181,21,.22), transparent 48%),
+    linear-gradient(135deg, var(--brand-primary-dark), var(--cgb-navy-800));
+  color: var(--brand-text-on-primary);
 }
 
 .my-cgb-promo-header .eyebrow {
-  color: var(--brand-accent);
+  color: var(--brand-secondary);
+  font-family: var(--font-condensed, sans-serif);
+  font-size: .78rem;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
 
 .my-cgb-promo-header h2 {
-  margin: 2px 0 0;
-  color: inherit;
-  font-family: var(--font-display, serif);
+  margin: 3px 0 0;
+  color: var(--brand-text-on-primary);
+  font-family: var(--font-condensed, sans-serif);
+  font-size: clamp(2rem, 5vw, 2.65rem);
+  font-weight: 900;
+  letter-spacing: .015em;
+  line-height: .92;
+  text-transform: uppercase;
+}
+
+.my-cgb-promo-header h2:focus {
+  outline: none;
+}
+
+.my-cgb-promo-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand-primary-dark, #003262) 16%, transparent);
+}
+
+.my-cgb-promo-tabs button {
+  position: relative;
+  min-height: 42px;
+  padding: 10px 8px 9px;
+  color: var(--brand-text-muted, #657083);
+  background: transparent;
+  border: 0;
+  font-family: var(--font-condensed, inherit);
+  font-size: .74rem;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.my-cgb-promo-tabs button[aria-selected="true"] {
+  color: var(--brand-primary-dark, #003262);
+}
+
+.my-cgb-promo-tabs button[aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 3px;
+  background: var(--brand-secondary-dark, #fdb515);
+  border-radius: 999px 999px 0 0;
+}
+
+.my-cgb-promo-tabs button:focus-visible {
+  outline: 2px solid var(--brand-secondary-dark, #fdb515);
+  outline-offset: -2px;
+}
+
+.my-cgb-promo-view {
+  min-height: 0;
+  padding-top: 10px;
+  padding-bottom: 36px;
+}
+
+.my-cgb-promo-profile-view {
+  display: grid;
+  align-content: start;
+  gap: 12px;
 }
 
 .my-cgb-promo-intro {
   display: grid;
-  gap: 6px;
+  gap: 12px;
+  padding: 0 0 2px;
 }
 
 .my-cgb-promo-intro strong {
+  color: var(--brand-primary-dark);
   font-family: var(--font-display, serif);
   font-size: 1.2rem;
-  line-height: 1.15;
+  line-height: 1.12;
 }
 
 .my-cgb-promo-intro p,
-.my-cgb-promo-fine-print {
+.my-cgb-promo-fine-print,
+.my-cgb-promo-view .public-community-intro {
   margin: 0;
-}
-
-.my-cgb-promo-benefits {
-  display: grid;
-  gap: 8px;
-}
-
-.my-cgb-promo-benefits span {
-  position: relative;
-  padding-left: 18px;
-  font-weight: 700;
-}
-
-.my-cgb-promo-benefits span::before {
-  content: '•';
-  position: absolute;
-  left: 2px;
-  color: var(--brand-accent);
-}
-
-.my-cgb-promo-activate {
-  justify-self: start;
-  min-height: 44px;
+  color: var(--brand-text-muted, #657083);
+  line-height: 1.45;
 }
 
 .my-cgb-promo-fine-print {
   font-size: .76rem;
-  opacity: .72;
+}
+
+.my-cgb-promo-sign-in {
+  justify-self: start;
+  min-height: 44px;
+}
+
+.my-cgb-promo-view .public-community-heading {
+  margin-bottom: 0;
+}
+
+.my-cgb-promo-view .public-community-heading h3 {
+  margin: 0;
+  color: var(--brand-primary-dark, #003262);
+  font-family: var(--font-display, inherit);
+  font-size: 1.2rem;
+  line-height: 1.12;
+}
+
+.my-cgb-promo-view .public-community-heading .eyebrow {
+  color: var(--brand-text-muted, #657083);
+  font-family: var(--font-condensed, inherit);
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.my-cgb-promo-about-view .my-cgb-about-content {
+  display: grid;
+  gap: 12px;
+}
+
+.my-cgb-promo-about-view .my-cgb-about-content > p,
+.my-cgb-promo-about-view .about-support p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (min-width: 900px) {
+  .my-cgb-promo-surface {
+    overflow: hidden;
+  }
+
+  .my-cgb-promo-shell {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .my-cgb-promo-view {
+    margin-right: -20px;
+    padding-right: 20px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 @media (max-width: 899px) {
-  /* The demand-loading promo is the same My CGB destination, not the map tray underneath it. */
+  /* The demand-loading shell occupies the same My CGB destination as the loaded account surface. */
   body[data-command-surface="my-cgb"] #map-view > #venue-tray.venue-tray[data-my-cgb-promo-open="true"] {
     position: fixed !important;
     z-index: 47 !important;
@@ -112,6 +225,9 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
   }
 
   .my-cgb-promo-shell {
+    grid-template-rows: auto auto auto;
+    align-content: start;
+    min-height: 100%;
     padding: 18px 16px calc(28px + env(safe-area-inset-bottom, 0px));
   }
 
@@ -119,38 +235,9 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
     margin: -18px -16px 0;
     padding: 18px 16px 16px;
   }
-}
 
-.my-cgb-promo-about {
-  display: grid;
-  gap: 12px;
-  padding-top: 18px;
-  border-top: 1px solid color-mix(in srgb, var(--brand-primary-dark, #003262) 14%, transparent);
-}
-
-.my-cgb-promo-about__heading {
-  display: grid;
-  gap: 2px;
-}
-
-.my-cgb-promo-about__heading .eyebrow {
-  color: var(--brand-text-muted, #657083);
-}
-
-.my-cgb-promo-about__heading h3 {
-  margin: 0;
-  color: var(--brand-primary-dark, #003262);
-  font-family: var(--font-display, serif);
-  font-size: 1.2rem;
-}
-
-.my-cgb-promo-about .my-cgb-about-content {
-  display: grid;
-  gap: 12px;
-}
-
-.my-cgb-promo-about .my-cgb-about-content > p,
-.my-cgb-promo-about .about-support p {
-  margin: 0;
-  line-height: 1.5;
+  .my-cgb-promo-view {
+    padding-top: 16px;
+    padding-bottom: 28px;
+  }
 }

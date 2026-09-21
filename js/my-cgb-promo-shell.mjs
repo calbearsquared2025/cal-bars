@@ -7,6 +7,7 @@ import {
 } from './command-surface.mjs';
 
 const ACCOUNT_COMMAND = 'my-cgb';
+const PROMO_VIEWS = Object.freeze(['profile', 'leaderboard', 'about']);
 const NAV_CLOSE_SELECTOR = '#mobile-map-button, #mobile-search-button, #mobile-add-button, #mobile-list-button, [data-command-close]';
 const FULL_SURFACE_RETRY_LIMIT = 100;
 const FULL_SURFACE_RETRY_MS = 25;
@@ -15,8 +16,11 @@ const ACCOUNT_STATE_RESOLUTION_TIMEOUT_MS = 6000;
 let tray = null;
 let surface = null;
 let navButton = null;
-let activationButton = null;
 let desktopAddButton = null;
+let currentView = 'profile';
+let activationPromise = null;
+let signInRequested = false;
+let signInResolutionPromise = null;
 let open = false;
 let returnSurface = 'map';
 let lastOpener = null;
@@ -72,6 +76,31 @@ function syncDesktopAddEntry() {
   desktopAddButton.setAttribute('aria-label', source.getAttribute('aria-label') || sourceLabel);
 }
 
+function syncPromoView({ focus = false } = {}) {
+  if (!surface) return;
+  const shell = surface.querySelector('.my-cgb-promo-shell');
+  if (!shell) return;
+  shell.dataset.myCgbView = currentView;
+  shell.querySelectorAll('[data-my-cgb-promo-view]').forEach((view) => {
+    view.hidden = view.dataset.myCgbPromoView !== currentView;
+  });
+  shell.querySelectorAll('[data-my-cgb-promo-view-target]').forEach((button) => {
+    const active = button.dataset.myCgbPromoViewTarget === currentView;
+    button.setAttribute('aria-selected', String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  if (focus) {
+    shell.querySelector(`[data-my-cgb-promo-view-target="${currentView}"]`)?.focus({ preventScroll: true });
+  }
+}
+
+function setPromoView(next, { focus = false } = {}) {
+  if (!PROMO_VIEWS.includes(next)) return false;
+  currentView = next;
+  syncPromoView({ focus });
+  return true;
+}
+
 function ensurePromoSurface() {
   tray = document.querySelector('#venue-tray');
   navButton = document.querySelector('#mobile-about-button');
@@ -85,40 +114,56 @@ function ensurePromoSurface() {
     surface.hidden = true;
     surface.setAttribute('aria-labelledby', 'my-cgb-promo-title');
     surface.innerHTML = `
-      <div class="my-cgb-promo-shell">
+      <div class="my-cgb-promo-shell" data-my-cgb-view="profile">
         <header class="my-cgb-promo-header">
-          <span class="eyebrow">Cal Golden Bars</span>
-          <h2 id="my-cgb-promo-title">My CGB</h2>
+          <div>
+            <span class="eyebrow">Cal Golden Bars</span>
+            <h2 id="my-cgb-promo-title">My CGB</h2>
+          </div>
         </header>
-        <div class="my-cgb-promo-intro">
-          <strong>Make Cal Golden Bars yours.</strong>
-          <p>Create a profile to save favorite places, keep your attendance history, and build your CGB progress. Browsing still works without an account.</p>
+        <div class="my-cgb-view-tabs my-cgb-promo-tabs" role="tablist" aria-label="My CGB views">
+          <button id="my-cgb-promo-profile-tab" type="button" role="tab" data-my-cgb-promo-view-target="profile" aria-controls="my-cgb-promo-profile-view">Profile</button>
+          <button id="my-cgb-promo-leaderboard-tab" type="button" role="tab" data-my-cgb-promo-view-target="leaderboard" aria-controls="my-cgb-promo-leaderboard-view">Leaderboard</button>
+          <button id="my-cgb-promo-about-tab" type="button" role="tab" data-my-cgb-promo-view-target="about" aria-controls="my-cgb-promo-about-view">About</button>
         </div>
-        <div class="my-cgb-promo-benefits" aria-label="My CGB features">
-          <span>Save favorite Cal bars</span>
-          <span>Track the games you watch</span>
-          <span>Build your season and join the community</span>
+        <div id="my-cgb-promo-profile-view" class="my-cgb-promo-view my-cgb-promo-profile-view" role="tabpanel" aria-labelledby="my-cgb-promo-profile-tab" data-my-cgb-promo-view="profile">
+          <div class="my-cgb-promo-intro">
+            <strong>Make Cal Golden Bars yours.</strong>
+            <p>Create a profile to save favorite places, keep your attendance history, and build your CGB progress. Browsing still works without an account.</p>
+          </div>
+          <button class="primary-button my-cgb-promo-sign-in" type="button" data-my-cgb-sign-in>Sign in to My CGB</button>
+          <p class="my-cgb-promo-fine-print">No-email profiles stay on this browser and cannot be recovered on another device. Your sign-in identifiers stay private. Public profile and attendance visibility are separate choices.</p>
         </div>
-        <button class="primary-button my-cgb-promo-activate" type="button" data-my-cgb-activate>Open My CGB</button>
-        <p class="my-cgb-promo-fine-print">No account is required to browse CGB.</p>
+        <section id="my-cgb-promo-leaderboard-view" class="my-cgb-promo-view public-community-section public-community-panel" role="tabpanel" aria-labelledby="my-cgb-promo-leaderboard-tab" data-my-cgb-promo-view="leaderboard" hidden>
+          <div class="accounts-section__heading public-community-heading">
+            <div>
+              <span class="eyebrow">CGB community</span>
+              <h3>Season leaderboard</h3>
+            </div>
+          </div>
+          <p class="public-community-intro">Loading the CGB community…</p>
+        </section>
+        <section id="my-cgb-promo-about-view" class="my-cgb-promo-view my-cgb-about-view" role="tabpanel" aria-labelledby="my-cgb-promo-about-tab" data-my-cgb-promo-view="about" hidden></section>
       </div>`;
     const aboutContent = cloneAboutContent();
-    if (aboutContent) {
-      const aboutSection = document.createElement('section');
-      aboutSection.className = 'my-cgb-promo-about';
-      aboutSection.setAttribute('aria-labelledby', 'my-cgb-promo-about-title');
-      aboutSection.innerHTML = `
-        <div class="my-cgb-promo-about__heading">
-          <span class="eyebrow">About</span>
-          <h3 id="my-cgb-promo-about-title">Cal Golden Bars</h3>
-        </div>`;
-      aboutSection.append(aboutContent);
-      surface.querySelector('.my-cgb-promo-shell')?.append(aboutSection);
-    }
+    if (aboutContent) surface.querySelector('#my-cgb-promo-about-view')?.append(aboutContent);
+    const tabs = surface.querySelector('.my-cgb-promo-tabs');
+    tabs?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-my-cgb-promo-view-target]');
+      if (button) setPromoView(button.dataset.myCgbPromoViewTarget);
+    });
+    tabs?.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      event.preventDefault();
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      const currentIndex = Math.max(0, PROMO_VIEWS.indexOf(currentView));
+      const nextIndex = (currentIndex + direction + PROMO_VIEWS.length) % PROMO_VIEWS.length;
+      setPromoView(PROMO_VIEWS[nextIndex], { focus: true });
+    });
     tray.append(surface);
   }
 
-  activationButton = surface.querySelector('[data-my-cgb-activate]');
+  syncPromoView();
   document.body.dataset.cgbAccountsEnabled = 'true';
   syncDesktopAddEntry();
   return true;
@@ -144,6 +189,7 @@ function showPromoSurface(opener = null) {
   if (!open) {
     returnSurface = document.body.dataset.commandSurface || 'map';
     selectedVenueAtOpen = currentSelectedVenueId();
+    currentView = 'profile';
   }
   open = true;
   lastOpener = opener || lastOpener || navButton;
@@ -153,10 +199,18 @@ function showPromoSurface(opener = null) {
   setPrimarySurfaceVisibility(document, ACCOUNT_COMMAND);
   setPromoCommandState(true);
   markCgbPerformance('cgb:my-cgb:promo:visible');
+  syncPromoView();
   const title = surface.querySelector('#my-cgb-promo-title');
   if (title) {
     title.tabIndex = -1;
-    window.requestAnimationFrame(() => title.focus({ preventScroll: true }));
+    window.requestAnimationFrame(() => {
+      title.focus({ preventScroll: true });
+      if (open) void activateFullMyCgb({ opener: lastOpener });
+    });
+  } else {
+    window.requestAnimationFrame(() => {
+      if (open) void activateFullMyCgb({ opener: lastOpener });
+    });
   }
   return true;
 }
@@ -165,6 +219,8 @@ function closePromoSurface({ restoreSurface = true, restoreFocus = false } = {})
   if (!open) return;
   open = false;
   selectedVenueAtOpen = '';
+  signInRequested = false;
+  signInResolutionPromise = null;
   if (surface) surface.hidden = true;
   tray?.removeAttribute('data-my-cgb-promo-open');
   if (restoreSurface) restorePreviousSurface();
@@ -210,7 +266,10 @@ async function openLoadedMyCgb() {
     const owner = window.CGBMyCgbSurface;
     if (owner?.open) {
       const opened = await owner.open();
-      if (opened !== false) return true;
+      if (opened !== false) {
+        window.CGBPublicCommunity?.setView?.(currentView);
+        return true;
+      }
     }
     await wait(FULL_SURFACE_RETRY_MS);
   }
@@ -219,35 +278,49 @@ async function openLoadedMyCgb() {
 
 async function activateFullMyCgb({ signIn = false, opener = null } = {}) {
   if (!open) showPromoSurface(opener);
-  const button = activationButton;
-  button?.setAttribute('aria-busy', 'true');
-  if (button) button.disabled = true;
-  try {
-    const loader = window.CGBAccountsLoader;
-    if (!loader?.load) throw new Error('accounts_loader_unavailable');
-    const accountStatePromise = signIn ? waitForResolvedAccountState() : null;
-    await loader.load('user-demand');
-    const opened = await openLoadedMyCgb();
-    if (!opened) throw new Error('accounts_surface_unavailable');
-    closePromoSurface({ restoreSurface: false });
-    if (signIn) {
-      const signedIn = await accountStatePromise;
-      if (!signedIn) document.querySelector('.my-cgb-sign-in')?.click();
-    }
-    return true;
-  } catch (error) {
-    console.error('CGB My CGB activation failed.', error);
-    if (open) {
-      setCommandSurface(document, ACCOUNT_COMMAND);
-      setPrimarySurfaceVisibility(document, ACCOUNT_COMMAND);
-      setPromoCommandState(true);
-    }
-    window.CGBApp?.showStatus?.('My CGB could not open. Try again.');
-    return false;
-  } finally {
-    button?.removeAttribute('aria-busy');
-    if (button) button.disabled = false;
+  if (opener) lastOpener = opener;
+  if (signIn) {
+    signInRequested = true;
+    if (!signInResolutionPromise) signInResolutionPromise = waitForResolvedAccountState();
   }
+  if (activationPromise) return activationPromise;
+
+  activationPromise = (async () => {
+    try {
+      const loader = window.CGBAccountsLoader;
+      if (!loader?.load) throw new Error('accounts_loader_unavailable');
+      await loader.load('user-demand');
+      if (!open) return false;
+      const opened = await openLoadedMyCgb();
+      if (!opened) throw new Error('accounts_surface_unavailable');
+
+      const shouldSignIn = signInRequested;
+      const resolution = signInResolutionPromise;
+      signInRequested = false;
+      signInResolutionPromise = null;
+      closePromoSurface({ restoreSurface: false });
+
+      if (shouldSignIn) {
+        const signedIn = window.CGBAccounts?.isSignedIn?.() === true ||
+          (resolution ? await resolution : false);
+        if (!signedIn) document.querySelector('.my-cgb-sign-in')?.click();
+      }
+      return true;
+    } catch (error) {
+      console.error('CGB My CGB activation failed.', error);
+      if (open) {
+        setCommandSurface(document, ACCOUNT_COMMAND);
+        setPrimarySurfaceVisibility(document, ACCOUNT_COMMAND);
+        setPromoCommandState(true);
+      }
+      window.CGBApp?.showStatus?.('My CGB could not open. Try again.');
+      return false;
+    } finally {
+      activationPromise = null;
+    }
+  })();
+
+  return activationPromise;
 }
 
 function handleCapture(event) {
@@ -257,6 +330,7 @@ function handleCapture(event) {
     event.stopImmediatePropagation();
     if (window.CGBAccountsLoader?.isLoaded?.()) {
       returnSurface = document.body.dataset.commandSurface || 'map';
+      currentView = 'profile';
       void openLoadedMyCgb();
     } else {
       showPromoSurface(accountTrigger);
@@ -271,10 +345,10 @@ function handleCapture(event) {
     return;
   }
 
-  const activate = event.target.closest?.('[data-my-cgb-activate]');
-  if (activate) {
+  const signIn = event.target.closest?.('[data-my-cgb-sign-in]');
+  if (signIn) {
     event.preventDefault();
-    void activateFullMyCgb({ opener: activate });
+    void activateFullMyCgb({ signIn: true, opener: signIn });
     return;
   }
 
