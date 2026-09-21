@@ -40,6 +40,7 @@ let favoritesErrorCode = '';
 let favoritesRequestRevision = 0;
 let dom = null;
 let pendingSignedOutStatus = null;
+let statusClearTimer = 0;
 let authStateRevision = 0;
 let uiInitialized = false;
 let accountStartupPromise = null;
@@ -229,11 +230,15 @@ function collectDom() {
   };
 }
 
-function setStatus(message = '', { error = false } = {}) {
+function setStatus(message = '', { error = false, persist = false } = {}) {
   if (!dom?.status) return;
+  window.clearTimeout(statusClearTimer);
   dom.status.textContent = message;
   dom.status.dataset.state = error ? 'error' : 'normal';
   dom.status.hidden = !message;
+  if (message && !error && !persist) {
+    statusClearTimer = window.setTimeout(() => setStatus(''), 2600);
+  }
 }
 
 function fanClientErrorCode(error) {

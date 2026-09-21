@@ -400,3 +400,15 @@
 
   .accounts-provider-actions { grid-template-columns: 1fr; }
 }
+
+/* Status feedback is transient overlay UI; it must never reflow My CGB content. */
+.accounts-shell { position: relative; }
+.accounts-status:not([hidden]) {
+  position: absolute;
+  z-index: 6;
+  top: 12px;
+  left: 20px;
+  right: 20px;
+  margin: 0;
+  box-shadow: var(--shadow-sm);
+}

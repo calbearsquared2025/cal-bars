@@ -460,8 +460,8 @@ function renderLoadingSection(section) {
   if (!parts) return;
   const { heading, intro, list, status } = parts;
   setCommunityState(section, 'loading');
-  heading.textContent = 'Season leaderboard';
-  intro.textContent = 'See how Bears are watching this season.';
+  heading.textContent = 'The Cal crowd is just getting started.';
+  intro.textContent = 'Track the games you watch, build your streak, and help Bears find each other on game day.';
   list.replaceChildren();
   for (let index = 0; index < 3; index += 1) {
     const row = document.createElement('div');

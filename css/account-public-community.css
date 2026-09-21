@@ -543,3 +543,11 @@ img.public-community-avatar {
     grid-template-columns: 1fr;
   }
 }
+
+/* Keep sparse-community loading in the same callout footprint as its resolved state. */
+.public-community-panel[data-community-state="loading"] .public-community-list {
+  padding: 15px;
+  border: 1px solid color-mix(in srgb, var(--brand-primary-dark, #003262) 12%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--brand-primary-dark, #003262) 3%, #fff);
+}
