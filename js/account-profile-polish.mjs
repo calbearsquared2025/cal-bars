@@ -72,7 +72,7 @@ function syncProfileSummary() {
     <span class="accounts-profile-summary__controls">
       <span>${attendanceDetail}</span>
       <span aria-hidden="true">·</span>
-      <button class="text-button my-cgb-edit-profile accounts-profile-summary__manage" type="button">Manage privacy</button>
+      <button class="text-button my-cgb-edit-profile accounts-profile-summary__manage" type="button">Customize profile</button>
     </span>`;
   if (summary.innerHTML !== nextMarkup) summary.innerHTML = nextMarkup;
 }

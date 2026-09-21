@@ -1,6 +1,6 @@
 .my-cgb-view-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   border-bottom: 1px solid color-mix(in srgb, var(--brand-primary-dark, #003262) 16%, transparent);
 }
@@ -40,13 +40,33 @@
 }
 
 .accounts-shell:not(.accounts-shell--native) .my-cgb-view-tabs,
-.accounts-shell:not(.accounts-shell--native) .public-community-panel {
+.accounts-shell:not(.accounts-shell--native) .public-community-panel,
+.accounts-shell:not(.accounts-shell--native) .my-cgb-about-view {
   display: none !important;
 }
 
 .accounts-shell--native[data-my-cgb-view="profile"] .public-community-panel,
-.accounts-shell--native[data-my-cgb-view="leaderboard"] .my-cgb-profile-view {
+.accounts-shell--native[data-my-cgb-view="profile"] .my-cgb-about-view,
+.accounts-shell--native[data-my-cgb-view="leaderboard"] .my-cgb-profile-view,
+.accounts-shell--native[data-my-cgb-view="leaderboard"] .my-cgb-about-view,
+.accounts-shell--native[data-my-cgb-view="about"] .my-cgb-profile-view,
+.accounts-shell--native[data-my-cgb-view="about"] .public-community-panel {
   display: none !important;
+}
+
+.my-cgb-about-view {
+  padding-top: 16px;
+}
+
+.my-cgb-about-view .my-cgb-about-content {
+  display: grid;
+  gap: 12px;
+}
+
+.my-cgb-about-view .my-cgb-about-content > p,
+.my-cgb-about-view .about-support p {
+  margin: 0;
+  line-height: 1.5;
 }
 
 .public-community-panel {

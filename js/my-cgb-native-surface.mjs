@@ -203,6 +203,19 @@ function currentSelectedVenueId() {
   return String(window.CGBApp?.getState?.()?.selectedVenueId || '');
 }
 
+function ensureSignedInFeatures() {
+  if (!window.CGBAccounts?.isSignedIn?.()) return Promise.resolve(false);
+  return ensureMyCgbFeaturesLoaded()
+    .then(() => {
+      window.CGBMyCgbRenderController?.syncAccountState?.();
+      return true;
+    })
+    .catch((error) => {
+      console.error('CGB My CGB feature load failed.', error);
+      return false;
+    });
+}
+
 async function revealNativeSurface() {
   if (!open || !surface || !shell) return false;
   if (!open || dialog?.open || transientMode) return false;
@@ -210,11 +223,7 @@ async function revealNativeSurface() {
   surface.hidden = false;
   markCgbPerformance('cgb:my-cgb:shell:visible');
   refreshSelectedFavoriteAction();
-  if (window.CGBAccounts?.isSignedIn?.()) {
-    void ensureMyCgbFeaturesLoaded().catch((error) => {
-      console.error('CGB My CGB feature load failed.', error);
-    });
-  }
+  if (window.CGBAccounts?.isSignedIn?.()) void ensureSignedInFeatures();
   const title = shell.querySelector('#cgb-account-title');
   if (title) {
     title.tabIndex = -1;
@@ -338,6 +347,7 @@ function restoreCompletedAuthReturn() {
 function handleAccountState(event) {
   const signedIn = event?.detail?.signedIn === true;
   const restoreNative = signedIn && consumeAuthReturnIntent();
+  if (signedIn && open) void ensureSignedInFeatures();
   if (transientMode === TRANSIENT_AUTH && signedIn && dialog?.open) {
     dialog.close();
   }

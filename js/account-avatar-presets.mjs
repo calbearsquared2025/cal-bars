@@ -25,11 +25,12 @@ function googlePhotoUrl(value) {
   return url.toString();
 }
 
-export function googleProviderAvatarUrl(user) {
+export function googleProviderAvatarUrl(user, linkedProviderIds = []) {
   const providers = Array.isArray(user?.providerData) ? user.providerData : [];
   const googleProvider = providers.find((provider) => provider?.providerId === GOOGLE_PROVIDER_ID);
-  if (!googleProvider) return '';
-  return googlePhotoUrl(googleProvider.photoURL) || googlePhotoUrl(user?.photoURL);
+  const linkedGoogle = Array.isArray(linkedProviderIds) && linkedProviderIds.includes(GOOGLE_PROVIDER_ID);
+  if (!googleProvider && !linkedGoogle) return '';
+  return googlePhotoUrl(googleProvider?.photoURL) || googlePhotoUrl(user?.photoURL);
 }
 
 export function explicitGoogleAvatarUrl(value) {

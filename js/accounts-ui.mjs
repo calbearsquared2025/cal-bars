@@ -304,7 +304,7 @@ function clientProfile() {
 
 function clientGoogleAvatarUrl() {
   if (!currentUser || !account) return '';
-  return googleProviderAvatarUrl(currentUser);
+  return googleProviderAvatarUrl(currentUser, account.providers || []);
 }
 
 function dispatchAccountState() {

@@ -120,3 +120,37 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
     padding: 18px 16px 16px;
   }
 }
+
+.my-cgb-promo-about {
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid color-mix(in srgb, var(--brand-primary-dark, #003262) 14%, transparent);
+}
+
+.my-cgb-promo-about__heading {
+  display: grid;
+  gap: 2px;
+}
+
+.my-cgb-promo-about__heading .eyebrow {
+  color: var(--brand-text-muted, #657083);
+}
+
+.my-cgb-promo-about__heading h3 {
+  margin: 0;
+  color: var(--brand-primary-dark, #003262);
+  font-family: var(--font-display, serif);
+  font-size: 1.2rem;
+}
+
+.my-cgb-promo-about .my-cgb-about-content {
+  display: grid;
+  gap: 12px;
+}
+
+.my-cgb-promo-about .my-cgb-about-content > p,
+.my-cgb-promo-about .about-support p {
+  margin: 0;
+  line-height: 1.5;
+}

@@ -1,3 +1,4 @@
+import { cloneAboutContent } from './about-content.mjs';
 import { markCgbPerformance } from './performance.mjs';
 import {
   setActiveCommand,
@@ -101,6 +102,19 @@ function ensurePromoSurface() {
         <button class="primary-button my-cgb-promo-activate" type="button" data-my-cgb-activate>Open My CGB</button>
         <p class="my-cgb-promo-fine-print">No account is required to browse CGB.</p>
       </div>`;
+    const aboutContent = cloneAboutContent();
+    if (aboutContent) {
+      const aboutSection = document.createElement('section');
+      aboutSection.className = 'my-cgb-promo-about';
+      aboutSection.setAttribute('aria-labelledby', 'my-cgb-promo-about-title');
+      aboutSection.innerHTML = `
+        <div class="my-cgb-promo-about__heading">
+          <span class="eyebrow">About</span>
+          <h3 id="my-cgb-promo-about-title">Cal Golden Bars</h3>
+        </div>`;
+      aboutSection.append(aboutContent);
+      surface.querySelector('.my-cgb-promo-shell')?.append(aboutSection);
+    }
     tray.append(surface);
   }
 

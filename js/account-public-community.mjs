@@ -1,4 +1,5 @@
 import { CGB_ACCOUNTS_CONFIG } from './accounts-config.mjs';
+import { cloneAboutContent } from './about-content.mjs';
 import { accountsConfigIsReady, validatePublicAttendanceResponse } from './accounts-core.mjs';
 import { CGB_AVATAR_PRESETS, isCgbAvatarPresetUrl } from './account-avatar-presets.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
@@ -6,6 +7,7 @@ import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 const STYLE_ATTR = 'data-cgb-public-community-style';
 const CACHE_MS = 60000;
 const SPARSE_COMMUNITY_THRESHOLD = 3;
+const MY_CGB_VIEWS = Object.freeze(['profile', 'leaderboard', 'about']);
 const PROFILE_ID_PATTERN = /^profile_[a-f0-9]{24}$/;
 const BADGE_ASSETS = Object.freeze({
   first_down: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/First_Down.webp',
@@ -193,7 +195,7 @@ function syncViewState(shell) {
 }
 
 function setView(next, { focus = false } = {}) {
-  if (next !== 'profile' && next !== 'leaderboard') return false;
+  if (!MY_CGB_VIEWS.includes(next)) return false;
   currentView = next;
   const shell = document.querySelector('.accounts-shell');
   syncViewState(shell);
@@ -218,7 +220,8 @@ function ensureViewStructure(shell) {
     tabs.setAttribute('aria-label', 'My CGB views');
     tabs.innerHTML = `
       <button id="my-cgb-profile-tab" type="button" role="tab" data-my-cgb-view-target="profile" aria-controls="my-cgb-profile-view">Profile</button>
-      <button id="my-cgb-leaderboard-tab" type="button" role="tab" data-my-cgb-view-target="leaderboard" aria-controls="my-cgb-leaderboard-view">Leaderboard</button>`;
+      <button id="my-cgb-leaderboard-tab" type="button" role="tab" data-my-cgb-view-target="leaderboard" aria-controls="my-cgb-leaderboard-view">Leaderboard</button>
+      <button id="my-cgb-about-tab" type="button" role="tab" data-my-cgb-view-target="about" aria-controls="my-cgb-about-view">About</button>`;
     header.insertAdjacentElement('afterend', tabs);
     tabs.addEventListener('click', (event) => {
       const button = event.target.closest('[data-my-cgb-view-target]');
@@ -227,7 +230,10 @@ function ensureViewStructure(shell) {
     tabs.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
       event.preventDefault();
-      setView(currentView === 'profile' ? 'leaderboard' : 'profile', { focus: true });
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      const currentIndex = Math.max(0, MY_CGB_VIEWS.indexOf(currentView));
+      const nextIndex = (currentIndex + direction + MY_CGB_VIEWS.length) % MY_CGB_VIEWS.length;
+      setView(MY_CGB_VIEWS[nextIndex], { focus: true });
     });
   }
 
@@ -261,6 +267,18 @@ function ensureViewStructure(shell) {
       <div class="public-community-list"></div>
       <p class="public-community-status" role="status" aria-live="polite"></p>`;
     profileView.insertAdjacentElement('afterend', leaderboardView);
+  }
+
+  let aboutView = shell.querySelector('#my-cgb-about-view');
+  if (!aboutView) {
+    aboutView = document.createElement('section');
+    aboutView.id = 'my-cgb-about-view';
+    aboutView.className = 'my-cgb-about-view';
+    aboutView.setAttribute('role', 'tabpanel');
+    aboutView.setAttribute('aria-labelledby', 'my-cgb-about-tab');
+    const aboutContent = cloneAboutContent();
+    if (aboutContent) aboutView.append(aboutContent);
+    leaderboardView.insertAdjacentElement('afterend', aboutView);
   }
 
   syncViewState(shell);
@@ -502,7 +520,7 @@ function sparseCommunityCallToAction() {
   } else if (currentProfile.publicProfileStatus !== 'public') {
     title.textContent = 'Want to appear with other Bears?';
     copy.textContent = 'Your profile is private. You control whether it appears publicly.';
-    action.textContent = 'Review privacy settings';
+    action.textContent = 'Customize profile';
     action.classList.add('my-cgb-edit-profile');
   } else {
     title.textContent = 'You’re in. Keep building your season.';
@@ -543,7 +561,7 @@ function renderPopulatedSection(section, data) {
   intro.textContent = currentProfile
     ? currentProfile.publicProfileStatus === 'public'
       ? 'See how Bears are watching this season. Leaderboard rank is based on games watched.'
-      : 'See how Bears are watching this season. Make your profile visible in Manage privacy to join the leaderboard.'
+      : 'See how Bears are watching this season. Use Customize profile to make your profile visible and join the leaderboard.'
     : 'See how Bears are watching this season. Sign in from Profile to track games, build streaks, earn achievements, and join the leaderboard.';
   list.replaceChildren();
   status.textContent = '';

@@ -179,20 +179,24 @@ function handleAccountState(event) {
   setPending(false);
 }
 
+function syncCurrentAccountState() {
+  if (!window.CGBAccounts?.isSignedIn?.()) return false;
+  prepareSignedIn(window.CGBAccounts.getProfile?.() || null);
+  return true;
+}
+
 export function initializeMyCgbRenderController() {
   if (!enabled()) return false;
   injectStyles();
   ensureFixedSignedInStructure();
   window.addEventListener('cgb:account-state', handleAccountState);
-
-  if (window.CGBAccounts?.isSignedIn?.()) {
-    prepareSignedIn(window.CGBAccounts.getProfile?.() || null);
-  }
+  syncCurrentAccountState();
   return true;
 }
 
 window.CGBMyCgbRenderController = Object.freeze({
   syncStructure: ensureFixedSignedInStructure,
+  syncAccountState: syncCurrentAccountState,
   isReady: () => preparedSignedInSession
 });
 
