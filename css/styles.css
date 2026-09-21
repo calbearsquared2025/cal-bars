@@ -233,7 +233,7 @@ a { color: inherit; }
 .location-list { display: grid; gap: 8px; padding: 10px 12px 24px; }
 .location-card { display: grid; gap: 7px; width: 100%; padding: 12px; text-align: left; background: white; border: 1px solid var(--line); border-radius: 14px; color: var(--ink); }
 .location-card:hover, .location-card[data-selected="true"] { border-color: var(--cal-blue); background: #f7f9fd; }
-.location-card__top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.location-card__top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .location-card__top > div { display: grid; gap: 4px; min-width: 0; }
 .location-card strong { color: var(--cal-blue); font-size: .98rem; }
 .location-card__top > div > span:not(.venue-badge),
