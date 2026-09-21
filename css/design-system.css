@@ -84,7 +84,7 @@
   --motion-standard: 220ms;
   --focus-ring: 0 0 0 3px rgba(253, 181, 21, .42);
 
-  --mobile-command-height: 64px;
+  --mobile-command-height: 60px;
 
   /* Compatibility aliases used throughout the existing application. */
   --cal-blue: var(--brand-primary);
