@@ -1,0 +1,208 @@
+:root {
+  color-scheme: light;
+  --brand-primary: #002676;
+  --brand-primary-dark: #010133;
+  --brand-secondary: #fdb515;
+  --brand-page-background: #f7f6f2;
+  --brand-surface: #ffffff;
+  --brand-text: #101626;
+  --brand-text-muted: #687280;
+  --brand-line: #d8dee8;
+  --brand-link: #002676;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--brand-primary-dark);
+  color: var(--brand-text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  background: var(--brand-primary-dark);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--brand-page-background);
+  color: var(--brand-text);
+  text-rendering: optimizeLegibility;
+}
+
+.standalone-header {
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) max(18px, env(safe-area-inset-right, 0px)) 10px max(18px, env(safe-area-inset-left, 0px));
+  background:
+    radial-gradient(circle at 14% -40%, rgba(253, 181, 21, .22), transparent 48%),
+    linear-gradient(135deg, var(--brand-primary-dark), #052b67);
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 1px 0 rgba(6, 21, 47, .24);
+}
+
+.standalone-header__inner {
+  width: min(100%, 760px);
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+}
+
+.standalone-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.standalone-brand img {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .2));
+}
+
+.standalone-brand span {
+  color: #fff;
+  font-size: .9rem;
+  font-weight: 800;
+  letter-spacing: .055em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.standalone-main {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: clamp(28px, 7vh, 64px) max(18px, env(safe-area-inset-right, 0px)) 56px max(18px, env(safe-area-inset-left, 0px));
+}
+
+.standalone-card {
+  padding: clamp(24px, 5vw, 38px);
+  background: var(--brand-surface);
+  border: 1px solid var(--brand-line);
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(0, 25, 79, .07);
+}
+
+.standalone-card h1 {
+  margin: 0 0 18px;
+  color: var(--brand-primary);
+  font-size: clamp(2rem, 7vw, 2.65rem);
+  line-height: 1.02;
+  letter-spacing: -.025em;
+}
+
+.standalone-card p {
+  margin: 0 0 16px;
+  color: var(--brand-text-muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.standalone-card p.lead {
+  color: var(--brand-text);
+  font-size: 1.06rem;
+  line-height: 1.5;
+}
+
+.standalone-card p:last-of-type {
+  margin-bottom: 0;
+}
+
+.standalone-card a:not(.standalone-primary) {
+  color: var(--brand-link);
+  font-weight: 700;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.standalone-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--brand-line);
+}
+
+.standalone-primary {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px solid var(--brand-primary);
+  border-radius: 11px;
+  background: var(--brand-primary);
+  color: #fff;
+  font-weight: 760;
+  text-decoration: none;
+}
+
+.standalone-secondary-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  align-items: center;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(253, 181, 21, .95);
+  outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+  .standalone-main {
+    padding-top: 28px;
+  }
+
+  .standalone-card {
+    padding: 24px 22px 26px;
+    border-radius: 18px;
+  }
+
+  .standalone-card h1 {
+    font-size: clamp(2rem, 10vw, 2.35rem);
+  }
+
+  .standalone-actions {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .standalone-primary {
+    width: 100%;
+  }
+
+  .standalone-secondary-links {
+    justify-content: flex-start;
+  }
+}
+
+@media (min-width: 900px) {
+  .standalone-header {
+    padding-inline: 28px;
+  }
+
+  .standalone-header__inner {
+    min-height: 70px;
+  }
+
+  .standalone-brand img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .standalone-brand span {
+    font-size: 1.05rem;
+    letter-spacing: .075em;
+  }
+}
