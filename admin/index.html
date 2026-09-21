@@ -158,6 +158,28 @@
             <button id="watch-party-add" type="button">+ Add Watch Party</button>
           </div>
 
+          <section class="admin-game-status" aria-labelledby="admin-game-status-heading">
+            <div class="admin-game-status__intro">
+              <p class="eyebrow">Game control</p>
+              <h2 id="admin-game-status-heading">Game status</h2>
+              <p>Mark a game complete when it ends. Turning the switch off restores it to upcoming.</p>
+            </div>
+            <div class="admin-game-status__controls">
+              <label class="admin-game-status__select">
+                Game
+                <select id="admin-game-status-select">
+                  <option value="">Loading games…</option>
+                </select>
+              </label>
+              <label class="admin-game-switch">
+                <span>Completed</span>
+                <input id="admin-game-completed" type="checkbox" role="switch" aria-describedby="admin-game-status-copy" disabled>
+                <span class="admin-game-switch__track" aria-hidden="true"></span>
+              </label>
+            </div>
+            <p id="admin-game-status-copy" class="admin-game-status__copy" aria-live="polite">Open Watch Parties to load game status.</p>
+          </section>
+
           <div class="watch-party-toolbar">
             <label class="venue-toolbar__search">
               Search Watch Parties

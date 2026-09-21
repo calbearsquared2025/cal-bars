@@ -12,6 +12,7 @@ export const ADMIN_WATCH_PARTY_SOURCE_TYPES = Object.freeze([
   'fan_submitted', 'venue_submitted', 'alumni_group_submitted', 'cgb_added'
 ]);
 export const ADMIN_WATCH_PARTY_SORTS = Object.freeze(['game_date', 'date_added', 'nearest']);
+export const ADMIN_GAME_TOGGLE_STATUSES = Object.freeze(['upcoming', 'completed']);
 
 const WATCH_PARTY_ID = /^wp_[a-f0-9]{24}$/;
 const VENUE_ID = /^venue_[a-f0-9]{24}$/;
@@ -121,6 +122,15 @@ export function buildAdminWatchPartiesRequest() {
   return Object.freeze({ action: 'adminWatchParties' });
 }
 
+export function buildSetAdminGameStatusRequest(gameId, gameStatus) {
+  const id = clean(gameId, 80);
+  const status = clean(gameStatus, 40).toLowerCase();
+  if (!GAME_ID.test(id) || !ADMIN_GAME_TOGGLE_STATUSES.includes(status)) {
+    throw new Error('admin_invalid_game_status');
+  }
+  return Object.freeze({ action: 'setAdminGameStatus', gameId: id, gameStatus: status });
+}
+
 export function buildAddAdminWatchPartyRequest(fields) {
   return Object.freeze({ action: 'addAdminWatchParty', fields: Object.freeze(normalizeEditorFields(fields)) });
 }
@@ -164,6 +174,14 @@ export function validateAdminWatchPartiesResponse(response) {
   if (!Array.isArray(response.games) || !response.games.every(validGameOption)) return false;
   if (!response.counts || Number(response.counts.total) !== response.watchParties.length) return false;
   return true;
+}
+
+export function validateAdminGameWriteResponse(response) {
+  return Boolean(
+    validateBaseResponse(response, 'setAdminGameStatus') &&
+    validGameOption(response.game) &&
+    ADMIN_GAME_TOGGLE_STATUSES.includes(response.game.game_status)
+  );
 }
 
 export function validateAdminWatchPartyWriteResponse(response, action) {
@@ -249,5 +267,8 @@ export function adminWatchPartyErrorCopy(error) {
   if (code.includes('admin_watch_party_venue_not_publishable')) return 'Choose a published Venue for this Watch Party.';
   if (code.includes('admin_watch_party_game_not_open')) return 'New Watch Parties can only be added for an upcoming game.';
   if (code.includes('admin_watch_party_game_not_found')) return 'Choose a valid game.';
+  if (code.includes('admin_game_not_found')) return 'That game no longer exists.';
+  if (code.includes('admin_invalid_game_status')) return 'Choose a valid game status.';
+  if (code.includes('admin_game_status_locked')) return 'Postponed or cancelled games cannot be changed with this toggle.';
   return '';
 }
