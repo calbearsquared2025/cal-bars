@@ -232,11 +232,11 @@ async function revealNativeSurface() {
   return true;
 }
 
-function showNativeSurface(opener = null) {
+function showNativeSurface(opener = null, { returnSurfaceOverride = '' } = {}) {
   if (!ensureSurface()) return Promise.resolve(false);
   void window.CGBAccounts?.start?.();
   if (!open) {
-    returnSurface = document.body.dataset.commandSurface || 'map';
+    returnSurface = returnSurfaceOverride || document.body.dataset.commandSurface || 'map';
     selectedVenueAtOpen = currentSelectedVenueId();
   }
   open = true;
@@ -406,7 +406,8 @@ export function initializeMyCgbNativeSurface() {
 }
 
 window.CGBMyCgbSurface = Object.freeze({
-  open: () => showNativeSurface(),
+  open: ({ opener = null, returnSurfaceOverride = '' } = {}) =>
+    showNativeSurface(opener, { returnSurfaceOverride }),
   close: () => closeNativeSurface({ restoreFocus: true }),
   isOpen: () => open
 });

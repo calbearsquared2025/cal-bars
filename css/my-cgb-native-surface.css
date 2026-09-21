@@ -104,14 +104,45 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
 }
 
 @media (max-width: 899px) {
+  .my-cgb-surface {
+    background:
+      linear-gradient(180deg, rgba(238, 243, 248, .7), transparent 130px),
+      var(--cgb-warm-50, #f7f6f2);
+  }
+
   .my-cgb-surface .accounts-shell {
-    padding: 18px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+    gap: 0;
+    padding: 16px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+    background: transparent;
   }
 
   .my-cgb-surface .accounts-header {
-    margin: -18px -16px 0;
-    padding: 18px 16px 16px;
+    margin: 0;
+    padding: 0 0 11px;
+    color: var(--cgb-navy-950, #010133);
+    background: transparent;
+    border-bottom: 1px solid var(--cgb-neutral-200, #dfe2e6);
     border-radius: 0;
+  }
+
+  .my-cgb-surface .accounts-header .eyebrow {
+    color: var(--cgb-ink-500, #657083);
+    font-family: var(--font-condensed, sans-serif);
+    font-size: var(--text-2xs, .6875rem);
+    font-weight: 850;
+    letter-spacing: .1em;
+    line-height: 1;
+  }
+
+  .my-cgb-surface .accounts-header h2 {
+    margin: 3px 0 0;
+    color: var(--cgb-navy-950, #010133);
+    font-family: var(--font-display, serif);
+    font-size: clamp(1.45rem, 6.4vw, 1.9rem);
+    font-weight: 750;
+    letter-spacing: -.015em;
+    line-height: 1;
+    text-transform: none;
   }
 
   body[data-cgb-accounts-enabled="true"] .opening-stat[hidden] {

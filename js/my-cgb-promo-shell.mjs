@@ -258,14 +258,12 @@ function waitForResolvedAccountState(timeoutMs = ACCOUNT_STATE_RESOLUTION_TIMEOU
 }
 
 async function openLoadedMyCgb() {
-  const priorSurface = returnSurface || document.body.dataset.commandSurface || 'map';
-  setCommandSurface(document, priorSurface);
-  setPrimarySurfaceVisibility(document, priorSurface);
+  const handoffReturnSurface = returnSurface || 'map';
 
   for (let attempt = 0; attempt < FULL_SURFACE_RETRY_LIMIT; attempt += 1) {
     const owner = window.CGBMyCgbSurface;
     if (owner?.open) {
-      const opened = await owner.open();
+      const opened = await owner.open({ returnSurfaceOverride: handoffReturnSurface });
       if (opened !== false) {
         window.CGBPublicCommunity?.setView?.(currentView);
         return true;
