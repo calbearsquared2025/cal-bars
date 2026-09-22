@@ -117,7 +117,7 @@ function ensurePromoSurface() {
       <div class="my-cgb-promo-shell" data-my-cgb-view="profile">
         <header class="my-cgb-promo-header">
           <div>
-            <span class="eyebrow">Cal Golden Bars</span>
+            <span class="eyebrow">HOME</span>
             <h2 id="my-cgb-promo-title">My CGB</h2>
           </div>
         </header>

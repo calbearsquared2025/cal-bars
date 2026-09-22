@@ -105,9 +105,7 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
 
 @media (max-width: 899px) {
   .my-cgb-surface {
-    background:
-      linear-gradient(180deg, rgba(238, 243, 248, .7), transparent 130px),
-      var(--cgb-warm-50, #f7f6f2);
+    background: var(--cgb-warm-50, #f7f6f2);
   }
 
   .my-cgb-surface .accounts-shell {
@@ -117,16 +115,16 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
   }
 
   .my-cgb-surface .accounts-header {
-    margin: 0;
-    padding: 0 0 11px;
-    color: var(--cgb-navy-950, #010133);
-    background: transparent;
-    border-bottom: 1px solid var(--cgb-neutral-200, #dfe2e6);
+    margin: -16px -16px 0;
+    padding: 16px 16px 11px;
+    color: var(--cgb-white, #fff);
+    background: var(--cgb-navy-950, #010133);
+    border-bottom: 1px solid var(--cgb-gold-400, #fdb515);
     border-radius: 0;
   }
 
   .my-cgb-surface .accounts-header .eyebrow {
-    color: var(--cgb-ink-500, #657083);
+    color: var(--cgb-gold-300, #ffd15a);
     font-family: var(--font-condensed, sans-serif);
     font-size: var(--text-2xs, .6875rem);
     font-weight: 850;
@@ -136,7 +134,7 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
 
   .my-cgb-surface .accounts-header h2 {
     margin: 3px 0 0;
-    color: var(--cgb-navy-950, #010133);
+    color: var(--cgb-white, #fff);
     font-family: var(--font-display, serif);
     font-size: clamp(1.45rem, 6.4vw, 1.9rem);
     font-weight: 750;
@@ -146,7 +144,11 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
   }
 
   .my-cgb-surface .my-cgb-profile-view {
-    padding-top: 16px;
+    padding-top: 20px;
+  }
+
+  .my-cgb-surface .my-cgb-about-view .about-support {
+    margin-top: -12px;
   }
 
   body[data-cgb-accounts-enabled="true"] .opening-stat[hidden] {
