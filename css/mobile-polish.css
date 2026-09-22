@@ -522,6 +522,16 @@
     box-shadow: none;
   }
 
+  /* Selected and Locations share one measured parent-height transition. Keeping the
+     sheet bottom-anchored makes its handle and body move as a single surface. */
+  body[data-view="map"] #map-view > #venue-tray.venue-tray.tray--state-transition {
+    inset: auto 0 var(--footer-height) 0 !important;
+    width: 100vw !important;
+    height: var(--tray-transition-height) !important;
+    max-height: none !important;
+    transition: height var(--motion-standard, 220ms) ease !important;
+  }
+
   body[data-command-surface="list"] .location-card {
     min-height: 60px;
     padding-top: 9px;
@@ -532,6 +542,12 @@
   body[data-command-surface="list"] .location-card__description {
     margin-top: 3px;
     font-size: .68rem;
+  }
+}
+
+@media (max-width: 899px) and (prefers-reduced-motion: reduce) {
+  body[data-view="map"] #map-view > #venue-tray.venue-tray.tray--state-transition {
+    transition: none !important;
   }
 }
 

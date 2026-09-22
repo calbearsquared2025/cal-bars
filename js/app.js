@@ -656,20 +656,28 @@ function restoredTrayState() {
 }
 
 function animateTrayHeight(previousHeight) {
-  if (!isMobileLayout() || REDUCED_MOTION || typeof dom.tray?.animate !== 'function') return;
+  if (!isMobileLayout() || REDUCED_MOTION || !dom.tray) return;
   const nextHeight = dom.tray.getBoundingClientRect().height;
   if (!Number.isFinite(previousHeight) || !Number.isFinite(nextHeight) || Math.abs(previousHeight - nextHeight) < 1) return;
-  const animation = dom.tray.animate([
-    { height: `${previousHeight}px` },
-    { height: `${nextHeight}px` }
-  ], {
-    duration: 220,
-    easing: 'ease-out'
+
+  dom.tray.classList.add('tray--state-transition');
+  dom.tray.style.setProperty('--tray-transition-height', `${previousHeight}px`);
+  void dom.tray.offsetHeight;
+
+  requestAnimationFrame(() => {
+    const finish = (event) => {
+      if (event && event.target !== dom.tray) return;
+      dom.tray.removeEventListener('transitionend', finish);
+      dom.tray.removeEventListener('transitioncancel', finish);
+      dom.tray.classList.remove('tray--state-transition');
+      dom.tray.style.removeProperty('--tray-transition-height');
+      state.map?.resize();
+      scheduleSelectedVenueVisibility();
+    };
+    dom.tray.addEventListener('transitionend', finish);
+    dom.tray.addEventListener('transitioncancel', finish);
+    dom.tray.style.setProperty('--tray-transition-height', `${nextHeight}px`);
   });
-  animation.addEventListener('finish', () => {
-    state.map?.resize();
-    scheduleSelectedVenueVisibility();
-  }, { once: true });
 }
 
 function setTrayState(next, { animate = false } = {}) {
@@ -681,7 +689,8 @@ function setTrayState(next, { animate = false } = {}) {
   if (next !== 'peek') lastExpandedTrayState = next;
   if (!dom.tray) return changed;
   dom.tray.dataset.state = next;
-  dom.tray.className = `venue-tray tray--${next}`;
+  dom.tray.classList.remove('tray--peek', 'tray--selected', 'tray--full');
+  dom.tray.classList.add('venue-tray', `tray--${next}`);
   dom.trayHandle.setAttribute('aria-expanded', String(next !== 'peek'));
   dom.trayHandle.setAttribute('aria-label', trayHandleLabel(next));
   dom.trayPeek.hidden = next !== 'peek';
