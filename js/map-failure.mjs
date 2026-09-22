@@ -50,11 +50,6 @@ function loadingCoverSource(documentObject) {
   return preload?.href || preload?.getAttribute?.('href') || '';
 }
 
-function localizeFallback(fallback) {
-  if (!fallback?.style) return;
-  fallback.style.zIndex = '1';
-}
-
 function ensureFallbackStyles(documentObject) {
   if (!documentObject?.createElement || !documentObject?.head) return;
   if (documentObject.getElementById?.(FALLBACK_STYLE_ID)) return;
@@ -252,7 +247,6 @@ export function showMapLoading({
   mapContainer.classList?.add?.('map--loading');
   if (state?.publicDataUsable) {
     fallback.classList?.add?.('map-fallback--local');
-    localizeFallback(fallback);
   } else {
     fallback.classList?.remove?.('map-fallback--local');
   }
@@ -269,7 +263,6 @@ export function localizeMapLoading({
   if (!state?.publicDataUsable || !fallback ||
       !fallback.classList?.contains?.('map-fallback--loading')) return false;
   fallback.classList.add?.('map-fallback--local');
-  localizeFallback(fallback);
   markCoverBoundary(windowObject);
   return true;
 }

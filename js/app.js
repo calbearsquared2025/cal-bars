@@ -440,6 +440,7 @@ function initMap() {
   if (!bounds.isEmpty()) {
     state.map.fitBounds(bounds, { padding: 56, maxZoom: 7, duration: 0 });
   }
+  syncMarkerZoomPresentation();
   state.map.addControl(new sdk.NavigationControl({ showCompass: false }), 'top-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
   state.map.on('zoomend', syncMarkerZoomPresentation);

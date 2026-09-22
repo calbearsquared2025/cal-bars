@@ -65,7 +65,7 @@
   position: absolute;
   transform: rotate(-45deg);
   transform-origin: center;
-  transition: filter var(--motion-fast) ease, scale var(--motion-fast) ease !important;
+  transition: filter var(--motion-fast) ease !important;
 }
 
 .cgb-marker .marker-pin {
@@ -137,7 +137,7 @@
 }
 
 #map[data-marker-detail="overview"] .cgb-marker.marker--watch-party:not(.has-attendance) .marker-star {
-  scale: .9;
+  scale: .85;
 }
 
 #map[data-marker-detail="regional"] .cgb-marker:not(.has-attendance):not(.marker--watch-party) .marker-pin {
@@ -145,7 +145,7 @@
 }
 
 #map[data-marker-detail="regional"] .cgb-marker.marker--watch-party:not(.has-attendance) .marker-star {
-  scale: .96;
+  scale: .92;
 }
 
 .cgb-marker:hover .marker-pin,
