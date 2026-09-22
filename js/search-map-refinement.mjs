@@ -281,7 +281,7 @@ function ensureDesktopAddSearchStyle() {
         text-transform: none;
       }
 
-      #tray-list .location-card__count:not([hidden])::before {
+      #tray-list .location-card__meta-line > .venue-badges:not(:empty) + .location-card__count:not([hidden])::before {
         content: "·";
         display: inline-block;
         margin: 0 6px;
