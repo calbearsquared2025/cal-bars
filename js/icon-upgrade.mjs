@@ -124,9 +124,11 @@ function syncDesktopTrayMotion() {
   const wideDesktop = window.matchMedia?.(WIDE_DESKTOP_QUERY)?.matches === true;
   const reduceMotion = window.matchMedia?.(REDUCED_MOTION_QUERY)?.matches === true;
   const tray = document.querySelector('#map-view > #venue-tray');
+  const commandBar = document.querySelector('.mobile-command-bar');
   const controls = document.querySelector('#map-view .maplibregl-ctrl-top-right');
   const locate = document.querySelector('#map-view > .map-actions');
   setDesktopTransition(tray, 'width', wideDesktop, reduceMotion);
+  setDesktopTransition(commandBar, 'width, right', wideDesktop, reduceMotion);
   setDesktopTransition(controls, 'right', wideDesktop, reduceMotion);
   setDesktopTransition(locate, 'right', wideDesktop, reduceMotion);
 }

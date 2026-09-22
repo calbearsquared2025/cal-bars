@@ -1,6 +1,6 @@
 const DESKTOP_QUERY = '(min-width: 900px)';
 const STYLE_ID = 'cgb-desktop-visual-cohesion';
-const SELECTED_TRAY_SCROLLBAR_VAR = '--cgb-selected-tray-scrollbar-width';
+const TRAY_SCROLLBAR_VAR = '--cgb-tray-scrollbar-width';
 let gameDropdownWired = false;
 
 function isDesktop(windowObject = globalThis.window) {
@@ -17,9 +17,13 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         text-transform: uppercase;
       }
 
+      html body[data-view="map"] .mobile-command-bar {
+        right: calc(24px + var(${TRAY_SCROLLBAR_VAR}, 0px)) !important;
+        width: calc(min(390px, 34vw) - var(${TRAY_SCROLLBAR_VAR}, 0px)) !important;
+      }
+
       html body[data-view="map"]:has(#map-view > #venue-tray.venue-tray.tray--selected) .mobile-command-bar {
-        right: calc(24px + var(${SELECTED_TRAY_SCROLLBAR_VAR}, 0px)) !important;
-        width: calc(clamp(500px, 52vw, 620px) - var(${SELECTED_TRAY_SCROLLBAR_VAR}, 0px)) !important;
+        width: calc(clamp(500px, 52vw, 620px) - var(${TRAY_SCROLLBAR_VAR}, 0px)) !important;
       }
 
       html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__number {
@@ -315,7 +319,7 @@ function wireDesktopGameDropdown({
   return true;
 }
 
-export function syncDesktopSelectedTrayAlignment({
+export function syncDesktopTrayAlignment({
   documentObject = globalThis.document,
   windowObject = globalThis.window
 } = {}) {
@@ -323,19 +327,21 @@ export function syncDesktopSelectedTrayAlignment({
   if (!bar) return false;
 
   if (!isDesktop(windowObject)) {
-    bar.style.removeProperty(SELECTED_TRAY_SCROLLBAR_VAR);
+    bar.style.removeProperty(TRAY_SCROLLBAR_VAR);
     return false;
   }
 
-  const tray = documentObject.querySelector('#map-view > #venue-tray.venue-tray.tray--selected');
-  const selected = documentObject.querySelector('#tray-selected');
-  if (!tray || !selected || selected.hidden) {
-    bar.style.removeProperty(SELECTED_TRAY_SCROLLBAR_VAR);
+  const tray = documentObject.querySelector('#map-view > #venue-tray.venue-tray');
+  const content = tray?.classList.contains('tray--selected')
+    ? documentObject.querySelector('#tray-selected')
+    : documentObject.querySelector('#location-list');
+  if (!tray || !content || content.hidden) {
+    bar.style.removeProperty(TRAY_SCROLLBAR_VAR);
     return false;
   }
 
-  const scrollbarWidth = Math.max(0, Number(selected.offsetWidth || 0) - Number(selected.clientWidth || 0));
-  bar.style.setProperty(SELECTED_TRAY_SCROLLBAR_VAR, `${scrollbarWidth}px`);
+  const scrollbarWidth = Math.max(0, Number(content.offsetWidth || 0) - Number(content.clientWidth || 0));
+  bar.style.setProperty(TRAY_SCROLLBAR_VAR, `${scrollbarWidth}px`);
   return true;
 }
 
@@ -361,7 +367,7 @@ function initializeDesktopVisualCohesion({
 
   const sync = () => {
     syncDesktopAddLanguage({ documentObject, windowObject });
-    syncDesktopSelectedTrayAlignment({ documentObject, windowObject });
+    syncDesktopTrayAlignment({ documentObject, windowObject });
   };
 
   const scheduleSync = () => {
@@ -387,7 +393,7 @@ function initializeDesktopVisualCohesion({
     }
     const tray = documentObject.querySelector('#venue-tray');
     if (tray && typeof MutationObserver === 'function') {
-      const trayObserver = new MutationObserver(scheduleSync);
+      const trayObserver = new MutationObserver(sync);
       trayObserver.observe(tray, {
         attributes: true,
         attributeFilter: ['class', 'data-state'],

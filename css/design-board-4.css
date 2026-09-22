@@ -834,7 +834,7 @@ body[data-view="detail"] #app {
     height: auto;
     min-height: min(260px, calc(100% - 36px));
     max-height: calc(100% - 36px);
-    padding-top: 52px;
+    padding-top: 56px;
     overflow: hidden;
     border-radius: var(--radius-lg);
     box-shadow: 0 18px 48px rgba(1, 1, 51, .22);
@@ -860,6 +860,18 @@ body[data-view="detail"] #app {
 
   .venue-tray .tray-list {
     background: var(--cgb-neutral-50);
+  }
+
+  /* Keep each panel at its settled width while the desktop shell changes size.
+     The shell clips the panel instead of repeatedly rewrapping its contents. */
+  .venue-tray .tray-list {
+    width: min(390px, 34vw);
+    align-self: flex-end;
+  }
+
+  .venue-tray .tray-selected {
+    width: clamp(500px, 52vw, 620px);
+    align-self: flex-start;
   }
 
   .venue-tray #tray-list .tray-list__header {

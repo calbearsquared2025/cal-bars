@@ -762,7 +762,7 @@
   .mobile-command-bar {
     position: fixed;
     z-index: 46;
-    top: calc(var(--header-height) + 22px);
+    top: calc(var(--header-height) + 18px);
     right: 24px;
     bottom: auto;
     left: auto;
