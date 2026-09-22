@@ -145,6 +145,10 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     text-transform: none;
   }
 
+  .my-cgb-surface .my-cgb-profile-view {
+    padding-top: 16px;
+  }
+
   body[data-cgb-accounts-enabled="true"] .opening-stat[hidden] {
     display: none !important;
   }
