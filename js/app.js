@@ -69,6 +69,7 @@ const MARKER_REGIONAL_MAX_ZOOM = 8;
 const dom = {};
 let previousMobileLayout = MOBILE_MEDIA.matches;
 let lastExpandedTrayState = null;
+let activeTrayHeightTransition = null;
 let searchHelperTimer = null;
 let searchHelperReady = false;
 let areaSearchSequence = 0;
@@ -666,28 +667,56 @@ function restoredTrayState() {
   return lastExpandedTrayState || (state.selectedVenueId ? 'selected' : 'full');
 }
 
+function clearTrayHeightTransition() {
+  if (activeTrayHeightTransition) {
+    activeTrayHeightTransition();
+    return;
+  }
+  dom.tray?.classList.remove('tray--state-transition');
+  dom.tray?.style.removeProperty('--tray-transition-height');
+}
+
 function animateTrayHeight(previousHeight) {
   if (!isMobileLayout() || REDUCED_MOTION || !dom.tray) return;
   const nextHeight = dom.tray.getBoundingClientRect().height;
   if (!Number.isFinite(previousHeight) || !Number.isFinite(nextHeight) || Math.abs(previousHeight - nextHeight) < 1) return;
 
+  let frame = null;
+  let finished = false;
+  const finish = (event) => {
+    if (finished || (event && (event.target !== dom.tray || event.propertyName !== 'height'))) return;
+    finished = true;
+    if (frame !== null) cancelAnimationFrame(frame);
+    dom.tray.removeEventListener('transitionend', finish);
+    dom.tray.removeEventListener('transitioncancel', finish);
+    dom.tray.classList.remove('tray--state-transition');
+    dom.tray.style.removeProperty('--tray-transition-height');
+    if (activeTrayHeightTransition === finish) activeTrayHeightTransition = null;
+    state.map?.resize();
+    scheduleSelectedVenueVisibility();
+  };
+
+  activeTrayHeightTransition = finish;
   dom.tray.classList.add('tray--state-transition');
   dom.tray.style.setProperty('--tray-transition-height', `${previousHeight}px`);
   void dom.tray.offsetHeight;
 
-  requestAnimationFrame(() => {
-    const finish = (event) => {
-      if (event && event.target !== dom.tray) return;
-      dom.tray.removeEventListener('transitionend', finish);
-      dom.tray.removeEventListener('transitioncancel', finish);
-      dom.tray.classList.remove('tray--state-transition');
-      dom.tray.style.removeProperty('--tray-transition-height');
-      state.map?.resize();
-      scheduleSelectedVenueVisibility();
-    };
+  frame = requestAnimationFrame(() => {
+    frame = null;
+    if (finished) return;
     dom.tray.addEventListener('transitionend', finish);
     dom.tray.addEventListener('transitioncancel', finish);
     dom.tray.style.setProperty('--tray-transition-height', `${nextHeight}px`);
+    void dom.tray.offsetHeight;
+
+    const heightTransitions = typeof dom.tray.getAnimations === 'function'
+      ? dom.tray.getAnimations().filter((animation) => animation.transitionProperty === 'height')
+      : [];
+    if (heightTransitions.length) {
+      Promise.allSettled(heightTransitions.map((animation) => animation.finished)).then(() => finish());
+    } else if (typeof dom.tray.getAnimations === 'function') {
+      finish();
+    }
   });
 }
 
@@ -696,6 +725,7 @@ function setTrayState(next, { animate = false } = {}) {
   const previousHeight = animate && changed && dom.tray && isMobileLayout() && !REDUCED_MOTION
     ? dom.tray.getBoundingClientRect().height
     : null;
+  if (changed || !activeTrayHeightTransition) clearTrayHeightTransition();
   state.trayState = next;
   if (next !== 'peek') lastExpandedTrayState = next;
   if (!dom.tray) return changed;
@@ -1237,7 +1267,7 @@ function renderAll() {
 function showLocations() {
   invalidateAreaSearch();
   state.detailMode = false;
-  setTrayState('full');
+  setTrayState('full', { animate: isMobileLayout() });
   updateRouteForGame();
   renderAll();
 }
@@ -1248,7 +1278,7 @@ function showSelectedVenue() {
     return;
   }
   if (isMobileLayout()) {
-    setTrayState('selected');
+    setTrayState('selected', { animate: true });
     return;
   }
   state.detailMode = true;
@@ -1744,6 +1774,7 @@ window.CGBApp = Object.freeze({
   showAllLocations,
   showNearbyLocations,
   showLocations,
+  setTrayState,
   showSelectedVenue,
   restoreSelection,
   selectGame,

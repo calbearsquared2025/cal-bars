@@ -78,7 +78,7 @@ function installStyles(documentObject = document) {
   style.id = STYLE_ID;
   style.textContent = `
     @media (max-width: 899px) {
-      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected {
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected:not(.tray--state-transition) {
         transition: max-height var(--motion-standard, 220ms) ease !important;
       }
 

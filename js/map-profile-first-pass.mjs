@@ -116,27 +116,6 @@ function installStyles() {
   document.head.append(style);
 }
 
-function setTrayState(next) {
-  const state = appState();
-  const tray = document.querySelector('#venue-tray');
-  if (!state || !tray) return false;
-
-  state.trayState = next;
-  tray.dataset.state = next;
-  tray.className = `venue-tray tray--${next}`;
-
-  const handle = document.querySelector('#tray-handle');
-  const peek = document.querySelector('#tray-peek');
-  const selected = document.querySelector('#tray-selected');
-  const list = document.querySelector('#tray-list');
-
-  handle?.setAttribute('aria-expanded', String(next !== 'peek'));
-  if (peek) peek.hidden = next !== 'peek';
-  if (selected) selected.hidden = next !== 'selected';
-  if (list) list.hidden = next !== 'full';
-  requestAnimationFrame(() => state.map?.resize?.());
-  return true;
-}
 
 function setCommandActive(command) {
   setCommandSurface(document, command);
@@ -149,7 +128,7 @@ function openListSurface(event) {
   event.stopImmediatePropagation();
 
   setPrimarySurfaceVisibility(document, 'list');
-  setTrayState('full');
+  window.CGBApp?.setTrayState?.('full', { animate: true });
   setCommandActive('list');
 }
 
