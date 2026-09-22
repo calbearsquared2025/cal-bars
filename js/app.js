@@ -62,6 +62,8 @@ const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
 const MOBILE_MEDIA = window.matchMedia(MOBILE_MEDIA_QUERY);
 const TRAY_SWIPE_THRESHOLD = 48;
 const SEARCH_HELPER_DEBOUNCE_MS = 600;
+const MARKER_OVERVIEW_MAX_ZOOM = 5.5;
+const MARKER_REGIONAL_MAX_ZOOM = 8;
 
 const dom = {};
 let previousMobileLayout = MOBILE_MEDIA.matches;
@@ -83,6 +85,20 @@ configureMapTilerSdk();
 
 function isMobileLayout() {
   return MOBILE_MEDIA.matches;
+}
+
+function markerDetailLevel(zoom) {
+  const value = Number(zoom);
+  if (!Number.isFinite(value)) return 'local';
+  if (value < MARKER_OVERVIEW_MAX_ZOOM) return 'overview';
+  if (value < MARKER_REGIONAL_MAX_ZOOM) return 'regional';
+  return 'local';
+}
+
+function syncMarkerZoomPresentation() {
+  if (!dom.map) return;
+  const detail = markerDetailLevel(state.map?.getZoom?.());
+  if (dom.map.dataset.markerDetail !== detail) dom.map.dataset.markerDetail = detail;
 }
 
 function storageGet(key) {
@@ -345,6 +361,7 @@ function updateMarkerElement(button, venue) {
   const kind = markerKind(state.snapshot, state.gameId, venue);
   const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
   button.className = `cgb-marker marker--${kind}`;
+  button.classList.toggle('has-attendance', count > 0);
   button.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
   button.setAttribute('aria-label', `${venue.name}, ${venueTypeLabel(venue)}. ${bearCountCopy(count)}`);
   button.dataset.venueId = venue.venue_id;
@@ -425,11 +442,13 @@ function initMap() {
   }
   state.map.addControl(new sdk.NavigationControl({ showCompass: false }), 'top-right');
   state.map.on('error', (event) => console.warn('Map error', event?.error || event));
+  state.map.on('zoomend', syncMarkerZoomPresentation);
   state.map.on('load', () => {
     if (!initialMapLoadMarked) {
       initialMapLoadMarked = markCgbPerformance('cgb:map:load');
       measureCgbPerformance('cgb:map-construct-to-load', 'cgb:map:construct:start', 'cgb:map:load');
     }
+    syncMarkerZoomPresentation();
     renderMarkers();
     if (!isMobileLayout() && state.selectedVenueId) focusReturnedDetailVenue(selectedVenue());
   });

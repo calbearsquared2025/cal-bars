@@ -56,6 +56,10 @@
   z-index: 30;
 }
 
+.cgb-marker.has-attendance {
+  z-index: 35;
+}
+
 .cgb-marker .marker-pin,
 .cgb-marker .marker-star {
   position: absolute;
@@ -72,7 +76,7 @@
   border-width: 3px;
   border-style: solid;
   border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.92), 0 4px 9px rgba(1,1,51,.22);
 }
 
 .cgb-marker .marker-pin::after {
@@ -105,7 +109,7 @@
   background: var(--cgb-gold-400);
   border: 3px solid var(--cgb-gold-400);
   border-radius: 50% 50% 50% 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,.96), 0 6px 14px rgba(1,1,51,.28);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.92), 0 4px 9px rgba(1,1,51,.22);
   font-size: 0;
 }
 
@@ -128,6 +132,22 @@
   transform: rotate(45deg);
 }
 
+#map[data-marker-detail="overview"] .cgb-marker:not(.has-attendance):not(.marker--watch-party) .marker-pin {
+  scale: .76;
+}
+
+#map[data-marker-detail="overview"] .cgb-marker.marker--watch-party:not(.has-attendance) .marker-star {
+  scale: .9;
+}
+
+#map[data-marker-detail="regional"] .cgb-marker:not(.has-attendance):not(.marker--watch-party) .marker-pin {
+  scale: .9;
+}
+
+#map[data-marker-detail="regional"] .cgb-marker.marker--watch-party:not(.has-attendance) .marker-star {
+  scale: .96;
+}
+
 .cgb-marker:hover .marker-pin,
 .cgb-marker:hover .marker-star,
 .cgb-marker.is-selected .marker-pin,
@@ -148,6 +168,19 @@
   top: -6px;
   right: -27px;
   z-index: 3;
+}
+
+#map .cgb-marker .marker-count {
+  box-shadow: 0 1px 3px rgba(1,1,51,.16);
+}
+
+#map[data-marker-detail="overview"] .cgb-marker .marker-count {
+  right: -22px;
+  min-width: 38px;
+  height: 19px;
+  padding-inline: 5px;
+  border-width: 1px;
+  font-size: .58rem;
 }
 
 @media (max-width: 899px) {
