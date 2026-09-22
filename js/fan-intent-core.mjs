@@ -111,13 +111,16 @@ export function beginIntentTransaction(snapshot, selections, gameId, venueId, fo
     operation: { action, gameId, venueId },
     previousSelections,
     previousFanCounts,
+    optimisticFanCounts: snapshot.fanCounts.map((row) => ({ ...row })),
     nextSelections
   };
 }
 
 export function rollbackIntentTransaction(snapshot, transaction) {
   if (!snapshot || !transaction) return {};
-  snapshot.fanCounts = transaction.previousFanCounts.map((row) => ({ ...row }));
+  if (JSON.stringify(snapshot.fanCounts) === JSON.stringify(transaction.optimisticFanCounts)) {
+    snapshot.fanCounts = transaction.previousFanCounts.map((row) => ({ ...row }));
+  }
   return { ...transaction.previousSelections };
 }
 

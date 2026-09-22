@@ -62,6 +62,7 @@ const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
 const MOBILE_MEDIA = window.matchMedia(MOBILE_MEDIA_QUERY);
 const TRAY_SWIPE_THRESHOLD = 48;
 const SEARCH_HELPER_DEBOUNCE_MS = 600;
+const AREA_SEARCH_TIMEOUT_MS = 10000;
 const MARKER_OVERVIEW_MAX_ZOOM = 5.5;
 const MARKER_REGIONAL_MAX_ZOOM = 8;
 
@@ -70,6 +71,8 @@ let previousMobileLayout = MOBILE_MEDIA.matches;
 let lastExpandedTrayState = null;
 let searchHelperTimer = null;
 let searchHelperReady = false;
+let areaSearchSequence = 0;
+let areaSearchController = null;
 let initialMapConstructionMarked = false;
 let initialMapLoadMarked = false;
 
@@ -164,6 +167,12 @@ function showStatus(message, timeout = 2600) {
   dom.status.hidden = false;
   window.clearTimeout(showStatus.timer);
   showStatus.timer = window.setTimeout(() => { dom.status.hidden = true; }, timeout);
+}
+
+function invalidateAreaSearch() {
+  areaSearchSequence += 1;
+  areaSearchController?.abort();
+  areaSearchController = null;
 }
 
 async function fetchJson(url, timeoutMs = 8000) {
@@ -314,6 +323,7 @@ function renderHeaderAndStats() {
 }
 
 function selectGame(gameId) {
+  invalidateAreaSearch();
   state.gameId = gameId;
   state.listQuery = '';
   state.origin = null;
@@ -630,6 +640,7 @@ function observeTrayLayout() {
 }
 
 function selectVenue(venueId) {
+  invalidateAreaSearch();
   state.selectedVenueId = venueId;
   setTrayState('selected');
   if (!isMobileLayout()) {
@@ -1224,6 +1235,7 @@ function renderAll() {
 }
 
 function showLocations() {
+  invalidateAreaSearch();
   state.detailMode = false;
   setTrayState('full');
   updateRouteForGame();
@@ -1246,6 +1258,7 @@ function showSelectedVenue() {
 }
 
 function showAllLocations() {
+  invalidateAreaSearch();
   const savedLocation = Boolean(rememberNearbyOrigin());
   state.listQuery = '';
   state.origin = null;
@@ -1262,6 +1275,7 @@ function showAllLocations() {
 }
 
 function showNearbyLocations({ trayState = 'full', focus = true, preserveSelectedProfile = false } = {}) {
+  invalidateAreaSearch();
   const remembered = normalizedUserLocation(state.nearbyOrigin);
   if (!remembered) return false;
   state.nearbyOrigin = remembered;
@@ -1282,6 +1296,7 @@ function showNearbyLocations({ trayState = 'full', focus = true, preserveSelecte
 }
 
 function locateOnMap() {
+  invalidateAreaSearch();
   const mobile = isMobileLayout();
   const preserveSelectedProfile = Boolean(state.selectedVenueId) &&
     (mobile ? state.trayState === 'selected' : state.detailMode);
@@ -1293,9 +1308,14 @@ function locateOnMap() {
   })) return;
   if (!navigator.geolocation) return showStatus('Location is not available in this browser');
 
+  const requestSequence = areaSearchSequence;
   dom.nearMe.disabled = true;
   showStatus('Finding your location…', 5000);
   navigator.geolocation.getCurrentPosition((position) => {
+    if (requestSequence !== areaSearchSequence) {
+      dom.nearMe.disabled = false;
+      return;
+    }
     state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
     rememberNearbyOrigin();
     state.listQuery = '';
@@ -1313,6 +1333,7 @@ function locateOnMap() {
       : `No listed locations within ${NEARBY_RADIUS_MILES} miles of your location`);
   }, () => {
     dom.nearMe.disabled = false;
+    if (requestSequence !== areaSearchSequence) return;
     showStatus('Location permission was not available');
   }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
 }
@@ -1356,14 +1377,14 @@ function restoreSelection({ preserveCurrentWhenEmpty = false } = {}) {
   return before !== state.selectedVenueId;
 }
 
-async function geocode(query) {
+async function geocode(query, signal) {
   const url = new URL(`https://api.maptiler.com/geocoding/${encodeURIComponent(query)}.json`);
   url.searchParams.set('key', MAPTILER_KEY);
   url.searchParams.set('language', 'en');
   url.searchParams.set('limit', '5');
   url.searchParams.set('autocomplete', 'false');
   url.searchParams.set('country', 'us');
-  const response = await fetch(url);
+  const response = await fetch(url, { signal });
   if (!response.ok) throw new Error('Location search failed');
   const data = await response.json();
   const features = Array.isArray(data?.features) ? data.features : [];
@@ -1384,6 +1405,8 @@ function queryMatchesMappedLocationField(query) {
 async function runSearch(query) {
   const normalizedQuery = query.trim();
   if (!normalizedQuery) return;
+  invalidateAreaSearch();
+  const sequence = areaSearchSequence;
 
   const mappedMatches = rankVenues(state.snapshot, state.gameId, state.origin, normalizedQuery);
   const exact = findExactVenueMatch(mappedMatches.map(({ venue }) => venue), normalizedQuery);
@@ -1414,8 +1437,12 @@ async function runSearch(query) {
   }
 
   showStatus('Finding that area…', 5000);
+  const controller = new AbortController();
+  areaSearchController = controller;
+  const timeout = window.setTimeout(() => controller.abort(), AREA_SEARCH_TIMEOUT_MS);
   try {
-    const origin = await geocode(normalizedQuery);
+    const origin = await geocode(normalizedQuery, controller.signal);
+    if (sequence !== areaSearchSequence || dom.searchInput.value.trim() !== normalizedQuery) return;
     state.selectedVenueId = null;
     state.detailMode = false;
     state.origin = origin;
@@ -1435,8 +1462,12 @@ async function runSearch(query) {
       ? `Showing ${nearby.length} ${nearby.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`
       : `No listed locations within ${NEARBY_RADIUS_MILES} miles of ${state.origin.label}`);
     emitRendered();
-  } catch (_) {
+  } catch (error) {
+    if (sequence !== areaSearchSequence || error?.name === 'AbortError') return;
     showStatus('Location not found');
+  } finally {
+    window.clearTimeout(timeout);
+    if (areaSearchController === controller) areaSearchController = null;
   }
 }
 
@@ -1597,6 +1628,7 @@ function wireEvents() {
     if (query) runSearch(query);
   });
   dom.searchInput.addEventListener('input', () => {
+    invalidateAreaSearch();
     scheduleSearchHelper();
     renderSuggestions();
   });
@@ -1628,9 +1660,15 @@ function wireEvents() {
     if (normalizedUserLocation(state.origin)) return;
     if (showNearbyLocations()) return;
     if (!navigator.geolocation) return showStatus('Location is not available in this browser');
+    invalidateAreaSearch();
+    const requestSequence = areaSearchSequence;
     dom.listLocationNearby.disabled = true;
     showStatus('Finding your location…', 5000);
     navigator.geolocation.getCurrentPosition((position) => {
+      if (requestSequence !== areaSearchSequence) {
+        dom.listLocationNearby.disabled = false;
+        return;
+      }
       state.origin = { lat: position.coords.latitude, lon: position.coords.longitude, label: 'your location' };
       rememberNearbyOrigin();
       state.listQuery = '';
@@ -1647,6 +1685,7 @@ function wireEvents() {
       emitRendered();
     }, () => {
       dom.listLocationNearby.disabled = false;
+      if (requestSequence !== areaSearchSequence) return;
       showStatus('Location permission was not available');
     }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 });
   });

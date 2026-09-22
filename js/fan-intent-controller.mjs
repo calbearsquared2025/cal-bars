@@ -23,7 +23,7 @@ function trackIntentSuccess(state, operation) {
       ? 'fan_intent_moved'
       : 'fan_intent_joined';
   trackCgbEvent(eventName, {
-    game_id: state.gameId,
+    game_id: operation.gameId,
     venue_type: venue?.venue_type || '',
     intent_action: operation.action
   });
@@ -66,7 +66,7 @@ export function createFanIntentController({
       fanState.selections = commitIntentResponse(
         state.snapshot,
         fanState.selections,
-        state.gameId,
+        transaction.operation.gameId,
         response
       );
       persistSelections(fanState.selections);
@@ -75,7 +75,9 @@ export function createFanIntentController({
         : transaction.operation.action === 'move'
           ? 'Your selection moved.'
           : 'You’ll be here.';
-      showStatus(message, 2600);
+      if (getState().gameId === transaction.operation.gameId) {
+        showStatus(message, 2600);
+      }
       trackIntentSuccess(state, transaction.operation);
       return true;
     } catch (error) {
@@ -85,7 +87,9 @@ export function createFanIntentController({
         ...transaction.operation,
         message: fanIntentFailureCopy(error)
       };
-      showStatus(fanState.retry.message);
+      if (getState().gameId === transaction.operation.gameId) {
+        showStatus(fanState.retry.message);
+      }
       return false;
     } finally {
       fanState.pending = null;

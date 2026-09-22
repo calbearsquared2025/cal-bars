@@ -6,6 +6,7 @@ import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 
 const STYLE_ATTR = 'data-cgb-public-community-style';
 const CACHE_MS = 60000;
+const REQUEST_TIMEOUT_MS = 10000;
 const SPARSE_COMMUNITY_THRESHOLD = 3;
 const MY_CGB_VIEWS = Object.freeze(['profile', 'leaderboard', 'about']);
 const PROFILE_ID_PATTERN = /^profile_[a-f0-9]{24}$/;
@@ -40,6 +41,16 @@ function clean(value) {
 function nonnegativeInteger(value) {
   const number = Number(value);
   return Number.isInteger(number) && number >= 0 ? number : null;
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 function injectStyles() {
@@ -131,7 +142,7 @@ async function fetchLeaderboard({ force = false } = {}) {
     url.searchParams.set('action', 'publicLeaderboard');
     markCgbPerformance('cgb:leaderboard:request:start');
     try {
-      const response = await fetch(url, { method: 'GET', cache: 'no-store' });
+      const response = await fetchWithTimeout(url, { method: 'GET', cache: 'no-store' });
       const payload = await response.json().catch(() => null);
       if (!response.ok) return null;
       const validated = validateLeaderboard(payload);
@@ -160,10 +171,11 @@ async function fetchAttendanceForCard(card) {
     url.searchParams.set('action', 'publicAttendance');
     url.searchParams.set('gameId', gameId);
     url.searchParams.set('venueId', venueId);
-    const response = await fetch(url.toString(), { cache: 'no-store' });
+    const response = await fetchWithTimeout(url.toString(), { cache: 'no-store' });
     const payload = await response.json().catch(() => null);
     if (!response.ok) return null;
-    return validatePublicAttendanceResponse(payload);
+    const validated = validatePublicAttendanceResponse(payload);
+    return validated?.gameId === gameId && validated?.venueId === venueId ? validated : null;
   } catch (_) {
     return null;
   }
@@ -618,16 +630,27 @@ function prepareAttendeeAvatars(root = document) {
 }
 
 async function openAttendeeProfile(avatar) {
-  const card = avatar.closest('.selected-card[data-venue-id]');
-  const stack = avatar.closest('.account-attendee-stack');
-  if (!card || !stack) return;
-  const avatars = [...stack.querySelectorAll('.account-attendee-avatar')];
+  const card = avatar.closest('.selected-card[data-venue-id], #venue-detail[data-venue-id]');
+  const attendees = avatar.closest('.account-attendees');
+  if (!card || !attendees) return;
+  const gameId = clean(window.CGBApp?.getState?.()?.gameId);
+  const venueId = clean(card.dataset.venueId);
+  const requestIsCurrent = () => {
+    const state = window.CGBApp?.getState?.();
+    return avatar.isConnected && card.isConnected &&
+      avatar.closest('.account-attendees') === attendees &&
+      clean(state?.gameId) === gameId &&
+      clean(state?.selectedVenueId) === venueId;
+  };
+  const avatars = [...attendees.querySelectorAll('.account-attendee-avatar')];
   const index = avatars.indexOf(avatar);
-  if (index < 0) return;
+  if (index < 0 || !gameId || !venueId) return;
   const attendance = await fetchAttendanceForCard(card);
+  if (!requestIsCurrent()) return;
   const attendee = attendance?.attendees?.[index];
   if (!attendee) return;
   const data = await fetchLeaderboard().catch(() => null);
+  if (!requestIsCurrent()) return;
   const listed = data?.entries?.find((entry) => entry.profileId === attendee.profileId) || null;
   const entry = listed || Object.freeze({
     profileId: attendee.profileId,

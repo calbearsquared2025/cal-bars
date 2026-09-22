@@ -73,6 +73,10 @@ export function shouldRefreshSnapshot({
   return now - lastAttemptAt >= staleAfterMs;
 }
 
+export function shouldRefreshAfterStartup(dataSource) {
+  return dataSource !== 'live';
+}
+
 export function resolveDirectEntryVenueId(snapshot, search = '') {
   const slug = new URLSearchParams(search).get('venue');
   if (!slug || !Array.isArray(snapshot?.venues)) return '';
@@ -443,7 +447,9 @@ function initializeBrowserRefresh() {
     const ready = await waitForSnapshot();
     if (!ready) return;
     browserRefreshController = startRefreshController(configuredEndpoint());
-    void browserRefreshController?.refreshLive({ force: true });
+    if (shouldRefreshAfterStartup(window.CGBApp?.getState?.()?.dataSource)) {
+      void browserRefreshController?.refreshLive({ force: true });
+    }
   }, { once: true });
 }
 

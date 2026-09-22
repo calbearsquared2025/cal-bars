@@ -9,6 +9,7 @@ import { appState, subscribeAppEvent, waitForApplicationReady } from './app-stat
 import { INTENT_SELECTIONS_STORAGE_KEY } from './fan-intent-core.mjs';
 
 const PUBLIC_ATTENDANCE_CACHE_MS = 30000;
+const PUBLIC_ATTENDANCE_TIMEOUT_MS = 10000;
 const publicAttendanceCache = new Map();
 const publicAttendancePending = new Map();
 let publicAttendanceRevision = 0;
@@ -145,21 +146,25 @@ async function fetchPublicAttendance(gameId, venueId) {
   if (publicAttendancePending.has(key)) return publicAttendancePending.get(key);
 
   const pending = (async () => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), PUBLIC_ATTENDANCE_TIMEOUT_MS);
     try {
       const url = new URL(CGB_ACCOUNTS_CONFIG.endpoint, window.location.href);
       url.searchParams.set('action', 'publicAttendance');
       url.searchParams.set('gameId', gameId);
       url.searchParams.set('venueId', venueId);
-      const response = await fetch(url.toString(), { cache: 'no-store' });
+      const response = await fetch(url.toString(), { cache: 'no-store', signal: controller.signal });
       const payload = await response.json().catch(() => null);
       if (!response.ok) return null;
       const validated = validatePublicAttendanceResponse(payload);
-      if (!validated || revision !== publicAttendanceRevision) return null;
+      if (!validated || validated.gameId !== gameId || validated.venueId !== venueId ||
+          revision !== publicAttendanceRevision) return null;
       publicAttendanceCache.set(key, { at: Date.now(), value: validated });
       return validated;
     } catch (_) {
       return null;
     } finally {
+      window.clearTimeout(timeout);
       publicAttendancePending.delete(key);
     }
   })();
