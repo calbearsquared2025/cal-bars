@@ -262,6 +262,15 @@ body[data-view="detail"] #app {
     max-height: none;
   }
 
+  /* Desktop expanded tray must stay bounded to the map viewport after
+     Locations ↔ Selected lifecycle toggles. The inner panel owns scrolling. */
+  #map-view > #venue-tray.venue-tray.tray--selected,
+  #map-view > #venue-tray.venue-tray.tray--full {
+    height: calc(100% - 36px);
+    min-height: 0;
+    max-height: calc(100% - 36px);
+  }
+
   .tray-handle {
     height: 18px;
   }
