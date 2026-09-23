@@ -241,8 +241,14 @@ export function createSelectedVenueCard({
   header.append(heading);
   card.append(header);
 
+  const contentTarget = mobile ? card : documentObject.createElement('div');
+  if (!mobile) {
+    contentTarget.className = 'selected-card__scroll-region';
+    card.append(contentTarget);
+  }
+
   if (parties.length) {
-    parties.forEach((party, index) => card.append(createWatchPartyModule({
+    parties.forEach((party, index) => contentTarget.append(createWatchPartyModule({
       party,
       index,
       total: parties.length,
@@ -251,10 +257,10 @@ export function createSelectedVenueCard({
       documentObject
     })));
   } else {
-    card.append(createPlanWatchPartyAction(documentObject));
+    contentTarget.append(createPlanWatchPartyAction(documentObject));
   }
 
-  card.append(createSelectedActionRow({
+  contentTarget.append(createSelectedActionRow({
     state,
     venue,
     hasWatchParty: parties.length > 0,
@@ -263,8 +269,8 @@ export function createSelectedVenueCard({
   }));
 
   if (!mobile) {
-    card.append(attendance.count);
-    if (attendance.history) card.append(attendance.history);
+    header.append(attendance.count);
+    if (attendance.history) header.append(attendance.history);
   }
 
   markWatchPartyTrayRenderCurrent(card, {

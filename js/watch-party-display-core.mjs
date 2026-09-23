@@ -78,12 +78,14 @@ export function isWatchPartyTrayRenderCurrent(container, context) {
   const expectedIds = (context?.parties || []).map((party) => normalizedIdentityValue(party?.watch_party_id));
   if (expectedIds.some((id) => !id)) return false;
 
-  const modules = Array.from(container.querySelectorAll?.(':scope > .party-module') || []);
+  const moduleSelector = ':scope > .party-module, :scope > .selected-card__scroll-region > .party-module';
+  const modules = Array.from(container.querySelectorAll?.(moduleSelector) || []);
   if (modules.length !== expectedIds.length) return false;
   if (modules.some((module, index) => normalizedIdentityValue(module?.dataset?.watchPartyId) !== expectedIds[index])) {
     return false;
   }
 
-  const noPartyAction = container.querySelector?.(':scope > .selected-card__plan-party') || null;
+  const noPartySelector = ':scope > .selected-card__plan-party, :scope > .selected-card__scroll-region > .selected-card__plan-party';
+  const noPartyAction = container.querySelector?.(noPartySelector) || null;
   return expectedIds.length === 0 ? Boolean(noPartyAction) : !noPartyAction;
 }

@@ -1,5 +1,5 @@
 /* Shared selected-profile Watch Party treatment. Mobile is the visual baseline on every viewport. */
-#venue-tray .selected-card > .party-module {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module {
   display: grid;
   gap: 4px;
   margin: 1px 0 0;
@@ -13,7 +13,7 @@
   box-shadow: none;
 }
 
-#venue-tray .selected-card > .party-module .party-module__title {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__title {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -23,13 +23,13 @@
   line-height: 1.1;
 }
 
-#venue-tray .selected-card > .party-module .party-module__title .ui-icon {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__title .ui-icon {
   width: 15px;
   height: 15px;
   color: var(--cgb-gold-500);
 }
 
-#venue-tray .selected-card > .party-module .party-module__date {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__date {
   flex: 0 0 auto;
   margin-left: auto;
   color: var(--cgb-ink-500);
@@ -39,30 +39,30 @@
   white-space: nowrap;
 }
 
-#venue-tray .selected-card > .party-module p {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module p {
   margin: 0;
   color: var(--cgb-ink-700);
   font-size: .71rem;
   line-height: 1.24;
 }
 
-#venue-tray .selected-card > .party-module .party-game-context {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-game-context {
   color: var(--cgb-navy-900);
   font-weight: 800;
   letter-spacing: .025em;
 }
 
-#venue-tray .selected-card > .party-module .party-module__time {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__time {
   color: var(--cgb-ink-700);
   font-weight: 600;
 }
 
-#venue-tray .selected-card > .party-module .party-meta {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-meta {
   color: var(--cgb-navy-900);
   font-weight: 800;
 }
 
-#venue-tray .selected-card > .party-module a:not(.party-module__report) {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module a:not(.party-module__report) {
   color: var(--cgb-navy-900);
   font-size: .71rem;
   font-weight: 800;
@@ -71,12 +71,12 @@
   text-underline-offset: 3px;
 }
 
-#venue-tray .selected-card > .party-module .party-module__event {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__event {
   margin-top: 3px;
   letter-spacing: .025em;
 }
 
-#venue-tray .selected-card > .party-module .party-module__report {
+#venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__report {
   justify-self: start;
   margin-top: 5px;
   padding-top: 0;
@@ -134,19 +134,19 @@
 @media (max-width: 899px) {
   /* The runtime icon pass turns the date span into the trailing Watch Party star.
      Keep that star beside the label on mobile instead of pushing it to the card edge. */
-  #venue-tray .selected-card > .party-module .party-module__date {
+  #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__date {
     margin-left: 0;
   }
 
   /* The selected profile is the only mobile scrollport. Watch Party content stays in
      normal flow so dragging anywhere on the card continues scrolling the profile. */
-  #venue-tray .selected-card > .party-module.party-module--multiple {
+  #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module.party-module--multiple {
     max-height: none;
     overflow: visible;
     overscroll-behavior: auto;
   }
 
-  #venue-tray .selected-card > .party-module.party-module--multiple .party-module__title {
+  #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module.party-module--multiple .party-module__title {
     position: static;
   }
 

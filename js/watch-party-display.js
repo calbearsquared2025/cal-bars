@@ -6,13 +6,16 @@ import { createWatchPartyModule } from './watch-party-renderer.mjs';
 
 function replaceRenderedParties(container, parties, snapshot, documentObject) {
   if (!container) return;
-  container.querySelectorAll(':scope > .party-module').forEach((module) => module.remove());
+  const detail = container.id === 'venue-detail';
+  const target = detail
+    ? container
+    : (container.querySelector(':scope > .selected-card__scroll-region') || container);
+  target.querySelectorAll(':scope > .party-module').forEach((module) => module.remove());
   if (!parties.length) return;
 
-  const detail = container.id === 'venue-detail';
   const anchor = detail
-    ? container.querySelector(':scope > .activity-card, :scope > .detail-watch-party-cta, :scope > .detail-contribution, :scope > .action-row')
-    : container.querySelector(':scope > .bear-count, :scope > .action-row, :scope > .venue-website, :scope > .watch-party-contribution, :scope > .preview-note');
+    ? target.querySelector(':scope > .activity-card, :scope > .detail-watch-party-cta, :scope > .detail-contribution, :scope > .action-row')
+    : target.querySelector(':scope > .bear-count, :scope > .action-row, :scope > .venue-website, :scope > .watch-party-contribution, :scope > .preview-note');
   const fragment = documentObject.createDocumentFragment();
   parties.forEach((party, index) => fragment.append(createWatchPartyModule({
     party,
@@ -22,7 +25,7 @@ function replaceRenderedParties(container, parties, snapshot, documentObject) {
     detail,
     documentObject
   })));
-  container.insertBefore(fragment, anchor || null);
+  target.insertBefore(fragment, anchor || null);
 }
 
 export function synchronizeWatchPartyContainers({

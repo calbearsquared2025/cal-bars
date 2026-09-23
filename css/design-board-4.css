@@ -153,7 +153,7 @@ body[data-view="detail"] #app {
     padding-inline: 12px;
   }
 
-  .selected-card > .party-module {
+  :is(.selected-card, .selected-card__scroll-region) > .party-module {
     display: none;
   }
 
@@ -275,7 +275,7 @@ body[data-view="detail"] #app {
     font-size: 1.2rem;
   }
 
-  .selected-card > .party-module {
+  :is(.selected-card, .selected-card__scroll-region) > .party-module {
     display: none;
   }
 
@@ -356,7 +356,7 @@ body[data-view="detail"] #app {
 }
 
 /* Positive fan attendance is one compact CGB-community unit. */
-.selected-card > .bear-count:not(.bear-count--empty) {
+:is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) {
   width: 100%;
   min-height: 56px;
   display: grid;
@@ -376,7 +376,7 @@ body[data-view="detail"] #app {
   text-align: left;
 }
 
-.selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
+:is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__number {
   grid-column: 1;
   grid-row: 1 / 4;
   align-self: start;
@@ -388,7 +388,7 @@ body[data-view="detail"] #app {
   line-height: .84;
 }
 
-.selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
+:is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__label {
   grid-column: 2;
   grid-row: 1;
   align-self: start;
@@ -401,8 +401,8 @@ body[data-view="detail"] #app {
   line-height: .95;
 }
 
-.selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending,
-.selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+:is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__attending,
+:is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__context {
   grid-column: 2;
   justify-self: start;
   font-family: var(--font-ui);
@@ -413,13 +413,13 @@ body[data-view="detail"] #app {
   white-space: nowrap;
 }
 
-.selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending {
+:is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__attending {
   grid-row: 2;
   margin-top: 0;
   font-size: .62rem;
 }
 
-.selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+:is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__context {
   grid-row: 3;
   font-size: .6rem;
 }
@@ -916,14 +916,14 @@ body[data-view="detail"] #app {
 
   .selected-card > .venue-description,
   .selected-card > .venue-activity-history,
-  .selected-card > .party-module,
+  :is(.selected-card, .selected-card__scroll-region) > .party-module,
   .selected-card > .selected-card__plan-party,
-  .selected-card > .bear-count,
+  :is(.selected-card, .selected-card__header) > .bear-count,
   .selected-card > .action-row {
     grid-column: 1;
   }
 
-  .selected-card > .party-module {
+  :is(.selected-card, .selected-card__scroll-region) > .party-module {
     gap: 7px;
     padding: 13px 14px;
     border-radius: 14px;
@@ -957,7 +957,7 @@ body[data-view="detail"] #app {
     font-weight: 800;
   }
 
-  .selected-card > .bear-count:not(.bear-count--empty) {
+  :is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) {
     min-height: 48px;
     display: flex;
     flex-wrap: wrap;
@@ -970,28 +970,28 @@ body[data-view="detail"] #app {
     text-align: left;
   }
 
-  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__number {
+  :is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__number {
     align-self: baseline;
     font-size: 1.9rem;
     line-height: .9;
   }
 
-  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__label {
+  :is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__label {
     align-self: baseline;
     font-size: .74rem;
   }
 
-  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__attending,
-  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+  :is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__attending,
+  :is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__context {
     align-self: baseline;
     font-size: .62rem;
   }
 
-  .selected-card > .bear-count:not(.bear-count--empty) .bear-count__context {
+  :is(.selected-card, .selected-card__header) > .bear-count:not(.bear-count--empty) .bear-count__context {
     color: var(--cgb-ink-500);
   }
 
-  .selected-card > .bear-count--empty {
+  :is(.selected-card, .selected-card__header) > .bear-count--empty {
     max-width: none;
     min-height: 42px;
     display: inline-flex;
@@ -1120,4 +1120,42 @@ body[data-view="detail"] #app {
 
 .detail-hero.detail-hero--no-photo .venue-badges {
   top: calc(env(safe-area-inset-top, 0px) + 44px);
+}
+
+
+/* Desktop selected profile: the navy identity/attendance hero is fixed chrome.
+   Only the white continuation below it owns vertical scrolling. */
+@media (min-width: 900px) {
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected {
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card {
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__header {
+    min-height: 0;
+    padding: 16px 18px 18px;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__scroll-region {
+    min-height: 0;
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: 10px 18px 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    background: var(--cgb-white);
+  }
 }

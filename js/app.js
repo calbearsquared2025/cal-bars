@@ -1650,7 +1650,7 @@ function handleViewportClassChange() {
 function wireEvents() {
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
-  dom.browseButton.addEventListener('click', () => setTrayState('full'));
+  dom.browseButton.addEventListener('click', showLocations);
   dom.closeList.addEventListener('click', showSelectedVenue);
   dom.searchForm.addEventListener('submit', (event) => {
     event.preventDefault();
