@@ -37,6 +37,7 @@ import { legacyActivitySeason, venueActivityPresentation } from './venue-activit
 import { createIcon } from './icons.mjs';
 import { firstUsMapTilerResult } from './map-geocoding-core.mjs';
 import { nearbyLocationControlPresentation, normalizedUserLocation } from './nearby-location-core.mjs';
+import { clampTrayHeight, nearestTrayState } from './mobile-tray-geometry.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
@@ -60,7 +61,6 @@ const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').mat
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';
 const MOBILE_MEDIA = window.matchMedia(MOBILE_MEDIA_QUERY);
-const TRAY_SWIPE_THRESHOLD = 48;
 const SEARCH_HELPER_DEBOUNCE_MS = 600;
 const AREA_SEARCH_TIMEOUT_MS = 10000;
 const MARKER_OVERVIEW_MAX_ZOOM = 5.5;
@@ -634,6 +634,7 @@ function observeTrayLayout() {
     const size = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
     if (size === state.lastTraySize) return;
     state.lastTraySize = size;
+    if (dom.tray.classList.contains('tray--gesture')) return;
     state.map?.resize();
     scheduleSelectedVenueVisibility();
   });
@@ -1569,72 +1570,193 @@ function renderSuggestions() {
 }
 
 function wireTrayDrag() {
-  let startY = null;
-  let pointerId = null;
+  let gesture = null;
   let suppressNextClick = false;
-  let pendingSwipeState = '';
-  let pendingSwipeFrame = null;
 
-  const reset = () => { startY = null; pointerId = null; };
-  const clearPendingSwipe = () => {
-    if (pendingSwipeFrame !== null) cancelAnimationFrame(pendingSwipeFrame);
-    pendingSwipeFrame = null;
-    pendingSwipeState = '';
-  };
-  const applyPendingSwipe = () => {
-    if (!pendingSwipeState) return;
-    const next = pendingSwipeState;
-    clearPendingSwipe();
-    setTrayState(next, { animate: true });
-  };
   const suppressGeneratedClick = () => {
     suppressNextClick = true;
     window.setTimeout(() => { suppressNextClick = false; }, 350);
   };
 
-  dom.trayHandle.addEventListener('pointerdown', (event) => {
-    clearPendingSwipe();
-    startY = event.clientY;
-    pointerId = event.pointerId;
-    dom.trayHandle.setPointerCapture?.(event.pointerId);
-  });
+  const traySafeAreaBottom = () => {
+    const value = getComputedStyle(document.documentElement).getPropertyValue('--footer-height');
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  };
 
-  dom.trayHandle.addEventListener('pointerup', (event) => {
-    if (startY === null || event.pointerId !== pointerId) return;
-    const delta = event.clientY - startY;
-    reset();
-    if (Math.abs(delta) <= TRAY_SWIPE_THRESHOLD) return;
+  const measureHiddenContentHeight = (element) => {
+    if (!element) return 0;
+    const wasHidden = element.hidden;
+    const previous = {
+      position: element.style.position,
+      visibility: element.style.visibility,
+      pointerEvents: element.style.pointerEvents,
+      width: element.style.width
+    };
+    if (wasHidden) element.hidden = false;
+    element.style.position = 'absolute';
+    element.style.visibility = 'hidden';
+    element.style.pointerEvents = 'none';
+    element.style.width = `${Math.max(0, dom.tray?.clientWidth || window.innerWidth)}px`;
+    const height = element.scrollHeight;
+    element.style.position = previous.position;
+    element.style.visibility = previous.visibility;
+    element.style.pointerEvents = previous.pointerEvents;
+    element.style.width = previous.width;
+    if (wasHidden) element.hidden = true;
+    return height;
+  };
 
-    if (delta > 0) {
+  const restingHeights = () => {
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    const currentHeight = dom.tray?.getBoundingClientRect().height || 0;
+    const handleHeight = dom.trayHandle?.getBoundingClientRect().height || 24;
+    const selectedContentHeight = measureHiddenContentHeight(dom.traySelected);
+    const selectedLimit = Math.min(viewportHeight * 0.58, 520);
+    const selectedHeight = Math.min(
+      selectedLimit,
+      Math.max(96, selectedContentHeight + Math.max(24, handleHeight))
+    );
+    const maxAvailable = Math.max(96, viewportHeight - traySafeAreaBottom() - 16);
+    const fullHeight = Math.min(maxAvailable, Math.min(viewportHeight * 0.78, 680));
+    const heights = {
+      peek: 96,
+      full: Math.max(96, fullHeight)
+    };
+    if (state.selectedVenueId) heights.selected = Math.max(96, selectedHeight || currentHeight);
+    return heights;
+  };
+
+  const applyGestureHeight = (height) => {
+    if (!dom.tray) return;
+    dom.tray.style.setProperty('--tray-drag-height', `${height}px`);
+  };
+
+  const cleanupTransientGeometry = () => {
+    dom.tray?.classList.remove('tray--gesture', 'tray--gesture-settling');
+    dom.tray?.style.removeProperty('--tray-drag-height');
+    state.map?.resize();
+    scheduleSelectedVenueVisibility();
+  };
+
+  const settleTo = (nextState, targetHeight, { currentHeight = null } = {}) => {
+    if (!dom.tray) return;
+    const fromHeight = Number.isFinite(currentHeight)
+      ? currentHeight
+      : dom.tray.getBoundingClientRect().height;
+    dom.tray.classList.add('tray--gesture');
+    applyGestureHeight(fromHeight);
+    setTrayState(nextState);
+    if (REDUCED_MOTION || Math.abs(fromHeight - targetHeight) < 1) {
+      applyGestureHeight(targetHeight);
+      cleanupTransientGeometry();
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      if (!dom.tray) return;
+      const finish = (event) => {
+        if (event && (event.target !== dom.tray || event.propertyName !== 'height')) return;
+        dom.tray.removeEventListener('transitionend', finish);
+        dom.tray.removeEventListener('transitioncancel', finish);
+        cleanupTransientGeometry();
+      };
+      dom.tray.addEventListener('transitionend', finish);
+      dom.tray.addEventListener('transitioncancel', finish);
+      dom.tray.classList.add('tray--gesture-settling');
+      applyGestureHeight(targetHeight);
+      const animations = typeof dom.tray.getAnimations === 'function'
+        ? dom.tray.getAnimations().filter((animation) => animation.transitionProperty === 'height')
+        : [];
+      if (typeof dom.tray.getAnimations === 'function' && !animations.length) finish();
+      else if (animations.length) Promise.allSettled(animations.map((animation) => animation.finished)).then(() => finish());
+    });
+  };
+
+  const finishGesture = (event, cancelled = false, force = false) => {
+    if (!gesture || (!force && event.pointerId !== gesture.pointerId) || !dom.tray) return;
+    const current = gesture;
+    gesture = null;
+    if (cancelled) {
+      setTrayState(current.startState);
+      cleanupTransientGeometry();
+      return;
+    }
+
+    const renderedHeight = dom.tray.getBoundingClientRect().height;
+    const elapsed = Math.max(1, event.timeStamp - current.lastTime);
+    const velocityY = (event.clientY - current.lastY) / elapsed;
+    const nextState = nearestTrayState({
+      height: renderedHeight,
+      velocityY,
+      restingHeights: current.restingHeights
+    }) || current.startState;
+    const targetHeight = current.restingHeights[nextState] || current.startHeight;
+    if (current.moved) {
       suppressGeneratedClick();
-      setTrayState('peek', { animate: true });
-      return;
+      event.preventDefault?.();
     }
+    settleTo(nextState, targetHeight, { currentHeight: renderedHeight });
+  };
 
-    if (state.trayState === 'peek') {
-      pendingSwipeState = restoredTrayState();
-      pendingSwipeFrame = requestAnimationFrame(applyPendingSwipe);
-      return;
-    }
-
-    suppressGeneratedClick();
+  dom.trayHandle.addEventListener('pointerdown', (event) => {
+    if (!isMobileLayout() || !dom.tray || event.button > 0) return;
+    clearTrayHeightTransition();
+    const heights = restingHeights();
+    const values = Object.values(heights);
+    if (!values.length) return;
+    const rect = dom.tray.getBoundingClientRect();
+    gesture = {
+      pointerId: event.pointerId,
+      startState: state.trayState,
+      startY: event.clientY,
+      latestY: event.clientY,
+      lastY: event.clientY,
+      lastTime: event.timeStamp,
+      startHeight: rect.height,
+      currentHeight: rect.height,
+      minHeight: Math.min(...values),
+      maxHeight: Math.max(...values),
+      restingHeights: heights,
+      moved: false
+    };
+    dom.tray.classList.add('tray--gesture');
+    applyGestureHeight(rect.height);
+    try { dom.trayHandle.setPointerCapture?.(event.pointerId); } catch (_) {}
   });
 
-  dom.trayHandle.addEventListener('pointercancel', reset);
-  dom.trayHandle.addEventListener('lostpointercapture', reset);
+  dom.trayHandle.addEventListener('pointermove', (event) => {
+    if (!gesture || event.pointerId !== gesture.pointerId) return;
+    const deltaY = event.clientY - gesture.startY;
+    gesture.moved ||= Math.abs(deltaY) > 3;
+    gesture.lastY = gesture.latestY;
+    gesture.lastTime = event.timeStamp;
+    gesture.latestY = event.clientY;
+    gesture.currentHeight = clampTrayHeight(
+      gesture.startHeight - deltaY,
+      gesture.minHeight,
+      gesture.maxHeight
+    );
+    applyGestureHeight(gesture.currentHeight);
+    if (gesture.moved) event.preventDefault();
+  }, { passive: false });
+
+  dom.trayHandle.addEventListener('pointerup', (event) => finishGesture(event));
+  dom.trayHandle.addEventListener('pointercancel', (event) => finishGesture(event, true, true));
+  dom.trayHandle.addEventListener('lostpointercapture', (event) => {
+    if (gesture) finishGesture(event, true, true);
+  });
+
   dom.trayHandle.addEventListener('click', (event) => {
-    if (pendingSwipeState) {
-      event.preventDefault();
-      applyPendingSwipe();
-      return;
-    }
     if (suppressNextClick) {
       suppressNextClick = false;
       event.preventDefault();
       return;
     }
+    const heights = restingHeights();
     const next = state.trayState === 'peek' ? restoredTrayState() : 'peek';
-    setTrayState(next, { animate: true });
+    const targetHeight = heights[next] || heights.peek;
+    settleTo(next, targetHeight);
   });
 }
 

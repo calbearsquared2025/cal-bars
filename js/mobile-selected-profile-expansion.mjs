@@ -357,11 +357,9 @@ function connect() {
 
   appConnected = true;
   installStyles(document);
-  window.addEventListener('click', interceptSuppressedHandleClick, { capture: true });
-  document.addEventListener('pointerdown', (event) => beginGesture(event, document, window), { capture: true });
-  document.addEventListener('pointermove', (event) => moveGesture(event, document), { capture: true, passive: false });
-  document.addEventListener('pointerup', (event) => finishGesture(event, document, window), { capture: true });
-  document.addEventListener('pointercancel', (event) => cancelGesture(event, document, window), { capture: true });
+  // The shared tray controller in app.js owns pointer geometry. This module now
+  // retains selected-profile height calculation/synchronization only so there is
+  // one gesture owner for the entire bottom sheet.
   window.addEventListener('resize', () => scheduleSync(document, window));
   window.visualViewport?.addEventListener?.('resize', () => scheduleSync(document, window));
   window.matchMedia(MOBILE_QUERY).addEventListener?.('change', () => scheduleSync(document, window));
