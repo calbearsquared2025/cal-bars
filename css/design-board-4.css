@@ -700,16 +700,16 @@ body[data-view="detail"] #app {
   }
 
   .brand {
-    gap: 9px;
+    gap: 10px;
   }
 
   .brand-mark {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
   }
 
   .brand-name {
-    font-size: 1rem;
+    font-size: 1.08rem;
     letter-spacing: .03em;
   }
 
@@ -722,7 +722,7 @@ body[data-view="detail"] #app {
   }
 
   .game-button__eyebrow {
-    font-size: .6rem;
+    font-size: .66rem;
     letter-spacing: .1em;
   }
 
@@ -757,7 +757,7 @@ body[data-view="detail"] #app {
     align-items: baseline;
     justify-content: center;
     gap: 6px;
-    font-size: .65rem;
+    font-size: .7rem;
   }
 
   .opening-stat__number {
@@ -771,7 +771,7 @@ body[data-view="detail"] #app {
   .opening-stat__copy {
     display: grid;
     color: var(--cgb-navy-900, #002676);
-    font-size: .6rem;
+    font-size: .68rem;
     letter-spacing: .035em;
     line-height: 1.05;
     text-transform: uppercase;
@@ -779,7 +779,7 @@ body[data-view="detail"] #app {
 
   .opening-stat__copy small {
     color: var(--cgb-ink-500, #657083);
-    font-size: .5rem;
+    font-size: .6rem;
     font-weight: 700;
   }
 
@@ -788,7 +788,7 @@ body[data-view="detail"] #app {
     padding-inline: 10px;
     color: var(--cgb-ink-500);
     border-top-color: rgba(1, 1, 51, .08);
-    font-size: .62rem;
+    font-size: .68rem;
     font-weight: 750;
     letter-spacing: .015em;
   }
@@ -1055,7 +1055,7 @@ body[data-view="detail"] #app {
 
   .location-card__count {
     color: var(--cgb-navy-900, #0b2856);
-    font-size: .66rem;
+    font-size: .72rem;
     font-weight: 700;
     letter-spacing: 0;
     text-transform: none;
@@ -1071,9 +1071,9 @@ body[data-view="detail"] #app {
   }
 
   .location-card .venue-badge {
-    min-height: 19px;
-    padding: 2px 7px;
-    font-size: .54rem;
+    min-height: 21px;
+    padding: 3px 7px;
+    font-size: .625rem;
     letter-spacing: .07em;
     clip-path: polygon(0 0, calc(100% - .2rem) 0, 100% .2rem, 100% 100%, .2rem 100%, 0 calc(100% - .2rem));
   }

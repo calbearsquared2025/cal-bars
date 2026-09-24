@@ -161,6 +161,9 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     height: 56px;
     min-height: 56px;
+    background: var(--cgb-navy-950, #010133);
+    border-bottom-color: rgba(255, 255, 255, .14);
+    box-shadow: 0 8px 18px rgba(1, 1, 51, .16);
   }
 
   body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-list-button,
@@ -175,6 +178,7 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     padding: 0 8px;
     color: rgba(255, 255, 255, .88) !important;
     background: transparent !important;
+    border-color: rgba(255, 255, 255, .24);
     font-family: var(--font-condensed, sans-serif);
     font-size: .84rem;
     font-weight: 800;
@@ -237,7 +241,7 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     justify-content: center;
     align-items: center;
     text-align: center;
-    border: 1px solid rgba(1, 1, 51, .18);
+    border: 1px solid rgba(255, 255, 255, .24);
     border-left: 0;
     border-radius: 0 9px 9px 0;
   }
@@ -320,7 +324,7 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     background: rgba(255, 255, 255, .055);
     border: 1px solid rgba(255, 255, 255, .38);
     border-radius: var(--radius-sm, 8px);
-    font-size: .72rem;
+    font-size: .76rem;
     font-weight: 800;
     line-height: 1;
     white-space: nowrap;
