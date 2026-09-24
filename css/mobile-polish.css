@@ -395,6 +395,11 @@
     height: 116px;
   }
 
+  /* The handle is an affordance for resizing a selected-place sheet only. */
+  .tray--peek:not(.tray--draggable) .tray-handle {
+    display: none;
+  }
+
   .tray-summary {
     min-height: 82px;
     display: grid;
@@ -558,6 +563,17 @@
   body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected.tray--gesture.tray--gesture-settling {
     transition: height var(--motion-standard, 220ms) cubic-bezier(.2, .8, .2, 1) !important;
   }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected.tray--free {
+    height: var(--tray-free-height) !important;
+    max-height: none !important;
+    transition: none !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected.tray--free .tray-selected {
+    max-height: calc(var(--tray-free-height) - 24px) !important;
+  }
+
 
   body[data-command-surface="list"] .location-card {
     min-height: 60px;

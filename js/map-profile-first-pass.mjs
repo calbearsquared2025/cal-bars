@@ -33,8 +33,17 @@ function installStyles() {
         border-radius: 22px 22px 0 0 !important;
       }
 
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:not(.tray--draggable) {
+        height: 78px !important;
+      }
+
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle {
         height: 18px !important;
+        display: none !important;
+        pointer-events: none !important;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek.tray--draggable .tray-handle {
         display: grid !important;
         pointer-events: auto !important;
       }

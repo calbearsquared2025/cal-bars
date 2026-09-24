@@ -37,7 +37,7 @@ import { legacyActivitySeason, venueActivityPresentation } from './venue-activit
 import { createIcon } from './icons.mjs';
 import { firstUsMapTilerResult } from './map-geocoding-core.mjs';
 import { nearbyLocationControlPresentation, normalizedUserLocation } from './nearby-location-core.mjs';
-import { clampTrayHeight, nearestTrayState } from './mobile-tray-geometry.mjs';
+import { clampTrayHeight, magneticTrayState } from './mobile-tray-geometry.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
@@ -721,11 +721,17 @@ function animateTrayHeight(previousHeight) {
   });
 }
 
-function setTrayState(next, { animate = false } = {}) {
+function clearTrayFreeHeight() {
+  dom.tray?.classList.remove('tray--free');
+  dom.tray?.style.removeProperty('--tray-free-height');
+}
+
+function setTrayState(next, { animate = false, preserveFreeHeight = false } = {}) {
   const changed = state.trayState !== next;
   const previousHeight = animate && changed && dom.tray && isMobileLayout() && !REDUCED_MOTION
     ? dom.tray.getBoundingClientRect().height
     : null;
+  if (!preserveFreeHeight) clearTrayFreeHeight();
   if (changed || !activeTrayHeightTransition) clearTrayHeightTransition();
   state.trayState = next;
   if (next !== 'peek') lastExpandedTrayState = next;
@@ -733,7 +739,11 @@ function setTrayState(next, { animate = false } = {}) {
   dom.tray.dataset.state = next;
   dom.tray.classList.remove('tray--peek', 'tray--selected', 'tray--full');
   dom.tray.classList.add('venue-tray', `tray--${next}`);
-  dom.trayHandle.setAttribute('aria-expanded', String(next !== 'peek'));
+  const draggable = Boolean(state.selectedVenueId) && next !== 'full';
+  dom.tray.classList.toggle('tray--draggable', draggable);
+  dom.trayHandle.disabled = !draggable;
+  dom.trayHandle.setAttribute('aria-hidden', String(!draggable));
+  dom.trayHandle.setAttribute('aria-expanded', String(draggable && next !== 'peek'));
   dom.trayHandle.setAttribute('aria-label', trayHandleLabel(next));
   dom.trayPeek.hidden = next !== 'peek';
   dom.traySelected.hidden = next !== 'selected';
@@ -1611,19 +1621,33 @@ function wireTrayDrag() {
     const viewportHeight = window.visualViewport?.height || window.innerHeight;
     const currentHeight = dom.tray?.getBoundingClientRect().height || 0;
     const handleHeight = dom.trayHandle?.getBoundingClientRect().height || 24;
+    const freeHeight = dom.tray?.classList.contains('tray--free');
+    const peekContentHeight = measureHiddenContentHeight(dom.trayPeek);
+    const measuredPeekHeight = Math.max(96, peekContentHeight + Math.max(24, handleHeight));
+    const peekHeight = state.trayState === 'peek' && !freeHeight
+      ? currentHeight
+      : measuredPeekHeight;
     const selectedContentHeight = measureHiddenContentHeight(dom.traySelected);
-    const selectedLimit = Math.min(viewportHeight * 0.58, 520);
-    const selectedHeight = Math.min(
-      selectedLimit,
-      Math.max(96, selectedContentHeight + Math.max(24, handleHeight))
+    const configuredSelectedHeight = Number.parseFloat(
+      dom.tray?.style.getPropertyValue('--cgb-selected-tray-max-height') || ''
     );
-    const maxAvailable = Math.max(96, viewportHeight - traySafeAreaBottom() - 16);
+    const selectedLimit = Number.isFinite(configuredSelectedHeight) && configuredSelectedHeight > 0
+      ? configuredSelectedHeight
+      : Math.min(viewportHeight * 0.58, 520);
+    const measuredSelectedHeight = Math.max(
+      peekHeight,
+      selectedContentHeight + Math.max(24, handleHeight)
+    );
+    const selectedHeight = state.trayState === 'selected' && !freeHeight
+      ? currentHeight
+      : Math.min(selectedLimit, measuredSelectedHeight);
+    const maxAvailable = Math.max(peekHeight, viewportHeight - traySafeAreaBottom() - 16);
     const fullHeight = Math.min(maxAvailable, Math.min(viewportHeight * 0.78, 680));
     const heights = {
-      peek: 96,
-      full: Math.max(96, fullHeight)
+      peek: peekHeight,
+      full: Math.max(peekHeight, fullHeight)
     };
-    if (state.selectedVenueId) heights.selected = Math.max(96, selectedHeight || currentHeight);
+    if (state.selectedVenueId) heights.selected = Math.max(peekHeight, selectedHeight || currentHeight);
     return heights;
   };
 
@@ -1635,6 +1659,16 @@ function wireTrayDrag() {
   const cleanupTransientGeometry = () => {
     dom.tray?.classList.remove('tray--gesture', 'tray--gesture-settling');
     dom.tray?.style.removeProperty('--tray-drag-height');
+    state.map?.resize();
+    scheduleSelectedVenueVisibility();
+  };
+
+  const commitFreeHeight = (height) => {
+    if (!dom.tray || !Number.isFinite(height)) return;
+    dom.tray.classList.remove('tray--gesture', 'tray--gesture-settling');
+    dom.tray.style.removeProperty('--tray-drag-height');
+    dom.tray.classList.add('tray--free');
+    dom.tray.style.setProperty('--tray-free-height', `${height}px`);
     state.map?.resize();
     scheduleSelectedVenueVisibility();
   };
@@ -1679,28 +1713,37 @@ function wireTrayDrag() {
     gesture = null;
     if (cancelled) {
       setTrayState(current.startState);
-      cleanupTransientGeometry();
+      if (Number.isFinite(current.startFreeHeight)) commitFreeHeight(current.startFreeHeight);
+      else cleanupTransientGeometry();
       return;
     }
 
     const renderedHeight = dom.tray.getBoundingClientRect().height;
-    const elapsed = Math.max(1, event.timeStamp - current.lastTime);
-    const velocityY = (event.clientY - current.lastY) / elapsed;
-    const nextState = nearestTrayState({
+    const sinceLastMove = Math.max(0, event.timeStamp - current.latestTime);
+    const velocityY = sinceLastMove > 80 ? 0 : current.velocityY;
+    const nextState = magneticTrayState({
       height: renderedHeight,
       velocityY,
       restingHeights: current.restingHeights
-    }) || current.startState;
-    const targetHeight = current.restingHeights[nextState] || current.startHeight;
+    });
     if (current.moved) {
       suppressGeneratedClick();
       event.preventDefault?.();
     }
-    settleTo(nextState, targetHeight, { currentHeight: renderedHeight });
+    if (nextState) {
+      const targetHeight = current.restingHeights[nextState] || current.startHeight;
+      settleTo(nextState, targetHeight, { currentHeight: renderedHeight });
+      return;
+    }
+
+    if (state.selectedVenueId && state.trayState !== 'selected') {
+      setTrayState('selected', { preserveFreeHeight: true });
+    }
+    commitFreeHeight(renderedHeight);
   };
 
   dom.trayHandle.addEventListener('pointerdown', (event) => {
-    if (!isMobileLayout() || !dom.tray || event.button > 0) return;
+    if (!isMobileLayout() || !state.selectedVenueId || !dom.tray || event.button > 0) return;
     clearTrayHeightTransition();
     const heights = restingHeights();
     const values = Object.values(heights);
@@ -1711,9 +1754,10 @@ function wireTrayDrag() {
       startState: state.trayState,
       startY: event.clientY,
       latestY: event.clientY,
-      lastY: event.clientY,
-      lastTime: event.timeStamp,
+      latestTime: event.timeStamp,
+      velocityY: 0,
       startHeight: rect.height,
+      startFreeHeight: dom.tray.classList.contains('tray--free') ? rect.height : null,
       currentHeight: rect.height,
       minHeight: Math.min(...values),
       maxHeight: Math.max(...values),
@@ -1722,6 +1766,7 @@ function wireTrayDrag() {
     };
     dom.tray.classList.add('tray--gesture');
     applyGestureHeight(rect.height);
+    clearTrayFreeHeight();
     try { dom.trayHandle.setPointerCapture?.(event.pointerId); } catch (_) {}
   });
 
@@ -1729,14 +1774,23 @@ function wireTrayDrag() {
     if (!gesture || event.pointerId !== gesture.pointerId) return;
     const deltaY = event.clientY - gesture.startY;
     gesture.moved ||= Math.abs(deltaY) > 3;
-    gesture.lastY = gesture.latestY;
-    gesture.lastTime = event.timeStamp;
+    const elapsed = Math.max(1, event.timeStamp - gesture.latestTime);
+    gesture.velocityY = (event.clientY - gesture.latestY) / elapsed;
     gesture.latestY = event.clientY;
+    gesture.latestTime = event.timeStamp;
     gesture.currentHeight = clampTrayHeight(
       gesture.startHeight - deltaY,
       gesture.minHeight,
       gesture.maxHeight
     );
+    if (
+      gesture.startState === 'peek' &&
+      state.selectedVenueId &&
+      state.trayState === 'peek' &&
+      gesture.currentHeight > (gesture.restingHeights.peek || gesture.minHeight) + 4
+    ) {
+      setTrayState('selected', { preserveFreeHeight: true });
+    }
     applyGestureHeight(gesture.currentHeight);
     if (gesture.moved) event.preventDefault();
   };
@@ -1748,6 +1802,7 @@ function wireTrayDrag() {
   document.addEventListener('pointercancel', (event) => finishGesture(event, true, true), { capture: true });
 
   dom.trayHandle.addEventListener('click', (event) => {
+    if (!state.selectedVenueId) return;
     if (suppressNextClick) {
       suppressNextClick = false;
       event.preventDefault();

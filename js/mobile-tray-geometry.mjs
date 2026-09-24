@@ -25,11 +25,12 @@ export function projectedTrayHeight({
   );
 }
 
-export function nearestTrayState({
+export function magneticTrayState({
   height = 0,
   velocityY = 0,
   restingHeights = {},
-  projectionMs = DEFAULT_PROJECTION_MS
+  snapDistance = 36,
+  projectionMs = 90
 } = {}) {
   const entries = Object.entries(restingHeights)
     .map(([state, value]) => [state, finite(value, Number.NaN)])
@@ -46,9 +47,10 @@ export function nearestTrayState({
     maxHeight,
     projectionMs
   });
-
-  return entries.reduce((best, entry) => {
+  const nearest = entries.reduce((best, entry) => {
     const distance = Math.abs(entry[1] - projected);
     return distance < best.distance ? { state: entry[0], distance } : best;
-  }, { state: entries[0][0], distance: Math.abs(entries[0][1] - projected) }).state;
+  }, { state: entries[0][0], distance: Math.abs(entries[0][1] - projected) });
+
+  return nearest.distance <= Math.max(0, finite(snapDistance, 36)) ? nearest.state : null;
 }
