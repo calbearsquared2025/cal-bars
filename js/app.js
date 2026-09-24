@@ -1725,7 +1725,7 @@ function wireTrayDrag() {
     try { dom.trayHandle.setPointerCapture?.(event.pointerId); } catch (_) {}
   });
 
-  dom.trayHandle.addEventListener('pointermove', (event) => {
+  const moveGesture = (event) => {
     if (!gesture || event.pointerId !== gesture.pointerId) return;
     const deltaY = event.clientY - gesture.startY;
     gesture.moved ||= Math.abs(deltaY) > 3;
@@ -1739,13 +1739,13 @@ function wireTrayDrag() {
     );
     applyGestureHeight(gesture.currentHeight);
     if (gesture.moved) event.preventDefault();
-  }, { passive: false });
+  };
 
-  dom.trayHandle.addEventListener('pointerup', (event) => finishGesture(event));
-  dom.trayHandle.addEventListener('pointercancel', (event) => finishGesture(event, true, true));
-  dom.trayHandle.addEventListener('lostpointercapture', (event) => {
-    if (gesture) finishGesture(event, true, true);
-  });
+  // Continue tracking after the finger leaves the 24px handle. Pointer capture is
+  // still requested when available, but the gesture must not depend on it.
+  document.addEventListener('pointermove', moveGesture, { capture: true, passive: false });
+  document.addEventListener('pointerup', (event) => finishGesture(event), { capture: true });
+  document.addEventListener('pointercancel', (event) => finishGesture(event, true, true), { capture: true });
 
   dom.trayHandle.addEventListener('click', (event) => {
     if (suppressNextClick) {
