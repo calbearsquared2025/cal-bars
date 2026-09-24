@@ -34,7 +34,7 @@ function installStyles() {
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek:not(.tray--draggable) {
-        height: 78px !important;
+        height: 96px !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle {
@@ -74,7 +74,11 @@ function installStyles() {
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__copy small {
+        overflow: visible !important;
         font-size: .64rem !important;
+        line-height: 1.22 !important;
+        text-overflow: clip !important;
+        white-space: normal !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__chevron {

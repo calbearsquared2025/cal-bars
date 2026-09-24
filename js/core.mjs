@@ -1,7 +1,7 @@
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 
 export const NEARBY_RADIUS_MILES = 25;
-export const TRAY_GUIDANCE_COPY = `Explore ${ACTIVE_INSTANCE_CONFIG.terminology.watchPartyPlural}, ${ACTIVE_INSTANCE_CONFIG.terminology.designatedVenuePlural}, and places where other ${ACTIVE_INSTANCE_CONFIG.identity.fanPlural} are planning to watch.`;
+export const TRAY_GUIDANCE_COPY = `${ACTIVE_INSTANCE_CONFIG.terminology.watchPartyPlural}, ${ACTIVE_INSTANCE_CONFIG.terminology.designatedVenuePlural} & Community Locations`;
 
 const US_REGION_QUERY_ALIASES = Object.freeze({
   alabama: 'al', alaska: 'ak', arizona: 'az', arkansas: 'ar', california: 'ca',
