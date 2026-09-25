@@ -69,12 +69,58 @@
   line-height: 1.5;
 }
 
+@media (min-width: 900px) {
+  .my-cgb-about-view .my-cgb-about-content {
+    max-width: 34rem;
+    gap: 13px;
+  }
+
+  .my-cgb-about-view .my-cgb-about-content > p {
+    font-size: .94rem;
+    line-height: 1.48;
+  }
+
+  .my-cgb-about-view .my-cgb-about-content > p:first-child {
+    margin-bottom: 2px;
+    color: var(--brand-primary-dark, #003262);
+    font-size: 1.02rem;
+  }
+
+  .my-cgb-about-view .about-contact-line {
+    display: inline;
+    margin-left: .3em;
+  }
+
+  .my-cgb-about-view .about-support {
+    display: grid;
+    gap: 5px;
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--cgb-neutral-200, #dfe3e8);
+  }
+
+  .my-cgb-about-view .about-support .eyebrow {
+    color: var(--brand-text-muted, #657083);
+    font-size: .68rem;
+  }
+
+  .my-cgb-about-view .about-support p,
+  .my-cgb-about-view .about-privacy-link {
+    font-size: .84rem;
+  }
+
+  .my-cgb-about-view .about-privacy-link {
+    margin-top: -1px !important;
+  }
+}
+
 .public-community-panel {
   padding-top: 16px;
 }
 
 .public-community-section {
   display: grid;
+  align-content: start;
   gap: 12px;
 }
 
