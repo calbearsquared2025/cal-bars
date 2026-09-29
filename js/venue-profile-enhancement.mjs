@@ -321,29 +321,8 @@ export function arrangeDesktopVenueMedia({
     return syncDesktopPhotoForwardProfile({ state, documentObject, windowObject });
   }
 
-  detail.dataset.desktopProfileArrangement = 'identity-editorial-party-attendance-community-media';
-  let cursor = hero;
-  if (editorial) {
-    cursor.after(editorial);
-    cursor = editorial;
-  }
-  parties.forEach((party) => {
-    cursor.after(party);
-    cursor = party;
-  });
-  if (activity && activity.parentElement !== hero) {
-    cursor.after(activity);
-    cursor = activity;
-  }
-  if (fanExperiences) {
-    cursor.after(fanExperiences);
-    cursor = fanExperiences;
-  }
-
-  if (media) {
-    media.classList.add('detail-profile-media--desktop');
-    if (media.previousElementSibling !== cursor) cursor.after(media);
-  }
+  // Desktop stacking has one canonical owner. This refinement may normalize
+  // identity/media state, but final sibling order is delegated in one place.
   syncDesktopPhotoForwardProfile({ state, documentObject, windowObject });
   return true;
 }

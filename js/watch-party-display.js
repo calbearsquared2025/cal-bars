@@ -3,6 +3,7 @@ import {
   isWatchPartyTrayRenderCurrent
 } from './watch-party-display-core.mjs';
 import { createWatchPartyModule } from './watch-party-renderer.mjs';
+import { syncDesktopPhotoForwardProfile } from './desktop-photo-forward-profile.mjs';
 
 function replaceRenderedParties(container, parties, snapshot, documentObject) {
   if (!container) return;
@@ -62,7 +63,7 @@ export function renderMultipleWatchParties({ app = window.CGBApp, documentObject
   const selectedCard = documentObject.querySelector('#tray-selected .selected-card[data-venue-id]');
   const detail = state.detailMode ? documentObject.querySelector('#venue-detail') : null;
 
-  synchronizeWatchPartyContainers({
+  const result = synchronizeWatchPartyContainers({
     selectedCard,
     detail,
     detailMode: state.detailMode,
@@ -72,6 +73,13 @@ export function renderMultipleWatchParties({ app = window.CGBApp, documentObject
     venueId: state.selectedVenueId,
     documentObject
   });
+  if (result.detailReplaced) {
+    syncDesktopPhotoForwardProfile({
+      state,
+      documentObject,
+      windowObject: documentObject.defaultView || globalThis.window
+    });
+  }
   return parties;
 }
 

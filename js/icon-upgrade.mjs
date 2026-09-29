@@ -270,8 +270,8 @@ function runRefinements() {
   if (!directMobileProfile) {
     enhanceVenueProfile({ state, documentObject: document, onPhotoError: scheduleUpgrade });
     renderFanExperiences({ app: window.CGBApp, documentObject: document });
-    arrangeDesktopVenueMedia({ state, documentObject: document, windowObject: window });
     renderPhotoFormEntry({ app: window.CGBApp, documentObject: document });
+    arrangeDesktopVenueMedia({ state, documentObject: document, windowObject: window });
   }
   upgradeRenderedIcons();
   const venue = detailVenue(state);
