@@ -1127,9 +1127,41 @@ body[data-view="detail"] #app {
 /* Desktop selected profile: the navy identity/attendance hero is fixed chrome.
    Only the white continuation below it owns vertical scrolling. */
 @media (min-width: 900px) {
-  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected {
+  /* The nested continuation scrollport exists only for the compact selected card.
+     Full Venue Profiles render #venue-detail directly in #tray-selected, so they keep
+     the tray panel's own bounded overflow instead of being clipped by this rule. */
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected:has(> .selected-card) {
     min-height: 0;
     overflow: hidden;
+  }
+
+  /* Keep desktop profile scroll affordance visible without letting the native
+     scrollbar dominate the selected-profile edge. */
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected,
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__scroll-region {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(1, 1, 51, .32) transparent;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected::-webkit-scrollbar,
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__scroll-region::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected::-webkit-scrollbar-track,
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__scroll-region::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected::-webkit-scrollbar-thumb,
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__scroll-region::-webkit-scrollbar-thumb {
+    background: rgba(1, 1, 51, .32);
+    border-radius: 999px;
+  }
+
+  #map-view > #venue-tray.venue-tray.tray--selected #tray-selected::-webkit-scrollbar-thumb:hover,
+  #map-view > #venue-tray.venue-tray.tray--selected .selected-card__scroll-region::-webkit-scrollbar-thumb:hover {
+    background: rgba(1, 1, 51, .48);
   }
 
   #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card {
