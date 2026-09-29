@@ -37,7 +37,7 @@ import { legacyActivitySeason, venueActivityPresentation } from './venue-activit
 import { createIcon } from './icons.mjs';
 import { firstUsMapTilerResult } from './map-geocoding-core.mjs';
 import { nearbyLocationControlPresentation, normalizedUserLocation } from './nearby-location-core.mjs';
-import { clampTrayHeight, magneticTrayState } from './mobile-tray-geometry.mjs';
+import { clampTrayHeight, trayReleaseState } from './mobile-tray-geometry.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
@@ -68,7 +68,6 @@ const MARKER_REGIONAL_MAX_ZOOM = 8;
 
 const dom = {};
 let previousMobileLayout = MOBILE_MEDIA.matches;
-let lastExpandedTrayState = null;
 let activeTrayHeightTransition = null;
 let searchHelperTimer = null;
 let searchHelperReady = false;
@@ -663,10 +662,6 @@ function trayHandleLabel(next) {
   return 'Collapse to mini profile';
 }
 
-function restoredTrayState() {
-  if (lastExpandedTrayState === 'selected' && !state.selectedVenueId) return 'full';
-  return lastExpandedTrayState || (state.selectedVenueId ? 'selected' : 'full');
-}
 
 function clearTrayHeightTransition() {
   if (activeTrayHeightTransition) {
@@ -734,7 +729,6 @@ function setTrayState(next, { animate = false, preserveFreeHeight = false } = {}
   if (!preserveFreeHeight) clearTrayFreeHeight();
   if (changed || !activeTrayHeightTransition) clearTrayHeightTransition();
   state.trayState = next;
-  if (next !== 'peek') lastExpandedTrayState = next;
   if (!dom.tray) return changed;
   dom.tray.dataset.state = next;
   dom.tray.classList.remove('tray--peek', 'tray--selected', 'tray--full');
@@ -1627,20 +1621,19 @@ function wireTrayDrag() {
     const peekHeight = state.trayState === 'peek' && !freeHeight
       ? currentHeight
       : measuredPeekHeight;
-    const selectedContentHeight = measureHiddenContentHeight(dom.traySelected);
     const configuredSelectedHeight = Number.parseFloat(
       dom.tray?.style.getPropertyValue('--cgb-selected-tray-max-height') || ''
     );
-    const selectedLimit = Number.isFinite(configuredSelectedHeight) && configuredSelectedHeight > 0
-      ? configuredSelectedHeight
-      : Math.min(viewportHeight * 0.58, 520);
-    const measuredSelectedHeight = Math.max(
+    const fallbackSelectedHeight = Math.max(
       peekHeight,
-      selectedContentHeight + Math.max(24, handleHeight)
+      Math.min(viewportHeight * 0.58, 520)
     );
+    const canonicalSelectedHeight = Number.isFinite(configuredSelectedHeight) && configuredSelectedHeight > 0
+      ? configuredSelectedHeight
+      : fallbackSelectedHeight;
     const selectedHeight = state.trayState === 'selected' && !freeHeight
       ? currentHeight
-      : Math.min(selectedLimit, measuredSelectedHeight);
+      : canonicalSelectedHeight;
     const maxAvailable = Math.max(peekHeight, viewportHeight - traySafeAreaBottom() - 16);
     const fullHeight = Math.min(maxAvailable, Math.min(viewportHeight * 0.78, 680));
     const heights = {
@@ -1673,38 +1666,63 @@ function wireTrayDrag() {
     scheduleSelectedVenueVisibility();
   };
 
-  const settleTo = (nextState, targetHeight, { currentHeight = null } = {}) => {
+  const settleTo = (nextState, _targetHeight, { currentHeight = null } = {}) => {
     if (!dom.tray) return;
     const fromHeight = Number.isFinite(currentHeight)
       ? currentHeight
       : dom.tray.getBoundingClientRect().height;
-    dom.tray.classList.add('tray--gesture');
-    applyGestureHeight(fromHeight);
+
+    // Hand off from transient pointer geometry before measuring the canonical
+    // destination, then force the starting height into layout before setting the
+    // target. This avoids depending on a requestAnimationFrame between pointer
+    // release/click and the state transition.
+    dom.tray.classList.remove('tray--gesture', 'tray--gesture-settling');
+    dom.tray.style.removeProperty('--tray-drag-height');
     setTrayState(nextState);
-    if (REDUCED_MOTION || Math.abs(fromHeight - targetHeight) < 1) {
-      applyGestureHeight(targetHeight);
-      cleanupTransientGeometry();
+    if (nextState === 'selected') emitRendered();
+
+    const renderedTargetHeight = dom.tray.getBoundingClientRect().height;
+    const configuredSelectedHeight = Number.parseFloat(
+      dom.tray.style.getPropertyValue('--cgb-selected-tray-max-height') || ''
+    );
+    const targetHeight = nextState === 'selected' && Number.isFinite(configuredSelectedHeight) && configuredSelectedHeight > 0
+      ? configuredSelectedHeight
+      : nextState === 'selected' && Number.isFinite(_targetHeight) && _targetHeight > 0
+        ? _targetHeight
+        : renderedTargetHeight;
+    if (
+      REDUCED_MOTION ||
+      !Number.isFinite(targetHeight) ||
+      Math.abs(fromHeight - targetHeight) < 1
+    ) {
+      state.map?.resize();
+      scheduleSelectedVenueVisibility();
       return;
     }
 
-    requestAnimationFrame(() => {
-      if (!dom.tray) return;
-      const finish = (event) => {
-        if (event && (event.target !== dom.tray || event.propertyName !== 'height')) return;
-        dom.tray.removeEventListener('transitionend', finish);
-        dom.tray.removeEventListener('transitioncancel', finish);
-        cleanupTransientGeometry();
-      };
-      dom.tray.addEventListener('transitionend', finish);
-      dom.tray.addEventListener('transitioncancel', finish);
-      dom.tray.classList.add('tray--gesture-settling');
-      applyGestureHeight(targetHeight);
-      const animations = typeof dom.tray.getAnimations === 'function'
-        ? dom.tray.getAnimations().filter((animation) => animation.transitionProperty === 'height')
-        : [];
-      if (typeof dom.tray.getAnimations === 'function' && !animations.length) finish();
-      else if (animations.length) Promise.allSettled(animations.map((animation) => animation.finished)).then(() => finish());
-    });
+    let finished = false;
+    let fallbackTimer = null;
+    const finish = (event) => {
+      if (finished || (event && (event.target !== dom.tray || event.propertyName !== 'height'))) return;
+      finished = true;
+      if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+      dom.tray.removeEventListener('transitionend', finish);
+      dom.tray.removeEventListener('transitioncancel', finish);
+      dom.tray.classList.remove('tray--state-transition');
+      dom.tray.style.removeProperty('--tray-transition-height');
+      if (activeTrayHeightTransition === finish) activeTrayHeightTransition = null;
+      state.map?.resize();
+      scheduleSelectedVenueVisibility();
+    };
+
+    activeTrayHeightTransition = finish;
+    dom.tray.classList.add('tray--state-transition');
+    dom.tray.style.setProperty('--tray-transition-height', `${fromHeight}px`);
+    void dom.tray.offsetHeight;
+    dom.tray.addEventListener('transitionend', finish);
+    dom.tray.addEventListener('transitioncancel', finish);
+    dom.tray.style.setProperty('--tray-transition-height', `${targetHeight}px`);
+    fallbackTimer = window.setTimeout(() => finish(), 260);
   };
 
   const finishGesture = (event, cancelled = false, force = false) => {
@@ -1718,18 +1736,23 @@ function wireTrayDrag() {
       return;
     }
 
+    if (!current.moved) {
+      if (Number.isFinite(current.startFreeHeight)) commitFreeHeight(current.startFreeHeight);
+      else cleanupTransientGeometry();
+      return;
+    }
+
     const renderedHeight = dom.tray.getBoundingClientRect().height;
     const sinceLastMove = Math.max(0, event.timeStamp - current.latestTime);
     const velocityY = sinceLastMove > 80 ? 0 : current.velocityY;
-    const nextState = magneticTrayState({
+    const nextState = trayReleaseState({
+      startState: current.startState,
       height: renderedHeight,
       velocityY,
       restingHeights: current.restingHeights
     });
-    if (current.moved) {
-      suppressGeneratedClick();
-      event.preventDefault?.();
-    }
+    suppressGeneratedClick();
+    event.preventDefault?.();
     if (nextState) {
       const targetHeight = current.restingHeights[nextState] || current.startHeight;
       settleTo(nextState, targetHeight, { currentHeight: renderedHeight });
@@ -1808,8 +1831,9 @@ function wireTrayDrag() {
       event.preventDefault();
       return;
     }
+    state.map?.stop?.();
     const heights = restingHeights();
-    const next = state.trayState === 'peek' ? restoredTrayState() : 'peek';
+    const next = state.trayState === 'peek' ? 'selected' : 'peek';
     const targetHeight = heights[next] || heights.peek;
     settleTo(next, targetHeight);
   });

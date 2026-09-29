@@ -432,19 +432,6 @@ function handleMapDeselect(event) {
   window.CGBApp?.render?.();
 }
 
-function handleTrayTopTap(event) {
-  const handle = event.target.closest?.('#tray-handle');
-  if (!handle || !isMobile() || document.body.dataset.commandSurface !== 'map') return;
-  const tray = document.querySelector('#venue-tray');
-  if (!tray || tray.dataset.state !== 'selected') return;
-
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  preserveMobileCameraOwnership();
-  appState()?.map?.stop?.();
-  document.querySelector('#tray-selected .selected-card__header > .icon-button')?.click();
-}
-
 function applyVenueFocus(state, venue, { instant = false } = {}) {
   preserveMobileCameraOwnership(state);
   state.map.stop?.();
@@ -625,7 +612,6 @@ function initialize() {
   document.addEventListener('click', markDetailReturnForCamera, { capture: true });
   document.addEventListener('click', captureCameraBeforeVenueNavigation, { capture: true });
   document.addEventListener('click', openPreviewVenue, { capture: true });
-  document.addEventListener('click', handleTrayTopTap, { capture: true });
   document.addEventListener('click', handleMapDeselect);
 
   window.addEventListener('pagehide', () => captureMapCamera());

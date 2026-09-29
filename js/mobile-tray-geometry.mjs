@@ -54,3 +54,33 @@ export function magneticTrayState({
 
   return nearest.distance <= Math.max(0, finite(snapDistance, 36)) ? nearest.state : null;
 }
+
+
+export function trayReleaseState({
+  startState = 'selected',
+  height = 0,
+  velocityY = 0,
+  restingHeights = {},
+  flickVelocity = 0.45,
+  snapDistance = 36,
+  projectionMs = 90
+} = {}) {
+  const selectedHeight = finite(restingHeights.selected, Number.NaN);
+  const upwardFlickThreshold = Math.abs(finite(flickVelocity, 0.45));
+
+  if (
+    startState === 'peek' &&
+    Number.isFinite(selectedHeight) &&
+    finite(velocityY) <= -upwardFlickThreshold
+  ) {
+    return 'selected';
+  }
+
+  return magneticTrayState({
+    height,
+    velocityY,
+    restingHeights,
+    snapDistance,
+    projectionMs
+  });
+}
