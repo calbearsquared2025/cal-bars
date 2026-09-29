@@ -209,7 +209,7 @@ async function loadSnapshot() {
 
   try {
     markCgbPerformance('cgb:bootstrap:static-request:start');
-    const fallback = await fetchJson('data/fallback-v2.json');
+    const fallback = await fetchJson(ACTIVE_INSTANCE_CONFIG.integrations.resources.fallbackSnapshotPath);
     markCgbPerformance('cgb:bootstrap:static-request:complete');
     measureCgbPerformance(
       'cgb:bootstrap-static-request',

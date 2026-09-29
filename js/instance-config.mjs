@@ -104,7 +104,8 @@ export const CAL_INSTANCE_CONFIG = freeze({
     }),
     resources: freeze({
       fallbackSnapshotPath: 'data/fallback-v2.json',
-      socialManifestPath: 'assets/social-cards/manifest.json'
+      socialManifestPath: 'assets/social-cards/manifest.json',
+      socialShareDirectory: 'share'
     }),
     accounts: freeze({
       enabled: true,
@@ -284,8 +285,9 @@ export const TEST_INSTANCE_CONFIG = freeze({
       measurementId: ''
     }),
     resources: freeze({
-      fallbackSnapshotPath: '',
-      socialManifestPath: ''
+      fallbackSnapshotPath: 'data/test-instance-fallback.synthetic.json',
+      socialManifestPath: '',
+      socialShareDirectory: ''
     }),
     accounts: freeze({
       enabled: false,
@@ -403,6 +405,7 @@ const REQUIRED_NON_EMPTY_STRING_PATHS = freeze([
   'integrations.mapTiler.apiKey',
   'integrations.mapTiler.styleUrl',
   'integrations.mapTiler.detailStyleId',
+  'integrations.resources.fallbackSnapshotPath',
   'storage.dataEndpointOverride',
   'storage.browserId',
   'storage.fanIntentSelections',
@@ -425,8 +428,8 @@ const REQUIRED_STRING_PATHS = freeze([
   'site.support.embedUrl',
   'integrations.dataEndpoint',
   'integrations.analytics.measurementId',
-  'integrations.resources.fallbackSnapshotPath',
   'integrations.resources.socialManifestPath',
+  'integrations.resources.socialShareDirectory',
   'integrations.accounts.endpoint',
   'integrations.admin.endpoint'
 ]);
@@ -530,15 +533,73 @@ export function validateInstanceConfig(config) {
   }
 
   for (const [formName, fields] of Object.entries(FORM_FIELDS)) {
-    for (const field of fields) {
-      requireString(config, `integrations.forms.${formName}.${field}`, { allowEmpty: true });
+    const values = fields.map((field) => {
+      const path = `integrations.forms.${formName}.${field}`;
+      requireString(config, path, { allowEmpty: true });
+      return ownPathValue(config, path).value.trim();
+    });
+    const configuredCount = values.filter(Boolean).length;
+    if (configuredCount !== 0 && configuredCount !== fields.length) {
+      throw new Error(`Invalid school-instance config "${config.id}": integrations.forms.${formName} must be fully configured or fully disabled.`);
     }
   }
 
-  for (const path of ['integrations.accounts.enabled', 'integrations.admin.enabled']) {
-    const result = ownPathValue(config, path);
-    if (!result.exists || typeof result.value !== 'boolean') {
-      throw new Error(`Invalid school-instance config "${config.id}": ${path} must be an explicit boolean.`);
+  const publicDataEndpoint = config.integrations.dataEndpoint.trim();
+  if (publicDataEndpoint) {
+    try {
+      const url = new URL(publicDataEndpoint);
+      if (url.protocol !== 'https:') throw new Error('not https');
+    } catch {
+      throw new Error(`Invalid school-instance config "${config.id}": integrations.dataEndpoint must be empty or an absolute HTTPS URL.`);
+    }
+  }
+
+  const measurementId = config.integrations.analytics.measurementId.trim();
+  if (measurementId && !/^G-[A-Z0-9]+$/i.test(measurementId)) {
+    throw new Error(`Invalid school-instance config "${config.id}": integrations.analytics.measurementId must be empty or a Google Analytics measurement ID.`);
+  }
+
+  const fallbackPath = config.integrations.resources.fallbackSnapshotPath.trim();
+  if (fallbackPath.startsWith('/') || fallbackPath.includes('..') || /^https?:/i.test(fallbackPath)) {
+    throw new Error(`Invalid school-instance config "${config.id}": integrations.resources.fallbackSnapshotPath must be a repository-relative path.`);
+  }
+
+  const socialManifestPath = config.integrations.resources.socialManifestPath.trim();
+  const socialShareDirectory = config.integrations.resources.socialShareDirectory.trim();
+  if (Boolean(socialManifestPath) !== Boolean(socialShareDirectory)) {
+    throw new Error(`Invalid school-instance config "${config.id}": social manifest and share resources must be configured together or disabled together.`);
+  }
+  for (const [name, value] of [
+    ['integrations.resources.socialManifestPath', socialManifestPath],
+    ['integrations.resources.socialShareDirectory', socialShareDirectory]
+  ]) {
+    if (value && (value.startsWith('/') || value.includes('..') || /^https?:/i.test(value))) {
+      throw new Error(`Invalid school-instance config "${config.id}": ${name} must be a repository-relative path.`);
+    }
+  }
+
+  for (const integrationName of ['accounts', 'admin']) {
+    const enabledPath = `integrations.${integrationName}.enabled`;
+    const endpointPath = `integrations.${integrationName}.endpoint`;
+    const enabled = ownPathValue(config, enabledPath);
+    const endpoint = ownPathValue(config, endpointPath);
+    if (!enabled.exists || typeof enabled.value !== 'boolean') {
+      throw new Error(`Invalid school-instance config "${config.id}": ${enabledPath} must be an explicit boolean.`);
+    }
+    const endpointValue = typeof endpoint.value === 'string' ? endpoint.value.trim() : '';
+    if (enabled.value && !endpointValue) {
+      throw new Error(`Invalid school-instance config "${config.id}": ${endpointPath} is required when ${integrationName} is enabled.`);
+    }
+    if (!enabled.value && endpointValue) {
+      throw new Error(`Invalid school-instance config "${config.id}": disabled ${integrationName} must not retain an endpoint.`);
+    }
+    if (endpointValue) {
+      try {
+        const url = new URL(endpointValue);
+        if (url.protocol !== 'https:') throw new Error('not https');
+      } catch {
+        throw new Error(`Invalid school-instance config "${config.id}": ${endpointPath} must be an absolute HTTPS URL.`);
+      }
     }
   }
 
