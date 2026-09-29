@@ -1583,12 +1583,6 @@ function wireTrayDrag() {
     window.setTimeout(() => { suppressNextClick = false; }, 350);
   };
 
-  const traySafeAreaBottom = () => {
-    const value = getComputedStyle(document.documentElement).getPropertyValue('--footer-height');
-    const parsed = Number.parseFloat(value);
-    return Number.isFinite(parsed) ? parsed : 0;
-  };
-
   const measureHiddenContentHeight = (element) => {
     if (!element) return 0;
     const wasHidden = element.hidden;
@@ -1635,12 +1629,7 @@ function wireTrayDrag() {
     const selectedHeight = state.trayState === 'selected' && !freeHeight
       ? currentHeight
       : canonicalSelectedHeight;
-    const maxAvailable = Math.max(peekHeight, viewportHeight - traySafeAreaBottom() - 16);
-    const fullHeight = Math.min(maxAvailable, Math.min(viewportHeight * 0.78, 680));
-    const heights = {
-      peek: peekHeight,
-      full: Math.max(peekHeight, fullHeight)
-    };
+    const heights = { peek: peekHeight };
     if (state.selectedVenueId) heights.selected = Math.max(peekHeight, selectedHeight || currentHeight);
     return heights;
   };
