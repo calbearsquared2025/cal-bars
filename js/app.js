@@ -41,6 +41,7 @@ import { clampTrayHeight, trayReleaseState } from './mobile-tray-geometry.mjs';
 import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
 import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
 import {
   currentLoadingCoverGameSlug,
@@ -56,7 +57,7 @@ markCgbPerformance('cgb:app:module-start');
 const runtimeConfig = readRuntimeConfig();
 const MAPTILER_KEY = runtimeConfig.mapTiler.apiKey;
 const MAPTILER_STYLE = runtimeConfig.mapTiler.styleUrl;
-const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
+const LAST_GOOD_KEY = ACTIVE_INSTANCE_CONFIG.storage.lastGoodSnapshot;
 const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const MAX_MAP_LAYOUT_WAIT_FRAMES = 2;
 const MOBILE_MEDIA_QUERY = '(max-width: 899px)';

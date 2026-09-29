@@ -10,12 +10,13 @@ import {
   venueTypeLabel
 } from './core.mjs';
 import { clearSelectedMapVenue } from './app-state.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 
 const MOBILE_QUERY = '(max-width: 899px)';
 const FOCUS_ZOOM = 11;
 const REGIONAL_FOCUS_MAX_ZOOM = 9.75;
 const MAP_ACTION_GAP = 12;
-const MAP_CAMERA_STORAGE_KEY = 'cgb_v2_map_camera';
+const MAP_CAMERA_STORAGE_KEY = ACTIVE_INSTANCE_CONFIG.storage.mapCamera;
 const VENUE_FOCUS_SUPPRESSION_MS = 900;
 
 let lastAutoFocusedVenueId = '';

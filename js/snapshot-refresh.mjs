@@ -11,12 +11,13 @@ import {
   DATA_ENDPOINT_OVERRIDE_STORAGE_KEY,
   readRuntimeConfig
 } from './config.mjs';
+import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 
 export const ACTIVE_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
 export const FOCUS_REFRESH_STALE_MS = 5 * 60 * 1000;
 export const STARTUP_ROLLOVER_GUARD_MS = 5 * 60 * 60 * 1000;
 
-const LAST_GOOD_KEY = 'cgb_v2_last_good_snapshot';
+const LAST_GOOD_KEY = ACTIVE_INSTANCE_CONFIG.storage.lastGoodSnapshot;
 const REFRESH_TIMEOUT_MS = 10000;
 const PUBLIC_SNAPSHOT_KEYS = [
   'venues',
