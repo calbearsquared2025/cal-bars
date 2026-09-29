@@ -61,6 +61,7 @@ export const CAL_INSTANCE_CONFIG = freeze({
       mark: 'assets/cgb-mark.svg',
       appIcon: 'assets/cgb-app-icon.svg',
       favicon: 'assets/cgbfavicon.svg',
+      loadingFallback: 'assets/cgb-loading-fallback.svg',
       socialCardsDirectory: 'assets/social-cards'
     })
   }),
@@ -80,6 +81,13 @@ export const CAL_INSTANCE_CONFIG = freeze({
       heading: 'Cal Golden Bars',
       intro: 'Cal Golden Bars helps Cal fans find each other on game day.',
       ownerLine: 'Cal Golden Bars is built and maintained by Matthew Putzulu.'
+    }),
+    privacy: freeze({
+      lead: 'Cal Golden Bars works without an account.',
+      accountSummary: 'If you create a profile, Firebase handles sign-in. You may use Google, a verified email and password, or a no-email profile stored on this browser. No-email profiles cannot be recovered on another device if browser data is cleared. CGB stores the information needed for your profile, favorites, attendance history, and contributions. Passwords are handled by Firebase and are not stored by CGB.',
+      visibilitySummary: 'Your profile and attendance are private by default. If you choose to appear publicly, only the profile and attendance information you choose is shown. Email addresses, internal account IDs, browser IDs, favorites, and private attendance history are not published.',
+      analyticsSummary: 'We use a random browser ID to remember <strong>I’ll be here</strong> selections and Google Analytics for site analytics. If you share your device location, it is used for location features and is not stored.',
+      saleSummary: 'Private user information is not sold.'
     }),
     support: freeze({
       label: 'Support Cal Golden Bars',
@@ -203,9 +211,9 @@ export const TEST_INSTANCE_CONFIG = freeze({
     designatedVenueSingular: 'Fox Den',
     designatedVenuePlural: 'Fox Dens',
     designatedVenueBadge: 'FOX DEN',
-    communityLocationSingular: 'Community Spot',
-    communityLocationPlural: 'Community Spots',
-    communityLocationBadge: 'COMMUNITY SPOT',
+    communityLocationSingular: 'Community Location',
+    communityLocationPlural: 'Community Locations',
+    communityLocationBadge: 'COMMUNITY LOCATION',
     fanAddedBadge: 'FAN-ADDED',
     watchPartySingular: 'Watch Party',
     watchPartyPlural: 'Watch Parties',
@@ -242,6 +250,7 @@ export const TEST_INSTANCE_CONFIG = freeze({
       mark: 'assets/test-fox-mark.svg',
       appIcon: 'assets/test-fox-mark.svg',
       favicon: 'assets/test-fox-mark.svg',
+      loadingFallback: 'assets/test-fox-mark.svg',
       socialCardsDirectory: 'assets/social-cards'
     })
   }),
@@ -260,8 +269,15 @@ export const TEST_INSTANCE_CONFIG = freeze({
     affiliationDisclaimer: 'Fictional local portability fixture — not a real school or public service',
     about: freeze({
       heading: 'Test Fox Bars',
-      intro: 'Test Fox Bars helps Test U fans find each other on game day.',
+      intro: 'Test Fox Bars helps Test U fans of the Test Foxes find each other on game day.',
       ownerLine: 'Fictional Test University portability fixture.'
+    }),
+    privacy: freeze({
+      lead: 'Test Fox Bars is a fictional portability fixture and works without an account.',
+      accountSummary: 'Account services are disabled for this fictional Test instance. No real profile, sign-in, favorites, attendance history, or contribution data is collected by this fixture.',
+      visibilitySummary: 'The Test instance uses synthetic public profile and attendance examples only; it does not publish real user identities or account information.',
+      analyticsSummary: 'Production analytics and write integrations are disabled for this fictional Test instance. If device location is shared, it is used only for local location features and is not stored.',
+      saleSummary: 'This fictional Test fixture uses synthetic data and does not sell private user information.'
     }),
     support: freeze({
       label: 'Support disabled for Test University',
@@ -389,6 +405,7 @@ const REQUIRED_NON_EMPTY_STRING_PATHS = freeze([
   'brand.assets.mark',
   'brand.assets.appIcon',
   'brand.assets.favicon',
+  'brand.assets.loadingFallback',
   'brand.assets.socialCardsDirectory',
   'site.canonicalUrl',
   'site.title',
@@ -398,6 +415,11 @@ const REQUIRED_NON_EMPTY_STRING_PATHS = freeze([
   'site.about.heading',
   'site.about.intro',
   'site.about.ownerLine',
+  'site.privacy.lead',
+  'site.privacy.accountSummary',
+  'site.privacy.visibilitySummary',
+  'site.privacy.analyticsSummary',
+  'site.privacy.saleSummary',
   'site.support.label',
   'site.support.url',
   'site.social.xHandle',
