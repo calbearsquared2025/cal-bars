@@ -242,8 +242,7 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     align-items: center;
     text-align: center;
     border: 1px solid rgba(255, 255, 255, .24);
-    border-left: 0;
-    border-radius: 0 9px 9px 0;
+    border-radius: 9px;
   }
 
   body[data-cgb-accounts-enabled="true"] #mobile-about-button > .ui-icon {
