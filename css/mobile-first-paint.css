@@ -308,7 +308,7 @@
   body[data-command-surface="list"],
   body[data-command-surface="about"],
   body[data-command-surface="my-cgb"] {
-    --header-height: calc(94px + env(safe-area-inset-top, 0px));
+    --header-height: calc(max(94px, calc(3rem + 46px)) + env(safe-area-inset-top, 0px));
   }
 
   body[data-view="map"][data-command-surface="map"] .site-header,
@@ -380,7 +380,7 @@
     content: "SELECT GAME";
     color: var(--cgb-gold-400, #fdb515);
     font-family: var(--font-condensed, sans-serif);
-    font-size: .54rem;
+    font-size: var(--text-2xs);
     font-weight: 850;
     letter-spacing: .09em;
     line-height: 1;
@@ -395,8 +395,11 @@
 
   .site-header #header-kickoff {
     grid-column: 1 !important;
-    font-size: .62rem !important;
+    overflow: visible !important;
+    font-size: var(--text-2xs) !important;
     line-height: 1.15 !important;
+    text-overflow: clip !important;
+    white-space: normal !important;
   }
 
   .site-header .game-button__chevron {

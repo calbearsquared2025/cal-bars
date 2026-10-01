@@ -230,7 +230,7 @@
   .about-dialog.about-dialog--footer-popover .about-subsection > .eyebrow,
   .about-dialog.about-dialog--footer-popover .about-support > .eyebrow {
     margin-bottom: 4px;
-    font-size: .62rem;
+    font-size: var(--text-2xs);
     letter-spacing: .11em;
   }
 
@@ -338,7 +338,7 @@
     border-top: 0;
     border-radius: 0;
     font-family: var(--font-ui, sans-serif);
-    font-size: .68rem;
+    font-size: var(--text-2xs);
     font-weight: 550;
     line-height: 1.25;
     text-align: left;
@@ -371,7 +371,7 @@
     border-radius: 0;
     box-shadow: none;
     font-family: var(--font-condensed, sans-serif);
-    font-size: .68rem;
+    font-size: var(--text-2xs);
     font-weight: 800;
     line-height: 1;
     text-align: left;

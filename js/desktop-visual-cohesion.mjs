@@ -98,7 +98,7 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         border-radius: 8px !important;
         box-shadow: 0 2px 8px rgba(1, 1, 51, .12) !important;
         font-family: var(--font-condensed, sans-serif) !important;
-        font-size: .64rem !important;
+        font-size: var(--text-2xs) !important;
         font-weight: 850 !important;
         letter-spacing: .08em !important;
         line-height: 1 !important;

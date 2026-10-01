@@ -101,7 +101,7 @@
 
 #venue-tray .selected-card > .party-module .account-watch-party-claim,
 #venue-tray .selected-card > .party-module .account-watch-party-claim-status {
-  font-size: .67rem;
+  font-size: var(--text-2xs);
 }
 
 @media (max-width: 899px) {

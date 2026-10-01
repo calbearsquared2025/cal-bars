@@ -123,7 +123,7 @@
   .tray--selected .selected-card .intent-button__undo {
     margin-left: 2px;
     padding-left: 4px;
-    font-size: .62rem;
+    font-size: var(--text-2xs);
     font-weight: 700;
     letter-spacing: 0;
     opacity: .68;

@@ -212,7 +212,7 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     margin: 0;
     color: var(--cgb-ink-700);
     font-family: var(--font-ui);
-    font-size: .68rem;
+    font-size: var(--text-2xs);
     font-weight: 800;
     letter-spacing: .055em;
     line-height: 1.15;
@@ -224,7 +224,7 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     padding: 0;
     color: var(--cgb-ink-500);
     font-family: var(--font-ui);
-    font-size: .62rem;
+    font-size: var(--text-2xs);
     font-weight: 700;
     line-height: 1.2;
     text-decoration: none;
@@ -247,7 +247,7 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     background: var(--cgb-gold-50);
     border-radius: var(--radius-pill);
     font-family: var(--font-ui);
-    font-size: .64rem;
+    font-size: var(--text-2xs);
     font-weight: 700;
     line-height: 1.1;
   }
@@ -255,7 +255,7 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   html #tray-selected > #venue-detail[data-profile-presentation="desktop"] .detail-what-to-know__empty {
     margin: 5px 0 0;
     color: var(--cgb-ink-500);
-    font-size: .66rem;
+    font-size: var(--text-2xs);
     line-height: 1.25;
   }
 
@@ -345,13 +345,13 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__attending {
     grid-row: 2 !important;
     margin-top: 0 !important;
-    font-size: .6rem !important;
+    font-size: var(--text-2xs) !important;
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count .bear-count__context {
     grid-row: 3 !important;
     color: rgba(255, 255, 255, .82) !important;
-    font-size: .58rem !important;
+    font-size: var(--text-2xs) !important;
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count.bear-count--empty {

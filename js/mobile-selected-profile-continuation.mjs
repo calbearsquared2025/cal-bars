@@ -177,7 +177,7 @@ function installStyles(documentObject) {
       body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation .detail-photo__credit {
         margin: 0 !important;
         color: var(--cgb-ink-500) !important;
-        font-size: .6rem !important;
+        font-size: var(--text-2xs) !important;
         line-height: 1.25 !important;
       }
     }

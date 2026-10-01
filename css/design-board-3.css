@@ -155,7 +155,7 @@
   flex: 0 1 170px;
   color: var(--cgb-navy-950);
   font-family: var(--font-condensed);
-  font-size: .68rem;
+  font-size: var(--text-2xs);
   font-weight: 850;
   line-height: 1.25;
   text-align: right;
@@ -207,7 +207,7 @@
   background: transparent;
   border: 0;
   font-family: var(--font-condensed);
-  font-size: .63rem;
+  font-size: var(--text-2xs);
   font-weight: 800;
   letter-spacing: .025em;
 }

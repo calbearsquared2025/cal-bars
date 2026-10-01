@@ -146,7 +146,7 @@
     border: 1px solid var(--cgb-neutral-200);
     border-radius: 999px;
     font-family: var(--font-condensed, sans-serif);
-    font-size: .68rem;
+    font-size: var(--text-2xs);
     font-weight: 850;
     line-height: 1;
     white-space: nowrap;
@@ -478,7 +478,7 @@
     color: var(--cgb-ink-500);
     background: transparent;
     border: 0;
-    font-size: .64rem;
+    font-size: var(--text-2xs);
     font-weight: 750;
     line-height: 1;
   }
@@ -555,7 +555,7 @@
 
   .tray-summary small {
     max-width: 18rem;
-    font-size: .68rem;
+    font-size: var(--text-2xs);
     line-height: 1.3;
   }
 }

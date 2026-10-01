@@ -101,7 +101,7 @@
 
   .my-cgb-about-view .about-support .eyebrow {
     color: var(--brand-text-muted, #657083);
-    font-size: .68rem;
+    font-size: var(--text-2xs);
   }
 
   .my-cgb-about-view .about-support p,
@@ -463,7 +463,7 @@ img.public-community-avatar {
 
 .public-bear-stats dt {
   color: var(--text-muted, #5f6570);
-  font-size: 0.62rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;

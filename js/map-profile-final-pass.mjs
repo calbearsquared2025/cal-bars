@@ -22,7 +22,7 @@ function installStyles() {
       background: var(--cgb-gold-50) !important;
       border-radius: var(--radius-pill) !important;
       font-family: var(--font-ui) !important;
-      font-size: .64rem !important;
+      font-size: var(--text-2xs) !important;
       font-weight: 700 !important;
       line-height: 1.1 !important;
     }
@@ -147,7 +147,7 @@ function installStyles() {
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta__tag {
         min-height: 21px !important;
         padding: 2px 6px !important;
-        font-size: .62rem !important;
+        font-size: var(--text-2xs) !important;
         font-weight: 700 !important;
       }
 
@@ -171,7 +171,7 @@ function installStyles() {
         padding-top: 0 !important;
         color: var(--cgb-navy-900) !important;
         border: 0 !important;
-        font-size: .67rem !important;
+        font-size: var(--text-2xs) !important;
         font-weight: 650 !important;
         line-height: 1.25 !important;
         text-align: left !important;

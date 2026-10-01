@@ -60,7 +60,7 @@ function installStyles() {
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-summary__copy small {
         overflow: visible !important;
-        font-size: .64rem !important;
+        font-size: var(--text-2xs) !important;
         line-height: 1.22 !important;
         text-overflow: clip !important;
         white-space: normal !important;

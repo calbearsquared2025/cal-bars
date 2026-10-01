@@ -23,7 +23,7 @@ function installStyles(documentObject) {
       margin: 0 0 4px;
       color: var(--cgb-ink-500);
       font-family: var(--font-ui);
-      font-size: .68rem;
+      font-size: var(--text-2xs);
       font-weight: 800;
       letter-spacing: .055em;
       line-height: 1.15;

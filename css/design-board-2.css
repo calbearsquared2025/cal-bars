@@ -299,7 +299,7 @@
   border: 2px solid var(--cgb-white);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-sm);
-  font-size: .6rem;
+  font-size: var(--text-2xs);
   font-weight: 850;
 }
 
@@ -518,7 +518,7 @@
   padding: 3px 8px;
   border-radius: 0;
   font-family: var(--font-condensed);
-  font-size: .57rem;
+  font-size: var(--text-2xs);
   font-weight: 900;
   letter-spacing: .08em;
   line-height: 1;

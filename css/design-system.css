@@ -54,7 +54,7 @@
   --font-display: "Source Serif 4", "Iowan Old Style", Georgia, serif;
   --font-condensed: "Barlow Condensed", "Arial Narrow", "Avenir Next Condensed", sans-serif;
 
-  --text-2xs: .625rem;
+  --text-2xs: .6875rem;
   --text-xs: .75rem;
   --text-sm: .875rem;
   --text-md: 1rem;
@@ -571,7 +571,7 @@ textarea {
   border: 2px solid var(--cgb-white);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-sm);
-  font-size: .625rem;
+  font-size: var(--text-2xs);
   font-weight: 850;
 }
 
@@ -701,7 +701,7 @@ textarea {
   min-height: 25px;
   padding: 4px 9px;
   border-radius: var(--radius-pill);
-  font-size: .625rem;
+  font-size: var(--text-2xs);
   font-weight: 900;
   letter-spacing: .1em;
   line-height: 1;
@@ -1036,7 +1036,7 @@ textarea {
   color: var(--cgb-ink-500);
   background: var(--cgb-white);
   border-top-color: var(--cgb-neutral-200);
-  font-size: .675rem;
+  font-size: var(--text-2xs);
 }
 
 .site-footer a,
@@ -1114,7 +1114,7 @@ textarea {
   }
 
   .game-button > span:last-child {
-    font-size: .66rem;
+    font-size: var(--text-2xs);
   }
 
   .site-footer {

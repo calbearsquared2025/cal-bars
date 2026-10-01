@@ -34,7 +34,7 @@
   margin-top: 5px;
   color: var(--brand-text-muted);
   font-family: var(--font-condensed);
-  font-size: .61rem;
+  font-size: var(--text-2xs);
   font-weight: 850;
   letter-spacing: .045em;
   line-height: 1.05;
@@ -139,7 +139,7 @@
   padding: 0 8px 7px 0;
   color: var(--brand-text-muted);
   font-family: var(--font-condensed);
-  font-size: .68rem;
+  font-size: var(--text-2xs);
   font-weight: 850;
   letter-spacing: .07em;
   text-align: left;
@@ -186,7 +186,7 @@
   }
 
   .accounts-stat span {
-    font-size: .56rem;
+    font-size: var(--text-2xs);
   }
 }
 
@@ -213,6 +213,6 @@
   }
 
   .accounts-stat span {
-    font-size: .52rem;
+    font-size: var(--text-2xs);
   }
 }

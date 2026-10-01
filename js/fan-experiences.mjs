@@ -125,7 +125,7 @@ function installMobileWhatToKnowStyles(documentObject) {
         margin: 0;
         color: var(--cgb-ink-500);
         font-family: var(--font-ui);
-        font-size: .68rem;
+        font-size: var(--text-2xs);
         font-weight: 800;
         letter-spacing: .055em;
         line-height: 1.15;
@@ -136,7 +136,7 @@ function installMobileWhatToKnowStyles(documentObject) {
         padding: 0;
         color: var(--cgb-ink-500);
         font-family: var(--font-ui);
-        font-size: .62rem;
+        font-size: var(--text-2xs);
         font-weight: 700;
         line-height: 1.2;
         text-decoration: none;
@@ -159,7 +159,7 @@ function installMobileWhatToKnowStyles(documentObject) {
         background: var(--cgb-gold-50);
         border-radius: var(--radius-pill);
         font-family: var(--font-ui);
-        font-size: .64rem;
+        font-size: var(--text-2xs);
         font-weight: 700;
         line-height: 1.1;
       }
@@ -167,7 +167,7 @@ function installMobileWhatToKnowStyles(documentObject) {
       body[data-view="map"][data-command-surface="map"] #tray-selected .selected-card__what-to-know-empty {
         margin: 4px 0 0;
         color: var(--cgb-ink-500);
-        font-size: .66rem;
+        font-size: var(--text-2xs);
         line-height: 1.25;
       }
     }

@@ -192,7 +192,7 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
   background: var(--cgb-gold-50);
   border-radius: var(--radius-pill);
   font-family: var(--font-ui);
-  font-size: .64rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
   line-height: 1.1;
 }
@@ -328,7 +328,7 @@ body[data-view="detail"] #venue-detail.venue-detail > .activity-card::before {
 
 .venue-detail .detail-fan-experiences__share {
   display: inline-block;
-  font-size: .68rem;
+  font-size: var(--text-2xs);
   font-weight: 700;
 }
 
@@ -795,7 +795,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     display: block;
     margin-bottom: 2px;
     color: var(--cgb-ink-500);
-    font-size: .54rem;
+    font-size: var(--text-2xs);
     font-weight: 800;
     letter-spacing: .08em;
     line-height: 1.1;
@@ -806,7 +806,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     grid-row: 3 !important;
     margin: 0 !important;
     color: var(--cgb-ink-700) !important;
-    font-size: .66rem !important;
+    font-size: var(--text-2xs) !important;
     line-height: 1.3 !important;
   }
 
@@ -816,7 +816,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     align-self: start !important;
     margin: 0 !important;
     color: var(--cgb-ink-500) !important;
-    font-size: .54rem !important;
+    font-size: var(--text-2xs) !important;
     font-weight: 800 !important;
     letter-spacing: .07em !important;
     line-height: 1.1 !important;

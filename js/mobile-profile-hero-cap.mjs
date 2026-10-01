@@ -132,7 +132,7 @@ function installStyles(documentObject = document) {
         gap: 0 !important;
         color: var(--cgb-white) !important;
         font-family: var(--font-ui) !important;
-        font-size: .47rem !important;
+        font-size: var(--text-2xs) !important;
         font-weight: 850 !important;
         letter-spacing: .025em !important;
         line-height: .95 !important;
