@@ -191,7 +191,7 @@ export function installDesktopVisualCohesionStyles(documentObject = globalThis.d
         border-top: 1px solid rgba(1, 1, 51, .08);
         border-radius: 0 !important;
         clip-path: none !important;
-        font-size: var(--text-2xs, .625rem);
+        font-size: var(--text-2xs, .6875rem);
         white-space: nowrap;
       }
 
