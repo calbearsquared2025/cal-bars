@@ -379,12 +379,12 @@
       "venue_type": "community_location",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
-      "short_description": "A Midtown Manhattan sports bar hosting the UCLA watch party.",
+      "short_description": "Midtown Manhattan American-style bar near Bryant Park serving smashburgers, pizza, and classic comfort food.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-08-31T01:07:26.888Z",
+      "updated_at": "2026-10-01T20:08:00.000Z",
       "venue_tags": [
         "audio_on",
         "food"
@@ -941,12 +941,12 @@
       "venue_type": "community_location",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
-      "short_description": "",
+      "short_description": "Long Beach neighborhood pizza restaurant serving pizza, sandwiches, mains, beer, and wine.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-09-01T04:29:33.390Z",
+      "updated_at": "2026-10-01T20:08:00.000Z",
       "venue_tags": [
         "all_ages",
         "audio_on",
@@ -970,12 +970,12 @@
       "venue_type": "community_location",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
-      "short_description": "",
+      "short_description": "Menlo Park pub serving burgers, brews, and pizza since 1966, with arcade games and sports screens.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-09-01T04:33:25.509Z",
+      "updated_at": "2026-10-01T20:08:00.000Z",
       "venue_tags": [
         "all_ages",
         "audio_on",
@@ -1025,12 +1025,12 @@
       "venue_type": "community_location",
       "verification_status": "user_added",
       "alumni_owned": "unknown",
-      "short_description": "",
+      "short_description": "NoPa brewery and gastropub pairing Laughing Monk craft beer with Filipino-inspired comfort food.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-09-09T22:11:42.601Z",
+      "updated_at": "2026-10-01T20:08:00.000Z",
       "venue_tags": [
         "all_ages",
         "audio_on",
@@ -1131,12 +1131,12 @@
       "venue_type": "community_location",
       "verification_status": "user_added",
       "alumni_owned": "unknown",
-      "short_description": "",
+      "short_description": "Honolulu craft cocktail and whiskey bar on the lobby level of the Ala Moana Hotel, with food, beer, and wine.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-09-04T18:23:34.980Z",
+      "updated_at": "2026-10-01T20:08:00.000Z",
       "venue_tags": [
         "food"
       ]
@@ -1157,12 +1157,12 @@
       "venue_type": "community_location",
       "verification_status": "user_added",
       "alumni_owned": "unknown",
-      "short_description": "While it's not traditionally a \"Cal Bar,\" on Saturday, Sept. 12 the JMA Dome will officially be Bear Territory.",
+      "short_description": "While it's not traditionally a ‘Cal Bar,’ on Saturday, Sept. 12 the JMA Dome was officially Bear Territory.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-09-09T02:12:15.464Z",
+      "updated_at": "2026-10-01T20:08:00.000Z",
       "venue_tags": [
         "all_ages",
         "audio_on",
@@ -1198,7 +1198,7 @@
       ]
     },
     {
-      "venue_id": "venue_dock_seattle_20260922",
+      "venue_id": "venue_13d3f2b48a295ed0dc4a55a7",
       "slug": "the-dock-sports-bar-grill-seattle",
       "name": "The Dock Sports Bar & Grill",
       "address_line_1": "1102 N 34th St",
@@ -1213,12 +1213,12 @@
       "venue_type": "community_location",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
-      "short_description": "",
+      "short_description": "Family-owned Fremont sports bar and grill with game-day viewing, food, drinks, and watch-party space.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-09-22T20:00:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "venue_tags": [
         "food"
       ]
@@ -3012,7 +3012,7 @@
       "feature_tags": []
     },
     {
-      "watch_party_id": "wp_ocvt_20261010",
+      "watch_party_id": "wp_cd10883a2ec8b96cfbdd0558",
       "venue_id": "venue_82dc2de39db3eda8dbc417c8",
       "game_id": "game_d865a3e1eac52bbbd848d545",
       "organizer_name": "Orange County Cal Alumni Club",
@@ -3025,13 +3025,13 @@
       "restrictions_note": "",
       "game_day_note": "Free OC Cal Alumni Club watch party at Lone Wolf Brewing in Yorba Linda. RSVP appreciated; kickoff time TBD.",
       "event_status": "active",
-      "updated_at": "2026-09-21T20:21:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
       ]
     },
     {
-      "watch_party_id": "wp_ocwf_20261017",
+      "watch_party_id": "wp_f66622110a9f897221c08497",
       "venue_id": "venue_82dc2de39db3eda8dbc417c8",
       "game_id": "game_2d86d2a1538503a070d1ee68",
       "organizer_name": "Orange County Cal Alumni Club",
@@ -3044,13 +3044,13 @@
       "restrictions_note": "",
       "game_day_note": "Free OC Cal Alumni Club watch party at Lone Wolf Brewing in Yorba Linda. RSVP appreciated; kickoff time TBD.",
       "event_status": "active",
-      "updated_at": "2026-09-21T20:21:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
       ]
     },
     {
-      "watch_party_id": "wp_ocsmu_20261024",
+      "watch_party_id": "wp_18dd884dd8f62dd7116ada8a",
       "venue_id": "venue_82dc2de39db3eda8dbc417c8",
       "game_id": "game_5f8281482583c43917f6f2a5",
       "organizer_name": "Orange County Cal Alumni Club",
@@ -3063,13 +3063,13 @@
       "restrictions_note": "",
       "game_day_note": "Free OC Cal Alumni Club watch party at Lone Wolf Brewing in Yorba Linda. RSVP appreciated; kickoff time TBD.",
       "event_status": "active",
-      "updated_at": "2026-09-21T20:21:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
       ]
     },
     {
-      "watch_party_id": "wp_ocncs_20261031",
+      "watch_party_id": "wp_404a0a7a6f58b52ed590a641",
       "venue_id": "venue_82dc2de39db3eda8dbc417c8",
       "game_id": "game_6bc7b90491088cca24f8ca52",
       "organizer_name": "Orange County Cal Alumni Club",
@@ -3082,13 +3082,13 @@
       "restrictions_note": "",
       "game_day_note": "Free OC Cal Alumni Club watch party at Lone Wolf Brewing in Yorba Linda. RSVP appreciated; kickoff time TBD.",
       "event_status": "active",
-      "updated_at": "2026-09-21T20:21:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
       ]
     },
     {
-      "watch_party_id": "wp_ocuva_20261114",
+      "watch_party_id": "wp_49f9ffbba2f4e204dfc46594",
       "venue_id": "venue_82dc2de39db3eda8dbc417c8",
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
       "organizer_name": "Orange County Cal Alumni Club",
@@ -3101,14 +3101,14 @@
       "restrictions_note": "",
       "game_day_note": "Free OC Cal Alumni Club watch party at Lone Wolf Brewing in Yorba Linda. RSVP appreciated; kickoff time TBD.",
       "event_status": "active",
-      "updated_at": "2026-09-21T20:21:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
       ]
     },
     {
-      "watch_party_id": "wp_pugetsound_clemson_20260925",
-      "venue_id": "venue_dock_seattle_20260922",
+      "watch_party_id": "wp_be77a7069ef278c94673f26a",
+      "venue_id": "venue_13d3f2b48a295ed0dc4a55a7",
       "game_id": "game_bf8616724877adc20fb78ac9",
       "organizer_name": "Cal Alumni of Puget Sound",
       "organizer_type": "alumni_group",
@@ -3120,14 +3120,14 @@
       "restrictions_note": "",
       "game_day_note": "Join Cal alumni and fans at The Dock in Fremont, Seattle for Cal vs. Clemson. Family-friendly venue with a full menu. RSVP requested.",
       "event_status": "active",
-      "updated_at": "2026-09-23T18:31:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
       ]
     },
     {
-      "watch_party_id": "wp_seattle_unlv_20261003",
-      "venue_id": "venue_dock_seattle_20260922",
+      "watch_party_id": "wp_ad4d9152d677eb444c586847",
+      "venue_id": "venue_13d3f2b48a295ed0dc4a55a7",
       "game_id": "game_416f957fa7bbd325fa2d9b13",
       "organizer_name": "Cal Alumni of Seattle",
       "organizer_type": "alumni_group",
@@ -3139,13 +3139,13 @@
       "restrictions_note": "",
       "game_day_note": "Join Cal alumni and fans at The Dock in Fremont, Seattle for Cal vs. UNLV. Family-friendly venue with a full menu. RSVP requested.",
       "event_status": "active",
-      "updated_at": "2026-10-01T05:01:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
       ]
     },
     {
-      "watch_party_id": "wp_philadelphia_unlv_20261003",
+      "watch_party_id": "wp_bab414e0ab52196ebd5a45a9",
       "venue_id": "venue_45c4aae3288ec7f39e3912e3",
       "game_id": "game_416f957fa7bbd325fa2d9b13",
       "organizer_name": "Cal Alumni Club of Philadelphia",
@@ -3158,7 +3158,7 @@
       "restrictions_note": "",
       "game_day_note": "Philadelphia Bears gather at Cavanaugh’s Headhouse for Cal vs. UNLV. Kickoff is at 3:30 p.m. ET.",
       "event_status": "active",
-      "updated_at": "2026-10-01T05:05:00.000Z",
+      "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": []
     }
   ],
@@ -3229,6 +3229,10 @@
     {
       "venue_id": "venue_13cca91604a0819ea14c8fea",
       "past_game_count": 2
+    },
+    {
+      "venue_id": "venue_13d3f2b48a295ed0dc4a55a7",
+      "past_game_count": 0
     },
     {
       "venue_id": "venue_14e39fdcd134476599503f51",
@@ -3376,10 +3380,6 @@
     },
     {
       "venue_id": "venue_d6e66f8dac776cb8821785cf",
-      "past_game_count": 0
-    },
-    {
-      "venue_id": "venue_dock_seattle_20260922",
       "past_game_count": 0
     },
     {
@@ -3561,5 +3561,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-01T17:51:01.078Z"
+  "generatedAt": "2026-10-01T21:37:30.148Z"
 }
