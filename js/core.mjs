@@ -162,6 +162,12 @@ export function markerKind(snapshot, gameId, venue) {
   return venue?.venue_type === 'cal_bar' ? 'cal-bar' : 'fan-added';
 }
 
+export function markerTypeLabel(snapshot, gameId, venue) {
+  return markerKind(snapshot, gameId, venue) === 'watch-party'
+    ? ACTIVE_INSTANCE_CONFIG.terminology.watchPartySingular
+    : venueTypeLabel(venue);
+}
+
 export function normalizeSearchText(value) {
   const normalized = String(value || '').trim().toLocaleLowerCase();
   return US_REGION_QUERY_ALIASES[normalized] || normalized;

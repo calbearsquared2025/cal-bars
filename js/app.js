@@ -13,6 +13,7 @@ import {
   getWatchPartiesForGame,
   getWatchParty,
   markerKind,
+  markerTypeLabel,
   NEARBY_RADIUS_MILES,
   normalizeSearchText,
   rankNearbyVenues,
@@ -378,7 +379,7 @@ function updateMarkerElement(button, venue) {
   button.tabIndex = -1;
   button.classList.toggle('has-attendance', count > 0);
   button.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
-  button.setAttribute('aria-label', `${venue.name}, ${venueTypeLabel(venue)}. ${bearCountCopy(count)}`);
+  button.setAttribute('aria-label', `${venue.name}, ${markerTypeLabel(state.snapshot, state.gameId, venue)}. ${bearCountCopy(count)}`);
   button.dataset.venueId = venue.venue_id;
 
   const symbol = document.createElement('span');
