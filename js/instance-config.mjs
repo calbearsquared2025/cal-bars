@@ -80,6 +80,8 @@ export const CAL_INSTANCE_CONFIG = freeze({
     about: freeze({
       heading: 'Cal Golden Bars',
       intro: 'Cal Golden Bars helps Cal fans find each other on game day.',
+      communityDescription: 'locations with persistent Cal communities — along with fan-added locations where you may find a fellow Bear watching the game.',
+      hostPrompt: 'Own or manage a bar hosting a Cal event?',
       ownerLine: 'Cal Golden Bars is built and maintained by Matthew Putzulu.'
     }),
     privacy: freeze({
@@ -270,6 +272,8 @@ export const TEST_INSTANCE_CONFIG = freeze({
     about: freeze({
       heading: 'Test Fox Bars',
       intro: 'Test Fox Bars helps Test U fans of the Test Foxes find each other on game day.',
+      communityDescription: 'locations with persistent Test U communities — along with fan-added locations where you may find a fellow Fox watching the game.',
+      hostPrompt: 'Own or manage a bar hosting a Test U event?',
       ownerLine: 'Fictional Test University portability fixture.'
     }),
     privacy: freeze({
@@ -414,6 +418,8 @@ const REQUIRED_NON_EMPTY_STRING_PATHS = freeze([
   'site.affiliationDisclaimer',
   'site.about.heading',
   'site.about.intro',
+  'site.about.communityDescription',
+  'site.about.hostPrompt',
   'site.about.ownerLine',
   'site.privacy.lead',
   'site.privacy.accountSummary',

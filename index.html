@@ -336,21 +336,23 @@
       <div class="command-surface__shell">
         <header class="command-surface__header mobile-destination-header">
           <div>
-            <h2 id="about-surface-title">Cal Golden Bars</h2>
+            <h2 id="about-surface-title" data-about-heading="surface">Cal Golden Bars</h2>
           </div>
         </header>
-        <div class="about-surface__content">
-          <p><strong>Cal Golden Bars helps Cal fans find each other on game day.</strong></p>
-          <p>Find <strong>Cal Bars</strong> — locations with persistent Cal communities — along with fan-added locations where you may find a fellow Bear watching the game.</p>
-          <p>Planning to watch at your local bar? Mark <strong>“I’ll be here”</strong> so other Bears know where to find you.</p>
-          <p>Organizing a gathering for a specific game? <strong>Add a Watch Party</strong> so fans nearby can join you.</p>
-          <p>Own or manage a bar hosting a Cal event?<span class="about-contact-line"><a href="mailto:calbearsquared2025@gmail.com">Contact Cal Golden Bars.</a></span></p>
-          <p>Cal Golden Bars is built and maintained by Matthew Putzulu.</p>
-          <div class="about-support">
-            <span class="eyebrow">Support Cal Golden Bars</span>
-            <p>If Cal Golden Bars has helped you find your Cal crowd, consider <button class="text-button" type="button" data-support-open>supporting CGB</button>.</p>
-          </div>
-          <p class="about-privacy-link"><button id="about-privacy-button" class="text-button" type="button" aria-haspopup="dialog" aria-controls="privacy-dialog">Privacy</button></p>
+        <div class="about-surface__content" data-about-content="surface">
+          <!-- INSTANCE_ABOUT_CONTENT:surface:start -->
+<p><strong>Cal Golden Bars helps Cal fans find each other on game day.</strong></p>
+<p>Find <strong>Cal Bars</strong> — locations with persistent Cal communities — along with fan-added locations where you may find a fellow Bear watching the game.</p>
+<p>Planning to watch at your local bar? Mark <strong>“I’ll be here”</strong> so other Bears know where to find you.</p>
+<p>Organizing a gathering for a specific game? <strong>Add a Watch Party</strong> so fans nearby can join you.</p>
+<p>Own or manage a bar hosting a Cal event?<span class="about-contact-line"><a href="mailto:calbearsquared2025@gmail.com">Contact Cal Golden Bars.</a></span></p>
+<p>Cal Golden Bars is built and maintained by Matthew Putzulu.</p>
+<div class="about-support">
+  <span class="eyebrow">Support Cal Golden Bars</span>
+  <p>If Cal Golden Bars has helped you find your Cal crowd, consider <button class="text-button" type="button" data-support-open>supporting CGB</button>.</p>
+</div>
+<p class="about-privacy-link"><button id="about-privacy-button" class="text-button" type="button" aria-haspopup="dialog" aria-controls="privacy-dialog">Privacy</button></p>
+<!-- INSTANCE_ABOUT_CONTENT:surface:end -->
         </div>
       </div>
     </section>
@@ -438,17 +440,21 @@
   <dialog id="about-dialog" class="about-dialog">
     <form method="dialog" class="dialog-shell">
       <div class="dialog-header">
-        <h2>About Cal Golden Bars</h2>
+        <h2 data-about-heading="dialog">About Cal Golden Bars</h2>
       </div>
-      <p><strong>Cal Golden Bars helps Cal fans find each other on game day.</strong></p>
-      <p>Find <strong>Cal Bars</strong> — locations with persistent Cal communities — along with fan-added locations where you may find a fellow Bear watching the game.</p>
-      <p>Planning to watch at your local bar? Mark <strong>“I’ll be here”</strong> so other Bears know where to find you.</p>
-      <p>Organizing a gathering for a specific game? <strong>Add a Watch Party</strong> so fans nearby can join you.</p>
-      <p>Own or manage a bar hosting a Cal event?<span class="about-contact-line"><a href="mailto:calbearsquared2025@gmail.com">Contact Cal Golden Bars.</a></span></p>
-      <p>Cal Golden Bars is built and maintained by Matthew Putzulu.</p>
-      <div class="about-support">
-        <span class="eyebrow">Support Cal Golden Bars</span>
-        <p>If Cal Golden Bars has helped you find your Cal crowd, consider <button class="text-button" type="button" data-support-open>supporting CGB</button>.</p>
+      <div data-about-content="dialog">
+        <!-- INSTANCE_ABOUT_CONTENT:dialog:start -->
+<p><strong>Cal Golden Bars helps Cal fans find each other on game day.</strong></p>
+<p>Find <strong>Cal Bars</strong> — locations with persistent Cal communities — along with fan-added locations where you may find a fellow Bear watching the game.</p>
+<p>Planning to watch at your local bar? Mark <strong>“I’ll be here”</strong> so other Bears know where to find you.</p>
+<p>Organizing a gathering for a specific game? <strong>Add a Watch Party</strong> so fans nearby can join you.</p>
+<p>Own or manage a bar hosting a Cal event?<span class="about-contact-line"><a href="mailto:calbearsquared2025@gmail.com">Contact Cal Golden Bars.</a></span></p>
+<p>Cal Golden Bars is built and maintained by Matthew Putzulu.</p>
+<div class="about-support">
+  <span class="eyebrow">Support Cal Golden Bars</span>
+  <p>If Cal Golden Bars has helped you find your Cal crowd, consider <button class="text-button" type="button" data-support-open>supporting CGB</button>.</p>
+</div>
+<!-- INSTANCE_ABOUT_CONTENT:dialog:end -->
       </div>
     </form>
   </dialog>
@@ -490,6 +496,7 @@
   <script id="cgb-maptiler-sdk" src="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.umd.min.js" async></script>
   <script type="module" src="js/snapshot-refresh.mjs"></script>
   <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/about-content.mjs"></script>
   <script type="module" src="js/map-profile-bootstrap.mjs"></script>
   <script type="module" src="js/icon-upgrade.mjs"></script>
   <script type="module" src="js/shell-controls.mjs"></script>
