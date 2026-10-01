@@ -141,17 +141,17 @@ function initializeNavigation() {
   const addButton = document.querySelector('#mobile-add-button');
   const listButton = document.querySelector('#mobile-list-button');
 
-  mapButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('map')));
-  searchButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('search')));
-  addButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('add')));
-  listButton?.addEventListener('click', () => requestAnimationFrame(() => setActiveView('list')));
+  mapButton?.addEventListener('click', () => requestAnimationFrame(syncNavigation));
+  searchButton?.addEventListener('click', () => requestAnimationFrame(syncNavigation));
+  addButton?.addEventListener('click', () => requestAnimationFrame(syncNavigation));
+  listButton?.addEventListener('click', () => requestAnimationFrame(syncNavigation));
 
   document.querySelector('#browse-locations-button')?.addEventListener('click', openListFromMap, { capture: true });
   const trayHandle = document.querySelector('#tray-handle');
   trayHandle?.addEventListener('pointerup', scheduleSync);
   document.querySelector('#close-list-button')?.addEventListener('click', scheduleSync);
   document.querySelectorAll('[data-command-close]').forEach((button) => {
-    button.addEventListener('click', () => requestAnimationFrame(() => setActiveView('map')));
+    button.addEventListener('click', () => requestAnimationFrame(syncNavigation));
   });
 }
 

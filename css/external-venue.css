@@ -50,10 +50,12 @@
   width: 100%;
 }
 
-.external-place-result:hover,
-.external-place-result:focus-visible {
+.external-place-result:hover {
   border-color: #002676;
-  outline: none;
+}
+
+.external-place-result:focus-visible {
+  border-color: var(--a11y-focus-dark, #111827);
 }
 
 .external-place-result strong {

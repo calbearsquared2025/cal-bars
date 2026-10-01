@@ -200,7 +200,7 @@
             <button class="search-submit" type="submit">Search</button>
           </div>
           <div id="search-dropdown" class="search-suggestions" hidden>
-            <div id="search-suggestions" class="search-suggestion-results" role="listbox"></div>
+            <div id="search-suggestions" class="search-suggestion-results" role="region" aria-label="Search results" aria-live="polite"></div>
             <button id="search-add-location-button" class="search-add-location-action" type="button" hidden>Watching somewhere else? <strong>Search for another location.</strong></button>
           </div>
         </form>
@@ -248,7 +248,7 @@
         <div id="tray-list" class="tray-list" hidden>
           <header class="tray-list__header mobile-destination-header">
             <div class="tray-list__heading">
-              <h2 id="list-heading">Find your Cal crowd</h2>
+              <h2 id="list-heading" tabindex="-1">Find your Cal crowd</h2>
               <p class="tray-list__intro">Search or choose a location to see venue details, Bear activity, and Watch Parties for this game.</p>
             </div>
             <div id="list-location-toggle" class="list-location-toggle" role="group" aria-label="Location range">
@@ -288,7 +288,7 @@
             <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-arrow-left"></use></svg>
           </button>
           <div>
-            <h2 id="add-surface-title">Add to the map</h2>
+            <h2 id="add-surface-title" tabindex="-1">Add to the map</h2>
           </div>
         </header>
         <p class="command-surface__intro">Choose what you would like to add or correct.</p>
@@ -336,7 +336,7 @@
       <div class="command-surface__shell">
         <header class="command-surface__header mobile-destination-header">
           <div>
-            <h2 id="about-surface-title" data-about-heading="surface">Cal Golden Bars</h2>
+            <h2 id="about-surface-title" tabindex="-1" data-about-heading="surface">Cal Golden Bars</h2>
           </div>
         </header>
         <div class="about-surface__content" data-about-content="surface">
@@ -436,6 +436,19 @@
     <span aria-hidden="true">·</span>
     <a href="/admin">Admin</a>
   </footer>
+
+  <dialog id="manual-copy-dialog" class="manual-copy-panel" aria-labelledby="manual-copy-title">
+    <form method="dialog" class="manual-copy-shell">
+      <h2 id="manual-copy-title">Copy this message</h2>
+      <p>Automatic copying is unavailable in this browser. Select and copy the complete message below.</p>
+      <label class="sr-only" for="manual-copy-input">Share message</label>
+      <input id="manual-copy-input" type="text" readonly>
+      <div class="manual-copy-actions">
+        <button id="manual-copy-select" class="primary-button" type="button">Select message</button>
+        <button class="secondary-button" type="submit" value="cancel">Close</button>
+      </div>
+    </form>
+  </dialog>
 
   <dialog id="about-dialog" class="about-dialog">
     <form method="dialog" class="dialog-shell">

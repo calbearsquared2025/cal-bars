@@ -17,12 +17,6 @@
   stroke: none;
 }
 
-:focus-visible {
-  outline: 2px solid var(--cgb-gold-400);
-  outline-offset: 3px;
-  box-shadow: var(--focus-ring);
-}
-
 /* ---------- Branded shell ---------- */
 .site-header {
   --cgb-header-safe-area-blend: linear-gradient(transparent, transparent);
@@ -112,10 +106,14 @@
   background: currentColor;
 }
 
-.header-menu-button:hover,
-.header-menu-button:focus-visible {
+.header-menu-button:hover {
   color: var(--cgb-gold-400);
   border-color: var(--cgb-gold-400);
+}
+
+.header-menu-button:focus-visible {
+  color: var(--a11y-focus-light);
+  border-color: var(--a11y-focus-light);
 }
 
 .game-button {
@@ -138,10 +136,14 @@
   box-shadow: none;
 }
 
-.game-button:hover,
-.game-button:focus-visible {
+.game-button:hover {
   background: rgba(255, 255, 255, .04);
   border-color: var(--cgb-gold-400);
+}
+
+.game-button:focus-visible {
+  background: rgba(255, 255, 255, .04);
+  border-color: var(--a11y-focus-light);
 }
 
 .game-button__eyebrow {
@@ -387,8 +389,8 @@
 }
 
 .search-field:focus-within {
-  border-color: var(--cgb-gold-500);
-  box-shadow: 0 0 0 2px rgba(253, 181, 21, .24);
+  border-color: var(--a11y-focus-dark);
+  box-shadow: var(--focus-ring);
 }
 
 .search-submit {

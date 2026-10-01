@@ -19,6 +19,10 @@
   --brand-watch-party-accent: var(--brand-secondary);
   --brand-watch-party-surface: #fff8e6;
 
+  /* Shared-shell accessibility colors are intentionally independent of school branding. */
+  --a11y-focus-light: #ffffff;
+  --a11y-focus-dark: #111827;
+
   /* Lower-level palette values retained for internal shades and compatibility. */
   --cgb-navy-950: var(--brand-primary-dark);
   --cgb-navy-900: var(--brand-primary);
@@ -82,7 +86,7 @@
 
   --motion-fast: 140ms;
   --motion-standard: 220ms;
-  --focus-ring: 0 0 0 3px rgba(253, 181, 21, .42);
+  --focus-ring: 0 0 0 2px var(--a11y-focus-light), 0 0 0 5px var(--a11y-focus-dark);
 
   --mobile-command-height: 60px;
 
@@ -159,9 +163,9 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--cgb-gold-400);
+  outline: 2px solid var(--a11y-focus-dark);
   outline-offset: 3px;
-  box-shadow: var(--focus-ring);
+  box-shadow: 0 0 0 2px var(--a11y-focus-light);
 }
 
 .site-header {
@@ -212,10 +216,14 @@ textarea {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
 }
 
-.game-button:hover,
-.game-button:focus-visible {
+.game-button:hover {
   background: rgba(255, 255, 255, .14);
   border-color: rgba(253, 181, 21, .52);
+}
+
+.game-button:focus-visible {
+  background: rgba(255, 255, 255, .14);
+  border-color: var(--a11y-focus-light);
 }
 
 .game-button__eyebrow {
@@ -578,8 +586,10 @@ textarea {
 }
 
 .cgb-marker:focus-visible {
-  outline: 0;
-  filter: drop-shadow(0 0 0 rgba(0, 0, 0, 0)) drop-shadow(0 0 6px var(--cgb-gold-400));
+  outline: 2px solid var(--a11y-focus-dark);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 2px var(--a11y-focus-light);
+  filter: none;
 }
 
 .user-marker {
@@ -1207,7 +1217,7 @@ textarea {
 @media (min-width: 900px) {
   :root {
     --header-height: 90px;
-    --footer-height: calc(31px + env(safe-area-inset-bottom, 0px));
+    --footer-height: calc(36px + env(safe-area-inset-bottom, 0px));
   }
 
   .site-header {

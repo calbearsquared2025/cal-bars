@@ -76,6 +76,7 @@ let areaSearchSequence = 0;
 let areaSearchController = null;
 let initialMapConstructionMarked = false;
 let initialMapLoadMarked = false;
+let manualCopyReturnFocus = null;
 
 function configureMapTilerSdk() {
   const sdk = window.maptilersdk;
@@ -158,7 +159,10 @@ function cacheDom() {
     locationList: document.querySelector('#location-list'),
     status: document.querySelector('#status'),
     aboutButton: document.querySelector('#about-button'),
-    aboutDialog: document.querySelector('#about-dialog')
+    aboutDialog: document.querySelector('#about-dialog'),
+    manualCopyDialog: document.querySelector('#manual-copy-dialog'),
+    manualCopyInput: document.querySelector('#manual-copy-input'),
+    manualCopySelect: document.querySelector('#manual-copy-select')
   });
 }
 
@@ -372,6 +376,7 @@ function updateMarkerElement(button, venue) {
   const kind = markerKind(state.snapshot, state.gameId, venue);
   const count = getFanCount(state.snapshot, state.gameId, venue.venue_id);
   button.className = `cgb-marker marker--${kind}`;
+  button.tabIndex = -1;
   button.classList.toggle('has-attendance', count > 0);
   button.classList.toggle('is-selected', venue.venue_id === state.selectedVenueId);
   button.setAttribute('aria-label', `${venue.name}, ${venueTypeLabel(venue)}. ${bearCountCopy(count)}`);
@@ -859,42 +864,44 @@ function legacyCopyText(text) {
   return copied;
 }
 
-function showManualCopy(text) {
-  document.querySelector('.manual-copy-panel')?.remove();
-  const panel = document.createElement('section');
-  panel.className = 'manual-copy-panel';
-  panel.setAttribute('role', 'dialog');
-  panel.setAttribute('aria-modal', 'true');
-  panel.setAttribute('aria-label', 'Copy share message');
+function restoreManualCopyFocus() {
+  const target = manualCopyReturnFocus;
+  manualCopyReturnFocus = null;
+  if (!(target instanceof HTMLElement)) return;
+  let attempt = 0;
+  const restore = () => {
+    if (!target.isConnected) return;
+    target.focus({ preventScroll: true });
+    if (document.activeElement !== target && attempt < 4) {
+      attempt += 1;
+      requestAnimationFrame(restore);
+    }
+  };
+  restore();
+}
 
-  const heading = document.createElement('strong');
-  heading.textContent = 'Copy this message';
-  const explanation = document.createElement('p');
-  explanation.textContent = 'Automatic copying is unavailable in this browser. Select and copy the complete message below.';
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.readOnly = true;
-  input.value = text;
-  input.setAttribute('aria-label', 'Share message');
-  input.addEventListener('focus', () => input.select());
+function restoreManualCopyFocusAfterClose() {
+  const restoreWhenClosed = () => {
+    if (dom.manualCopyDialog?.open) {
+      requestAnimationFrame(restoreWhenClosed);
+      return;
+    }
+    restoreManualCopyFocus();
+  };
+  requestAnimationFrame(restoreWhenClosed);
+}
 
-  const actions = document.createElement('div');
-  actions.className = 'manual-copy-actions';
-  const select = document.createElement('button');
-  select.type = 'button';
-  select.className = 'primary-button';
-  select.textContent = 'Select message';
-  select.addEventListener('click', () => { input.focus(); input.select(); });
-  const close = document.createElement('button');
-  close.type = 'button';
-  close.className = 'secondary-button';
-  close.textContent = 'Close';
-  close.addEventListener('click', () => panel.remove());
-  actions.append(select, close);
-  panel.append(heading, explanation, input, actions);
-  document.body.append(panel);
-  input.focus();
-  input.select();
+function showManualCopy(text, returnFocus = null) {
+  if (!dom.manualCopyDialog || !dom.manualCopyInput) return;
+  manualCopyReturnFocus = returnFocus instanceof HTMLElement && returnFocus.isConnected
+    ? returnFocus
+    : document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  dom.manualCopyInput.value = text;
+  if (!dom.manualCopyDialog.open) dom.manualCopyDialog.showModal();
+  requestAnimationFrame(() => {
+    dom.manualCopyInput.focus({ preventScroll: true });
+    dom.manualCopyInput.select();
+  });
 }
 
 function buildVenueShareUrl(venue, game) {
@@ -923,6 +930,7 @@ function buildVenueSharePayload(venue) {
 
 async function shareVenue(venue) {
   const payload = buildVenueSharePayload(venue);
+  const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   let nativeShareAvailable = typeof navigator.share === 'function';
   if (nativeShareAvailable && typeof navigator.canShare === 'function') {
     try { nativeShareAvailable = navigator.canShare(payload); } catch (_) { nativeShareAvailable = false; }
@@ -938,7 +946,7 @@ async function shareVenue(venue) {
   });
 
   if (result.method === 'clipboard' || result.method === 'legacy-copy') showStatus('Message copied');
-  else if (result.method === 'manual') showManualCopy(result.text);
+  else if (result.method === 'manual') showManualCopy(result.text, returnFocus);
   return result;
 }
 
@@ -946,7 +954,7 @@ function renderSelectedCard() {
   const venue = selectedVenue();
   dom.traySelected.replaceChildren();
   if (!venue) {
-    setTrayState(isMobileLayout() ? 'peek' : 'full');
+    setTrayState(isMobileLayout() && state.trayState !== 'full' ? 'peek' : 'full');
     return;
   }
   const ranked = rankVenues(state.snapshot, state.gameId, state.origin);
@@ -1548,7 +1556,6 @@ function renderSuggestions() {
   matches.forEach(({ venue, party }) => {
     const button = document.createElement('button');
     button.type = 'button';
-    button.setAttribute('role', 'option');
     button.dataset.venueId = venue.venue_id;
     const name = document.createElement('strong');
     name.textContent = venue.name;
@@ -1839,6 +1846,13 @@ function handleViewportClassChange() {
 }
 
 function wireEvents() {
+  dom.manualCopyInput?.addEventListener('focus', () => dom.manualCopyInput.select());
+  dom.manualCopySelect?.addEventListener('click', () => {
+    dom.manualCopyInput?.focus({ preventScroll: true });
+    dom.manualCopyInput?.select();
+  });
+  dom.manualCopyDialog?.addEventListener('close', restoreManualCopyFocus);
+  dom.manualCopyDialog?.querySelector('form')?.addEventListener('submit', restoreManualCopyFocusAfterClose);
   dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
   dom.browseButton.addEventListener('click', showLocations);

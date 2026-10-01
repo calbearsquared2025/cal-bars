@@ -43,6 +43,7 @@ const FIND_CROWD_COPY = ACTIVE_INSTANCE_CONFIG.copy.findCrowd;
 let currentSurface = 'map';
 let contributionIntent = '';
 let searchSubmissionPending = false;
+let surfaceReturnFocus = null;
 let dom = null;
 
 function appState() {
@@ -233,19 +234,66 @@ function updateCommandState() {
   setActiveCommand(document, mobile || active !== 'add' ? active : null);
 }
 
-function setSurface(next, { focus = false } = {}) {
+function surfaceOwnsElement(surface, element) {
+  if (!(element instanceof HTMLElement)) return false;
+  if (surface === 'search') return Boolean(dom.searchSurface?.contains(element));
+  if (surface === 'add') return Boolean(dom.addSurface?.contains(element));
+  if (surface === 'about') return Boolean(dom.aboutSurface?.contains(element));
+  if (surface === 'list') return Boolean(dom.trayList?.contains(element));
+  return false;
+}
+
+function rememberSurfaceLauncher(launcher = document.activeElement) {
+  if (!(launcher instanceof HTMLElement) || launcher === document.body) return;
+  surfaceReturnFocus = launcher;
+}
+
+function focusElementWhenReady(target, { select = false, attempts = 4 } = {}) {
+  if (!(target instanceof HTMLElement)) return;
+  let attempt = 0;
+  const applyFocus = () => {
+    if (!target.isConnected) return;
+    target.focus({ preventScroll: true });
+    if (select) target.select?.();
+    if (document.activeElement !== target && attempt < attempts) {
+      attempt += 1;
+      requestAnimationFrame(applyFocus);
+    }
+  };
+  applyFocus();
+}
+
+function focusSurface(next) {
+  const target = next === 'search'
+    ? dom.searchInput
+    : next === 'add'
+      ? dom.addTitle
+      : next === 'about'
+        ? dom.aboutTitle
+        : next === 'list'
+          ? dom.listHeading
+          : null;
+  focusElementWhenReady(target, { select: next === 'search' });
+}
+
+function restoreSurfaceFocus() {
+  const target = surfaceReturnFocus;
+  surfaceReturnFocus = null;
+  focusElementWhenReady(target);
+}
+
+function setSurface(next, { focus = false, restoreFocus = false } = {}) {
+  const previous = currentSurface;
+  const activeBefore = document.activeElement;
+  const focusWouldBeHidden = surfaceOwnsElement(previous, activeBefore);
   currentSurface = next;
   setPrimarySurfaceVisibility(document, next);
   setCommandSurface(document, next);
   moveSearchForm();
   updateCommandState();
 
-  if (next === 'search' && focus) {
-    requestAnimationFrame(() => {
-      dom.searchInput?.focus({ preventScroll: true });
-      dom.searchInput?.select?.();
-    });
-  }
+  if (focus) focusSurface(next);
+  else if (next === 'map' && (restoreFocus || focusWouldBeHidden)) restoreSurfaceFocus();
 }
 
 function moveSearchForm() {
@@ -285,32 +333,37 @@ function setSearchMode(mode = 'existing', { refresh = true } = {}) {
   if (addingLocation && refresh) window.CGBExternalVenueSearch?.searchCurrentQuery?.({ immediate: true });
 }
 
-function showMap() {
+function showMap({ restoreFocus = false } = {}) {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('existing');
-  setSurface('map');
+  setSurface('map', { restoreFocus });
   if (dom.tray?.dataset.state === 'full') dom.closeList?.click();
   if (!isMobileLayout()) normalizeDesktopTray();
   updateCommandState();
 }
 
-function showList() {
+function showList({ focus = false, launcher = null } = {}) {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('existing');
+  if (focus) rememberSurfaceLauncher(launcher);
   setSurface('map');
   if (window.CGBApp?.showLocations) {
     currentSurface = 'list';
     window.CGBApp.showLocations();
+    setCommandSurface(document, 'list');
     updateCommandState();
+    if (focus) requestAnimationFrame(() => focusSurface('list'));
     return;
   }
   if (dom.tray?.dataset.state !== 'full') dom.trayHandle?.click();
   currentSurface = 'list';
+  setCommandSurface(document, 'list');
   updateCommandState();
+  if (focus) requestAnimationFrame(() => focusSurface('list'));
 }
 
 function updateSearchIntent() {
@@ -325,14 +378,15 @@ function updateSearchIntent() {
   dom.searchIntent.innerHTML = message;
 }
 
-function showSearch(intent = '') {
+function showSearch(intent = '', { focus = true, launcher = null } = {}) {
   leaveDetailForCommand();
   contributionIntent = intent;
   updateSearchIntent();
   setSearchMode(intent === CONTRIBUTION_INTENTS.watchParty || intent === CONTRIBUTION_INTENTS.calBar
     ? 'contribution-external'
     : intent === CONTRIBUTION_INTENTS.report ? 'contribution-existing' : 'existing');
-  setSurface('search', { focus: true });
+  if (focus) rememberSurfaceLauncher(launcher);
+  setSurface('search', { focus });
 }
 
 function updateAddContext() {
@@ -360,21 +414,23 @@ function updateAddContext() {
   dom.reportPartyButton.hidden = !watchPartyIssueUrl(venue.venue_id);
 }
 
-function showAdd() {
+function showAdd({ focus = false, launcher = null } = {}) {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('existing');
   updateAddContext();
-  setSurface('add');
+  if (focus) rememberSurfaceLauncher(launcher);
+  setSurface('add', { focus });
 }
 
-function showAbout() {
+function showAbout({ focus = false, launcher = null } = {}) {
   leaveDetailForCommand();
   contributionIntent = '';
   updateSearchIntent();
   setSearchMode('existing');
-  setSurface('about');
+  if (focus) rememberSurfaceLauncher(launcher);
+  setSurface('about', { focus });
 }
 
 function showAddLocationSearch() {
@@ -575,7 +631,9 @@ function cacheDom() {
     searchSlot: document.querySelector('#search-surface-form-slot'),
     searchIntent: document.querySelector('#search-surface-intent'),
     addSurface: document.querySelector('#add-surface'),
+    addTitle: document.querySelector('#add-surface-title'),
     aboutSurface: document.querySelector('#about-surface'),
+    aboutTitle: document.querySelector('#about-surface-title'),
     addContext: document.querySelector('#add-surface .add-context:not(.add-game-context)'),
     addContextActions: document.querySelector('#add-surface .add-context:not(.add-game-context) > .add-actions'),
     addContextName: document.querySelector('#add-context-name'),
@@ -594,6 +652,7 @@ function cacheDom() {
     reportPartyButton: document.querySelector('#add-report-party-button'),
     listHeading: document.querySelector('#list-heading'),
     tray: document.querySelector('#venue-tray'),
+    trayList: document.querySelector('#tray-list'),
     trayHandle: document.querySelector('#tray-handle'),
     closeList: document.querySelector('#close-list-button'),
     commandButtons
@@ -612,19 +671,22 @@ function initializeShellControls() {
   setSearchMode('existing', { refresh: false });
   setSurface('map');
 
-  document.querySelector('#header-about-button')?.addEventListener('click', () => {
+  document.querySelector('#header-about-button')?.addEventListener('click', (event) => {
     if (isMobileLayout()) {
-      showAbout();
+      showAbout({ focus: event.detail === 0, launcher: event.currentTarget });
       return;
     }
     document.querySelector('#about-button')?.click();
   });
-  document.querySelector('#mobile-map-button')?.addEventListener('click', showMap);
-  document.querySelector('#mobile-search-button')?.addEventListener('click', () => showSearch());
-  document.querySelector('#mobile-add-button')?.addEventListener('click', showAdd);
-  document.querySelector('#mobile-list-button')?.addEventListener('click', showList);
+  document.querySelector('#mobile-map-button')?.addEventListener('click', () => showMap());
+  document.querySelector('#mobile-search-button')?.addEventListener('click', (event) =>
+    showSearch('', { focus: event.detail === 0, launcher: event.currentTarget }));
+  document.querySelector('#mobile-add-button')?.addEventListener('click', (event) =>
+    showAdd({ focus: event.detail === 0, launcher: event.currentTarget }));
+  document.querySelector('#mobile-list-button')?.addEventListener('click', (event) =>
+    showList({ focus: event.detail === 0, launcher: event.currentTarget }));
   dom.addLocationSearch.addEventListener('click', showAddLocationSearch);
-  document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', showMap));
+  document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', () => showMap({ restoreFocus: true })));
 
   document.addEventListener('click', handleMobileLocationListSelection, { capture: true });
   document.addEventListener('click', handleSelectedVenueWatchParty);

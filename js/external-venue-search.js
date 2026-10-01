@@ -273,7 +273,6 @@ function showExternalResults(results) {
       button.type = 'button';
       button.className = 'external-place-result';
       button.dataset.externalPlaceId = place.placeId;
-      button.setAttribute('role', 'option');
       const name = document.createElement('strong');
       name.textContent = place.name;
       const address = document.createElement('span');

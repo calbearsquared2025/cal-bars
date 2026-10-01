@@ -240,11 +240,11 @@
 
   .map-actions #near-me-button:focus-visible {
     color: var(--cgb-navy-950);
-    background: var(--cgb-gold-50);
-    border-color: var(--cgb-gold-500);
-    outline: 2px solid var(--cgb-gold-400);
+    background: var(--cgb-navy-50);
+    border-color: var(--a11y-focus-dark);
+    outline: 2px solid var(--a11y-focus-dark);
     outline-offset: 2px;
-    box-shadow: var(--shadow-sm), var(--focus-ring);
+    box-shadow: var(--focus-ring), var(--shadow-sm);
   }
 
   body:not([data-command-surface="map"]) .map-actions,

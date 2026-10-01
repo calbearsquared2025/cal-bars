@@ -127,7 +127,7 @@
   }
 
   .command-surface .search-field:focus-within {
-    border-color: var(--cgb-gold-400);
+    border-color: var(--a11y-focus-dark);
     box-shadow: var(--focus-ring), var(--shadow-sm);
   }
 
@@ -178,7 +178,7 @@
   }
 
   body[data-command-surface="list"] .list-location-toggle__option:focus-visible {
-    outline: 2px solid var(--cgb-gold-400);
+    outline: 2px solid var(--a11y-focus-dark);
     outline-offset: 0;
   }
 
@@ -585,8 +585,8 @@
   }
 
   .map-toolbar .search-field:focus-within {
-    border-color: var(--cgb-gold-500, #fdb515);
-    box-shadow: 0 0 0 2px rgba(253, 181, 21, .22), 0 9px 22px rgba(1, 1, 51, .22);
+    border-color: var(--a11y-focus-dark);
+    box-shadow: var(--focus-ring), 0 9px 22px rgba(1, 1, 51, .22);
   }
 
   .map-toolbar .search-field > .ui-icon {
@@ -750,7 +750,7 @@
   }
 
   .venue-tray .list-location-toggle__option:focus-visible {
-    outline: 2px solid var(--cgb-gold-400);
+    outline: 2px solid var(--a11y-focus-dark);
     outline-offset: 0;
   }
 

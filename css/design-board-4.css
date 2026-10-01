@@ -1086,11 +1086,18 @@ body[data-view="detail"] #app {
     display: flex;
     height: var(--footer-height);
     min-height: var(--footer-height);
-    padding-block: 0;
+    gap: 6px;
+    padding: 3px 10px calc(env(safe-area-inset-bottom, 0px) + 3px);
+    font-size: .75rem;
+    line-height: 1.2;
   }
 
+  .site-footer a,
   .site-footer .text-button {
-    min-height: 0;
+    min-height: 26px;
+    display: inline-flex;
+    align-items: center;
+    padding-inline: 3px;
   }
 }
 

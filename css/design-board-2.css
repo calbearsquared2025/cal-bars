@@ -55,9 +55,9 @@
 .maplibregl-ctrl-group button:focus-visible {
   position: relative;
   z-index: 1;
-  outline: 2px solid var(--cgb-gold-400) !important;
+  outline: 2px solid var(--a11y-focus-dark) !important;
   outline-offset: -3px;
-  box-shadow: inset 0 0 0 1px rgba(1, 1, 51, .12) !important;
+  box-shadow: inset 0 0 0 2px var(--a11y-focus-light) !important;
 }
 
 .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
@@ -83,8 +83,9 @@
 }
 
 .maptiler-logo:focus-visible {
-  outline: 2px solid var(--cgb-gold-400);
+  outline: 2px solid var(--a11y-focus-dark);
   outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--a11y-focus-light);
 }
 
 .map-toolbar .location-search {
@@ -313,8 +314,10 @@
 }
 
 .cgb-marker:focus-visible {
-  outline: 0;
-  filter: drop-shadow(0 0 6px var(--cgb-gold-400));
+  outline: 2px solid var(--a11y-focus-dark);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 2px var(--a11y-focus-light);
+  filter: none;
 }
 
 .user-marker {

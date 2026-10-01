@@ -1,19 +1,4 @@
-import {
-  setActiveCommand,
-  setCommandSurface,
-  setPrimarySurfaceVisibility
-} from './command-surface.mjs';
-
-const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-map-profile-first-pass';
-
-function isMobile() {
-  return window.matchMedia(MOBILE_QUERY).matches;
-}
-
-function appState() {
-  return window.CGBApp?.getState?.() || null;
-}
 
 function installStyles() {
   if (document.getElementById(STYLE_ID)) return;
@@ -130,24 +115,8 @@ function installStyles() {
 }
 
 
-function setCommandActive(command) {
-  setCommandSurface(document, command);
-  setActiveCommand(document, command);
-}
-
-function openListSurface(event) {
-  if (!isMobile()) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-
-  setPrimarySurfaceVisibility(document, 'list');
-  window.CGBApp?.setTrayState?.('full', { animate: true });
-  setCommandActive('list');
-}
-
 function initialize() {
   installStyles();
-  document.querySelector('#mobile-list-button')?.addEventListener('click', openListSurface, { capture: true });
 }
 
 if (document.readyState === 'loading') {
