@@ -875,11 +875,6 @@ body[data-view="detail"] #app {
     align-self: flex-start;
   }
 
-  .venue-tray #tray-list .tray-list__header {
-    padding-bottom: 0;
-    background: rgba(242, 242, 242, .98);
-  }
-
   .selected-card {
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
