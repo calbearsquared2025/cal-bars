@@ -39,23 +39,12 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
   margin: -20px -20px 0;
   padding: 20px 20px 18px;
   border-bottom: 3px solid var(--brand-secondary);
-  background:
-    radial-gradient(circle at 12% -35%, rgba(253,181,21,.22), transparent 48%),
-    linear-gradient(135deg, var(--brand-primary-dark), var(--cgb-navy-800));
+  background: var(--cgb-navy-950, #010133);
   color: var(--brand-text-on-primary);
 }
 
-.my-cgb-promo-header .eyebrow {
-  color: var(--brand-secondary);
-  font-family: var(--font-condensed, sans-serif);
-  font-size: .78rem;
-  font-weight: 900;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
 .my-cgb-promo-header h2 {
-  margin: 3px 0 0;
+  margin: 0;
   color: var(--brand-text-on-primary);
   font-family: var(--font-condensed, sans-serif);
   font-size: clamp(2rem, 5vw, 2.65rem);
@@ -240,21 +229,11 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
     margin: -16px -16px 0;
     padding: 16px 16px 11px;
     color: var(--cgb-white, #fff);
-    background: var(--cgb-navy-950, #010133);
     border-bottom: 1px solid var(--cgb-gold-400, #fdb515);
   }
 
-  .my-cgb-promo-header .eyebrow {
-    color: var(--cgb-gold-300, #ffd15a);
-    font-family: var(--font-condensed, sans-serif);
-    font-size: var(--text-2xs, .6875rem);
-    font-weight: 850;
-    letter-spacing: .1em;
-    line-height: 1;
-  }
-
   .my-cgb-promo-header h2 {
-    margin: 3px 0 0;
+    margin: 0;
     color: var(--cgb-white, #fff);
     font-family: var(--font-display, serif);
     font-size: clamp(1.45rem, 6.4vw, 1.9rem);

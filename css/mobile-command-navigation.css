@@ -51,7 +51,7 @@
   }
 
   .command-surface__header h2 {
-    margin: 2px 0 0;
+    margin: 0;
     color: var(--cgb-navy-950);
     font-family: var(--font-display);
     font-size: clamp(1.65rem, 7vw, 2.15rem);
@@ -679,13 +679,8 @@
     backdrop-filter: none;
   }
 
-  .venue-tray .tray-list__header .eyebrow {
-    color: var(--cgb-ink-500, #657083);
-    font-size: .68rem;
-  }
-
   .venue-tray .tray-list__header h2 {
-    margin-top: 2px;
+    margin-top: 0;
     font-size: 1.2rem;
   }
 
@@ -876,7 +871,7 @@
   }
 
   .command-surface__header h2 {
-    margin: 2px 0 0;
+    margin: 0;
     color: var(--cgb-navy-950, #010133);
     font-family: var(--font-display);
     font-size: 1.75rem;

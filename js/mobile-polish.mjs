@@ -75,10 +75,8 @@ function observeTrayState() {
 function updateListHeading() {
   if (!isMobile()) return;
   const heading = document.querySelector('#list-heading');
-  const eyebrow = document.querySelector('.tray-list__header .eyebrow');
-  if (!heading || !eyebrow) return;
+  if (!heading) return;
   heading.textContent = ACTIVE_INSTANCE_CONFIG.copy.findCrowd;
-  eyebrow.textContent = 'Browse';
 }
 
 function normalizeSearchLabels() {

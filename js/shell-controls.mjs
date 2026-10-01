@@ -519,7 +519,6 @@ function syncDesktopBrowseState() {
   const state = appState();
   if (!state?.listQuery) {
     dom.listHeading.textContent = FIND_CROWD_COPY;
-    dom.listEyebrow.textContent = 'Browse';
   }
 }
 
@@ -594,7 +593,6 @@ function cacheDom() {
     reportListingButton: document.querySelector('#add-report-listing-button'),
     reportPartyButton: document.querySelector('#add-report-party-button'),
     listHeading: document.querySelector('#list-heading'),
-    listEyebrow: document.querySelector('#tray-list .tray-list__header .eyebrow'),
     tray: document.querySelector('#venue-tray'),
     trayHandle: document.querySelector('#tray-handle'),
     closeList: document.querySelector('#close-list-button'),

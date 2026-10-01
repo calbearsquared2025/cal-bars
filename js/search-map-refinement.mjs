@@ -159,7 +159,7 @@ function ensureDesktopAddSearchStyle() {
       .mobile-command-bar {
         padding-inline: 10px;
         background: var(--cgb-navy-950, #010133);
-        border-bottom-color: rgba(255, 255, 255, .14);
+        border-bottom: 0;
       }
 
       #mobile-list-button,
@@ -223,11 +223,6 @@ function ensureDesktopAddSearchStyle() {
         color: var(--cgb-white, #fff);
         background: var(--cgb-navy-950, #010133) !important;
         border-bottom-color: rgba(255, 255, 255, .14) !important;
-      }
-
-      #tray-list .tray-list__header .eyebrow {
-        color: var(--cgb-gold-400, #fdb515) !important;
-        font-family: var(--font-condensed, sans-serif);
       }
 
       #tray-list .tray-list__header h2 {
@@ -625,7 +620,6 @@ function syncDesktopSearchUi() {
   const state = appState();
   const input = document.querySelector('#location-query');
   const dropdown = document.querySelector('#search-dropdown');
-  const listEyebrow = document.querySelector('#tray-list .tray-list__header .eyebrow');
   if (!input) return;
 
   const existingMode = (state?.searchMode || 'existing') === 'existing';
@@ -634,7 +628,6 @@ function syncDesktopSearchUi() {
   if (!button) return;
 
   const matchCount = desktopMatchCount(query, state);
-  const listQuery = String(state?.listQuery || '').trim();
   const showSearchHelper = existingMode && Boolean(query) && !button.hidden;
 
   if (showSearchHelper) {
@@ -647,7 +640,6 @@ function syncDesktopSearchUi() {
   /* The desktop CTA lives outside the dropdown, so an empty results shell is unnecessary. */
   if (dropdown && existingMode && (!query || matchCount === 0)) dropdown.hidden = true;
 
-  if (listEyebrow) listEyebrow.textContent = listQuery ? 'Search results' : 'Browse';
   if (desktopAddSurfaceVisible()) {
     requestAnimationFrame(() => activateDesktopAddSearch({ preserveQuery: true, refresh: false }));
   }

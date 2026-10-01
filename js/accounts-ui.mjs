@@ -72,7 +72,6 @@ function buildDialog() {
     <div class="accounts-shell">
       <header class="accounts-header">
         <div>
-          <span class="eyebrow">Cal Golden Bars</span>
           <h2 id="cgb-account-title">My CGB</h2>
         </div>
         <button class="icon-button accounts-close" type="button" aria-label="Close My CGB">×</button>
