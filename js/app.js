@@ -324,7 +324,6 @@ function renderHeaderAndStats() {
   const partyCount = getWatchPartiesForGame(state.snapshot, state.gameId).length;
   dom.partyStat.textContent = `${partyCount} watch ${partyCount === 1 ? 'party' : 'parties'} for this game`;
   dom.locationStat.textContent = `${state.snapshot.venues.length} locations mapped`;
-  if (!state.listQuery) dom.listHeading.textContent = `${gameTitle(game)} locations`;
 }
 
 function selectGame(gameId) {
@@ -1051,7 +1050,7 @@ function renderLocationList(query = state.listQuery) {
     ? `${ranked.length} matching ${ranked.length === 1 ? 'location' : 'locations'}`
     : state.origin
       ? `${ranked.length} ${ranked.length === 1 ? 'location' : 'locations'} within ${NEARBY_RADIUS_MILES} miles`
-      : `${gameTitle(selectedGame())} locations`;
+      : ACTIVE_INSTANCE_CONFIG.copy.findCrowd;
 
   if (!ranked.length) {
     const empty = document.createElement('section');

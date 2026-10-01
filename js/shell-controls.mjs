@@ -38,7 +38,6 @@ const CONTRIBUTION_INTENTS = Object.freeze({
 });
 const PRODUCT_NAME = ACTIVE_INSTANCE_CONFIG.identity.productName;
 const PRODUCT_SHORT_NAME = ACTIVE_INSTANCE_CONFIG.identity.productShortName;
-const FIND_CROWD_COPY = ACTIVE_INSTANCE_CONFIG.copy.findCrowd;
 
 let currentSurface = 'map';
 let contributionIntent = '';
@@ -570,14 +569,6 @@ function normalizeDesktopTray() {
   return false;
 }
 
-function syncDesktopBrowseState() {
-  if (!dom || isMobileLayout()) return;
-  const state = appState();
-  if (!state?.listQuery) {
-    dom.listHeading.textContent = FIND_CROWD_COPY;
-  }
-}
-
 function syncViewState() {
   const pendingDirectDetail = isMobileLayout() &&
     dom.app?.getAttribute('aria-busy') === 'true' &&
@@ -593,8 +584,6 @@ function syncViewState() {
 
   updateAddContext();
   updateCommandState();
-  syncDesktopBrowseState();
-
   const trayState = dom.tray?.dataset.state || 'peek';
   if (searchSubmissionPending && currentSurface === 'search' && (trayState === 'full' || trayState === 'selected')) {
     searchSubmissionPending = false;
@@ -728,7 +717,6 @@ function initializeShellControls() {
       normalizeDesktopTray();
     }
     updateCommandState();
-    syncDesktopBrowseState();
   });
 
   syncViewState();

@@ -156,86 +156,12 @@ function ensureDesktopAddSearchStyle() {
   style.id = DESKTOP_ADD_SEARCH_STYLE_ID;
   style.textContent = `
     @media (min-width: 900px) {
-      .mobile-command-bar {
-        padding-inline: 10px;
-        background: var(--cgb-navy-950, #010133);
-        border-bottom: 0;
-      }
-
-      #mobile-list-button,
-      #mobile-map-button {
-        position: relative;
-        min-height: 40px;
-        border: 0 !important;
-        border-radius: 0 !important;
-        background: transparent !important;
-        color: rgba(255, 255, 255, .62) !important;
-        font-size: .7rem;
-        font-weight: 780;
-      }
-
-      #mobile-list-button > .ui-icon,
-      #mobile-map-button > .ui-icon {
-        display: none;
-      }
-
-      #mobile-list-button:hover:not(:disabled),
-      #mobile-map-button:hover:not(:disabled),
-      #mobile-list-button:focus-visible,
-      #mobile-map-button:focus-visible {
-        background: transparent !important;
-        color: var(--cgb-white, #fff) !important;
-      }
-
-      #mobile-list-button[aria-current="page"],
-      #mobile-map-button[aria-current="page"] {
-        background: transparent !important;
-        color: var(--cgb-white, #fff) !important;
-        font-weight: 850;
-      }
-
-      #mobile-list-button[aria-current="page"]::after,
-      #mobile-map-button[aria-current="page"]::after {
-        content: "";
-        position: absolute;
-        left: 14px;
-        right: 14px;
-        bottom: 1px;
-        height: 2px;
-        background: var(--cgb-gold-400, #fdb515);
-        border-radius: 999px;
-      }
-
-      #mobile-map-button:disabled {
-        opacity: .38;
-      }
-
       #mobile-add-button:hover,
       #mobile-add-button:focus-visible {
         color: var(--cgb-white, #fff) !important;
         background: transparent !important;
         border-color: var(--cgb-gold-400, #fdb515) !important;
         text-decoration: none;
-      }
-
-      #tray-list .tray-list__header {
-        padding-bottom: 14px !important;
-        color: var(--cgb-white, #fff);
-        background: var(--cgb-navy-950, #010133) !important;
-        border-bottom-color: rgba(255, 255, 255, .14) !important;
-      }
-
-      #tray-list .tray-list__header h2 {
-        color: var(--cgb-white, #fff) !important;
-        font-family: var(--font-display);
-      }
-
-      #tray-list .tray-list__intro {
-        color: rgba(255, 255, 255, .72) !important;
-      }
-
-      #tray-list .tray-list__toolbar {
-        display: none;
       }
 
       #tray-list .location-card__top {

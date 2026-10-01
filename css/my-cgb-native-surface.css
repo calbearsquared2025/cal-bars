@@ -152,7 +152,6 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     height: 56px;
     min-height: 56px;
-    background: var(--cgb-navy-950, #010133);
   }
 
   body[data-cgb-accounts-enabled="true"] .mobile-command-bar > #mobile-list-button,
