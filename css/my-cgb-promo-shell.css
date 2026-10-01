@@ -39,7 +39,6 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
   margin: -20px -20px 0;
   padding: 20px 20px 18px;
   border-bottom: 3px solid var(--brand-secondary);
-  background: var(--cgb-navy-950, #010133);
   color: var(--brand-text-on-primary);
 }
 
@@ -184,6 +183,10 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
     overflow: hidden;
   }
 
+  .my-cgb-promo-header {
+    background: var(--cgb-navy-950, #010133);
+  }
+
   .my-cgb-promo-view {
     margin-right: -20px;
     padding-right: 20px;
@@ -226,17 +229,18 @@ body[data-cgb-accounts-enabled="true"] #my-cgb-promo-surface[hidden] {
   }
 
   .my-cgb-promo-header {
-    margin: -16px -16px 0;
-    padding: 16px 16px 11px;
-    color: var(--cgb-white, #fff);
-    border-bottom: 1px solid var(--cgb-gold-400, #fdb515);
+    margin: 0;
+    padding: 0 0 14px;
+    color: var(--cgb-navy-950, #010133);
+    background: transparent;
+    border: 0;
   }
 
   .my-cgb-promo-header h2 {
     margin: 0;
-    color: var(--cgb-white, #fff);
+    color: var(--cgb-navy-950, #010133);
     font-family: var(--font-display, serif);
-    font-size: clamp(1.45rem, 6.4vw, 1.9rem);
+    font-size: clamp(1.65rem, 7vw, 2.15rem);
     font-weight: 750;
     letter-spacing: -.015em;
     line-height: 1;

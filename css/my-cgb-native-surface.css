@@ -43,7 +43,6 @@ body[data-command-surface="my-cgb"] #map-fallback.map-fallback--loading {
   top: 0;
   margin: -20px -20px 0;
   border-radius: 0;
-  background: var(--cgb-navy-950, #010133);
 }
 
 .my-cgb-surface .accounts-close {
@@ -116,18 +115,19 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
   }
 
   .my-cgb-surface .accounts-header {
-    margin: -16px -16px 0;
-    padding: 16px 16px 11px;
-    color: var(--cgb-white, #fff);
-    border-bottom: 1px solid var(--cgb-gold-400, #fdb515);
+    margin: 0;
+    padding: 0 0 14px;
+    color: var(--cgb-navy-950, #010133);
+    background: transparent;
+    border: 0;
     border-radius: 0;
   }
 
   .my-cgb-surface .accounts-header h2 {
     margin: 0;
-    color: var(--cgb-white, #fff);
+    color: var(--cgb-navy-950, #010133);
     font-family: var(--font-display, serif);
-    font-size: clamp(1.45rem, 6.4vw, 1.9rem);
+    font-size: clamp(1.65rem, 7vw, 2.15rem);
     font-weight: 750;
     letter-spacing: -.015em;
     line-height: 1;
@@ -347,6 +347,7 @@ body[data-cgb-accounts-enabled="true"] #mobile-about-button .ui-icon {
 
   .my-cgb-surface .accounts-header {
     position: static;
+    background: var(--cgb-navy-950, #010133);
   }
 
   .my-cgb-surface .my-cgb-view-tabs {
