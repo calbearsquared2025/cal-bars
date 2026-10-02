@@ -965,6 +965,11 @@ async function shareVenue(venue) {
   return result;
 }
 
+async function openSelectedWatchPartyForm() {
+  const module = await import('./watch-party-form.js');
+  return module.openSelectedWatchPartyForm({ app: window.CGBApp, documentObject: document, windowObject: window });
+}
+
 function renderSelectedCard() {
   const venue = selectedVenue();
   dom.traySelected.replaceChildren();
@@ -984,6 +989,7 @@ function renderSelectedCard() {
     directionsHref: venueDirectionsUrl(venue),
     onCollapse: () => setTrayState('peek', { animate: true }),
     onShare: () => shareVenue(venue),
+    onPlanWatchParty: () => openSelectedWatchPartyForm(),
     documentObject: document
   });
   dom.traySelected.append(card);

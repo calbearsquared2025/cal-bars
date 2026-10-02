@@ -442,7 +442,7 @@ function ensureManagementSection() {
     <div class="accounts-section__heading">
       <div>
         <span class="eyebrow">Organizer</span>
-        <h3 id="accounts-rsvp-management-title">Watch Party RSVPs</h3>
+        <h3 id="accounts-rsvp-management-title">Your Watch Parties</h3>
       </div>
     </div>
     <div class="accounts-rsvp-management__content" aria-live="polite"></div>`;
@@ -488,7 +488,9 @@ function renderManagement() {
 
     const stats = document.createElement('p');
     stats.className = 'accounts-rsvp-card__stats';
-    stats.textContent = `${item.responseCount} active RSVP ${item.responseCount === 1 ? 'response' : 'responses'} · ${item.expectedAttendance} expected`;
+    stats.textContent = item.rsvpEnabled
+      ? `${item.responseCount} active RSVP ${item.responseCount === 1 ? 'response' : 'responses'} · ${item.expectedAttendance} expected`
+      : 'CGB RSVPs are off. This Watch Party is still linked to your account.';
 
     const actions = document.createElement('div');
     actions.className = 'accounts-rsvp-card__actions';

@@ -117,7 +117,7 @@ function createDirectionsLink(href, documentObject) {
   return directions;
 }
 
-function createPlanWatchPartyAction(documentObject) {
+function createPlanWatchPartyAction(documentObject, onActivate) {
   const button = documentObject.createElement('button');
   button.type = 'button';
   button.className = 'selected-card__plan-party';
@@ -130,6 +130,7 @@ function createPlanWatchPartyAction(documentObject) {
   action.className = 'selected-card__plan-party-action';
   action.textContent = '+ Add a Watch Party';
   button.append(status, action);
+  if (typeof onActivate === 'function') button.addEventListener('click', onActivate);
   return button;
 }
 
@@ -192,6 +193,7 @@ export function createSelectedVenueCard({
   distance,
   directionsHref,
   onShare,
+  onPlanWatchParty,
   documentObject = document
 }) {
   const parties = getWatchPartiesForVenueGame(state.snapshot, state.gameId, venue.venue_id);
@@ -257,7 +259,7 @@ export function createSelectedVenueCard({
       documentObject
     })));
   } else {
-    contentTarget.append(createPlanWatchPartyAction(documentObject));
+    contentTarget.append(createPlanWatchPartyAction(documentObject, onPlanWatchParty));
   }
 
   contentTarget.append(createSelectedActionRow({

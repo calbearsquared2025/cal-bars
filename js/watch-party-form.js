@@ -4,21 +4,62 @@ import { initializePhotoFormEntry } from './photo-form.js';
 import './external-watch-party-cta.js';
 import { getWatchParty } from './core.mjs';
 import {
+  buildWatchPartyFormGameLabel,
   buildWatchPartyPrefillUrl,
   resolveWatchPartyFormContext
 } from './watch-party-form-core.mjs';
-import {
-  WATCH_PARTY_ATTENDANCE_CHOICES,
-  closeWaitingFormWindow,
-  navigateWaitingFormWindow,
-  requestWatchPartyAttendance
-} from './watch-party-attendance-handoff.mjs';
 import { readRuntimeConfig } from './config.mjs';
 
 const CTA_SELECTOR = '[data-watch-party-form-entry-point]';
 const SECTION_SELECTOR = '[data-watch-party-form-section]';
 export function readWatchPartyFormConfig(documentObject = document) {
   return readRuntimeConfig({ documentObject }).forms.watchParty;
+}
+
+function nativeWatchPartyContext(app, documentObject = document, { allowSelectedTray = false } = {}) {
+  const state = app?.getState?.();
+  const context = resolveWatchPartyFormContext({
+    snapshot: state?.snapshot,
+    gameId: state?.gameId,
+    selectedVenueId: state?.selectedVenueId,
+    detailMode: allowSelectedTray ? true : state?.detailMode
+  });
+  if (!context) return { context: null, href: '' };
+  const selectedGame = state?.snapshot?.games?.find((game) => game?.game_id === context.gameId) || null;
+  const selectedSeason = selectedGame?.season;
+  const availableGames = (state?.snapshot?.games || [])
+    .filter((game) =>
+      String(game?.game_status || '').toLowerCase() === 'upcoming' &&
+      (selectedSeason === undefined || selectedSeason === null || game?.season === selectedSeason)
+    )
+    .map((game) => ({
+      gameId: String(game?.game_id || '').trim(),
+      gameLabel: buildWatchPartyFormGameLabel(game),
+      scheduleOrder: Number(game?.schedule_order || 0),
+      gameDate: String(game?.game_date || '')
+    }))
+    .filter((game) => game.gameId && game.gameLabel)
+    .sort((a, b) => a.scheduleOrder - b.scheduleOrder || a.gameDate.localeCompare(b.gameDate));
+
+  const nativeContext = Object.freeze({
+    ...context,
+    availableGames: Object.freeze(availableGames.map(({ gameId, gameLabel }) => Object.freeze({ gameId, gameLabel })))
+  });
+  const href = buildWatchPartyPrefillUrl(
+    readWatchPartyFormConfig(documentObject),
+    context
+  );
+  return { context: nativeContext, href };
+}
+
+export async function openSelectedWatchPartyForm({
+  app = window.CGBApp,
+  documentObject = document,
+  windowObject = window
+} = {}) {
+  const { context, href } = nativeWatchPartyContext(app, documentObject, { allowSelectedTray: true });
+  if (!context) return false;
+  return launchWatchPartyForm({ app, context, href, windowObject });
 }
 
 function removeExistingEntryPoint(detail) {
@@ -56,9 +97,11 @@ function createWatchPartySection(documentObject, { href, onActivate }) {
   link.className = 'detail-watch-party-cta__action';
   link.dataset.watchPartyFormEntryPoint = 'true';
   link.dataset.cgbFormTitle = 'Add a Watch Party';
-  link.href = href;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
+  link.href = href || '#';
+  if (href) {
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+  }
   link.setAttribute('aria-label', 'Add a Watch Party');
 
   const desktopLabel = documentObject.createElement('span');
@@ -82,9 +125,11 @@ function createAdditionalWatchPartyAction(documentObject, { href, onActivate }) 
   link.className = 'detail-contribution__action';
   link.dataset.watchPartyFormEntryPoint = 'true';
   link.dataset.cgbFormTitle = 'Add a Watch Party';
-  link.href = href;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
+  link.href = href || '#';
+  if (href) {
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+  }
   link.textContent = 'Add another Watch Party';
   link.addEventListener('click', onActivate);
   return link;
@@ -94,37 +139,27 @@ async function launchWatchPartyForm({
   app,
   context,
   href,
-  documentObject,
   windowObject
 }) {
-  const handoff = await requestWatchPartyAttendance({
-    documentObject,
-    windowObject,
-    reserveWindow: false
-  });
-  if (!handoff) return false;
-
-  if (handoff.choice === WATCH_PARTY_ATTENDANCE_CHOICES.attend) {
-    const ensureAttendance = windowObject.CGBFanIntent?.ensureAttendance;
-    if (typeof ensureAttendance !== 'function') {
-      closeWaitingFormWindow(handoff.windowRef);
-      app?.showStatus?.('Attendance is temporarily unavailable. Try again or continue without checking in.', 5000);
-      return false;
+  try {
+    const module = await import('./watch-party-create.mjs');
+    const opened = module.openNativeWatchPartyForm({
+      context,
+      fallbackUrl: href
+    });
+    if (!opened) throw new Error('native_watch_party_unavailable');
+    return true;
+  } catch (error) {
+    console.error('Native Watch Party form failed to open.', error);
+    if (href) {
+      const opened = windowObject.CGBGoogleFormHost?.open?.(href, {
+        title: 'Add a Watch Party'
+      }) || Boolean(windowObject.open?.(href, '_blank', 'noopener,noreferrer'));
+      if (opened) return true;
     }
-
-    const saved = await ensureAttendance(context.venueId, context.gameId);
-    if (!saved) {
-      closeWaitingFormWindow(handoff.windowRef);
-      app?.showStatus?.('Attendance was not saved. Try again or continue without checking in.', 5000);
-      return false;
-    }
+    app?.showStatus?.('Could not open the Watch Party form. Try again.', 5000);
+    return false;
   }
-
-  const opened = windowObject.CGBGoogleFormHost?.open?.(href, {
-    title: 'Add a Watch Party'
-  }) || navigateWaitingFormWindow(handoff.windowRef, href, windowObject);
-  if (!opened) app?.showStatus?.('Could not open the Watch Party form. Try again.', 5000);
-  return opened;
 }
 
 export function renderWatchPartyFormEntryPoint({
@@ -149,7 +184,7 @@ export function renderWatchPartyFormEntryPoint({
     context
   );
 
-  if (!href) {
+  if (!context) {
     syncDetailContributionVisibility(detail);
     return '';
   }
@@ -164,7 +199,13 @@ export function renderWatchPartyFormEntryPoint({
 
   const onActivate = (event) => {
     event.preventDefault();
-    launchWatchPartyForm({ app, context, href, documentObject, windowObject });
+    const live = nativeWatchPartyContext(app, documentObject);
+    launchWatchPartyForm({
+      app,
+      context: live.context || context,
+      href: live.href || href,
+      windowObject
+    });
   };
 
   if (existingParty) {

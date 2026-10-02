@@ -45,6 +45,18 @@ let authStateRevision = 0;
 let uiInitialized = false;
 let accountStartupPromise = null;
 let deferredStartupScheduled = false;
+let accountStateReady = false;
+let resolveAccountStateReadyPromise = null;
+const accountStateReadyPromise = new Promise((resolve) => {
+  resolveAccountStateReadyPromise = resolve;
+});
+
+function markAccountStateReady() {
+  if (accountStateReady) return;
+  accountStateReady = true;
+  resolveAccountStateReadyPromise?.(true);
+  resolveAccountStateReadyPromise = null;
+}
 
 function injectAccountsStyles() {
   if (document.querySelector('link[data-cgb-accounts-style]')) return;
@@ -937,6 +949,7 @@ async function initializeFirebase() {
       await authModule.signOut(auth).catch(() => null);
       if (revision !== authStateRevision) return;
       renderSignedOut();
+      markAccountStateReady();
       return;
     }
     currentUser = user || null;
@@ -944,13 +957,16 @@ async function initializeFirebase() {
     resetFavoritesState();
     if (!user) {
       renderSignedOut();
+      markAccountStateReady();
       return;
     }
     try {
       await refreshSignedInState(user, revision);
+      if (authStateIsCurrent(user, revision)) markAccountStateReady();
     } catch (error) {
       if (!authStateIsCurrent(user, revision)) return;
       renderAuthenticatedError(error);
+      markAccountStateReady();
       logFanDiagnostic('CGB core account hydration failed', error);
     }
   });
@@ -990,6 +1006,7 @@ export function startAccountInitialization() {
     .then(() => true)
     .catch((error) => {
       setStatus('CGB Accounts could not start.', { error: true });
+      markAccountStateReady();
       console.warn(`CGB Accounts startup failed: ${fanClientErrorCode(error)}`);
       return false;
     });
@@ -999,6 +1016,12 @@ export function startAccountInitialization() {
 window.CGBAccounts = Object.freeze({
   isSignedIn: () => Boolean(currentUser && account),
   start: startAccountInitialization,
+  whenReady: async () => {
+    const started = await startAccountInitialization();
+    if (!started) return false;
+    await accountStateReadyPromise;
+    return true;
+  },
   getIdToken: (forceRefresh = false) => currentToken(forceRefresh),
   getProfile: () => clientProfile(),
   getGoogleAvatarUrl: () => clientGoogleAvatarUrl(),
