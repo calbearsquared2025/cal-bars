@@ -1292,6 +1292,63 @@
       "photo_credit_url": "",
       "updated_at": "2026-10-02T05:15:22.319Z",
       "venue_tags": []
+    },
+    {
+      "venue_id": "venue_f5a8919095a06962e9d267ae",
+      "slug": "mission-navy-yard",
+      "slug_aliases": "",
+      "name": "Mission Navy Yard",
+      "address_line_1": "1221 Van Street SE",
+      "address_line_2": "",
+      "city": "Washington",
+      "region": "DC",
+      "postal_code": "20003",
+      "country_code": "US",
+      "latitude": 38.87495,
+      "longitude": -77.00882,
+      "website_url": "https://www.missionnavyyard.com/",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Family-friendly Navy Yard restaurant and sports bar with TVs, food, drinks, and private-event space.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-10-02T15:16:00.000Z",
+      "venue_tags": [
+        "all_ages",
+        "audio_on",
+        "food"
+      ]
+    },
+    {
+      "venue_id": "venue_79dd1ee9abb50f0efb056689",
+      "slug": "slaters-50-50-lake-mead-las-vegas",
+      "slug_aliases": "",
+      "name": "Slater's 50/50 - Lake Mead Blvd",
+      "address_line_1": "7511 W Lake Mead Blvd",
+      "address_line_2": "",
+      "city": "Las Vegas",
+      "region": "NV",
+      "postal_code": "89128",
+      "country_code": "US",
+      "latitude": 36.1957,
+      "longitude": -115.2573,
+      "website_url": "https://www.slaters5050lasvegas.com/locations/lake-mead",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Family-friendly Las Vegas burger and craft-beer sports bar with TVs; bar-area seating is 21+.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-10-02T15:53:00.000Z",
+      "venue_tags": [
+        "all_ages",
+        "food"
+      ]
     }
   ],
   "games": [
@@ -1456,7 +1513,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_b3c5ac2609b94529a05df1fe",
@@ -1473,7 +1531,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_d12cc497ba15429aa492f049",
@@ -1490,7 +1549,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_3fed823e62bb45e49d750585",
@@ -1507,7 +1567,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_99dcb7ea4e72472dbb323e5a",
@@ -1524,7 +1585,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_266606b4ee9b4a2fb32ae81a",
@@ -1541,7 +1603,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:00:58.787Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_687baf8bd1684a26bbbef42a",
@@ -1558,7 +1621,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:00:58.787Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_c7379de245d24f09b8eacc10",
@@ -1575,7 +1639,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:00:58.787Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_57cbb5c5baf54134a1ac46f3",
@@ -1592,7 +1657,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:00:58.787Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_0221c263138745079bcf9054",
@@ -1609,7 +1675,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:00:58.787Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_36e5c7c0fb224b1fbba10d51",
@@ -1626,7 +1693,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:00:58.787Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_f3ef355a1bfc4ffd900223b1",
@@ -1643,7 +1711,8 @@
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:00:58.787Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_7885a637aac94c1e8323c8f4",
@@ -1660,7 +1729,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_9215e5a4b7e24ad48c5caaf3",
@@ -1677,7 +1747,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_55bd6c1864724ff783b8813e",
@@ -1694,7 +1765,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_0615c511c8b647699b52c858",
@@ -1711,7 +1783,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_a91c4180ffa34a4a88ff428e",
@@ -1728,7 +1801,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_e166b4e157a64e2284b9b2bd",
@@ -1745,7 +1819,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:02:39.482Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_3f24b216157946ab8d1cc644",
@@ -1762,7 +1837,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:02:39.482Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_89722201a71b43348cec61bc",
@@ -1779,7 +1855,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:02:39.482Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_8670efd88cf74f5bb5f2419b",
@@ -1796,7 +1873,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:02:39.482Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_f58188497e4b455d93a2e54f",
@@ -1813,7 +1891,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:02:39.482Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_a4afb487d9624edcbdace873",
@@ -1830,7 +1909,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:02:39.482Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_6d1a670bd8314e389fbfed3c",
@@ -1847,7 +1927,8 @@
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
       "updated_at": "2026-08-17T06:02:39.482Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_b1869556005f48d3bdf0ff88",
@@ -1864,7 +1945,8 @@
       "game_day_note": "The ultimate watch party.",
       "event_status": "active",
       "updated_at": "2026-08-30T20:00:42.916Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_7da1f0c294ec44bab8e64351",
@@ -1881,7 +1963,8 @@
       "game_day_note": "The ultimate watch party.",
       "event_status": "active",
       "updated_at": "2026-08-31T01:07:26.888Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_8e1c0f03198649798f86fc1f",
@@ -1898,7 +1981,8 @@
       "game_day_note": "The ultimate watch party.",
       "event_status": "active",
       "updated_at": "2026-08-31T01:07:26.888Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_4d6d364d782d40c5914c6c65",
@@ -1915,7 +1999,8 @@
       "game_day_note": "The ultimate watch party.",
       "event_status": "active",
       "updated_at": "2026-08-31T01:07:26.888Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_c129c0d8a1db4b2ca8915642",
@@ -1932,7 +2017,8 @@
       "game_day_note": "The ultimate watch party.",
       "event_status": "active",
       "updated_at": "2026-08-31T01:07:26.888Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_f7c7d8999b8e40b69a1c8f36",
@@ -1949,7 +2035,8 @@
       "game_day_note": "The ultimate watch party.",
       "event_status": "active",
       "updated_at": "2026-08-31T01:07:26.888Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_c14fc50385b74088a27771db",
@@ -1966,7 +2053,8 @@
       "game_day_note": "The ultimate watch party.",
       "event_status": "active",
       "updated_at": "2026-08-31T01:07:26.888Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_83ce7a2c44294e3fa701b258",
@@ -1983,7 +2071,8 @@
       "game_day_note": "D.C. Bears meet at Town Tavern, starting 30 minutes before kickoff.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_40d0b9c9e6394399b22b3508",
@@ -2002,7 +2091,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_219f18adbbb24a6b83fad2ba",
@@ -2021,7 +2111,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_71466bc12a8d4b4683846e08",
@@ -2038,7 +2129,8 @@
       "game_day_note": "Join us all season for Cal football watch parties at Bad Apple Lincoln Park!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_707a2d66ace1473da94e4cfe",
@@ -2055,7 +2147,8 @@
       "game_day_note": "Join us all season for Cal football watch parties at Bad Apple Lincoln Park!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_479ff44cf939498baa11d3c3",
@@ -2072,7 +2165,8 @@
       "game_day_note": "Join us all season for Cal football watch parties at Bad Apple Lincoln Park!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_2a1122dd15974751bc41d48b",
@@ -2089,7 +2183,8 @@
       "game_day_note": "Join us all season for Cal football watch parties at Bad Apple Lincoln Park!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_799fa8d96b054488ab3ec6ac",
@@ -2106,7 +2201,8 @@
       "game_day_note": "Join us all season for Cal football watch parties at Bad Apple Lincoln Park!",
       "event_status": "active",
       "updated_at": "2026-08-26T20:06:24.276Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_33e54c73704c404db3515860",
@@ -2126,7 +2222,8 @@
       "feature_tags": [
         "rsvp_requested",
         "cal_specials"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_c42c770686df4dc79c45c9af",
@@ -2143,7 +2240,8 @@
       "game_day_note": "D.C. Bears meet at Town Tavern, starting 30 minutes before kickoff.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_53e8977f5c7544f3a22bfee3",
@@ -2160,7 +2258,8 @@
       "game_day_note": "D.C. Bears meet at Town Tavern, starting 30 minutes before kickoff.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_944741b966db435fba63b1c8",
@@ -2177,7 +2276,8 @@
       "game_day_note": "D.C. Bears meet at Town Tavern, starting 30 minutes before kickoff.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_41748cf9cd03477bb83240ab",
@@ -2194,7 +2294,8 @@
       "game_day_note": "D.C. Bears meet at Town Tavern, starting 30 minutes before kickoff.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_357764db3e2647d0ad66751d",
@@ -2211,7 +2312,8 @@
       "game_day_note": "A San Francisco option for Silicon Valley Bears, starting 30 minutes before kickoff.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_a142a0ead6fd42718e6dccf6",
@@ -2230,7 +2332,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_0f46112898cb48a2963b05db",
@@ -2249,7 +2352,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_ebdbaaa2c4b44bf08f76f86b",
@@ -2268,7 +2372,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_351912844c654055a15ae13b",
@@ -2287,7 +2392,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_71a287b9c2f64065833cd210",
@@ -2306,7 +2412,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_df96895911ee42cf81695b0e",
@@ -2323,7 +2430,8 @@
       "game_day_note": "Portland Bears gather at Broadway Grill & Brewery.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_3fa4b891f7b546a3b89d20fa",
@@ -2340,7 +2448,8 @@
       "game_day_note": "Portland Bears gather at Broadway Grill & Brewery.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_107e024ce79c4715b59b0a4a",
@@ -2357,7 +2466,8 @@
       "game_day_note": "Portland Bears gather at Broadway Grill & Brewery.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_c347f3cf0da34523bfa75101",
@@ -2374,7 +2484,8 @@
       "game_day_note": "Portland Bears gather at Broadway Grill & Brewery.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_4690b2ea2037411499065b78",
@@ -2391,7 +2502,8 @@
       "game_day_note": "San Diego Cal Alumni watch at Chief’s in Solana Beach.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_5f9cc5ac94764a62b0d7947f",
@@ -2408,7 +2520,8 @@
       "game_day_note": "San Diego Cal Alumni watch at Chief’s in Solana Beach.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_43cc818c236e4aa9b362ba50",
@@ -2425,7 +2538,8 @@
       "game_day_note": "San Diego Cal Alumni watch at Chief’s in Solana Beach.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_4b0efeae4ef441908f695b18",
@@ -2442,7 +2556,8 @@
       "game_day_note": "San Diego Cal Alumni watch at Chief’s in Solana Beach.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_9645a201e66a4c3e9e046802",
@@ -2459,7 +2574,8 @@
       "game_day_note": "San Diego Cal Alumni watch at Chief’s in Solana Beach.",
       "event_status": "active",
       "updated_at": "2026-08-26T20:20:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_071f6b77c97a45f888b67f07",
@@ -2478,7 +2594,8 @@
       "updated_at": "2026-08-31T01:07:26.888Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_ae52858c766648448d0699e0",
@@ -2495,7 +2612,8 @@
       "game_day_note": "Pregame tailgate at The Tightwad 50 Club begins at 11:30 a.m.; kickoff is at 7:30 p.m.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:21:34Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_d144858a149ac10090ea7f42",
@@ -2512,7 +2630,8 @@
       "game_day_note": "Tightwad Hill watch party at Kingfish Pub. Meet up at noon; kickoff is at 12:30 p.m.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_48509ecea0a1a07e1b026d19",
@@ -2529,7 +2648,8 @@
       "game_day_note": "Pregame tailgate at The Tightwad 50 Club begins at 8:00 a.m.; kickoff is at 12:30 p.m.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:21:34Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_46faa952d452c5078f01b887",
@@ -2546,7 +2666,8 @@
       "game_day_note": "Pregame tailgate at The Tightwad 50 Club begins at 11:30 a.m.; kickoff is at 7:30 p.m. Gold Out — wear gold.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:21:34Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_0388658b00151e92de553c94",
@@ -2563,7 +2684,8 @@
       "game_day_note": "Tightwad Hill watch party at Kingfish Pub. Meet up at noon; kickoff is at 12:30 p.m.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_d89e27854b80401b477cc447",
@@ -2580,7 +2702,8 @@
       "game_day_note": "Tailgate start time at The Tightwad 50 Club and kickoff time are TBA.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:21:34Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_c045e338abea567e782969b3",
@@ -2597,7 +2720,8 @@
       "game_day_note": "Tightwad Hill home-game gathering; kickoff time is TBA.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_1d0f8f826b10f8d5d4481146",
@@ -2614,7 +2738,8 @@
       "game_day_note": "Tightwad Hill watch party at Kingfish Pub; kickoff time is TBA.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_afe0efb7080b73ca9d32d928",
@@ -2631,7 +2756,8 @@
       "game_day_note": "Tightwad Hill watch party at Kingfish Pub; kickoff time is TBA.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_4d517436a18b3d2bb730f8bc",
@@ -2648,7 +2774,8 @@
       "game_day_note": "Tightwad Hill watch party at Kingfish Pub; kickoff time is TBA.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_d182d2d3daad1d7237a9c486",
@@ -2665,7 +2792,8 @@
       "game_day_note": "Tightwad Hill home-game gathering for the 129th Big Game; kickoff time is TBA.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_a728f35224187a3824ff9315",
@@ -2682,7 +2810,8 @@
       "game_day_note": "Tightwad Hill home-game gathering for the final regular-season game; kickoff time is TBA.",
       "event_status": "active",
       "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_b0b2ea1ec92b47e92147ccc7",
@@ -2701,7 +2830,8 @@
       "updated_at": "2026-09-01T17:14:08.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_2baa5661f1373d69d41c8fde",
@@ -2720,7 +2850,8 @@
       "updated_at": "2026-09-10T20:46:39.355Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_9b2aa04c43c44f31944f38c1",
@@ -2737,7 +2868,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:31.448Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_f902b1b9e2f94c91999a470f",
@@ -2754,7 +2886,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:32.745Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_f73267bdbe34447a894a9add",
@@ -2771,7 +2904,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:33.600Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_1e980aad4a174ad7ab54c2b6",
@@ -2788,7 +2922,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:35.279Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_3bcac36031f64c38af57da27",
@@ -2805,7 +2940,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:36.124Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_cb3a4077a0414994a468dca7",
@@ -2822,7 +2958,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:37.317Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_6fe6cef80356470b91efd9bb",
@@ -2839,7 +2976,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:38.044Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_7d319d85cb014019ace3f2fc",
@@ -2856,7 +2994,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:39.217Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_2086cf294daa4a3bb30ac249",
@@ -2873,7 +3012,8 @@
       "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
       "event_status": "active",
       "updated_at": "2026-09-02T04:30:40.073Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_1fbbef856bf8455796e10226",
@@ -2892,7 +3032,8 @@
       "updated_at": "2026-09-02T19:08:44.717Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_75147a70d0074f73893efdb4",
@@ -2909,7 +3050,8 @@
       "game_day_note": "Likely that they will be doing this for all the games, but contact them.",
       "event_status": "active",
       "updated_at": "2026-09-03T21:25:26.193Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_6308d299249140999b7ba70e",
@@ -2926,7 +3068,8 @@
       "game_day_note": "Season opener. Pac10 tradition. Inter-campus rivalry. Tosh Lupoi debut as Head Coach. JKS return as QB1. Hawaii Bears and fans with hope eternal. 4:30 pm Hawaii Time. No excuses. Be there. Aloha.",
       "event_status": "active",
       "updated_at": "2026-09-04T17:10:08.208Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_b24e2fed3a9148b8a972c976",
@@ -2943,7 +3086,8 @@
       "game_day_note": "Cal Football heads east to take on the Orange.",
       "event_status": "active",
       "updated_at": "2026-09-09T02:18:36.031Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_e8f679478c3a459396c2bd37",
@@ -2960,7 +3104,8 @@
       "game_day_note": "Free parking at the parking lot in front of the bar.",
       "event_status": "active",
       "updated_at": "2026-09-09T05:57:57.753Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_4c462a1043dc07009e0eb47d",
@@ -2977,7 +3122,8 @@
       "game_day_note": "Write For California watch party at Headlands on Campus. Doors open at 11:00 a.m. PT.",
       "event_status": "active",
       "updated_at": "2026-09-10T01:45:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_6ddaa4abde3d44dd3cac53d3",
@@ -2994,7 +3140,8 @@
       "game_day_note": "Write For California plans to have a presence at Headlands on Campus for all Cal road games in 2026.",
       "event_status": "active",
       "updated_at": "2026-09-10T01:45:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_57ac2089a4fe53143eae530b",
@@ -3011,7 +3158,8 @@
       "game_day_note": "Write For California plans to have a presence at Headlands on Campus for all Cal road games in 2026.",
       "event_status": "active",
       "updated_at": "2026-09-10T01:45:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_9a886fae46262a766055babc",
@@ -3028,7 +3176,8 @@
       "game_day_note": "Write For California plans to have a presence at Headlands on Campus for all Cal road games in 2026.",
       "event_status": "active",
       "updated_at": "2026-09-10T01:45:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_61785d473c923323cd64756f",
@@ -3045,7 +3194,8 @@
       "game_day_note": "Write For California plans to have a presence at Headlands on Campus for all Cal road games in 2026.",
       "event_status": "active",
       "updated_at": "2026-09-10T01:45:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_2734b3f7f9da3231e4e6e3e3",
@@ -3062,7 +3212,8 @@
       "game_day_note": "",
       "event_status": "active",
       "updated_at": "2026-09-21T06:56:12.835Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_10e855eaa214348cd60e5c97",
@@ -3079,7 +3230,8 @@
       "game_day_note": "",
       "event_status": "active",
       "updated_at": "2026-09-21T06:56:12.835Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_cd10883a2ec8b96cfbdd0558",
@@ -3098,7 +3250,8 @@
       "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_f66622110a9f897221c08497",
@@ -3117,7 +3270,8 @@
       "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_18dd884dd8f62dd7116ada8a",
@@ -3136,7 +3290,8 @@
       "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_404a0a7a6f58b52ed590a641",
@@ -3155,7 +3310,8 @@
       "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_49f9ffbba2f4e204dfc46594",
@@ -3174,7 +3330,8 @@
       "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_be77a7069ef278c94673f26a",
@@ -3193,7 +3350,8 @@
       "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_ad4d9152d677eb444c586847",
@@ -3212,7 +3370,8 @@
       "updated_at": "2026-10-01T21:35:00.000Z",
       "feature_tags": [
         "rsvp_requested"
-      ]
+      ],
+      "rsvp_enabled": false
     },
     {
       "watch_party_id": "wp_bab414e0ab52196ebd5a45a9",
@@ -3229,7 +3388,48 @@
       "game_day_note": "Philadelphia Bears gather at Cavanaugh’s Headhouse for Cal vs. UNLV. Kickoff is at 3:30 p.m. ET.",
       "event_status": "active",
       "updated_at": "2026-10-01T21:35:00.000Z",
-      "feature_tags": []
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_f749dd67172871ffcfc9c400",
+      "venue_id": "venue_f5a8919095a06962e9d267ae",
+      "game_id": "game_416f957fa7bbd325fa2d9b13",
+      "organizer_name": "DC Cal Alumni",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.facebook.com/events/1578820943293737",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-10-03T19:30:00Z",
+      "age_policy": "all_ages",
+      "sound_status": "confirmed_on",
+      "restrictions_note": "",
+      "game_day_note": "A new family-friendly DC Cal viewing spot at Mission Navy Yard, with a dedicated space, plenty of TVs with game sound, our own bartender, game-day food and drink specials, and Sierra Nevada on tap. It’s one block from the Navy Yard–Ballpark Metro, fully accessible by elevator, and they even have a kids’ menu. RSVP on the Facebook event if you’re coming. Go Bears!",
+      "event_status": "active",
+      "updated_at": "2026-10-02T15:18:00.000Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_6708637edf43cb38e854b220",
+      "venue_id": "venue_79dd1ee9abb50f0efb056689",
+      "game_id": "game_416f957fa7bbd325fa2d9b13",
+      "organizer_name": "Cal Alumni Chapter of Southern Nevada",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.facebook.com/events/1393725422742599",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-10-03T19:00:00Z",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "We should have a great turnout based on the interest from Cal, Haas & Vegas Ivy Plus members on FB.\n\nMost prediction sources show Cal winning by small or large margins, so let's hope for the best! Hope to see you at the Watch Party.\n\nGo Bears!",
+      "event_status": "active",
+      "updated_at": "2026-10-02T15:53:00.000Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -3380,6 +3580,10 @@
       "past_game_count": 2
     },
     {
+      "venue_id": "venue_79dd1ee9abb50f0efb056689",
+      "past_game_count": 0
+    },
+    {
       "venue_id": "venue_7cbf6f0f2c33a2462d3da467",
       "past_game_count": 0
     },
@@ -3453,6 +3657,10 @@
     },
     {
       "venue_id": "venue_e8cba48a2591e4f520c89cf9",
+      "past_game_count": 0
+    },
+    {
+      "venue_id": "venue_f5a8919095a06962e9d267ae",
       "past_game_count": 0
     },
     {
@@ -3630,5 +3838,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-02T05:42:11.201Z"
+  "generatedAt": "2026-10-02T16:48:49.841Z"
 }
