@@ -1119,7 +1119,7 @@
       "venue_type": "community_location",
       "verification_status": "user_added",
       "alumni_owned": "unknown",
-      "short_description": "",
+      "short_description": "Wings, TVs, and Cal fans. What more do you need?",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
@@ -1173,7 +1173,7 @@
       "venue_type": "community_location",
       "verification_status": "user_added",
       "alumni_owned": "unknown",
-      "short_description": "Honolulu craft cocktail and whiskey bar on the lobby level of the Ala Moana Hotel, with food, beer, and wine.",
+      "short_description": "JKS would only be too happy to remind you that Bear Territory extends thousands of miles into the middle of the ocean.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
@@ -1230,7 +1230,7 @@
       "venue_type": "community_location",
       "verification_status": "user_added",
       "alumni_owned": "unknown",
-      "short_description": "",
+      "short_description": "Pizza and Oski's Gold in a great beer garden. Only a couple of TVs inside.",
       "photo_url": "",
       "photo_caption": "",
       "photo_credit": "",
@@ -1267,6 +1267,31 @@
       "venue_tags": [
         "food"
       ]
+    },
+    {
+      "venue_id": "venue_b181231e8a814973a0023d27",
+      "slug": "la-note",
+      "slug_aliases": "",
+      "name": "La Note",
+      "address_line_1": "2377 Shattuck Avenue",
+      "address_line_2": "",
+      "city": "Berkeley",
+      "region": "CA",
+      "postal_code": "94704",
+      "country_code": "US",
+      "latitude": 37.86620725354952,
+      "longitude": -122.26727318018675,
+      "website_url": "",
+      "venue_type": "community_location",
+      "verification_status": "user_added",
+      "alumni_owned": "unknown",
+      "short_description": "",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-10-02T05:15:22.319Z",
+      "venue_tags": []
     }
   ],
   "games": [
@@ -3220,11 +3245,6 @@
     },
     {
       "game_id": "game_416f957fa7bbd325fa2d9b13",
-      "venue_id": "venue_41beac9fb48a44eb60650cbc",
-      "count": 1
-    },
-    {
-      "game_id": "game_416f957fa7bbd325fa2d9b13",
       "venue_id": "venue_5977e35a58d8b18f22a51f1e",
       "count": 3
     },
@@ -3398,6 +3418,10 @@
     {
       "venue_id": "venue_af33e035626a357bc52f2e8b",
       "past_game_count": 1
+    },
+    {
+      "venue_id": "venue_b181231e8a814973a0023d27",
+      "past_game_count": 0
     },
     {
       "venue_id": "venue_b6a116897e09b29e98205256",
@@ -3606,5 +3630,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-02T04:24:23.909Z"
+  "generatedAt": "2026-10-02T05:42:11.201Z"
 }
