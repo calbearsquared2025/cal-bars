@@ -8,17 +8,17 @@ let loaded = false;
 const ACCOUNT_STYLE_RESOURCES = Object.freeze([
   Object.freeze({
     selector: 'link[data-cgb-accounts-style]',
-    href: 'css/accounts.css',
+    href: '/css/accounts.css',
     attribute: 'data-cgb-accounts-style'
   }),
   Object.freeze({
     selector: 'link[data-cgb-my-cgb-native-style]',
-    href: 'css/my-cgb-native-surface.css',
+    href: '/css/my-cgb-native-surface.css',
     attribute: 'data-cgb-my-cgb-native-style'
   }),
   Object.freeze({
     selector: 'link[data-cgb-public-community-style]',
-    href: 'css/account-public-community.css',
+    href: '/css/account-public-community.css',
     attribute: 'data-cgb-public-community-style'
   })
 ]);

@@ -85,6 +85,35 @@ function activeVenueId(gameId = appState.gameId) {
   return appState.fanIntent.selections[gameId] || null;
 }
 
+function syncNativeRsvpAttendanceFollowup() {
+  const selectedVenueId = activeVenueId();
+  document.querySelectorAll('.party-module[data-watch-party-id]').forEach((module) => {
+    const watchPartyId = module.dataset.watchPartyId;
+    const party = (appState.snapshot?.watchParties || []).find((row) =>
+      row.watch_party_id === watchPartyId &&
+      row.game_id === appState.gameId &&
+      row.event_status === 'active'
+    );
+    if (!party || !(party.rsvp_enabled === true || String(party.rsvp_enabled || '').toLowerCase() === 'true')) return;
+    const container = module.querySelector(`[data-watch-party-rsvp="${CSS.escape(watchPartyId)}"]`);
+    if (!container || container.dataset.rsvpState === 'confirmed') return;
+    const status = container.querySelector('[data-watch-party-rsvp-status]');
+    const action = container.querySelector('[data-watch-party-rsvp-action]');
+    const attendingHere = selectedVenueId === party.venue_id;
+    if (status) {
+      status.textContent = attendingHere
+        ? 'You’re in. This Watch Party is also collecting RSVPs.'
+        : 'This Watch Party is collecting RSVPs.';
+    }
+    if (action) {
+      action.textContent = attendingHere ? 'Complete RSVP' : 'RSVP through Cal Golden Bars →';
+      action.classList.toggle('primary-button', attendingHere);
+      action.classList.toggle('party-module__rsvp-action--quiet', !attendingHere);
+      action.classList.remove('secondary-button');
+    }
+  });
+}
+
 async function fetchJson(url, options = {}, timeoutMs = WRITE_TIMEOUT_MS) {
   const abortController = new AbortController();
   const timeout = window.setTimeout(() => abortController.abort(), timeoutMs);
@@ -198,6 +227,7 @@ function renderIntentButton(button) {
   const isPendingTarget = pending?.gameId === appState.gameId && pending?.venueId === venueId;
   const showSelectedContent = isSelected && !isPendingTarget;
 
+  button.hidden = false;
   button.disabled = Boolean(pending) || !gameAllowsIntent();
   button.removeAttribute('title');
   button.setAttribute('aria-pressed', String(isSelected));
@@ -344,6 +374,7 @@ function renderApplication() {
 function renderAttendancePresentation() {
   renderVenueActivity();
   renderIntentButtons();
+  syncNativeRsvpAttendanceFollowup();
 }
 
 async function refreshAggregates() {
@@ -362,7 +393,16 @@ async function handleDocumentClick(event) {
   const intentButton = event.target.closest('.intent-button[data-venue-id]');
   if (!intentButton) return;
   event.preventDefault();
-  await controller?.performIntent(intentButton.dataset.venueId);
+  const venueId = intentButton.dataset.venueId;
+  const currentVenueId = activeVenueId();
+  const attendanceAction = currentVenueId === venueId ? 'withdraw' : currentVenueId ? 'move' : 'join';
+  const allowed = window.CGBWatchPartyRsvp?.confirmAttendanceChange?.({
+    action: attendanceAction,
+    gameId: appState.gameId,
+    venueId
+  });
+  if (allowed === false) return;
+  await controller?.performIntent(venueId);
 }
 
 export async function ensureFanIntentAttendance(venueId, gameId = appState.gameId) {
@@ -403,7 +443,15 @@ async function bootFanIntent() {
     showStatus
   });
 
-  subscribeAppEvent('rendered', renderIntentButtons);
+  subscribeAppEvent('rendered', () => {
+    renderIntentButtons();
+    syncNativeRsvpAttendanceFollowup();
+  });
+  window.addEventListener('cgb:rsvp-state', () => {
+    renderIntentButtons();
+    renderVenueActivity();
+    syncNativeRsvpAttendanceFollowup();
+  });
   document.addEventListener('click', handleDocumentClick);
   startSynchronization();
 

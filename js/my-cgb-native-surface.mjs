@@ -221,7 +221,9 @@ async function revealNativeSurface() {
   surface.hidden = false;
   markCgbPerformance('cgb:my-cgb:shell:visible');
   refreshSelectedFavoriteAction();
-  if (window.CGBAccounts?.isSignedIn?.()) void ensureSignedInFeatures();
+  if (window.CGBAccounts?.isSignedIn?.()) {
+    void ensureSignedInFeatures().then(() => window.CGBWatchPartyRsvp?.openManagement?.());
+  }
   const title = shell.querySelector('#cgb-account-title');
   if (title) {
     title.tabIndex = -1;

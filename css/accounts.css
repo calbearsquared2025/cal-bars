@@ -435,3 +435,117 @@
   margin: 0;
   box-shadow: var(--shadow-sm);
 }
+
+
+/* Native Watch Party RSVP management extends the existing My CGB account surface. */
+.accounts-rsvp-management__content {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.accounts-rsvp-card {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid var(--cgb-neutral-200);
+  border-radius: var(--radius-md);
+  background: var(--brand-page-background);
+}
+
+.accounts-rsvp-card__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.accounts-rsvp-card__heading > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.accounts-rsvp-card__heading strong {
+  color: var(--brand-primary-dark);
+  line-height: 1.25;
+}
+
+.accounts-rsvp-card__heading span:not(.accounts-connected-method),
+.accounts-rsvp-card__stats,
+.account-rsvp-attendee span,
+.account-rsvp-attendee time {
+  color: var(--brand-text-muted);
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
+.accounts-rsvp-card__stats {
+  margin: 0;
+}
+
+.accounts-rsvp-card__actions,
+.account-rsvp-actions,
+.account-rsvp-attendee-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px 12px;
+}
+
+.account-rsvp-privacy {
+  padding: 10px 12px;
+  border-left: 3px solid var(--brand-secondary);
+  background: var(--brand-page-background);
+}
+
+.account-rsvp-attendees {
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
+}
+
+.account-rsvp-attendee-summary {
+  margin: 0;
+  color: var(--brand-text);
+  font-weight: 750;
+}
+
+.account-rsvp-attendee-list {
+  display: grid;
+  gap: 10px;
+}
+
+.account-rsvp-attendee {
+  display: grid;
+  gap: 3px;
+  padding: 11px 0;
+  border-top: 1px solid var(--cgb-neutral-200);
+}
+
+.account-rsvp-attendee strong {
+  color: var(--brand-primary-dark);
+}
+
+.account-rsvp-attendee a {
+  overflow-wrap: anywhere;
+  color: var(--brand-primary);
+}
+
+.account-rsvp-attendee p {
+  margin: 5px 0 0;
+  color: var(--brand-text);
+  line-height: 1.4;
+}
+
+@media (max-width: 899px) {
+  .accounts-rsvp-card__heading {
+    align-items: start;
+  }
+
+  .accounts-rsvp-card__actions > button,
+  .account-rsvp-actions > button,
+  .account-rsvp-attendee-actions > button {
+    min-height: 44px;
+  }
+}

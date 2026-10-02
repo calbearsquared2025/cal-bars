@@ -13,7 +13,13 @@ const FAN_ACTIONS = Object.freeze([
   'submitFanWatchParty',
   'deleteFanAccount',
   'getFanWatchPartyClaimState',
-  'submitFanWatchPartyClaim'
+  'submitFanWatchPartyClaim',
+  'listFanWatchPartyRsvps',
+  'saveFanWatchPartyRsvp',
+  'cancelFanWatchPartyRsvp',
+  'listFanManagedWatchPartyRsvps',
+  'setFanWatchPartyRsvpEnabled',
+  'getFanWatchPartyRsvpAttendees'
 ]);
 const PUBLIC_PROFILE_STATUSES = Object.freeze(['private', 'public']);
 const ATTENDANCE_VISIBILITY_VALUES = Object.freeze(['anonymous', 'public']);
@@ -28,6 +34,7 @@ const WATCH_PARTY_CLAIM_RELATIONSHIPS = Object.freeze([
 ]);
 const WATCH_PARTY_CLAIM_STATUSES = Object.freeze(['pending', 'approved', 'rejected']);
 const WATCH_PARTY_MANAGEMENT_ROLES = Object.freeze(['owner', 'manager']);
+const WATCH_PARTY_RSVP_MAX_PARTY_SIZE = 20;
 const VENUE_ID_PATTERN = /^venue_[a-f0-9]{24}$/;
 const GAME_ID_PATTERN = /^game_[a-f0-9]{24}$/;
 const BROWSER_ID_PATTERN = /^browser_[A-Za-z0-9_-]{16,128}$/;
@@ -35,7 +42,7 @@ const CONTRIBUTION_REQUEST_PATTERN = /^req_[A-Za-z0-9_-]{16,80}$/;
 const WATCH_PARTY_ID_PATTERN = /^wp_[a-f0-9]{24}$/;
 const PRIVATE_RESPONSE_KEYS = new Set([
   'accountId', 'account_id', 'firebaseUid', 'firebase_uid', 'browserId', 'browser_id',
-  'fan_intent_id', 'email', 'primary_email', 'idToken', 'id_token', 'workbook_id',
+  'fan_intent_id', 'rsvp_id', 'rsvpId', 'email', 'primary_email', 'idToken', 'id_token', 'workbook_id',
   'workbook_url', 'spreadsheet_id', 'spreadsheet_url'
 ]);
 
@@ -71,6 +78,34 @@ function nonnegativeInteger(value) {
 
 function exactKeys(extra, expected) {
   return Object.keys(extra || {}).sort().join(',') === expected.slice().sort().join(',');
+}
+
+function onlyKeys(value, expected) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value)) &&
+    Object.keys(value).sort().join(',') === expected.slice().sort().join(',');
+}
+
+function boundedRsvpText(value, maximumLength, { required = false } = {}) {
+  const text = clean(value).replace(/\s+/g, ' ');
+  if ((required && !text) || text.length > maximumLength) throw new Error('invalid_watch_party_rsvp');
+  return text;
+}
+
+function normalizeRsvpEmail(value) {
+  const email = clean(value);
+  if (!email) return '';
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('invalid_watch_party_rsvp');
+  }
+  return email;
+}
+
+function normalizeRsvpPartySize(value) {
+  const partySize = Number(value);
+  if (!Number.isInteger(partySize) || partySize < 1 || partySize > WATCH_PARTY_RSVP_MAX_PARTY_SIZE) {
+    throw new Error('invalid_watch_party_rsvp');
+  }
+  return partySize;
 }
 
 function boundedText(value, maximumLength, { required = false } = {}) {
@@ -253,6 +288,34 @@ export function buildFanRequest(action, idToken, extra = {}) {
     payload.relationship = relationship;
     payload.explanation = boundedText(extra.explanation, 1200);
     payload.supportingUrl = normalizeHttpUrl(extra.supportingUrl);
+  } else if (normalizedAction === 'listFanWatchPartyRsvps' ||
+      normalizedAction === 'listFanManagedWatchPartyRsvps') {
+    if (!exactKeys(extra, [])) throw new Error('invalid_fan_request');
+  } else if (normalizedAction === 'cancelFanWatchPartyRsvp' ||
+      normalizedAction === 'getFanWatchPartyRsvpAttendees') {
+    if (!exactKeys(extra, ['watchPartyId'])) throw new Error('invalid_fan_request');
+    const watchPartyId = clean(extra.watchPartyId);
+    if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId)) throw new Error('invalid_watch_party_rsvp');
+    payload.watchPartyId = watchPartyId;
+  } else if (normalizedAction === 'setFanWatchPartyRsvpEnabled') {
+    if (!exactKeys(extra, ['watchPartyId', 'enabled'])) throw new Error('invalid_fan_request');
+    const watchPartyId = clean(extra.watchPartyId);
+    if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId) || typeof extra.enabled !== 'boolean') {
+      throw new Error('invalid_watch_party_rsvp');
+    }
+    payload.watchPartyId = watchPartyId;
+    payload.enabled = extra.enabled;
+  } else if (normalizedAction === 'saveFanWatchPartyRsvp') {
+    if (!exactKeys(extra, ['watchPartyId', 'attendeeName', 'contactEmail', 'partySize', 'note'])) {
+      throw new Error('invalid_fan_request');
+    }
+    const watchPartyId = clean(extra.watchPartyId);
+    if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId)) throw new Error('invalid_watch_party_rsvp');
+    payload.watchPartyId = watchPartyId;
+    payload.attendeeName = boundedRsvpText(extra.attendeeName, 120, { required: true });
+    payload.contactEmail = normalizeRsvpEmail(extra.contactEmail);
+    payload.partySize = normalizeRsvpPartySize(extra.partySize);
+    payload.note = boundedRsvpText(extra.note, 500);
   } else if (Object.keys(extra).length) {
     throw new Error('invalid_fan_request');
   }
@@ -311,6 +374,125 @@ export function validateFanWatchPartyClaimResponse(payload) {
       (claimStatus && !WATCH_PARTY_CLAIM_STATUSES.includes(claimStatus))) return null;
   if (payload.action === 'submitFanWatchPartyClaim' && claimStatus !== 'pending') return null;
   return Object.freeze({ watchPartyId, managementRole, claimStatus });
+}
+
+
+export function validateFanWatchPartyRsvpResponse(payload) {
+  if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true ||
+      !['listFanWatchPartyRsvps', 'saveFanWatchPartyRsvp', 'cancelFanWatchPartyRsvp'].includes(payload.action) ||
+      !Array.isArray(payload.rsvps)) return null;
+  const rsvps = [];
+  const seenGames = new Set();
+  for (const row of payload.rsvps) {
+    if (!onlyKeys(row, [
+      'watchPartyId', 'gameId', 'venueId', 'attendeeName', 'contactEmail',
+      'partySize', 'note', 'updatedAt', 'rsvpEnabled', 'eligible'
+    ])) return null;
+    const watchPartyId = clean(row.watchPartyId);
+    const gameId = clean(row.gameId);
+    const venueId = clean(row.venueId);
+    const attendeeName = clean(row.attendeeName);
+    const contactEmail = clean(row.contactEmail);
+    const partySize = Number(row.partySize);
+    const note = clean(row.note);
+    const updatedAt = clean(row.updatedAt);
+    if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId) || !GAME_ID_PATTERN.test(gameId) ||
+        !VENUE_ID_PATTERN.test(venueId) || !attendeeName || attendeeName.length > 120 ||
+        (contactEmail && (contactEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail))) ||
+        !Number.isInteger(partySize) || partySize < 1 || partySize > WATCH_PARTY_RSVP_MAX_PARTY_SIZE ||
+        note.length > 500 || !updatedAt || Number.isNaN(Date.parse(updatedAt)) ||
+        typeof row.rsvpEnabled !== 'boolean' || typeof row.eligible !== 'boolean' ||
+        seenGames.has(gameId)) return null;
+    seenGames.add(gameId);
+    rsvps.push(Object.freeze({
+      watchPartyId, gameId, venueId, attendeeName, contactEmail, partySize, note,
+      updatedAt, rsvpEnabled: row.rsvpEnabled, eligible: row.eligible
+    }));
+  }
+  return Object.freeze({ rsvps: Object.freeze(rsvps) });
+}
+
+export function validateFanManagedWatchPartyRsvpResponse(payload) {
+  if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true ||
+      !['listFanManagedWatchPartyRsvps', 'setFanWatchPartyRsvpEnabled'].includes(payload.action) ||
+      !Array.isArray(payload.managedWatchParties)) return null;
+  const managedWatchParties = [];
+  const seen = new Set();
+  for (const row of payload.managedWatchParties) {
+    if (!onlyKeys(row, [
+      'watchPartyId', 'venueId', 'gameId', 'organizerName', 'venueName', 'opponentName',
+      'gameDate', 'eventStatus', 'publicationStatus', 'gameStatus', 'managementRole',
+      'rsvpEnabled', 'eligible', 'responseCount', 'expectedAttendance'
+    ])) return null;
+    const watchPartyId = clean(row.watchPartyId);
+    const venueId = clean(row.venueId);
+    const gameId = clean(row.gameId);
+    const responseCount = nonnegativeInteger(row.responseCount);
+    const expectedAttendance = nonnegativeInteger(row.expectedAttendance);
+    const role = clean(row.managementRole);
+    if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId) || !VENUE_ID_PATTERN.test(venueId) ||
+        !GAME_ID_PATTERN.test(gameId) || seen.has(watchPartyId) ||
+        !WATCH_PARTY_MANAGEMENT_ROLES.includes(role) ||
+        typeof row.rsvpEnabled !== 'boolean' || typeof row.eligible !== 'boolean' ||
+        responseCount === null || expectedAttendance === null ||
+        clean(row.organizerName).length > 180 || clean(row.venueName).length > 120 ||
+        clean(row.opponentName).length > 100 || clean(row.gameDate).length > 40 ||
+        clean(row.eventStatus).length > 40 || clean(row.publicationStatus).length > 40 ||
+        clean(row.gameStatus).length > 40) return null;
+    seen.add(watchPartyId);
+    managedWatchParties.push(Object.freeze({
+      watchPartyId,
+      venueId,
+      gameId,
+      organizerName: clean(row.organizerName),
+      venueName: clean(row.venueName),
+      opponentName: clean(row.opponentName),
+      gameDate: clean(row.gameDate),
+      eventStatus: clean(row.eventStatus),
+      publicationStatus: clean(row.publicationStatus),
+      gameStatus: clean(row.gameStatus),
+      managementRole: role,
+      rsvpEnabled: row.rsvpEnabled,
+      eligible: row.eligible,
+      responseCount,
+      expectedAttendance
+    }));
+  }
+  return Object.freeze({ managedWatchParties: Object.freeze(managedWatchParties) });
+}
+
+export function validateFanWatchPartyRsvpAttendeesResponse(payload) {
+  if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true ||
+      payload.action !== 'getFanWatchPartyRsvpAttendees' || !Array.isArray(payload.attendees)) return null;
+  const watchPartyId = clean(payload.watchPartyId);
+  const responseCount = nonnegativeInteger(payload.responseCount);
+  const expectedAttendance = nonnegativeInteger(payload.expectedAttendance);
+  if (!WATCH_PARTY_ID_PATTERN.test(watchPartyId) || typeof payload.rsvpEnabled !== 'boolean' ||
+      responseCount === null || expectedAttendance === null || payload.attendees.length !== responseCount) return null;
+  const attendees = [];
+  let computedAttendance = 0;
+  for (const row of payload.attendees) {
+    if (!onlyKeys(row, ['attendeeName', 'contactEmail', 'partySize', 'note', 'updatedAt'])) return null;
+    const attendeeName = clean(row.attendeeName);
+    const contactEmail = clean(row.contactEmail);
+    const partySize = Number(row.partySize);
+    const note = clean(row.note);
+    const updatedAt = clean(row.updatedAt);
+    if (!attendeeName || attendeeName.length > 120 ||
+        (contactEmail && (contactEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail))) ||
+        !Number.isInteger(partySize) || partySize < 1 || partySize > WATCH_PARTY_RSVP_MAX_PARTY_SIZE ||
+        note.length > 500 || !updatedAt || Number.isNaN(Date.parse(updatedAt))) return null;
+    computedAttendance += partySize;
+    attendees.push(Object.freeze({ attendeeName, contactEmail, partySize, note, updatedAt }));
+  }
+  if (computedAttendance !== expectedAttendance) return null;
+  return Object.freeze({
+    watchPartyId,
+    rsvpEnabled: payload.rsvpEnabled,
+    responseCount,
+    expectedAttendance,
+    attendees: Object.freeze(attendees)
+  });
 }
 
 export function validateFanAttendanceResponse(payload) {
@@ -399,6 +581,14 @@ export function fanErrorCopy(code) {
       return 'Your claim for this Watch Party is already pending review.';
     case 'fan_already_manager':
       return 'You already manage this Watch Party.';
+    case 'fan_invalid_rsvp':
+      return 'Check the RSVP details and try again.';
+    case 'fan_rsvp_disabled':
+      return 'This Watch Party is not accepting new RSVPs.';
+    case 'fan_rsvp_not_available':
+      return 'This Watch Party is no longer available for RSVP.';
+    case 'fan_rsvp_forbidden':
+      return 'You do not have permission to manage RSVPs for this Watch Party.';
     case 'fan_invalid_request':
       return 'Check the contribution details and try again.';
     case 'fan_not_configured':

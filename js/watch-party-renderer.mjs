@@ -17,11 +17,26 @@ function issueConfig(documentObject) {
 }
 
 function appendText(module, text, className, documentObject) {
-  if (!text) return;
+  if (!text) return null;
   const line = documentObject.createElement('p');
   if (className) line.className = className;
   line.textContent = text;
   module.append(line);
+  return line;
+}
+
+function appendSectionEyebrow(module, text, documentObject) {
+  const eyebrow = documentObject.createElement('p');
+  eyebrow.className = 'party-module__eyebrow';
+  eyebrow.textContent = text;
+  module.append(eyebrow);
+  return eyebrow;
+}
+
+function watchPartyRequestsExternalRsvp(party = {}) {
+  return controlledTagValues(party.feature_tags)
+    .map((tag) => tag.toLowerCase())
+    .includes('rsvp_requested');
 }
 
 function appendTags(module, labels, documentObject) {
@@ -36,6 +51,10 @@ function appendTags(module, labels, documentObject) {
     tags.append(tag);
   });
   module.append(tags);
+}
+
+export function nativeWatchPartyRsvpEnabled(party = {}) {
+  return party.rsvp_enabled === true || String(party.rsvp_enabled ?? '').toLowerCase() === 'true';
 }
 
 function controlledTagValues(value) {
@@ -85,6 +104,64 @@ function arrivalLabel(party) {
   return time ? `Arrive ${time}` : '';
 }
 
+function appendNativeRsvp(module, party, documentObject) {
+  const container = documentObject.createElement('section');
+  container.className = 'party-module__section party-module__native-rsvp';
+  container.dataset.watchPartyRsvp = party.watch_party_id;
+  container.hidden = !nativeWatchPartyRsvpEnabled(party);
+  appendSectionEyebrow(container, 'RSVP', documentObject);
+
+  const status = documentObject.createElement('p');
+  status.className = 'party-module__rsvp-status';
+  status.dataset.watchPartyRsvpStatus = party.watch_party_id;
+  status.textContent = 'This Watch Party is collecting RSVPs.';
+
+  const button = documentObject.createElement('button');
+  button.type = 'button';
+  button.className = 'party-module__rsvp-action party-module__rsvp-action--quiet';
+  button.dataset.watchPartyRsvpAction = party.watch_party_id;
+  button.textContent = 'RSVP through Cal Golden Bars →';
+  button.addEventListener('click', async () => {
+    const windowObject = documentObject.defaultView || globalThis.window;
+    const loader = windowObject?.CGBAccountsLoader;
+    if (!loader?.load) {
+      windowObject?.CGBApp?.showStatus?.('RSVP is temporarily unavailable.');
+      return;
+    }
+    button.disabled = true;
+    try {
+      await loader.load('user-demand');
+      if (!windowObject.CGBWatchPartyRsvp?.open) throw new Error('rsvp_unavailable');
+      await windowObject.CGBWatchPartyRsvp.open(party.watch_party_id);
+    } catch (_) {
+      windowObject?.CGBApp?.showStatus?.('RSVP is temporarily unavailable.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  container.append(status, button);
+  module.append(container);
+}
+
+function appendExternalRsvp(module, party, documentObject) {
+  if (!party.official_event_url || !watchPartyRequestsExternalRsvp(party) || nativeWatchPartyRsvpEnabled(party)) return;
+
+  const container = documentObject.createElement('section');
+  container.className = 'party-module__section party-module__external-rsvp';
+  appendSectionEyebrow(container, 'RSVP', documentObject);
+  appendText(container, 'Registration is handled by the organizer.', 'party-module__rsvp-status', documentObject);
+
+  const link = documentObject.createElement('a');
+  link.className = 'secondary-button party-module__rsvp-action party-module__external-rsvp-action';
+  link.href = party.official_event_url;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.textContent = 'Event details & RSVP ↗';
+  container.append(link);
+  module.append(container);
+}
+
 export function refreshWatchPartyProfileOnReturn(link, windowObject = globalThis.window) {
   if (!link || typeof link.addEventListener !== 'function' || !windowObject?.addEventListener) return false;
   link.addEventListener('click', () => {
@@ -125,38 +202,52 @@ export function createWatchPartyModule({
   }
   module.append(title);
 
+  const summary = documentObject.createElement('div');
+  summary.className = 'party-module__summary';
+
+  const gameSection = documentObject.createElement('div');
+  gameSection.className = 'party-module__fact party-module__fact--game';
+  appendSectionEyebrow(gameSection, 'Game', documentObject);
   if (game) {
     appendText(
-      module,
+      gameSection,
       `${ACTIVE_INSTANCE_CONFIG.identity.schoolShortName.toUpperCase()} ${gameTitle(game).toUpperCase()}`,
       'party-game-context',
       documentObject
     );
   }
-
   const timing = [kickoffLabel(game), arrivalLabel(party)].filter(Boolean).join(' · ');
-  appendText(module, timing, 'party-module__time', documentObject);
+  appendText(gameSection, timing, 'party-module__time', documentObject);
 
+  const hostSection = documentObject.createElement('div');
+  hostSection.className = 'party-module__fact party-module__fact--host';
+  appendSectionEyebrow(hostSection, 'Hosted by', documentObject);
   const hosted = documentObject.createElement('p');
   hosted.className = 'party-module__host';
-  hosted.append(documentObject.createTextNode('Hosted by '));
   const host = documentObject.createElement('strong');
   host.textContent = party.organizer_name;
   hosted.append(host);
-  module.append(hosted);
+  hostSection.append(hosted);
 
-  appendTags(module, watchPartyTagLabels(party, venue), documentObject);
-  appendText(module, party.restrictions_note, 'party-module__note', documentObject);
-  appendText(module, party.game_day_note, 'party-module__note', documentObject);
+  summary.append(gameSection, hostSection);
+  module.append(summary);
 
-  if (party.official_event_url) {
+  const details = documentObject.createElement('section');
+  details.className = 'party-module__section party-module__details';
+  appendSectionEyebrow(details, 'Details', documentObject);
+  appendTags(details, watchPartyTagLabels(party, venue), documentObject);
+  appendText(details, party.restrictions_note, 'party-module__note', documentObject);
+  appendText(details, party.game_day_note, 'party-module__note', documentObject);
+
+  const requestsExternalRsvp = watchPartyRequestsExternalRsvp(party);
+  if (party.official_event_url && (nativeWatchPartyRsvpEnabled(party) || !requestsExternalRsvp)) {
     const link = documentObject.createElement('a');
     link.className = 'party-module__event';
     link.href = party.official_event_url;
     link.target = '_blank';
     link.rel = 'noopener';
-    link.textContent = 'OFFICIAL EVENT DETAILS ↗';
-    module.append(link);
+    link.textContent = 'Official event page ↗';
+    details.append(link);
   }
 
   const issueUrl = buildWatchPartyIssueUrl(issueConfig(documentObject), resolveWatchPartyIssueContext(snapshot, party));
@@ -176,7 +267,12 @@ export function createWatchPartyModule({
     action.textContent = 'Tell us →';
     report.append(prompt, documentObject.createTextNode(' '), action);
     refreshWatchPartyProfileOnReturn(report);
-    module.append(report);
+    details.append(report);
   }
+
+  if (details.children.length > 1) module.append(details);
+
+  appendExternalRsvp(module, party, documentObject);
+  appendNativeRsvp(module, party, documentObject);
   return module;
 }

@@ -134,7 +134,13 @@ async function postIntent(operation) {
   });
   applyAttendanceState(validated);
   invalidatePublicAttendance();
+  window.CGBWatchPartyRsvp?.reconcileAttendanceChange?.(operation);
   return compatibilityResponse(validated, operation);
+}
+
+async function refreshAccountAttendance() {
+  lastSyncResult = null;
+  return synchronizeAccountAttendance();
 }
 
 async function fetchPublicAttendance(gameId, venueId) {
@@ -411,6 +417,7 @@ async function initializeAccountAttendance() {
 window.CGBAccountAttendance = Object.freeze({
   postIntent,
   sync: synchronizeAccountAttendance,
+  refresh: refreshAccountAttendance,
   refreshPresence() {
     invalidatePublicAttendance();
     return renderPresence();

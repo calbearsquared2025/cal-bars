@@ -285,6 +285,15 @@ body[data-view="detail"] .venue-detail > .party-module p {
   line-height: 1.35 !important;
 }
 
+body[data-view="detail"] .venue-detail > .party-module .party-module__eyebrow {
+  color: var(--cgb-ink-500) !important;
+  font-size: .6875rem !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase;
+}
+
 body[data-view="detail"] .venue-detail > .party-module a {
   width: fit-content !important;
   color: var(--cgb-navy-900) !important;

@@ -15,3 +15,4 @@ import './account-profile-polish.mjs';
 import './account-profile-onboarding.mjs';
 import './account-public-community.mjs';
 import './account-contributions.mjs';
+import './account-watch-party-rsvp.mjs';
