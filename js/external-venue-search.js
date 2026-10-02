@@ -439,7 +439,7 @@ function renderConfirmation() {
     ? 'Adding location…'
     : state.retry
       ? 'Retry'
-      : 'I’ll be here';
+      : 'Add & I’ll be here';
 }
 
 function selectExternalPlace(place) {

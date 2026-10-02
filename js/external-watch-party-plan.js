@@ -109,7 +109,7 @@ function syncExternalVenueActions({ app, documentObject = document } = {}) {
 
   if (addOnly) {
     addOnly.disabled = pending;
-    addOnly.textContent = pending ? 'Adding location…' : 'Add location only';
+    addOnly.textContent = pending ? 'Adding location…' : 'Add as Community Location';
   }
   if (plan) plan.disabled = pending;
   if (confirm) confirm.disabled = pending;
@@ -132,7 +132,7 @@ function ensurePlanButton({ app, documentObject = document, windowObject = windo
   button.id = BUTTON_ID;
   button.type = 'button';
   button.className = 'secondary-button external-venue-plan-button';
-  button.textContent = 'Add a Watch Party';
+  button.textContent = 'Add & set up a Watch Party';
   actions.insertBefore(button, cancel);
 
   button.addEventListener('click', async () => {
@@ -188,7 +188,7 @@ function ensureAddOnlyButton({ app, documentObject = document, windowObject = wi
   button.id = ADD_ONLY_BUTTON_ID;
   button.type = 'button';
   button.className = 'secondary-button external-venue-add-only-button';
-  button.textContent = 'Add location only';
+  button.textContent = 'Add as Community Location';
 
   const plan = documentObject.querySelector(`#${BUTTON_ID}`);
   actions.insertBefore(button, plan || cancel);
