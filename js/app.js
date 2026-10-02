@@ -19,10 +19,12 @@ import {
   rankNearbyVenues,
   rankVenues,
   resolveGameRouteParam,
+  resolveVenueRouteParam,
   selectDefaultGame,
   shareOrCopy,
   validateSnapshotShape,
   venueBadgeDescriptors,
+  venueRouteParam,
   venueTypeLabel
 } from './core.mjs';
 import {
@@ -293,16 +295,29 @@ function initializeRoute() {
   const defaultGame = selectDefaultGame(state.snapshot.games);
   state.gameId = requestedGameRecord?.game_id || defaultGame?.game_id || state.snapshot.games[0]?.game_id || null;
 
-  const venueSlug = params.get('venue');
-  const venue = state.snapshot.venues.find((item) => item.slug === venueSlug);
+  const requestedVenue = venueRouteParam(location.pathname, location.search);
+  const venue = resolveVenueRouteParam(state.snapshot.venues, requestedVenue);
   state.detailMode = Boolean(venue);
   state.selectedVenueId = venue?.venue_id || null;
+
+  if (venue) {
+    const canonicalUrl = new URL(buildVenueUrl(
+      venue.slug,
+      requestedGame && requestedGameRecord ? requestedGameRecord : null,
+      location.href
+    ));
+    const currentRoute = `${location.pathname}${location.search}${location.hash}`;
+    const canonicalRoute = `${canonicalUrl.pathname}${canonicalUrl.search}${canonicalUrl.hash}`;
+    if (currentRoute !== canonicalRoute) {
+      history.replaceState({}, '', canonicalRoute);
+    }
+    return;
+  }
 
   if (requestedGame && requestedGameRecord) {
     const canonicalGameParam = gameRouteParam(requestedGameRecord);
     if (canonicalGameParam && canonicalGameParam !== requestedGame) {
-      const url = new URL(location.href);
-      url.searchParams.set('game', canonicalGameParam);
+      const url = new URL(buildGameUrl(requestedGameRecord, location.href));
       history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
     }
   }

@@ -1,4 +1,4 @@
-import { buildGameUrl } from './core.mjs';
+import { buildGameUrl, resolveVenueRouteParam, venueRouteParam } from './core.mjs';
 // Mobile selected-profile interaction refinements share this existing profile bootstrap.
 import './mobile-selected-profile-expansion.mjs';
 import './mobile-profile-hero-cap.mjs';
@@ -13,10 +13,10 @@ function clean(value) {
   return String(value ?? '').trim();
 }
 
-export function directVenueRoute(snapshot, search = '') {
-  const venueSlug = new URLSearchParams(search).get('venue');
-  if (!clean(venueSlug)) return null;
-  return snapshot?.venues?.find((venue) => clean(venue?.slug) === clean(venueSlug)) || null;
+export function directVenueRoute(snapshot, search = '', pathname = '') {
+  const requestedVenue = venueRouteParam(pathname, search);
+  if (!clean(requestedVenue)) return null;
+  return resolveVenueRouteParam(snapshot?.venues, requestedVenue);
 }
 
 export function shouldBridgeMobileDirectVenueProfile({
@@ -55,7 +55,11 @@ export function bridgeMobileDirectVenueProfile({
   const mobile = windowObject.matchMedia?.(MOBILE_QUERY)?.matches === true;
   if (!mobile || !state?.snapshot) return false;
 
-  const routeVenue = directVenueRoute(state.snapshot, windowObject.location?.search || '');
+  const routeVenue = directVenueRoute(
+    state.snapshot,
+    windowObject.location?.search || '',
+    windowObject.location?.pathname || ''
+  );
   if (!routeVenue) return false;
 
   if (state.detailMode && clean(state.selectedVenueId) && clean(state.selectedVenueId) !== clean(routeVenue.venue_id)) {

@@ -90,6 +90,34 @@ export function resolveGameRouteParam(games, value) {
   return (games || []).find((game) => gameRouteParam(game) === requestedSlug) || null;
 }
 
+function venueRouteAliases(venue) {
+  return String(venue?.slug_aliases || '')
+    .split('|')
+    .map((value) => slugifyRoutePart(value))
+    .filter(Boolean);
+}
+
+export function venueRouteParam(pathname = '', search = '') {
+  const pathMatch = String(pathname || '').match(/\/locations\/([^/?#]+)\/?$/i);
+  if (pathMatch) {
+    try {
+      return decodeURIComponent(pathMatch[1]);
+    } catch (_) {
+      return pathMatch[1];
+    }
+  }
+  return new URLSearchParams(String(search || '')).get('venue') || '';
+}
+
+export function resolveVenueRouteParam(venues, value) {
+  const requestedSlug = slugifyRoutePart(value);
+  if (!requestedSlug) return null;
+  return (venues || []).find((venue) => (
+    slugifyRoutePart(venue?.slug) === requestedSlug ||
+    venueRouteAliases(venue).includes(requestedSlug)
+  )) || null;
+}
+
 export function venueTypeLabel(venue) {
   return venue?.venue_type === 'cal_bar'
     ? ACTIVE_INSTANCE_CONFIG.terminology.designatedVenueBadge
@@ -241,6 +269,7 @@ export function resolveTrayState(current, action, hasSelection = false) {
 
 export function buildGameUrl(game, baseHref) {
   const url = new URL(baseHref);
+  url.pathname = '/';
   url.search = '';
   const gameParam = gameRouteParam(game);
   if (gameParam) url.searchParams.set('game', gameParam);
@@ -249,8 +278,9 @@ export function buildGameUrl(game, baseHref) {
 
 export function buildVenueUrl(slug, game, baseHref) {
   const url = new URL(baseHref);
+  const cleanSlug = slugifyRoutePart(slug);
+  url.pathname = cleanSlug ? `/locations/${encodeURIComponent(cleanSlug)}/` : '/';
   url.search = '';
-  if (slug) url.searchParams.set('venue', slug);
   const gameParam = gameRouteParam(game);
   if (gameParam) url.searchParams.set('game', gameParam);
   return url.toString();
