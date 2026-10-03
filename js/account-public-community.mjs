@@ -131,6 +131,18 @@ function validateLeaderboard(payload) {
   return Object.freeze({ season, entries: Object.freeze(entries) });
 }
 
+async function fetchLeaderboardResponse(url) {
+  let lastError = null;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      return await fetchWithTimeout(url, { method: 'GET', cache: 'no-store' });
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError;
+}
+
 async function fetchLeaderboard({ force = false } = {}) {
   if (!enabled()) return null;
   const now = Date.now();
@@ -142,7 +154,7 @@ async function fetchLeaderboard({ force = false } = {}) {
     url.searchParams.set('action', 'publicLeaderboard');
     markCgbPerformance('cgb:leaderboard:request:start');
     try {
-      const response = await fetchWithTimeout(url, { method: 'GET', cache: 'no-store' });
+      const response = await fetchLeaderboardResponse(url);
       const payload = await response.json().catch(() => null);
       if (!response.ok) return null;
       const validated = validateLeaderboard(payload);
