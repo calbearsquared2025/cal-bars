@@ -1254,7 +1254,7 @@
       "country_code": "US",
       "latitude": 47.66,
       "longitude": -122.3625,
-      "website_url": "https://fremontdock.com/",
+      "website_url": "",
       "venue_type": "community_location",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
@@ -1269,31 +1269,6 @@
       ]
     },
     {
-      "venue_id": "venue_b181231e8a814973a0023d27",
-      "slug": "la-note",
-      "slug_aliases": "",
-      "name": "La Note",
-      "address_line_1": "2377 Shattuck Avenue",
-      "address_line_2": "",
-      "city": "Berkeley",
-      "region": "CA",
-      "postal_code": "94704",
-      "country_code": "US",
-      "latitude": 37.86620725354952,
-      "longitude": -122.26727318018675,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "user_added",
-      "alumni_owned": "unknown",
-      "short_description": "",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-10-02T05:15:22.319Z",
-      "venue_tags": []
-    },
-    {
       "venue_id": "venue_f5a8919095a06962e9d267ae",
       "slug": "mission-navy-yard",
       "slug_aliases": "",
@@ -1306,7 +1281,7 @@
       "country_code": "US",
       "latitude": 38.87495,
       "longitude": -77.00882,
-      "website_url": "https://www.missionnavyyard.com/",
+      "website_url": "",
       "venue_type": "community_location",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
@@ -1335,7 +1310,7 @@
       "country_code": "US",
       "latitude": 36.1957,
       "longitude": -115.2573,
-      "website_url": "https://www.slaters5050lasvegas.com/locations/lake-mead",
+      "website_url": "",
       "venue_type": "community_location",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
@@ -3624,10 +3599,6 @@
       "past_game_count": 1
     },
     {
-      "venue_id": "venue_b181231e8a814973a0023d27",
-      "past_game_count": 0
-    },
-    {
       "venue_id": "venue_b6a116897e09b29e98205256",
       "past_game_count": 0
     },
@@ -3838,5 +3809,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-02T16:48:49.841Z"
+  "generatedAt": "2026-10-03T05:23:21.600Z"
 }
