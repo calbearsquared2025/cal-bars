@@ -1406,10 +1406,10 @@
       "opponent_name": "Wake Forest",
       "home_away": "home",
       "game_date": "2026-10-17",
-      "kickoff_at": "",
-      "kickoff_status": "tbd",
+      "kickoff_at": "2026-10-18T02:30:00Z",
+      "kickoff_status": "confirmed",
       "game_status": "upcoming",
-      "updated_at": "2026-07-31T17:43:00Z"
+      "updated_at": "2026-10-05T17:59:00Z"
     },
     {
       "game_id": "game_5f8281482583c43917f6f2a5",
@@ -3809,5 +3809,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-05T05:47:46.764Z"
+  "generatedAt": "2026-10-05T20:45:31.683Z"
 }
