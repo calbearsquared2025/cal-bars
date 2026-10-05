@@ -62,6 +62,10 @@ export function formatKickoff(game, locale) {
   return [dateLabel, timeLabel].filter(Boolean).join(' · ');
 }
 
+export function gameEventTitle(game) {
+  return String(game?.game_title || '').trim();
+}
+
 export function gameTitle(game) {
   if (!game) return `${ACTIVE_INSTANCE_CONFIG.identity.schoolShortName} football`;
   const opponent = game.opponent_name || 'Opponent';

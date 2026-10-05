@@ -7,6 +7,7 @@ import {
   compactVenueLocation,
   findExactVenueMatch,
   formatKickoff,
+  gameEventTitle,
   gameRouteParam,
   gameTitle,
   getFanCount,
@@ -139,6 +140,7 @@ function cacheDom() {
     gameButton: document.querySelector('#game-button'),
     gameDialog: document.querySelector('#game-dialog'),
     gameList: document.querySelector('#game-list'),
+    headerGameTitle: document.querySelector('#header-game-title'),
     headerGameLabel: document.querySelector('#header-game-label'),
     headerKickoff: document.querySelector('#header-kickoff'),
     partyStat: document.querySelector('#watch-party-stat'),
@@ -336,6 +338,11 @@ function updateRouteForGame() {
 
 function renderHeaderAndStats() {
   const game = selectedGame();
+  const eventTitle = gameEventTitle(game);
+  if (dom.headerGameTitle) {
+    dom.headerGameTitle.textContent = eventTitle;
+    dom.headerGameTitle.hidden = !eventTitle;
+  }
   dom.headerGameLabel.textContent = gameTitle(game);
   dom.headerKickoff.textContent = formatKickoff(game);
   const partyCount = getWatchPartiesForGame(state.snapshot, state.gameId).length;

@@ -4,9 +4,11 @@ import {
   ADMIN_GAME_HOME_AWAY,
   ADMIN_GAME_STATUSES,
   adminGameErrorCopy,
+  buildAddAdminGameRequest,
   buildAdminGamesRequest,
   buildSaveAdminGameRequest,
   normalizeAdminGameChanges,
+  validateAdminGameAddResponse,
   validateAdminGamesResponse,
   validateAdminGameSaveResponse
 } from './admin-games-core.mjs';
@@ -60,16 +62,23 @@ function options(values, selected) {
   ).join('');
 }
 
-function renderGameEditor(game) {
+function renderGameEditor(game, { isNew = false } = {}) {
+  const formId = isNew ? 'admin-game-add-form' : 'admin-game-form';
+  const heading = isNew ? 'Add game' : game.opponent_name;
+  const eyebrow = isNew ? 'New canonical game' : `Game ${game.schedule_order}`;
+  const subline = isNew
+    ? 'Add a postseason or other additional game to the end of the season schedule.'
+    : `${dateLabel(game.game_date)} · ${timeLabel(game.kickoff_local_time)}`;
+
   return `
-    <form id="admin-game-form" data-game-id="${escapeHtml(game.game_id)}">
+    <form id="${formId}"${isNew ? '' : ` data-game-id="${escapeHtml(game.game_id)}"`}>
       <div class="venue-editor__title">
         <div>
-          <p class="eyebrow">Game ${escapeHtml(String(game.schedule_order))}</p>
-          <h2>${escapeHtml(game.opponent_name)}</h2>
+          <p class="eyebrow">${escapeHtml(eyebrow)}</p>
+          <h2>${escapeHtml(heading)}</h2>
           <div class="venue-editor__address">
-            <span>${escapeHtml(dateLabel(game.game_date))} · ${escapeHtml(timeLabel(game.kickoff_local_time))}</span>
-            <span>${escapeHtml(display(game.home_away))} · ${escapeHtml(display(game.game_status))}</span>
+            <span>${escapeHtml(subline)}</span>
+            ${isNew ? '' : `<span>${escapeHtml(display(game.home_away))} · ${escapeHtml(display(game.game_status))}</span>`}
           </div>
         </div>
       </div>
@@ -78,8 +87,12 @@ function renderGameEditor(game) {
         <h3>Schedule</h3>
         <div class="venue-field-grid">
           <label class="venue-field venue-field--wide">
+            Game title (optional)
+            <input name="game_title" maxlength="180" placeholder="The Big Game, LA Bowl, etc." value="${escapeHtml(game.game_title || '')}">
+          </label>
+          <label class="venue-field venue-field--wide">
             Opponent
-            <input name="opponent_name" required maxlength="180" value="${escapeHtml(game.opponent_name)}">
+            <input name="opponent_name" required maxlength="180" value="${escapeHtml(game.opponent_name || '')}">
           </label>
           <label class="venue-field">
             Home / away
@@ -87,7 +100,7 @@ function renderGameEditor(game) {
           </label>
           <label class="venue-field">
             Game date
-            <input name="game_date" type="date" required value="${escapeHtml(game.game_date)}">
+            <input name="game_date" type="date" required value="${escapeHtml(game.game_date || '')}">
           </label>
         </div>
       </section>
@@ -97,7 +110,7 @@ function renderGameEditor(game) {
         <div class="venue-field-grid">
           <label class="venue-field">
             School local time
-            <input name="kickoff_local_time" type="time" step="60" value="${escapeHtml(game.kickoff_local_time)}">
+            <input name="kickoff_local_time" type="time" step="60" value="${escapeHtml(game.kickoff_local_time || '')}">
           </label>
           <div class="admin-game-time-help">
             <strong>${game.kickoff_status === 'confirmed' ? escapeHtml(timeLabel(game.kickoff_local_time)) : 'Time TBD'}</strong>
@@ -116,23 +129,39 @@ function renderGameEditor(game) {
         </div>
       </section>
 
-      <section class="venue-form-section venue-form-section--meta">
-        <h3>Admin metadata</h3>
-        <dl class="venue-meta">
-          <div><dt>Season</dt><dd>${escapeHtml(String(game.season))}</dd></div>
-          <div><dt>Schedule order</dt><dd>${escapeHtml(String(game.schedule_order))}</dd></div>
-          <div><dt>Game ID</dt><dd>${escapeHtml(game.game_id)}</dd></div>
-          <div><dt>Canonical kickoff</dt><dd>${escapeHtml(game.kickoff_at || '—')}</dd></div>
-          <div><dt>Updated</dt><dd>${escapeHtml(game.updated_at || '—')}</dd></div>
-        </dl>
-      </section>
+      ${isNew ? '' : `
+        <section class="venue-form-section venue-form-section--meta">
+          <h3>Admin metadata</h3>
+          <dl class="venue-meta">
+            <div><dt>Season</dt><dd>${escapeHtml(String(game.season))}</dd></div>
+            <div><dt>Schedule order</dt><dd>${escapeHtml(String(game.schedule_order))}</dd></div>
+            <div><dt>Game ID</dt><dd>${escapeHtml(game.game_id)}</dd></div>
+            <div><dt>Canonical kickoff</dt><dd>${escapeHtml(game.kickoff_at || '—')}</dd></div>
+            <div><dt>Updated</dt><dd>${escapeHtml(game.updated_at || '—')}</dd></div>
+          </dl>
+        </section>
+      `}
 
       <div class="venue-save-bar">
-        <p>Changes update the canonical Games record. Public data may take up to 5 minutes to refresh.</p>
-        <button type="submit">Save game</button>
+        <p>${isNew
+          ? 'The new game is appended to the season schedule. Public data may take up to 5 minutes to refresh.'
+          : 'Changes update the canonical Games record. Public data may take up to 5 minutes to refresh.'}</p>
+        <button type="submit">${isNew ? 'Add game' : 'Save game'}</button>
       </div>
     </form>
   `;
+}
+
+function newGameDraft() {
+  return {
+    game_title: '',
+    opponent_name: '',
+    home_away: 'neutral',
+    game_date: '',
+    kickoff_local_time: '',
+    kickoff_status: 'tbd',
+    game_status: 'upcoming'
+  };
 }
 
 export function setupAdminGames({ postAdmin, notify }) {
@@ -143,10 +172,12 @@ export function setupAdminGames({ postAdmin, notify }) {
   const editor = panel.querySelector('#admin-game-editor');
   const empty = panel.querySelector('#admin-game-editor-empty');
   const summary = panel.querySelector('#admin-games-summary');
+  const add = panel.querySelector('#admin-game-add');
   const refresh = panel.querySelector('#admin-games-refresh');
 
   let games = [];
   let selectedId = '';
+  let adding = false;
   let loaded = false;
   let loadingPromise = null;
 
@@ -169,8 +200,14 @@ export function setupAdminGames({ postAdmin, notify }) {
   };
 
   const renderSelected = () => {
-    const game = games.find((item) => item.game_id === selectedId);
     renderList();
+    if (adding) {
+      empty.hidden = true;
+      editor.hidden = false;
+      editor.innerHTML = renderGameEditor(newGameDraft(), { isNew: true });
+      return;
+    }
+    const game = games.find((item) => item.game_id === selectedId);
     if (!game) {
       editor.hidden = true;
       empty.hidden = false;
@@ -217,29 +254,49 @@ export function setupAdminGames({ postAdmin, notify }) {
   list.addEventListener('click', (event) => {
     const item = event.target.closest('.venue-list-item[data-game-id]');
     if (!item) return;
+    adding = false;
     selectedId = item.dataset.gameId;
     renderSelected();
   });
 
+  add?.addEventListener('click', () => {
+    adding = true;
+    selectedId = '';
+    renderSelected();
+    editor.querySelector('input[name="game_title"]')?.focus();
+  });
+
   editor.addEventListener('submit', async (event) => {
-    const form = event.target.closest('#admin-game-form');
+    const form = event.target.closest('#admin-game-form, #admin-game-add-form');
     if (!form) return;
     event.preventDefault();
     const submit = form.querySelector('button[type="submit"]');
     submit.disabled = true;
     try {
       const changes = normalizeAdminGameChanges(new FormData(form));
-      const response = await postAdmin(buildSaveAdminGameRequest(form.dataset.gameId, changes));
-      if (!validateAdminGameSaveResponse(response)) throw new Error('admin_invalid_response');
+      const isNew = form.id === 'admin-game-add-form';
+      const response = isNew
+        ? await postAdmin(buildAddAdminGameRequest(changes))
+        : await postAdmin(buildSaveAdminGameRequest(form.dataset.gameId, changes));
+      if (isNew ? !validateAdminGameAddResponse(response) : !validateAdminGameSaveResponse(response)) {
+        throw new Error('admin_invalid_response');
+      }
       const index = games.findIndex((game) => game.game_id === response.game.game_id);
       if (index >= 0) games[index] = response.game;
-      games.sort((a, b) => Number(a.schedule_order) - Number(b.schedule_order));
+      else games.push(response.game);
+      games.sort((a, b) =>
+        Number(a.season) - Number(b.season) ||
+        Number(a.schedule_order) - Number(b.schedule_order)
+      );
+      adding = false;
       selectedId = response.game.game_id;
       renderSelected();
       window.dispatchEvent(new CustomEvent('cgb-admin-game-updated', { detail: response.game }));
-      notify('Game saved. Public data may take up to 5 minutes to refresh.');
+      notify(`${isNew ? 'Game added' : 'Game saved'}. Public data may take up to 5 minutes to refresh.`);
     } catch (error) {
-      notify(adminGameErrorCopy(error) || 'Could not save game.', 'error');
+      notify(adminGameErrorCopy(error) || (form.id === 'admin-game-add-form'
+        ? 'Could not add game.'
+        : 'Could not save game.'), 'error');
       submit.disabled = false;
     }
   });

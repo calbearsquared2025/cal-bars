@@ -3,7 +3,7 @@ export const ADMIN_GAME_STATUSES = Object.freeze(['upcoming', 'completed', 'post
 
 const GAME_ID = /^game_[a-f0-9]{24}$/;
 const EDITABLE_FIELDS = Object.freeze([
-  'opponent_name', 'home_away', 'game_date', 'kickoff_local_time', 'game_status'
+  'opponent_name', 'game_title', 'home_away', 'game_date', 'kickoff_local_time', 'game_status'
 ]);
 const PRIVATE_KEYS = new Set([
   'idToken', 'firebaseUid', 'firebase_uid', 'browser_id', 'browserId',
@@ -66,6 +66,7 @@ function validGame(game) {
     Number.isInteger(Number(game.season)) &&
     Number.isInteger(Number(game.schedule_order)) &&
     clean(game.opponent_name, 180) &&
+    typeof game.game_title === 'string' &&
     ADMIN_GAME_HOME_AWAY.includes(game.home_away) &&
     validDateOnly(game.game_date) &&
     validLocalTime(game.kickoff_local_time) &&
@@ -94,6 +95,7 @@ export function normalizeAdminGameChanges(input) {
     ? (key) => input.get(key)
     : (key) => input?.[key];
   const opponentName = clean(get('opponent_name'), 180);
+  const gameTitle = clean(get('game_title'), 180);
   const homeAway = clean(get('home_away'), 40).toLowerCase();
   const gameDate = clean(get('game_date'), 10);
   const kickoffLocalTime = normalizeLocalTime(get('kickoff_local_time'));
@@ -106,10 +108,18 @@ export function normalizeAdminGameChanges(input) {
 
   return Object.freeze({
     opponent_name: opponentName,
+    game_title: gameTitle,
     home_away: homeAway,
     game_date: gameDate,
     kickoff_local_time: kickoffLocalTime,
     game_status: gameStatus
+  });
+}
+
+export function buildAddAdminGameRequest(input) {
+  return Object.freeze({
+    action: 'addAdminGame',
+    game: normalizeAdminGameChanges(input)
   });
 }
 
@@ -137,6 +147,10 @@ export function validateAdminGamesResponse(response) {
     response.counts &&
     Number(response.counts.total) === response.games.length
   );
+}
+
+export function validateAdminGameAddResponse(response) {
+  return Boolean(validateBaseResponse(response, 'addAdminGame') && validGame(response.game));
 }
 
 export function validateAdminGameSaveResponse(response) {

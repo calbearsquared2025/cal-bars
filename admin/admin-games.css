@@ -23,3 +23,18 @@
   font-size: .78rem;
   line-height: 1.4;
 }
+
+
+.admin-games-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 720px) {
+  .admin-games-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
