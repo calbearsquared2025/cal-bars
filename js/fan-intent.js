@@ -8,9 +8,16 @@ import {
   detailPresenceCopy,
   isValidBrowserId,
   parseStoredSelections,
+  resolveFanIntentWrite,
+  validateFanIntentConfirmationResponse,
   validateFanIntentResponse
 } from './fan-intent-core.mjs';
 import { createFanIntentController } from './fan-intent-controller.mjs';
+import { persistConfirmedFanIntentSnapshot } from './snapshot-refresh.mjs';
+import {
+  renderSelectedAttendanceCount,
+  selectedAttendanceViewModel
+} from './selected-profile-renderer.mjs';
 import { createIcon } from './icons.mjs';
 import {
   getVenueSeasonCount,
@@ -20,7 +27,7 @@ import {
 } from './venue-activity-core.mjs';
 import { readRuntimeConfig } from './config.mjs';
 
-const WRITE_TIMEOUT_MS = 10000;
+const WRITE_TIMEOUT_MS = 15000;
 
 let controller = null;
 
@@ -127,7 +134,7 @@ async function fetchJson(url, options = {}, timeoutMs = WRITE_TIMEOUT_MS) {
   }
 }
 
-async function postIntent(operation) {
+async function postIntentOnce(operation) {
   if (appState.fanIntent.accountMode) {
     const accountResponse = await window.CGBAccountAttendance?.postIntent?.(operation);
     if (!validateFanIntentResponse(accountResponse)) throw new Error('invalid_write_response');
@@ -157,6 +164,49 @@ async function postIntent(operation) {
   }
   if (!validateFanIntentResponse(response)) throw new Error('invalid_write_response');
   return response;
+}
+
+async function confirmIntent(operation) {
+  if (appState.fanIntent.accountMode) {
+    return window.CGBAccountAttendance?.confirmIntent?.(operation) || null;
+  }
+
+  const endpoint = configuredEndpoint();
+  if (!endpoint) return null;
+  const response = await fetchJson(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+    body: JSON.stringify({
+      action: 'confirmFanIntent',
+      browserId: appState.fanIntent.browserId,
+      attendanceAction: operation.action,
+      gameId: operation.gameId,
+      venueId: operation.venueId
+    })
+  });
+  if (!response?.ok) {
+    const error = new Error(response?.error || 'write_failed');
+    error.code = response?.error || 'write_failed';
+    throw error;
+  }
+  if (!validateFanIntentConfirmationResponse(response)) throw new Error('invalid_confirmation_response');
+  if (!response.confirmed) return null;
+  return {
+    ok: true,
+    action: operation.action,
+    selection: operation.action === 'withdraw'
+      ? null
+      : { game_id: operation.gameId, venue_id: operation.venueId, status: 'attending' },
+    fanCounts: response.fanCounts.map((row) => ({ ...row })),
+    venueHistoryCounts: response.venueHistoryCounts.map((row) => ({ ...row })),
+    generatedAt: response.generatedAt || ''
+  };
+}
+
+async function postIntent(operation) {
+  return resolveFanIntentWrite(postIntentOnce, confirmIntent, operation, {
+    wait: (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds))
+  });
 }
 
 function showStatus(message, timeout = 5000) {
@@ -352,11 +402,31 @@ function renderDetailActivity(game) {
   replaceTextLines(historical, presentation.secondary);
 }
 
+function renderSelectedCardActivity(game) {
+  const venue = selectedVenue();
+  const card = document.querySelector('.selected-card[data-venue-id]');
+  const count = card?.querySelector('.bear-count--hero, .bear-count');
+  if (!venue || !card || card.dataset.venueId !== venue.venue_id || !count) return;
+
+  const pending = appState.fanIntent.pending;
+  const isPending = pending?.gameId === appState.gameId && pending?.venueId === venue.venue_id;
+  renderSelectedAttendanceCount(
+    count,
+    selectedAttendanceViewModel({ state: appState, game, venue }),
+    {
+      hero: count.classList.contains('bear-count--hero'),
+      pending: Boolean(isPending),
+      documentObject: document
+    }
+  );
+}
+
 function renderVenueActivity() {
   const game = currentGame();
   if (!game || !appState.snapshot) return;
   renderLocationCardActivity(game);
   renderDetailActivity(game);
+  renderSelectedCardActivity(game);
 }
 
 function renderIntentButtons() {
@@ -439,6 +509,7 @@ async function bootFanIntent() {
     getState: () => appState,
     postIntent,
     persistSelections,
+    persistSnapshot: persistConfirmedFanIntentSnapshot,
     render: renderAttendancePresentation,
     showStatus
   });

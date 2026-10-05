@@ -57,17 +57,21 @@ export function selectedAttendanceViewModel({ state, game, venue } = {}) {
   };
 }
 
-function createAttendance(state, game, venue, documentObject, { hero = false } = {}) {
-  const view = selectedAttendanceViewModel({ state, game, venue });
-  const count = documentObject.createElement('p');
-  count.className = 'bear-count';
-  if (hero) count.classList.add('bear-count--hero');
-  count.setAttribute('aria-label', view.ariaLabel);
+export function renderSelectedAttendanceCount(count, view, {
+  hero = false,
+  pending = false,
+  documentObject = count?.ownerDocument || document
+} = {}) {
+  if (!count || !view) return count;
+  count.classList.toggle('bear-count--empty', view.kind === 'empty');
+  count.toggleAttribute('aria-busy', pending);
+  count.dataset.intentPending = pending ? 'true' : 'false';
+  count.setAttribute('aria-label', pending ? `${view.ariaLabel}. Saving attendance.` : view.ariaLabel);
+  count.replaceChildren();
 
   if (view.kind === 'completed') {
     count.textContent = view.primary;
   } else if (view.kind === 'empty') {
-    count.classList.add('bear-count--empty');
     const prompt = documentObject.createElement('strong');
     prompt.className = 'bear-count__prompt';
     prompt.textContent = hero ? 'BE THE FIRST.' : 'Be the first.';
@@ -94,6 +98,22 @@ function createAttendance(state, game, venue, documentObject, { hero = false } =
     context.textContent = `ON ${ACTIVE_INSTANCE_CONFIG.identity.productShortName.toUpperCase()}`;
     count.append(numeral, label, attending, context);
   }
+
+  if (pending) {
+    const saving = documentObject.createElement('span');
+    saving.className = 'bear-count__pending';
+    saving.textContent = 'Saving…';
+    count.append(saving);
+  }
+  return count;
+}
+
+function createAttendance(state, game, venue, documentObject, { hero = false } = {}) {
+  const view = selectedAttendanceViewModel({ state, game, venue });
+  const count = documentObject.createElement('p');
+  count.className = 'bear-count';
+  if (hero) count.classList.add('bear-count--hero');
+  renderSelectedAttendanceCount(count, view, { hero, documentObject });
 
   let history = null;
   if (view.secondary.length && view.kind !== 'positive') {

@@ -124,6 +124,26 @@ async function synchronizeAccountAttendance() {
   return promise;
 }
 
+function attendanceConfirmsOperation(validated, operation) {
+  const selection = validated.selections.find((row) => row.game_id === operation.gameId) || null;
+  if (operation.action === 'withdraw') return selection === null;
+  return selection?.venue_id === operation.venueId;
+}
+
+async function confirmIntent(operation) {
+  if (!appState.fanIntent.accountMode || !accountSignedIn) throw new Error('fan_unauthorized');
+  const validated = await requestAccountAttendance('confirmFanAttendance', {
+    attendanceAction: operation.action,
+    gameId: operation.gameId,
+    venueId: operation.venueId
+  });
+  applyAttendanceState(validated);
+  invalidatePublicAttendance();
+  if (!attendanceConfirmsOperation(validated, operation)) return null;
+  window.CGBWatchPartyRsvp?.reconcileAttendanceChange?.(operation);
+  return compatibilityResponse(validated, operation);
+}
+
 async function postIntent(operation) {
   if (!appState.fanIntent.accountMode || !accountSignedIn) throw new Error('fan_unauthorized');
   const validated = await requestAccountAttendance('setFanAttendance', {
@@ -416,6 +436,7 @@ async function initializeAccountAttendance() {
 
 window.CGBAccountAttendance = Object.freeze({
   postIntent,
+  confirmIntent,
   sync: synchronizeAccountAttendance,
   refresh: refreshAccountAttendance,
   refreshPresence() {

@@ -85,6 +85,21 @@
   animation: cgb-intent-spin .7s linear infinite;
 }
 
+.selected-card .bear-count[data-intent-pending="true"] {
+  opacity: .78;
+}
+
+.selected-card .bear-count__pending {
+  display: block;
+  grid-column: 1 / -1;
+  margin-top: 2px;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1.1;
+  text-transform: none;
+}
+
 .intent-feedback {
   display: flex;
   align-items: center;

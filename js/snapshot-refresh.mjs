@@ -178,6 +178,20 @@ function configuredEndpoint() {
   return readRuntimeConfig().dataEndpoint;
 }
 
+export function persistConfirmedFanIntentSnapshot(snapshot) {
+  if (!validateSnapshotShape(snapshot)) return false;
+  const saved = readSavedSnapshot();
+  const base = saved || snapshot;
+  const next = {
+    ...base,
+    fanCounts: (snapshot.fanCounts || []).map((row) => ({ ...row })),
+    venueHistoryCounts: (snapshot.venueHistoryCounts || []).map((row) => ({ ...row })),
+    generatedAt: snapshot.generatedAt || base.generatedAt || ''
+  };
+  safeStorageSet(LAST_GOOD_KEY, JSON.stringify(next));
+  return true;
+}
+
 export function readSavedSnapshot() {
   const cached = safeStorageGet(LAST_GOOD_KEY);
   if (!cached) return null;

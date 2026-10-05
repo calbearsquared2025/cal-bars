@@ -153,6 +153,58 @@ export function responseContainsPrivateKeys(value) {
   );
 }
 
+export function shouldRetryFanIntentWrite(error) {
+  const code = String(error?.code || error?.message || '');
+  return error?.name === 'AbortError' ||
+    code === 'fan_network_timeout' ||
+    code === 'fan_network_failure' ||
+    code === 'fan_backend_unavailable' ||
+    code === 'write_failed' ||
+    /^HTTP 5\d\d$/.test(code);
+}
+
+export async function resolveFanIntentWrite(write, confirm, operation, {
+  wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
+  retryDelayMs = 250
+} = {}) {
+  async function confirmedResponse() {
+    try {
+      return await confirm(operation);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  try {
+    return await write(operation);
+  } catch (error) {
+    if (!shouldRetryFanIntentWrite(error)) throw error;
+    const confirmed = await confirmedResponse();
+    if (confirmed) return confirmed;
+    if (retryDelayMs > 0) await wait(retryDelayMs);
+  }
+
+  try {
+    return await write(operation);
+  } catch (error) {
+    if (!shouldRetryFanIntentWrite(error)) throw error;
+    const confirmed = await confirmedResponse();
+    if (confirmed) return confirmed;
+    throw error;
+  }
+}
+
+export function validateFanIntentConfirmationResponse(response) {
+  if (!response || typeof response !== 'object' || responseContainsPrivateKeys(response)) return false;
+  const allowedKeys = new Set([
+    'ok', 'action', 'schemaVersion', 'confirmed', 'fanCounts', 'venueHistoryCounts', 'generatedAt'
+  ]);
+  if (Object.keys(response).some((key) => !allowedKeys.has(key))) return false;
+  if (response.ok !== true || response.action !== 'confirmFanIntent') return false;
+  if (typeof response.confirmed !== 'boolean') return false;
+  return Array.isArray(response.fanCounts) && Array.isArray(response.venueHistoryCounts);
+}
+
 export function validateFanIntentResponse(response) {
   if (!response || typeof response !== 'object' || responseContainsPrivateKeys(response)) return false;
   if (response.ok !== true) return false;

@@ -33,6 +33,7 @@ export function createFanIntentController({
   getState,
   postIntent,
   persistSelections = () => {},
+  persistSnapshot = () => {},
   render = () => {},
   showStatus = () => {}
 }) {
@@ -70,6 +71,7 @@ export function createFanIntentController({
         response
       );
       persistSelections(fanState.selections);
+      persistSnapshot(state.snapshot);
       const message = transaction.operation.action === 'withdraw'
         ? 'Selection removed.'
         : transaction.operation.action === 'move'

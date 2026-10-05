@@ -7,6 +7,7 @@ const FAN_ACTIONS = Object.freeze([
   'setFanFavorite',
   'claimFanIntent',
   'getFanAttendance',
+  'confirmFanAttendance',
   'setFanAttendance',
   'setFanAttendanceVisibility',
   'submitFanExperience',
@@ -201,6 +202,19 @@ export function buildFanRequest(action, idToken, extra = {}) {
     const browserId = clean(extra.browserId);
     if (!BROWSER_ID_PATTERN.test(browserId)) throw new Error('invalid_browser_id');
     payload.browserId = browserId;
+  } else if (normalizedAction === 'confirmFanAttendance') {
+    const keys = Object.keys(extra).sort();
+    if (keys.join(',') !== 'attendanceAction,gameId,venueId') throw new Error('invalid_fan_request');
+    const attendanceAction = clean(extra.attendanceAction);
+    const gameId = clean(extra.gameId);
+    const venueId = clean(extra.venueId);
+    if (!ATTENDANCE_ACTIONS.includes(attendanceAction) || !GAME_ID_PATTERN.test(gameId) ||
+        !VENUE_ID_PATTERN.test(venueId)) {
+      throw new Error('invalid_fan_attendance');
+    }
+    payload.attendanceAction = attendanceAction;
+    payload.gameId = gameId;
+    payload.venueId = venueId;
   } else if (normalizedAction === 'setFanAttendance') {
     const keys = Object.keys(extra).sort();
     if (keys.join(',') !== 'attendanceAction,gameId,venueId,visibility') throw new Error('invalid_fan_request');
@@ -497,7 +511,7 @@ export function validateFanWatchPartyRsvpAttendeesResponse(payload) {
 
 export function validateFanAttendanceResponse(payload) {
   if (!payload || responseContainsPrivateKeys(payload) || payload.ok !== true || ![
-    'claimFanIntent', 'getFanAttendance', 'setFanAttendance', 'setFanAttendanceVisibility'
+    'claimFanIntent', 'getFanAttendance', 'confirmFanAttendance', 'setFanAttendance', 'setFanAttendanceVisibility'
   ].includes(payload.action)) return null;
   if (!Array.isArray(payload.selections) || !Array.isArray(payload.fanCounts) ||
       !Array.isArray(payload.venueHistoryCounts)) return null;
