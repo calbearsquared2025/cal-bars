@@ -188,6 +188,17 @@
     --cgb-mobile-safe-surface: #eef4fa;
   }
 
+  /* Keep desktop font families on mobile without carrying desktop display heaviness. */
+  .game-button strong,
+  .location-card strong {
+    font-weight: 600;
+  }
+
+  .game-button strong {
+    font-size: clamp(1.06rem, 5.1vw, 1.18rem);
+    letter-spacing: -.035em;
+  }
+
   html,
   body,
   body .site-header,
@@ -576,15 +587,35 @@
 
 
   body[data-command-surface="list"] .location-card {
-    min-height: 60px;
-    padding-top: 9px;
-    padding-bottom: 9px;
+    min-height: 56px;
+    gap: 4px;
+    padding-top: 7px;
+    padding-bottom: 7px;
   }
 
   body[data-command-surface="list"] .location-card__party,
   body[data-command-surface="list"] .location-card__description {
-    margin-top: 3px;
+    margin-top: 1px;
+  }
+
+  body[data-command-surface="list"] .location-card__party {
+    color: var(--cgb-gold-600);
+    font-family: var(--font-condensed);
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+
+  body[data-command-surface="list"] .location-card__description {
     font-size: var(--text-2xs);
+  }
+
+  body[data-command-surface="list"] .location-card__history {
+    font-family: var(--font-display);
+    font-size: .8rem;
+    font-weight: 500;
+    letter-spacing: -.005em;
+    line-height: 1.22;
   }
 }
 

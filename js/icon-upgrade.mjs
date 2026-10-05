@@ -49,11 +49,14 @@ function installAtomicStarIconUpgrade() {
   iconMutationObserver = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
-        if (node.nodeType === 1 || node.nodeType === 11) upgradeStarIcons(node);
+        if (node.nodeType !== 1 && node.nodeType !== 11) return;
+        inlineSpriteIcons(node);
+        upgradeStarIcons(node);
       });
     });
   });
   iconMutationObserver.observe(document.documentElement, { childList: true, subtree: true });
+  inlineSpriteIcons(document);
   upgradeStarIcons(document);
 }
 

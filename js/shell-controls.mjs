@@ -390,15 +390,22 @@ function showSearch(intent = '', { focus = true, launcher = null } = {}) {
 
 function updateAddContext() {
   const venue = selectedVenue();
-  dom.addContext.hidden = !venue;
+  const mobile = isMobileLayout();
+  dom.addContext.hidden = !venue && !mobile;
+  dom.addContext.classList.toggle('add-context--empty', !venue);
+  dom.addContextActions.hidden = !venue;
   dom.reportOptions.hidden = true;
   dom.reportButton.setAttribute('aria-expanded', 'false');
   if (!venue) {
-    dom.addContextName.textContent = 'No place selected';
-    dom.addContextCopy.textContent = 'Choose an action and Search will help you find the right place.';
+    dom.addContextSelectVenue.hidden = false;
+    dom.addContextName.hidden = true;
+    dom.addContextCopy.textContent = '';
     dom.reportPartyButton.hidden = true;
     return;
   }
+  dom.addContextSelectVenue.hidden = true;
+  dom.addContextName.hidden = false;
+  dom.addContextActions.hidden = false;
   const place = [venue.city, venue.region].filter(Boolean).join(', ');
   dom.addContextName.textContent = venue.name;
   if (isMobileLayout()) {
@@ -625,6 +632,7 @@ function cacheDom() {
     aboutTitle: document.querySelector('#about-surface-title'),
     addContext: document.querySelector('#add-surface .add-context:not(.add-game-context)'),
     addContextActions: document.querySelector('#add-surface .add-context:not(.add-game-context) > .add-actions'),
+    addContextSelectVenue: document.querySelector('#add-context-select-venue'),
     addContextName: document.querySelector('#add-context-name'),
     addContextCopy: document.querySelector('#add-context-copy'),
     addSomewhereElse: document.querySelector('#add-surface .add-somewhere-else'),
@@ -674,6 +682,8 @@ function initializeShellControls() {
     showAdd({ focus: event.detail === 0, launcher: event.currentTarget }));
   document.querySelector('#mobile-list-button')?.addEventListener('click', (event) =>
     showList({ focus: event.detail === 0, launcher: event.currentTarget }));
+  dom.addContextSelectVenue.addEventListener('click', (event) =>
+    showList({ focus: true, launcher: event.currentTarget }));
   dom.addLocationSearch.addEventListener('click', showAddLocationSearch);
   document.querySelectorAll('[data-command-close]').forEach((button) => button.addEventListener('click', () => showMap({ restoreFocus: true })));
 

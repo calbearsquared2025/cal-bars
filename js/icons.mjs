@@ -89,7 +89,10 @@ export function setIcon(svg, name) {
 }
 
 export function inlineSpriteIcons(root = document) {
-  root.querySelectorAll?.('svg use').forEach((use) => {
+  const uses = [];
+  if (root?.matches?.('svg use')) uses.push(root);
+  root.querySelectorAll?.('svg use').forEach((use) => uses.push(use));
+  uses.forEach((use) => {
     const name = iconNameFromUse(use);
     const svg = use.closest?.('svg');
     if (name && svg) setIcon(svg, name);

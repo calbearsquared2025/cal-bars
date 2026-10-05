@@ -66,7 +66,7 @@
   <link rel="preconnect" href="https://api.maptiler.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700;800;900&amp;family=Source+Serif+4:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet" media="(min-width: 900px)">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&amp;family=Inter:wght@400;500;600;700;800;900&amp;family=Source+Serif+4:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
   <link href="https://cdn.maptiler.com/maptiler-sdk-js/v4.1.0/maptiler-sdk.css" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/scrollbars.css">
@@ -251,7 +251,7 @@
           <header class="tray-list__header mobile-destination-header">
             <div class="tray-list__heading">
               <h2 id="list-heading" tabindex="-1">Find your Cal crowd</h2>
-              <p class="tray-list__intro">Search or choose a location to see venue details, Bear activity, and Watch Parties for this game.</p>
+              <p class="tray-list__intro">Choose a location to see venue details, Bear activity, and Watch Parties for this game.</p>
             </div>
             <div id="list-location-toggle" class="list-location-toggle" role="group" aria-label="Location range">
               <button id="list-location-nearby" class="list-location-toggle__option" type="button" aria-pressed="false">Near me</button>
@@ -296,6 +296,7 @@
         <p class="command-surface__intro">Choose what you would like to add or correct.</p>
         <section class="add-context" aria-live="polite" hidden>
           <span class="eyebrow">Selected place</span>
+          <button id="add-context-select-venue" class="add-context__select-venue" type="button" hidden>Select a venue</button>
           <strong id="add-context-name">Selected place</strong>
           <p id="add-context-copy"></p>
           <div class="add-actions">

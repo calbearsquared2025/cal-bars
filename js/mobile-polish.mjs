@@ -108,6 +108,9 @@ function inferActiveView() {
 }
 
 function syncNavigation() {
+  // My CGB owns the command surface while its native tray is open. Do not
+  // infer map/list state from the underlying tray and overwrite that surface.
+  if (document.body.dataset.commandSurface === 'my-cgb') return;
   setActiveView(inferActiveView());
 }
 

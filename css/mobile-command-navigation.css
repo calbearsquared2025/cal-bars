@@ -50,11 +50,12 @@
     border-bottom: 1px solid var(--cgb-neutral-200);
   }
 
-  .command-surface__header h2 {
+  .mobile-destination-header h2 {
     margin: 0;
     color: var(--cgb-navy-950);
     font-family: var(--font-display);
     font-size: clamp(1.65rem, 7vw, 2.15rem);
+    font-weight: 600;
     line-height: 1;
   }
 
@@ -132,8 +133,8 @@
   }
 
   body[data-command-surface="list"] .list-location-toggle {
-    align-self: end;
-    justify-self: end;
+    align-self: start;
+    justify-self: start;
     min-height: 40px;
     display: inline-grid;
     grid-template-columns: repeat(2, max-content);
@@ -154,6 +155,8 @@
   }
 
   body[data-command-surface="list"] .list-location-toggle__option {
+    -webkit-appearance: none;
+    appearance: none;
     min-height: 34px;
     display: inline-flex;
     align-items: center;
@@ -180,6 +183,36 @@
   body[data-command-surface="list"] .list-location-toggle__option:focus-visible {
     outline: 2px solid var(--a11y-focus-dark);
     outline-offset: 0;
+  }
+
+  .venue-tray .tray-list__header {
+    display: block;
+    padding: 18px 16px 14px;
+    color: var(--cgb-ink-900);
+    background: var(--cgb-warm-50);
+    border-bottom: 0;
+    backdrop-filter: none;
+  }
+
+  .venue-tray .tray-list__heading {
+    display: block;
+  }
+
+  .venue-tray .tray-list__header h2 {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--cgb-neutral-200);
+  }
+
+  .venue-tray .tray-list__intro {
+    max-width: 38rem;
+    margin: 16px 0 12px;
+    color: var(--cgb-ink-700);
+    font-size: .92rem;
+    line-height: 1.45;
+  }
+
+  .venue-tray .list-location-toggle {
+    margin-top: 0;
   }
 
   .command-surface .search-field input {
@@ -359,6 +392,45 @@
     color: rgba(255, 255, 255, .76);
     font-size: .72rem;
     line-height: 1.35;
+  }
+
+  .add-context.add-context--empty {
+    color: var(--cgb-navy-950);
+    background: var(--cgb-neutral-50);
+    border: 1px dashed var(--cgb-neutral-300);
+    clip-path: none;
+  }
+
+  .add-context.add-context--empty .eyebrow,
+  .add-context.add-context--empty p,
+  .add-context.add-context--empty strong {
+    display: none;
+  }
+
+  .add-context__select-venue {
+    -webkit-appearance: none;
+    appearance: none;
+    width: max-content;
+    padding: 0;
+    color: var(--cgb-navy-950);
+    background: transparent;
+    border: 0;
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: left;
+    text-decoration: underline;
+    text-underline-offset: .18em;
+  }
+
+  .add-context__select-venue:hover {
+    color: var(--cgb-navy-800);
+  }
+
+  .add-context__select-venue:focus-visible {
+    outline: 2px solid var(--a11y-focus-dark);
+    outline-offset: 3px;
   }
 
   .add-actions {
