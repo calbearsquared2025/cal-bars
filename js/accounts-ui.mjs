@@ -339,7 +339,8 @@ async function requestFanAction(action, extra = {}) {
   const user = currentUser;
   const revision = authStateRevision;
   const token = await tokenForUser(user);
-  const response = await postFan(buildFanRequest(action, token, extra));
+  const timeoutMs = action === 'confirmFanAttendance' ? 30000 : REQUEST_TIMEOUT_MS;
+  const response = await postFan(buildFanRequest(action, token, extra), timeoutMs);
   if (!authStateIsCurrent(user, revision)) throw new Error('fan_unauthorized');
   return response;
 }

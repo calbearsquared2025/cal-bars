@@ -163,15 +163,25 @@ export function shouldRetryFanIntentWrite(error) {
     /^HTTP 5\d\d$/.test(code);
 }
 
+export function fanIntentWriteUnconfirmedError(cause) {
+  const error = new Error('fan_write_unconfirmed');
+  error.code = 'fan_write_unconfirmed';
+  if (cause) error.cause = cause;
+  return error;
+}
+
 export async function resolveFanIntentWrite(write, confirm, operation, {
   wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
   retryDelayMs = 250
 } = {}) {
-  async function confirmedResponse() {
+  async function confirmationResult() {
     try {
-      return await confirm(operation);
+      const response = await confirm(operation);
+      if (response === false) return { known: true, response: null };
+      if (response) return { known: true, response };
+      return { known: false, response: null };
     } catch (_) {
-      return null;
+      return { known: false, response: null };
     }
   }
 
@@ -179,8 +189,8 @@ export async function resolveFanIntentWrite(write, confirm, operation, {
     return await write(operation);
   } catch (error) {
     if (!shouldRetryFanIntentWrite(error)) throw error;
-    const confirmed = await confirmedResponse();
-    if (confirmed) return confirmed;
+    const confirmation = await confirmationResult();
+    if (confirmation.response) return confirmation.response;
     if (retryDelayMs > 0) await wait(retryDelayMs);
   }
 
@@ -188,9 +198,10 @@ export async function resolveFanIntentWrite(write, confirm, operation, {
     return await write(operation);
   } catch (error) {
     if (!shouldRetryFanIntentWrite(error)) throw error;
-    const confirmed = await confirmedResponse();
-    if (confirmed) return confirmed;
-    throw error;
+    const confirmation = await confirmationResult();
+    if (confirmation.response) return confirmation.response;
+    if (confirmation.known) throw error;
+    throw fanIntentWriteUnconfirmedError(error);
   }
 }
 

@@ -28,6 +28,7 @@ import {
 import { readRuntimeConfig } from './config.mjs';
 
 const WRITE_TIMEOUT_MS = 15000;
+const CONFIRM_TIMEOUT_MS = 30000;
 
 let controller = null;
 
@@ -183,14 +184,14 @@ async function confirmIntent(operation) {
       gameId: operation.gameId,
       venueId: operation.venueId
     })
-  });
+  }, CONFIRM_TIMEOUT_MS);
   if (!response?.ok) {
     const error = new Error(response?.error || 'write_failed');
     error.code = response?.error || 'write_failed';
     throw error;
   }
   if (!validateFanIntentConfirmationResponse(response)) throw new Error('invalid_confirmation_response');
-  if (!response.confirmed) return null;
+  if (!response.confirmed) return false;
   return {
     ok: true,
     action: operation.action,
@@ -247,7 +248,8 @@ function syncDetailPresence(venueId, isSelected) {
   if (appState.selectedVenueId !== venueId) return;
   const detail = document.querySelector('#venue-detail');
   if (!detail || detail.dataset.venueId !== venueId) return;
-  const card = detail.querySelector(':scope > .activity-card');
+  const card = detail.querySelector(':scope > .activity-card') ||
+    detail.querySelector(':scope > .detail-hero > .activity-card');
   if (!card) return;
   let presence = card.querySelector(':scope > .activity-card__presence');
   const count = getFanCount(appState.snapshot, appState.gameId, venueId);
@@ -373,7 +375,8 @@ function renderLocationCardActivity(game) {
 function renderDetailActivity(game) {
   const venue = selectedVenue();
   const detail = document.querySelector('#venue-detail');
-  const card = detail?.querySelector(':scope > .activity-card');
+  const card = detail?.querySelector(':scope > .activity-card') ||
+    detail?.querySelector(':scope > .detail-hero > .activity-card');
   const current = card?.querySelector(':scope > strong');
   if (!venue || detail?.dataset.venueId !== venue.venue_id || !card || !current) return;
 
@@ -381,18 +384,29 @@ function renderDetailActivity(game) {
   const selectedByThisBrowser = activeVenueId() === venue.venue_id;
   const count = selectedByThisBrowser ? Math.max(publicCount, 1) : publicCount;
   const presentation = activityPresentation(game, venue, bearCountCopy(count));
-  current.setAttribute('aria-label', presentation.primary);
+  const relocatedProfileCard = card.parentElement?.classList.contains('detail-hero');
 
-  if (game.game_status === 'completed' || count <= 0) {
-    current.textContent = presentation.primary;
+  if (relocatedProfileCard) {
+    const pending = appState.fanIntent.pending;
+    const isPending = pending?.gameId === appState.gameId && pending?.venueId === venue.venue_id;
+    renderSelectedAttendanceCount(
+      current,
+      selectedAttendanceViewModel({ state: appState, game, venue }),
+      { pending: Boolean(isPending), documentObject: document }
+    );
   } else {
-    const numeral = document.createElement('span');
-    numeral.className = 'bear-count__number';
-    numeral.textContent = String(count);
-    const label = document.createElement('span');
-    label.className = 'bear-count__label';
-    label.textContent = count === 1 ? 'Bear attending on CGB' : 'Bears attending on CGB';
-    current.replaceChildren(numeral, label);
+    current.setAttribute('aria-label', presentation.primary);
+    if (game.game_status === 'completed' || count <= 0) {
+      current.textContent = presentation.primary;
+    } else {
+      const numeral = document.createElement('span');
+      numeral.className = 'bear-count__number';
+      numeral.textContent = String(count);
+      const label = document.createElement('span');
+      label.className = 'bear-count__label';
+      label.textContent = count === 1 ? 'Bear attending on CGB' : 'Bears attending on CGB';
+      current.replaceChildren(numeral, label);
+    }
   }
 
   const historical = Array.from(card.children).find((child) =>

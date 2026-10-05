@@ -139,7 +139,7 @@ async function confirmIntent(operation) {
   });
   applyAttendanceState(validated);
   invalidatePublicAttendance();
-  if (!attendanceConfirmsOperation(validated, operation)) return null;
+  if (!attendanceConfirmsOperation(validated, operation)) return false;
   window.CGBWatchPartyRsvp?.reconcileAttendanceChange?.(operation);
   return compatibilityResponse(validated, operation);
 }

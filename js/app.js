@@ -260,9 +260,10 @@ async function refreshSnapshot({ restoreSelection = false } = {}) {
   if (!endpoint || !state.snapshot) return false;
   const live = await fetchJson(endpoint);
   if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
-  storageSet(LAST_GOOD_KEY, JSON.stringify(live));
-  const changes = publicSnapshotChanges(state.snapshot, live);
+  const previousSnapshot = { ...state.snapshot };
   setCanonicalSnapshot(live, 'live');
+  storageSet(LAST_GOOD_KEY, JSON.stringify(state.snapshot));
+  const changes = publicSnapshotChanges(previousSnapshot, state.snapshot);
   const selectedBeforeRestore = state.selectedVenueId;
   if (restoreSelection) {
     restoreSelectedVenueFromFanIntent({ preserveCurrentWhenEmpty: true });

@@ -12,6 +12,7 @@ export function fanIntentFailureCopy(error) {
   if (code.includes('venue_not_found')) return 'This location is not available right now.';
   if (code.includes('selection_conflict')) return 'Your selection changed elsewhere. Refresh and try again.';
   if (code.includes('not_configured')) return 'Check-ins are temporarily unavailable.';
+  if (code.includes('fan_write_unconfirmed')) return 'Your selection is still syncing. CGB will keep your current choice while the connection catches up.';
   return 'Could not save your selection. Your previous choice was restored.';
 }
 
@@ -83,6 +84,16 @@ export function createFanIntentController({
       trackIntentSuccess(state, transaction.operation);
       return true;
     } catch (error) {
+      const code = String(error?.code || error?.message || '');
+      if (code.includes('fan_write_unconfirmed')) {
+        persistSelections(fanState.selections);
+        fanState.retry = null;
+        if (getState().gameId === transaction.operation.gameId) {
+          showStatus(fanIntentFailureCopy(error));
+        }
+        return false;
+      }
+
       fanState.selections = rollbackIntentTransaction(state.snapshot, transaction);
       persistSelections(fanState.selections);
       fanState.retry = {

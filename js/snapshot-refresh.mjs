@@ -1,6 +1,9 @@
 import './analytics.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
-import { presentationSnapshot } from './app-state.mjs';
+import {
+  presentationSnapshot,
+  setCanonicalSnapshot
+} from './app-state.mjs';
 import {
   gameRouteParam,
   selectDefaultGame,
@@ -303,15 +306,9 @@ function applyPublicSnapshot(app, snapshot, dataSource = 'live') {
   const state = app.getState?.();
   if (!state?.snapshot) return { changed: false, changedVenueIds: [], gamesChanged: false };
 
-  const nextSnapshot = presentationSnapshot(snapshot);
-  const changes = publicSnapshotChanges(state.snapshot, nextSnapshot);
-  PUBLIC_SNAPSHOT_KEYS.forEach((key) => {
-    state.snapshot[key] = nextSnapshot[key];
-  });
-  if ('schemaVersion' in nextSnapshot) state.snapshot.schemaVersion = nextSnapshot.schemaVersion;
-  if ('generatedAt' in nextSnapshot) state.snapshot.generatedAt = nextSnapshot.generatedAt;
-  state.dataSource = dataSource;
-  return changes;
+  const previousSnapshot = presentationSnapshot(state.snapshot);
+  const appliedSnapshot = setCanonicalSnapshot(snapshot, dataSource);
+  return publicSnapshotChanges(previousSnapshot, appliedSnapshot);
 }
 
 function replaceUnavailableList(copy) {
@@ -399,8 +396,8 @@ function startRefreshController(endpoint) {
       const live = await fetchJson(endpoint);
       if (!validateSnapshotShape(live)) throw new Error('Unexpected public-data shape');
 
-      safeStorageSet(LAST_GOOD_KEY, JSON.stringify(live));
       const changes = applyPublicSnapshot(app, live, 'live');
+      safeStorageSet(LAST_GOOD_KEY, JSON.stringify(app.getSnapshot?.() || live));
       const selectionChanged = app.restoreSelection?.({ preserveCurrentWhenEmpty: true }) === true;
       const directEntryChanged = changes.changed && restoreDirectEntryAfterRefresh(app);
 

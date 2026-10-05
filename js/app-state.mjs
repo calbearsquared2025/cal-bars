@@ -63,9 +63,18 @@ export function presentationSnapshot(snapshot) {
   };
 }
 
+function snapshotPreservingPendingFanIntent(currentSnapshot, nextSnapshot, fanIntent = appState.fanIntent) {
+  const next = presentationSnapshot(nextSnapshot || {});
+  if (!fanIntent?.pending || !currentSnapshot || !Array.isArray(currentSnapshot.fanCounts)) return next;
+  return {
+    ...next,
+    fanCounts: currentSnapshot.fanCounts.map((row) => ({ ...row }))
+  };
+}
+
 export function setCanonicalSnapshot(snapshot, dataSource = appState.dataSource) {
   if (!snapshot || typeof snapshot !== 'object') throw new Error('invalid_snapshot');
-  const nextSnapshot = presentationSnapshot(snapshot);
+  const nextSnapshot = snapshotPreservingPendingFanIntent(appState.snapshot, snapshot, appState.fanIntent);
 
   if (!appState.snapshot) {
     appState.snapshot = nextSnapshot;
