@@ -1,7 +1,6 @@
 import { getApp } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js';
 import {
-  ADMIN_GAME_TOGGLE_STATUSES,
   ADMIN_WATCH_PARTY_AGE_POLICIES,
   ADMIN_WATCH_PARTY_FEATURE_TAGS,
   ADMIN_WATCH_PARTY_ORGANIZER_TYPES,
@@ -10,12 +9,10 @@ import {
   buildAddAdminWatchPartyRequest,
   buildAdminWatchPartiesRequest,
   buildSaveAdminWatchPartyRequest,
-  buildSetAdminGameStatusRequest,
   buildSetAdminWatchPartyEventStatusRequest,
   buildSetAdminWatchPartyPublicationRequest,
   filterAdminWatchParties,
   normalizeEditorFields,
-  validateAdminGameWriteResponse,
   validateAdminWatchPartiesResponse,
   validateAdminWatchPartyWriteResponse
 } from './admin-watch-parties-core.mjs';
@@ -154,16 +151,12 @@ export function setupAdminWatchParties({ postAdmin, notify }) {
   const empty = panel.querySelector('#watch-party-editor-empty');
   const addButton = panel.querySelector('#watch-party-add');
   const summary = panel.querySelector('#watch-party-summary');
-  const gameStatusSelect = panel.querySelector('#admin-game-status-select');
-  const gameCompletedToggle = panel.querySelector('#admin-game-completed');
-  const gameStatusCopy = panel.querySelector('#admin-game-status-copy');
   let workspace = { watchParties: [], venues: [], games: [], counts: { total: 0 } };
   let selectedId = '';
   let adding = false;
   let loaded = false;
   let loadingPromise = null;
   let sortOrigin = null;
-  let managedGameId = '';
 
   const filtered = () => filterAdminWatchParties(workspace.watchParties, {
     query: searchInput?.value || '',
@@ -179,34 +172,6 @@ export function setupAdminWatchParties({ postAdmin, notify }) {
     if (venueFilter) venueFilter.innerHTML = filterOptionMarkup(workspace.venues, 'venue_id', (venue) => `${venue.name}${venue.city ? ` — ${venue.city}` : ''}`, currentVenue, 'All venues');
     if (gameFilter && [...gameFilter.options].some((option) => option.value === currentGame)) gameFilter.value = currentGame;
     if (venueFilter && [...venueFilter.options].some((option) => option.value === currentVenue)) venueFilter.value = currentVenue;
-  };
-  const renderGameStatusControl = () => {
-    if (!gameStatusSelect || !gameCompletedToggle) return;
-    const selectedExists = workspace.games.some((game) => game.game_id === managedGameId);
-    if (!selectedExists) {
-      managedGameId = workspace.games.find((game) => game.game_status === 'upcoming')?.game_id ||
-        workspace.games.at(-1)?.game_id || '';
-    }
-    gameStatusSelect.innerHTML = workspace.games.map((game) => {
-      const label = `${dateLabel(game.game_date, { time: false })} — vs. ${game.opponent_name} · ${display(game.game_status)}`;
-      return `<option value="${escapeHtml(game.game_id)}"${game.game_id === managedGameId ? ' selected' : ''}>${escapeHtml(label)}</option>`;
-    }).join('');
-    gameStatusSelect.disabled = workspace.games.length === 0;
-    const game = workspace.games.find((item) => item.game_id === managedGameId);
-    const editable = Boolean(game && ADMIN_GAME_TOGGLE_STATUSES.includes(game.game_status));
-    gameCompletedToggle.checked = game?.game_status === 'completed';
-    gameCompletedToggle.disabled = !editable;
-    if (gameStatusCopy) {
-      if (!game) {
-        gameStatusCopy.textContent = 'No games are available.';
-      } else if (!editable) {
-        gameStatusCopy.textContent = `${display(game.game_status)} games are protected from this toggle.`;
-      } else if (game.game_status === 'completed') {
-        gameStatusCopy.textContent = 'Completed: fan selections are closed. Turn off to restore upcoming status.';
-      } else {
-        gameStatusCopy.textContent = 'Upcoming: fan selections remain open. Turn on when the game is complete.';
-      }
-    }
   };
   const renderList = () => {
     const items = filtered();
@@ -225,14 +190,6 @@ export function setupAdminWatchParties({ postAdmin, notify }) {
     if (index >= 0) workspace.watchParties[index] = party; else workspace.watchParties.push(party);
     selectedId = party.watch_party_id; adding = false; renderSelected();
   };
-  const updateGame = (game) => {
-    const index = workspace.games.findIndex((item) => item.game_id === game.game_id);
-    if (index >= 0) workspace.games[index] = game;
-    managedGameId = game.game_id;
-    renderFilters();
-    renderGameStatusControl();
-    renderSelected();
-  };
   const load = async ({ force = false } = {}) => {
     if (loaded && !force) { renderSelected(); return; }
     if (loadingPromise) return loadingPromise;
@@ -241,7 +198,6 @@ export function setupAdminWatchParties({ postAdmin, notify }) {
         const response = await postAdmin(buildAdminWatchPartiesRequest());
         if (!validateAdminWatchPartiesResponse(response)) throw new Error('admin_invalid_response');
         workspace = response; loaded = true; renderFilters();
-        renderGameStatusControl();
         if (!selectedId) selectedId = filtered()[0]?.watch_party_id || '';
         renderSelected();
       } catch (error) {
@@ -320,30 +276,6 @@ export function setupAdminWatchParties({ postAdmin, notify }) {
     } catch (error) { notify(adminWatchPartyErrorCopy(error) || 'Could not save Watch Party.', 'error'); submit.disabled = false; }
   });
 
-  gameStatusSelect?.addEventListener('change', () => {
-    managedGameId = gameStatusSelect.value;
-    renderGameStatusControl();
-  });
-  gameCompletedToggle?.addEventListener('change', async () => {
-    const game = workspace.games.find((item) => item.game_id === managedGameId);
-    if (!game || !ADMIN_GAME_TOGGLE_STATUSES.includes(game.game_status)) {
-      renderGameStatusControl();
-      return;
-    }
-    const targetStatus = gameCompletedToggle.checked ? 'completed' : 'upcoming';
-    gameCompletedToggle.disabled = true;
-    try {
-      const response = await postAdmin(buildSetAdminGameStatusRequest(game.game_id, targetStatus));
-      if (!validateAdminGameWriteResponse(response)) throw new Error('admin_invalid_response');
-      updateGame(response.game);
-      notify(targetStatus === 'completed'
-        ? 'Game marked completed. Public data may take up to 5 minutes to refresh.'
-        : 'Game restored to upcoming. Public data may take up to 5 minutes to refresh.');
-    } catch (error) {
-      renderGameStatusControl();
-      notify(adminWatchPartyErrorCopy(error) || 'Could not update game status.', 'error');
-    }
-  });
   searchInput?.addEventListener('input', renderList);
   gameFilter?.addEventListener('change', renderList);
   venueFilter?.addEventListener('change', renderList);
@@ -352,6 +284,14 @@ export function setupAdminWatchParties({ postAdmin, notify }) {
     else renderList();
   });
   addButton?.addEventListener('click', () => { adding = true; renderSelected(); });
+  window.addEventListener('cgb-admin-game-updated', (event) => {
+    if (!loaded || !event.detail?.game_id) return;
+    const index = workspace.games.findIndex((game) => game.game_id === event.detail.game_id);
+    if (index < 0) return;
+    workspace.games[index] = { ...workspace.games[index], ...event.detail };
+    renderFilters();
+    renderSelected();
+  });
   return { activate: () => load(), reload: () => load({ force: true }) };
 }
 

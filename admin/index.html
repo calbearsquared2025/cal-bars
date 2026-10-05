@@ -7,6 +7,7 @@
     <title>CGB Admin</title>
     <link rel="icon" href="../assets/cgbfavicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="./admin.css">
+    <link rel="stylesheet" href="./admin-games.css">
     <link rel="stylesheet" href="./admin-watch-parties.css">
     <link rel="stylesheet" href="./admin-resources.css">
   </head>
@@ -54,6 +55,7 @@
       <nav class="admin-nav" aria-label="Admin sections">
         <button class="admin-nav__item" type="button" data-view="activity" aria-selected="true">Activity</button>
         <button class="admin-nav__item" type="button" data-view="venues" aria-selected="false">Venues</button>
+        <button class="admin-nav__item" type="button" data-view="games" aria-selected="false">Games</button>
         <button class="admin-nav__item" type="button" data-view="watch-parties" aria-selected="false">Watch Parties</button>
         <button class="admin-nav__item" type="button" data-view="watch-party-claims" aria-selected="false" hidden>Claims</button>
         <button class="admin-nav__item" type="button" data-view="accounts" aria-selected="false">Accounts</button>
@@ -155,6 +157,25 @@
           </div>
         </section>
 
+        <section class="admin-view" data-panel="games" hidden>
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">Canonical schedule</p>
+              <h1>Games</h1>
+              <p id="admin-games-summary" class="view-copy">Manage schedule, kickoff time, and game status.</p>
+            </div>
+            <button id="admin-games-refresh" class="secondary" type="button">Refresh</button>
+          </div>
+
+          <div class="venue-workspace admin-games-workspace">
+            <aside id="admin-games-list" class="venue-list" aria-label="Games"></aside>
+            <section class="venue-editor-shell">
+              <div id="admin-game-editor-empty" class="empty-state">Open Games to load the schedule.</div>
+              <div id="admin-game-editor" class="venue-editor" hidden></div>
+            </section>
+          </div>
+        </section>
+
         <section class="admin-view" data-panel="watch-parties" hidden>
           <div class="view-heading">
             <div>
@@ -164,28 +185,6 @@
             </div>
             <button id="watch-party-add" type="button">+ Add Watch Party</button>
           </div>
-
-          <section class="admin-game-status" aria-labelledby="admin-game-status-heading">
-            <div class="admin-game-status__intro">
-              <p class="eyebrow">Game control</p>
-              <h2 id="admin-game-status-heading">Game status</h2>
-              <p>Mark a game complete when it ends. Turning the switch off restores it to upcoming.</p>
-            </div>
-            <div class="admin-game-status__controls">
-              <label class="admin-game-status__select">
-                Game
-                <select id="admin-game-status-select">
-                  <option value="">Loading games…</option>
-                </select>
-              </label>
-              <label class="admin-game-switch">
-                <span>Completed</span>
-                <input id="admin-game-completed" type="checkbox" role="switch" aria-describedby="admin-game-status-copy" disabled>
-                <span class="admin-game-switch__track" aria-hidden="true"></span>
-              </label>
-            </div>
-            <p id="admin-game-status-copy" class="admin-game-status__copy" aria-live="polite">Open Watch Parties to load game status.</p>
-          </section>
 
           <div class="watch-party-toolbar">
             <label class="venue-toolbar__search">
@@ -311,6 +310,7 @@
 
     <script type="module" src="./admin-auth.mjs"></script>
     <script type="module" src="./admin-venues.mjs"></script>
+    <script type="module" src="./admin-games.mjs"></script>
     <script type="module" src="./admin-watch-parties.mjs"></script>
     <script type="module" src="./admin-watch-party-claims.mjs"></script>
     <script type="module" src="./admin-accounts.mjs"></script>

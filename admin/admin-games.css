@@ -1,0 +1,25 @@
+.admin-games-workspace .venue-list-item strong {
+  color: var(--navy-dark);
+}
+
+.admin-game-time-help {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  min-height: 62px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+}
+
+.admin-game-time-help strong {
+  color: var(--navy-dark);
+  font-size: .92rem;
+}
+
+.admin-game-time-help span {
+  color: var(--muted);
+  font-size: .78rem;
+  line-height: 1.4;
+}
