@@ -3417,6 +3417,60 @@
         "rsvp_requested"
       ],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_e189345b54f1f95bfc989db5",
+      "venue_id": "venue_45c4aae3288ec7f39e3912e3",
+      "game_id": "game_d865a3e1eac52bbbd848d545",
+      "organizer_name": "Cal Alumni Club of Philadelphia",
+      "organizer_type": "alumni_group",
+      "official_event_url": "",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Wear your Cal colors! There is no dedicated room this week, so look for fellow Cal fans throughout Cavanaugh’s Headhouse. Kickoff is at 3:30 p.m. ET.",
+      "event_status": "active",
+      "updated_at": "2026-10-07T23:20:05.818Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_b20a792a11399b73f2387fca",
+      "venue_id": "venue_bbe9884c5c2fd318173117d3",
+      "game_id": "game_d865a3e1eac52bbbd848d545",
+      "organizer_name": "DC Cal Alumni Club",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://dccalalumni.nationbuilder.com/virginia_tech_game_watch_2026",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "D.C. Bears gather at Town Tavern at 3:00 p.m. ET, 30 minutes before the 3:30 p.m. kickoff.",
+      "event_status": "active",
+      "updated_at": "2026-10-07T23:20:05.818Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_18195ea99eea93c0d602d89c",
+      "venue_id": "venue_3142ab1861fc367b55bda045",
+      "game_id": "game_d865a3e1eac52bbbd848d545",
+      "organizer_name": "San Diego Cal Alumni",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://sdcalalumni.org/sdcalalumni/2026-cal-football-view-parties/",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Join San Diego Cal Alumni at Chief’s in Solana Beach for Cal vs. Virginia Tech. Kickoff is at 12:30 p.m. PT.",
+      "event_status": "active",
+      "updated_at": "2026-10-07T23:20:05.818Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -3821,5 +3875,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-06T18:25:43.981Z"
+  "generatedAt": "2026-10-08T06:11:29.208Z"
 }
