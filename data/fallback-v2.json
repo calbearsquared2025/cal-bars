@@ -3502,7 +3502,12 @@
     {
       "game_id": "game_d865a3e1eac52bbbd848d545",
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
-      "count": 2
+      "count": 1
+    },
+    {
+      "game_id": "game_d865a3e1eac52bbbd848d545",
+      "venue_id": "venue_af33e035626a357bc52f2e8b",
+      "count": 1
     },
     {
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
@@ -3875,5 +3880,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-08T06:11:29.208Z"
+  "generatedAt": "2026-10-10T05:58:15.054Z"
 }
