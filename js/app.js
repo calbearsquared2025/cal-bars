@@ -37,12 +37,12 @@ import {
   setCanonicalSnapshot,
   subscribeAppEvent
 } from './app-state.mjs';
-import { legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
+import { getVenueSeasonCount, legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 import { createIcon } from './icons.mjs';
 import { firstUsMapTilerResult } from './map-geocoding-core.mjs';
 import { nearbyLocationControlPresentation, normalizedUserLocation } from './nearby-location-core.mjs';
 import { clampTrayHeight, trayReleaseState } from './mobile-tray-geometry.mjs';
-import { createSelectedVenueCard } from './selected-profile-renderer.mjs';
+import { createSelectedVenueCard, renderListAttendanceCount } from './selected-profile-renderer.mjs';
 import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presentation.mjs';
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
@@ -1044,7 +1044,13 @@ function createLocationCard({ venue, party, fanCount, distance }, signature) {
   top.append(info);
   const count = document.createElement('span');
   count.className = 'location-card__count';
-  count.textContent = bearCountCopy(fanCount);
+  const game = selectedGame();
+  renderListAttendanceCount(count, {
+    count: fanCount,
+    game,
+    seasonCount: getVenueSeasonCount(state.snapshot, game?.season, venue.venue_id),
+    mobile: isMobileLayout()
+  });
   top.append(count);
   button.append(top);
   if (party) {

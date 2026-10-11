@@ -3,7 +3,6 @@ import { bearCountCopy, getFanCount } from './core.mjs';
 import {
   BROWSER_ID_STORAGE_KEY,
   INTENT_SELECTIONS_STORAGE_KEY,
-  compactListFanCountCopy,
   createBrowserId,
   detailPresenceCopy,
   isValidBrowserId,
@@ -15,6 +14,7 @@ import {
 import { createFanIntentController } from './fan-intent-controller.mjs';
 import { persistConfirmedFanIntentSnapshot } from './snapshot-refresh.mjs';
 import {
+  renderListAttendanceCount,
   renderSelectedAttendanceCount,
   selectedAttendanceViewModel
 } from './selected-profile-renderer.mjs';
@@ -350,11 +350,12 @@ function renderLocationCardActivity(game) {
     if (description && migratedHistory) description.hidden = true;
 
     const seasonCount = getVenueSeasonCount(appState.snapshot, game.season, venue.venue_id);
-    const copy = game.game_status === 'completed'
-      ? listSeasonActivityCopy(seasonCount)
-      : compactListFanCountCopy(getFanCount(appState.snapshot, appState.gameId, venue.venue_id));
-    countLine.textContent = copy;
-    countLine.hidden = !copy;
+    renderListAttendanceCount(countLine, {
+      count: getFanCount(appState.snapshot, appState.gameId, venue.venue_id),
+      game,
+      seasonCount,
+      mobile: window.matchMedia('(max-width: 899px)').matches
+    });
 
     const compactHistory = game.game_status === 'completed'
       ? []

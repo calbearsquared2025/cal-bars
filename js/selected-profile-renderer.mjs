@@ -7,7 +7,8 @@ import {
 import { createIcon } from './icons.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import { formatVenueDistance } from './venue-location-presentation.mjs';
-import { venueActivityPresentation } from './venue-activity-core.mjs';
+import { listSeasonActivityCopy, venueActivityPresentation } from './venue-activity-core.mjs';
+import { compactListFanCountCopy } from './fan-intent-core.mjs';
 import {
   getWatchPartiesForVenueGame,
   markWatchPartyTrayRenderCurrent
@@ -106,6 +107,29 @@ export function renderSelectedAttendanceCount(count, view, {
     count.append(saving);
   }
   return count;
+}
+
+/** Keep the List's attendance semantics in sync with the selected Venue Profile. */
+export function renderListAttendanceCount(element, { count = 0, game, seasonCount = 0, mobile = false } = {}) {
+  if (!element) return element;
+  const completed = game?.game_status === 'completed';
+  const total = Math.max(0, Math.trunc(Number(count) || 0));
+  const copy = completed ? listSeasonActivityCopy(seasonCount) : compactListFanCountCopy(total);
+  const showProfileHierarchy = mobile && !completed && total > 0;
+  element.classList.toggle('location-card__count--profile', showProfileHierarchy);
+  element.hidden = !copy;
+
+  if (!showProfileHierarchy) {
+    element.removeAttribute('aria-label');
+    element.textContent = copy;
+    return element;
+  }
+
+  return renderSelectedAttendanceCount(element, {
+    kind: 'positive',
+    number: total,
+    ariaLabel: bearCountCopy(total)
+  });
 }
 
 function createAttendance(state, game, venue, documentObject, { hero = false } = {}) {
