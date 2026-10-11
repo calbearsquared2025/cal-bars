@@ -47,9 +47,7 @@ import { formatVenueDistance, venueDirectionsUrl } from './venue-location-presen
 import { DATA_ENDPOINT_OVERRIDE_STORAGE_KEY, readRuntimeConfig } from './config.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import { markCgbPerformance, measureCgbPerformance } from './performance.mjs';
-import { loadLoadingCoverManifest, updateLoadingCoverForGame } from './loading-cover-game.mjs';
 import {
-  currentLoadingCoverGameSlug,
   publicSnapshotChanges,
   readSavedSnapshot,
   shouldUseSavedSnapshotAtStartup,
@@ -205,7 +203,7 @@ async function loadSnapshot() {
   if (shouldUseSavedSnapshotAtStartup({
     snapshot: saved,
     search,
-    loadingCoverGameSlug: currentLoadingCoverGameSlug()
+    loadingCoverGameId: window.__cgbLoadingCoverGameId || ''
   })) {
     markCgbPerformance('cgb:snapshot:source:saved');
     markCgbPerformance('cgb:bootstrap:snapshot:ready');
@@ -1968,8 +1966,6 @@ function wireEvents() {
 
 async function boot() {
   markCgbPerformance('cgb:boot:start');
-  // Begin the small local manifest request alongside snapshot startup; never block the map.
-  const loadingCoverManifest = loadLoadingCoverManifest();
   cacheDom();
   wireEvents();
   try {
@@ -1977,7 +1973,6 @@ async function boot() {
     markCgbPerformance('cgb:snapshot:ready');
     measureCgbPerformance('cgb:boot-to-snapshot-ready', 'cgb:boot:start', 'cgb:snapshot:ready');
     initializeRoute();
-    void updateLoadingCoverForGame({ manifestPromise: loadingCoverManifest, getGame: selectedGame });
     renderAll();
     markCgbPerformance('cgb:render:initial-complete');
     markCgbPerformance('cgb:list-search:usable');

@@ -33,7 +33,12 @@ export function selectDefaultGame(games, now = new Date()) {
     const dateB = parseDateOnly(b.game_date)?.getTime() || 0;
     return dateA - dateB || Number(a.schedule_order || 0) - Number(b.schedule_order || 0);
   });
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: ACTIVE_INSTANCE_CONFIG.schedule.homeTimeZone,
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(now);
+  const calendar = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  const today = new Date(Number(calendar.year), Number(calendar.month) - 1, Number(calendar.day), 12).getTime();
   return sorted.find((game) => {
     const date = parseDateOnly(game.game_date);
     return game.game_status === 'upcoming' && date && date.getTime() >= today;

@@ -90,7 +90,7 @@ export function resolveDirectEntryVenueId(snapshot, search = '') {
 export function shouldUseSavedSnapshotAtStartup({
   snapshot,
   search = '',
-  loadingCoverGameSlug = '',
+  loadingCoverGameId = '',
   now = new Date(),
   rolloverGuardMs = STARTUP_ROLLOVER_GUARD_MS
 } = {}) {
@@ -105,10 +105,10 @@ export function shouldUseSavedSnapshotAtStartup({
 
   const defaultGame = selectDefaultGame(snapshot.games, now);
   if (!defaultGame || defaultGame.game_status !== 'upcoming') return false;
-
-  const coverSlug = String(loadingCoverGameSlug || '').trim().toLowerCase();
-  const defaultSlug = gameRouteParam(defaultGame);
-  if (coverSlug && defaultSlug && coverSlug !== defaultSlug) return false;
+  // Compare canonical game identity, never the fingerprinted artwork filename.
+  // An absent published mapping (such as the fictional Test school) is not a reason
+  // to discard otherwise eligible cached data.
+  if (loadingCoverGameId && defaultGame.game_id !== loadingCoverGameId) return false;
 
   const kickoffAt = Date.parse(defaultGame.kickoff_at || '');
   const nowAt = now instanceof Date ? now.getTime() : new Date(now).getTime();
@@ -204,14 +204,6 @@ export function readSavedSnapshot() {
   } catch (_) {
     return null;
   }
-}
-
-export function currentLoadingCoverGameSlug(documentObject = document) {
-  const preload = documentObject?.querySelector?.('#cgb-loading-cover-preload');
-  const href = preload?.getAttribute?.('href') || preload?.href || '';
-  const clean = String(href).split(/[?#]/)[0];
-  const filename = clean.slice(clean.lastIndexOf('/') + 1);
-  return filename.toLowerCase().endsWith('.png') ? filename.slice(0, -4) : '';
 }
 
 export function shouldUseStaticSnapshotAtStartup({

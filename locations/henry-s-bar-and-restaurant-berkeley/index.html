@@ -51,7 +51,44 @@
   <meta name="twitter:description" content="47 locations mapped · 5 Watch Parties. Find your Cal crowd.">
   <meta name="twitter:image" content="https://calgoldenbars.com/assets/social-cards/wake-forest-c04cac6d3e.png">
   <!-- CGB current-game social metadata: end -->
-  <link id="cgb-loading-cover-preload" rel="preload" as="image" href="assets/social-cards/wake-forest-c04cac6d3e.png" fetchpriority="high">
+  <!-- CGB loading-cover data: start -->
+  <script type="application/json" id="cgb-loading-cover-data">{"timeZone":"America/Los_Angeles","fallbackImage":"assets/cgb-loading-fallback.svg","games":[{"id":"game_9e8f4860c6a256c0fae6007d","slug":"ucla","date":"2026-09-05","status":"completed","order":1,"image":"assets/social-cards/ucla-7fe4391524.png"},{"id":"game_64902a48440e55522742d631","slug":"syracuse","date":"2026-09-12","status":"completed","order":2,"image":"assets/social-cards/syracuse-744b519030.png"},{"id":"game_98623ba154f59012256c39ac","slug":"wagner","date":"2026-09-19","status":"completed","order":3,"image":"assets/social-cards/wagner-1f0d18d401.png"},{"id":"game_bf8616724877adc20fb78ac9","slug":"clemson","date":"2026-09-25","status":"completed","order":4,"image":"assets/social-cards/clemson-2f3b1c4a33.png"},{"id":"game_416f957fa7bbd325fa2d9b13","slug":"unlv","date":"2026-10-03","status":"completed","order":5,"image":"assets/social-cards/unlv-8852913e20.png"},{"id":"game_d865a3e1eac52bbbd848d545","slug":"virginia-tech","date":"2026-10-10","status":"upcoming","order":6,"image":"assets/social-cards/virginia-tech-8c5b2db781.png"},{"id":"game_2d86d2a1538503a070d1ee68","slug":"wake-forest","date":"2026-10-17","status":"upcoming","order":7,"image":"assets/social-cards/wake-forest-c04cac6d3e.png"},{"id":"game_5f8281482583c43917f6f2a5","slug":"smu","date":"2026-10-24","status":"upcoming","order":8,"image":"assets/social-cards/smu-29f3a60832.png"},{"id":"game_6bc7b90491088cca24f8ca52","slug":"nc-state","date":"2026-10-31","status":"upcoming","order":9,"image":"assets/social-cards/nc-state-60b3ae3ea9.png"},{"id":"game_f4ebc4f05457bb40f3bc66ab","slug":"virginia","date":"2026-11-14","status":"upcoming","order":10,"image":"assets/social-cards/virginia-0828cad778.png"},{"id":"game_ca62dd014907c6fdcc7520bd","slug":"stanford","date":"2026-11-21","status":"upcoming","order":11,"image":"assets/social-cards/stanford-eb66d5b823.png"},{"id":"game_1535f732d3d1061b8e8cf07e","slug":"pittsburgh","date":"2026-11-28","status":"upcoming","order":12,"image":"assets/social-cards/pittsburgh-c5ff3c8c6d.png"}]}</script>
+  <!-- CGB loading-cover data: end -->
+  <link id="cgb-loading-cover-preload" rel="preload" as="image" fetchpriority="high">
+  <script id="cgb-loading-cover-early">
+    (() => {
+      // Select before the card is parsed: no visible image can be replaced.
+      let data;
+      try { data = JSON.parse(document.getElementById('cgb-loading-cover-data').textContent); }
+      catch (_) { data = {}; }
+      const safe = (p) => typeof p === 'string' &&
+        /^assets\/[a-z0-9/-]+\.(?:png|svg)$/.test(p) && !p.includes('..');
+      const games = Array.isArray(data.games)
+        ? data.games.filter((g) => g && /^\d{4}-\d{2}-\d{2}$/.test(g.date) &&
+            typeof g.slug === 'string' && safe(g.image))
+          .sort((a, b) => a.date.localeCompare(b.date) || Number(a.order || 0) - Number(b.order || 0))
+        : [];
+      let today = '';
+      try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: data.timeZone, year: 'numeric', month: '2-digit', day: '2-digit'
+        }).formatToParts(new Date());
+        const date = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+        today = date.year + '-' + date.month + '-' + date.day;
+      } catch (_) { /* Fail safely if the school timezone is unavailable. */ }
+      const requested = new URLSearchParams(location.search).get('game');
+      const explicit = requested ? games.find((g) => g.slug === requested) : null;
+      const selected = explicit || (today && (
+        games.find((g) => g.status === 'upcoming' && g.date >= today) ||
+        games.find((g) => g.status === 'upcoming') || games[games.length - 1]
+      ));
+      const path = selected?.image || (safe(data.fallbackImage) ? data.fallbackImage : '');
+      window.__cgbLoadingCoverImage = path;
+      window.__cgbLoadingCoverGameId = selected?.id || '';
+      const preload = document.getElementById('cgb-loading-cover-preload');
+      if (preload && path) preload.href = path;
+    })();
+  </script>
   <title>Henry's Bar &amp; Restaurant | Cal Golden Bars</title>
   <script type="application/ld+json">
     {
@@ -225,13 +262,16 @@
           <img
             id="map-fallback-card"
             class="map-fallback__card"
-            src="assets/social-cards/wake-forest-c04cac6d3e.png"
             alt=""
             width="1200"
             height="630"
             decoding="async"
             fetchpriority="high"
           >
+          <script id="cgb-loading-cover-apply">
+            const cgbCover = document.getElementById("map-fallback-card");
+            if (cgbCover && window.__cgbLoadingCoverImage) cgbCover.src = window.__cgbLoadingCoverImage;
+          </script>
         </div>
       </div>
 

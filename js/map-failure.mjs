@@ -110,6 +110,11 @@ function ensureFallbackStyles(documentObject) {
       opacity: 1;
     }
 
+    /* Once reveal begins, artwork that was not ready must never flash into view. */
+    #map-fallback.map-fallback--skip-late-artwork .map-fallback__card {
+      opacity: 0;
+    }
+
     .map-fallback__message {
       display: grid;
       gap: 6px;
@@ -210,27 +215,6 @@ function ensureFallbackContent({ fallback, documentObject, includeMessage }) {
   }
 }
 
-function afterLoadingCardSettles(fallback, callback) {
-  const image = fallback?.querySelector?.('#map-fallback-card') || null;
-  if (!image || image.complete) {
-    callback();
-    return;
-  }
-
-  const previousLoad = image.onload;
-  const previousError = image.onerror;
-  let settled = false;
-  const settle = (previous, event) => {
-    if (typeof previous === 'function') previous.call(image, event);
-    if (settled) return;
-    settled = true;
-    callback();
-  };
-
-  image.onload = (event) => settle(previousLoad, event);
-  image.onerror = (event) => settle(previousError, event);
-}
-
 export function showMapLoading({
   app = globalThis.window?.CGBApp,
   documentObject = globalThis.document
@@ -241,6 +225,7 @@ export function showMapLoading({
 
   const state = app?.getState?.();
   ensureFallbackContent({ fallback, documentObject, includeMessage: false });
+  fallback.classList?.remove?.('map-fallback--skip-late-artwork');
   setFallbackMode(fallback, 'loading');
   if (fallback.hidden) fallback.hidden = false;
   mapContainer.classList?.remove?.('map--fallback');
@@ -280,12 +265,16 @@ export function hideMapLoading({
   const finish = () => {
     if (fallback.classList?.contains?.('map-fallback--failure')) return;
     fallback.hidden = true;
-    fallback.classList?.remove?.('map-fallback--local');
+    fallback.classList?.remove?.('map-fallback--local', 'map-fallback--skip-late-artwork');
     setFallbackMode(fallback, null);
     markCoverBoundary(windowObject);
   };
 
   const reveal = () => {
+    const card = fallback.querySelector?.('#map-fallback-card');
+    if (!card?.complete || !(card.naturalWidth > 0)) {
+      fallback.classList?.add?.('map-fallback--skip-late-artwork');
+    }
     if (windowObject?.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) {
       finish();
       return;
@@ -294,7 +283,7 @@ export function hideMapLoading({
     windowObject?.setTimeout?.(finish, LOADING_FADE_MS);
   };
 
-  afterLoadingCardSettles(fallback, reveal);
+  reveal();
   return true;
 }
 
@@ -324,6 +313,7 @@ export function showMapUnavailable({
   }
 
   ensureFallbackContent({ fallback, documentObject, includeMessage: true });
+  fallback.classList?.remove?.('map-fallback--skip-late-artwork');
   setFallbackMode(fallback, 'failure');
   fallback.classList?.remove?.('map-fallback--local');
   fallback.hidden = false;
