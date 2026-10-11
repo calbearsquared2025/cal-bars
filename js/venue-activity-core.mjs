@@ -27,6 +27,15 @@ export function seasonActivityCopy(count) {
   return '';
 }
 
+// List-only attribution distinguishes CGB activity from a venue's overall attendance.
+export function listSeasonActivityCopy(count) {
+  const total = normalizedCount(count);
+  if (total === 0) return '';
+  const { fanSingular, fanPlural, schoolShortName, productShortName } = ACTIVE_INSTANCE_CONFIG.identity;
+  const fan = total === 1 ? fanSingular : fanPlural;
+  return `${total} ${fan} on ${productShortName} watched ${schoolShortName} games here this season.`;
+}
+
 // Compatibility for existing renderers that used legacy description detection only to
 // suppress migrated source copy. Historical activity no longer depends on description text.
 export function legacyActivitySeason() {

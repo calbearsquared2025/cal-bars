@@ -1,3 +1,5 @@
+import { setIcon } from './icons.mjs';
+
 const MOBILE_QUERY = '(max-width: 899px)';
 const STYLE_ID = 'cgb-mobile-tab-location-refinement';
 
@@ -70,10 +72,11 @@ function syncCalBarNominationAction() {
   if (!button) return;
   const label = button.querySelector('strong');
   const copy = button.querySelector('small');
-  const iconUse = button.querySelector('.add-action__icon use');
+  const icon = button.querySelector('svg.add-action__icon');
   if (!label || !copy) return;
 
-  if (iconUse) iconUse.setAttribute('href', 'assets/icons.svg#icon-cal-bar');
+  // The icon upgrader can inline and remove <use> before this action runs.
+  if (icon && icon.dataset.iconName !== 'cal-bar') setIcon(icon, 'cal-bar');
 
   const venue = selectedVenue();
   button.hidden = false;

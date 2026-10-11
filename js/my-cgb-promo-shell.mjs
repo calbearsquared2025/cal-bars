@@ -27,21 +27,13 @@ let lastOpener = null;
 let selectedVenueAtOpen = '';
 let syncFrame = 0;
 
-function injectStyles() {
-  if (!document.querySelector('link[data-cgb-my-cgb-native-style]')) {
-    const native = document.createElement('link');
-    native.rel = 'stylesheet';
-    native.href = 'css/my-cgb-native-surface.css';
-    native.dataset.cgbMyCgbNativeStyle = 'true';
-    document.head.append(native);
-  }
-  if (!document.querySelector('link[data-cgb-my-cgb-promo-style]')) {
-    const promo = document.createElement('link');
-    promo.rel = 'stylesheet';
-    promo.href = 'css/my-cgb-promo-shell.css';
-    promo.dataset.cgbMyCgbPromoStyle = 'true';
-    document.head.append(promo);
-  }
+function injectPromoStyles() {
+  if (document.querySelector('link[data-cgb-my-cgb-promo-style]')) return;
+  const promo = document.createElement('link');
+  promo.rel = 'stylesheet';
+  promo.href = 'css/my-cgb-promo-shell.css';
+  promo.dataset.cgbMyCgbPromoStyle = 'true';
+  document.head.append(promo);
 }
 
 function commandLabel(button) {
@@ -400,7 +392,7 @@ function connectApp() {
 }
 
 export function initializeMyCgbPromoShell() {
-  injectStyles();
+  injectPromoStyles();
   if (!ensurePromoSurface()) {
     window.setTimeout(initializeMyCgbPromoShell, 25);
     return false;

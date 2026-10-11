@@ -9,6 +9,10 @@ const ICON_DEFINITIONS = Object.freeze({
     ['path', { d: 'M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z' }],
     ['circle', { cx: '12', cy: '10', r: '2' }]
   ],
+  'cal-bar': [
+    ['path', { d: 'M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z', fill: 'currentColor', stroke: 'none' }],
+    ['circle', { cx: '12', cy: '10', r: '2.1', fill: '#fff', stroke: 'none' }]
+  ],
   'near-me': [['path', { d: 'm20 4-7 16-2.2-6.8L4 11l16-7Z' }]],
   'chevron-up': [['path', { d: 'm5 15 7-7 7 7' }]],
   'chevron-down': [['path', { d: 'm5 9 7 7 7-7' }]],

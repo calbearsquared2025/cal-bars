@@ -6,20 +6,10 @@ import {
 import { buildVenueUrl } from './core.mjs';
 import { appState } from './app-state.mjs';
 
-const STYLE_ATTR = 'data-cgb-account-favorites-navigation-style';
 const APP_CONNECT_RETRY_MS = 25;
 let favoriteVenueIds = new Set();
 let appLifecycleConnected = false;
 let appConnectTimer = 0;
-
-function injectStyles() {
-  if (document.querySelector(`link[${STYLE_ATTR}]`)) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = 'css/account-favorites-navigation.css';
-  link.setAttribute(STYLE_ATTR, 'true');
-  document.head.append(link);
-}
 
 function venueById(venueId) {
   return appState.snapshot?.venues?.find((venue) => venue?.venue_id === venueId) || null;
@@ -238,7 +228,6 @@ function connectAppLifecycle() {
 
 export function initializeAccountFavoritesNavigation() {
   if (!accountsConfigIsReady(CGB_ACCOUNTS_CONFIG)) return false;
-  injectStyles();
   syncFavoriteSurfaces();
   connectAppLifecycle();
   window.addEventListener('cgb:account-state', handleAccountState);

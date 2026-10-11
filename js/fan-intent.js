@@ -22,6 +22,7 @@ import { createIcon } from './icons.mjs';
 import {
   getVenueSeasonCount,
   legacyActivitySeason,
+  listSeasonActivityCopy,
   seasonActivityCopy,
   venueActivityPresentation
 } from './venue-activity-core.mjs';
@@ -348,16 +349,16 @@ function renderLocationCardActivity(game) {
     const description = card.querySelector('.location-card__description');
     if (description && migratedHistory) description.hidden = true;
 
-    const presentation = activityPresentation(game, venue, countLine.textContent);
+    const seasonCount = getVenueSeasonCount(appState.snapshot, game.season, venue.venue_id);
     const copy = game.game_status === 'completed'
-      ? seasonActivityCopy(getVenueSeasonCount(appState.snapshot, game.season, venue.venue_id))
+      ? listSeasonActivityCopy(seasonCount)
       : compactListFanCountCopy(getFanCount(appState.snapshot, appState.gameId, venue.venue_id));
     countLine.textContent = copy;
     countLine.hidden = !copy;
 
     const compactHistory = game.game_status === 'completed'
       ? []
-      : presentation.secondary.slice(0, 1);
+      : [listSeasonActivityCopy(seasonCount)].filter(Boolean);
     let history = card.querySelector('.location-card__history');
     if (!compactHistory.length) {
       history?.remove();
