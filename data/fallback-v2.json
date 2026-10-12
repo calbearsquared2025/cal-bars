@@ -1429,7 +1429,7 @@
       "kickoff_at": "",
       "kickoff_status": "tbd",
       "game_status": "upcoming",
-      "updated_at": "2026-07-31T17:43:00Z"
+      "updated_at": "2026-10-12T19:22:08Z"
     },
     {
       "game_id": "game_6bc7b90491088cca24f8ca52",
@@ -3471,6 +3471,46 @@
       "updated_at": "2026-10-07T23:20:05.818Z",
       "feature_tags": [],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_cf5d433f98b54067b1cbcc9c",
+      "venue_id": "venue_5977e35a58d8b18f22a51f1e",
+      "game_id": "game_5f8281482583c43917f6f2a5",
+      "organizer_name": "Calgorithm and Silicon Valley Alumni Association",
+      "organizer_type": "individual",
+      "official_event_url": "",
+      "source_type": "fan_submitted",
+      "event_start_at": "",
+      "age_policy": "all_ages",
+      "sound_status": "confirmed_on",
+      "restrictions_note": "",
+      "game_day_note": "",
+      "event_status": "active",
+      "updated_at": "2026-10-12T16:25:08.663Z",
+      "feature_tags": [
+        "cal_specials"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_fa08fb237f7045449df39de1",
+      "venue_id": "venue_5977e35a58d8b18f22a51f1e",
+      "game_id": "game_f4ebc4f05457bb40f3bc66ab",
+      "organizer_name": "Calgorithm and Silicon Valley Alumni Association",
+      "organizer_type": "individual",
+      "official_event_url": "",
+      "source_type": "fan_submitted",
+      "event_start_at": "",
+      "age_policy": "all_ages",
+      "sound_status": "confirmed_on",
+      "restrictions_note": "",
+      "game_day_note": "",
+      "event_status": "active",
+      "updated_at": "2026-10-12T16:25:14.688Z",
+      "feature_tags": [
+        "cal_specials"
+      ],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -3482,12 +3522,12 @@
     {
       "game_id": "game_2d86d2a1538503a070d1ee68",
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
-      "count": 2
+      "count": 3
     },
     {
       "game_id": "game_5f8281482583c43917f6f2a5",
       "venue_id": "venue_5977e35a58d8b18f22a51f1e",
-      "count": 1
+      "count": 2
     },
     {
       "game_id": "game_6bc7b90491088cca24f8ca52",
@@ -3880,5 +3920,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-12T06:04:38.477Z"
+  "generatedAt": "2026-10-12T21:17:57.075Z"
 }
