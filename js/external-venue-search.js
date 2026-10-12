@@ -25,6 +25,7 @@ import {
   showNewLocationContributionPrompt
 } from './new-location-contribution-prompt.mjs';
 import { readRuntimeConfig } from './config.mjs';
+import { trackCgbEvent } from './analytics.mjs';
 
 const SEARCH_DEBOUNCE_MS = 600;
 const SEARCH_TIMEOUT_MS = 8000;
@@ -451,7 +452,7 @@ function selectExternalPlace(place) {
   dom.searchDropdown.hidden = true;
   renderConfirmation();
   if (!dom.externalDialog.open) dom.externalDialog.showModal();
-  window.gtag?.('event', 'external_place_result_selected', { place_type: place.placeType });
+  trackCgbEvent('external_place_selected', { place_type: place.placeType });
 }
 
 function manualErrorCopy(error, method) {
@@ -514,7 +515,7 @@ function openManualAddFlow() {
   dom.searchDropdown.hidden = true;
   renderManualPanel();
   if (!dom.externalDialog.open) dom.externalDialog.showModal();
-  window.gtag?.('event', 'manual_place_add_started');
+  trackCgbEvent('manual_place_add_started');
 }
 
 function manualVenueNameOrError() {
@@ -580,7 +581,7 @@ async function resolveManualHereNow() {
     const payload = await fetchJson(url);
     const place = resolvedManualPlace(payload, name);
     if (!place) throw new Error('unresolved_address');
-    window.gtag?.('event', 'manual_place_resolved', { method: 'location' });
+    trackCgbEvent('manual_place_resolved', { method: 'location' });
     selectExternalPlace(place);
   } catch (error) {
     manual.pending = false;
@@ -634,7 +635,7 @@ async function resolveManualAddress(event) {
     const payload = await fetchJson(url);
     const place = resolvedManualPlace(payload, name, address);
     if (!place) throw new Error('unresolved_address');
-    window.gtag?.('event', 'manual_place_resolved', { method: 'address' });
+    trackCgbEvent('manual_place_resolved', { method: 'address' });
     selectExternalPlace(place);
   } catch (error) {
     manual.pending = false;
@@ -850,7 +851,7 @@ async function joinSelectedExternalVenue() {
       state.error = null;
       if (dom.externalDialog.open) dom.externalDialog.close();
       window.CGBApp?.showStatus('Community Location added. You’ll be here.', 3200);
-      window.gtag?.('event', 'community_location_created');
+      trackCgbEvent('community_location_created');
       window.CGBApp?.focusLocation?.({
         lon: venue.longitude,
         lat: venue.latitude,

@@ -1,3 +1,5 @@
+import { sanitizeEventParameters, trackCgbEvent } from './analytics.mjs';
+
 const GOOGLE_FORM_PATH = '/forms/';
 const FORM_TITLES = new Map([
   ['cgb-watch-party-form-url', 'Add a Watch Party'],
@@ -93,6 +95,11 @@ export function openGoogleForm(href, { title = '', trigger = null, documentObjec
   state.frame.src = embedded;
   state.fallback.href = href;
   if (!state.dialog.open) state.dialog.showModal();
+  // Record only approved form titles. Do not send the prefilled Form URL,
+  // answers, venue names, email addresses, or arbitrary trigger text.
+  if (sanitizeEventParameters({ form_title: resolvedTitle }).form_title) {
+    trackCgbEvent('google_form_opened', { form_title: resolvedTitle }, windowObject);
+  }
   return true;
 }
 

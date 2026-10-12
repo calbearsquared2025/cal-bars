@@ -9,6 +9,7 @@ import {
   resolveWatchPartyFormContext
 } from './watch-party-form-core.mjs';
 import { readRuntimeConfig } from './config.mjs';
+import { trackCgbEvent } from './analytics.mjs';
 
 const CTA_SELECTOR = '[data-watch-party-form-entry-point]';
 const SECTION_SELECTOR = '[data-watch-party-form-section]';
@@ -152,10 +153,15 @@ async function launchWatchPartyForm({
   } catch (error) {
     console.error('Native Watch Party form failed to open.', error);
     if (href) {
-      const opened = windowObject.CGBGoogleFormHost?.open?.(href, {
+      const embedded = windowObject.CGBGoogleFormHost?.open?.(href, {
         title: 'Add a Watch Party'
-      }) || Boolean(windowObject.open?.(href, '_blank', 'noopener,noreferrer'));
-      if (opened) return true;
+      });
+      if (embedded) return true; // the shared Form host records this opening
+      const opened = Boolean(windowObject.open?.(href, '_blank', 'noopener,noreferrer'));
+      if (opened) {
+        trackCgbEvent('google_form_opened', { form_title: 'Add a Watch Party' }, windowObject);
+        return true;
+      }
     }
     app?.showStatus?.('Could not open the Watch Party form. Try again.', 5000);
     return false;

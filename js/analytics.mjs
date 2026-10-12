@@ -8,17 +8,28 @@ const INITIALIZED_FLAG = ACTIVE_INSTANCE_CONFIG.analytics.initializedFlag;
 const FLOW_INITIALIZED_FLAG = ACTIVE_INSTANCE_CONFIG.analytics.flowInitializedFlag;
 const APP_CONNECT_MAX_ATTEMPTS = 400;
 const APP_CONNECT_DELAY_MS = 25;
+// Keep the historical external-place event as an alias; do not rewrite GA4 history.
 const EVENT_ALIASES = Object.freeze({
   external_place_result_selected: 'external_place_selected'
 });
+const GOOGLE_FORM_TITLES = new Set([
+  'Add a Watch Party',
+  'Tell us about this location',
+  'Add or update location details',
+  'Add or update Watch Party details',
+  'Add a new photo'
+]);
+const MANUAL_RESOLUTION_METHODS = new Set(['location', 'address']);
 const ALLOWED_EVENT_PARAMETERS = new Set([
   'action_surface',
   'content_type',
   'entry_surface',
   'form_type',
+  'form_title',
   'game_id',
   'has_watch_party',
   'intent_action',
+  'method',
   'place_type',
   'result_count',
   'result_type',
@@ -49,7 +60,9 @@ export function sanitizeEventParameters(parameters = {}) {
   return Object.fromEntries(Object.entries(parameters)
     .filter(([key]) => ALLOWED_EVENT_PARAMETERS.has(key))
     .map(([key, value]) => [key, cleanParameterValue(value)])
-    .filter(([, value]) => value !== null && value !== undefined));
+    .filter(([key, value]) => value !== null && value !== undefined &&
+      (key !== 'form_title' || GOOGLE_FORM_TITLES.has(value)) &&
+      (key !== 'method' || MANUAL_RESOLUTION_METHODS.has(value))));
 }
 
 function appState(windowObject) {
@@ -96,9 +109,16 @@ export function trackCgbEvent(eventName, parameters = {}, windowObject = globalT
     ...eventDefaults(normalizedName, windowObject),
     ...parameters
   });
-  windowObject.gtag('event', normalizedName, normalizedParameters);
+  // GA4 instrumentation is never allowed to interrupt a contribution,
+  // navigation, or confirmed Fan Intent write.
+  let delivered = true;
+  try {
+    windowObject.gtag('event', normalizedName, normalizedParameters);
+  } catch (_) {
+    delivered = false;
+  }
   if (normalizedName.startsWith('fan_intent_')) pendingIntentSurface = '';
-  return true;
+  return delivered;
 }
 
 export function initializeGoogleAnalytics({
@@ -206,6 +226,15 @@ function handleFlowClick(event, windowObject) {
           form_type: 'watch_party'
         });
     trackCgbEvent('watch_party_form_started', formContext, windowObject);
+  }
+
+  // Photo submissions intentionally open a separate Google Form rather than
+  // the embedded host. Count the actual external-form entry, not the form data.
+  if (element.matches('[data-photo-form-entry]')) {
+    trackCgbEvent('google_form_opened', venueContext(state, venueId, {
+      action_surface: surface,
+      form_title: 'Add a new photo'
+    }), windowObject);
   }
 
   if (element.matches('[data-cal-bar-nomination-entry]')) {

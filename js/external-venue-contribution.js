@@ -9,6 +9,7 @@ import {
   showNewLocationContributionPrompt
 } from './new-location-contribution-prompt.mjs';
 import { readRuntimeConfig } from './config.mjs';
+import { trackCgbEvent } from './analytics.mjs';
 
 const WRITE_TIMEOUT_MS = 12000;
 
@@ -117,7 +118,7 @@ export async function createExternalVenueWithoutAttendance({
     try { if (dialog?.open) dialog.close(); } catch (_) {}
 
     windowObject.CGBApp?.showStatus?.('Community Location added.', 3200);
-    windowObject.gtag?.('event', 'community_location_created');
+    trackCgbEvent('community_location_created', {}, windowObject);
     windowObject.CGBApp?.focusLocation?.({
       lon: venue.longitude,
       lat: venue.latitude,

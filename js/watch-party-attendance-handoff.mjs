@@ -1,3 +1,5 @@
+import { trackCgbEvent } from './analytics.mjs';
+
 const DIALOG_ID = 'watch-party-attendance-handoff';
 
 export const WATCH_PARTY_ATTENDANCE_CHOICES = Object.freeze({
@@ -31,6 +33,7 @@ export function navigateWaitingFormWindow(opened, href, windowObject = window) {
   try {
     if (opened && !opened.closed) {
       opened.location.href = href;
+      trackCgbEvent('google_form_opened', { form_title: 'Add a Watch Party' }, windowObject);
       return true;
     }
   } catch (_) {}
@@ -43,6 +46,7 @@ export function navigateWaitingFormWindow(opened, href, windowObject = window) {
 
   try {
     windowObject.location.assign(href);
+    trackCgbEvent('google_form_opened', { form_title: 'Add a Watch Party' }, windowObject);
     return true;
   } catch (_) {
     return false;
