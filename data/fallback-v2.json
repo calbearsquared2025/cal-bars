@@ -2,34 +2,6 @@
   "schemaVersion": "2.0",
   "venues": [
     {
-      "venue_id": "venue_ac285cb589b266b3acb5d3db",
-      "slug": "atwater-brewery-and-tap-house",
-      "slug_aliases": "atwater-brewery-and-tap-house-detroit",
-      "name": "Atwater Brewery & Tap House",
-      "address_line_1": "237 Jos Campau",
-      "address_line_2": "",
-      "city": "Detroit",
-      "region": "MI",
-      "postal_code": "48207",
-      "country_code": "US",
-      "latitude": 42.3373413,
-      "longitude": -83.0184708,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "One of the Detroit-area spots Bears have used in the past when the requirements were simple: the game, beer, and somewhere open late.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-07-26T00:00:00Z",
-      "venue_tags": [
-        "all_ages",
-        "food"
-      ]
-    },
-    {
       "venue_id": "venue_2bb764588e357170dd6ae69a",
       "slug": "busbys-west",
       "slug_aliases": "busby-s-west-santa-monica",
@@ -517,34 +489,6 @@
       ]
     },
     {
-      "venue_id": "venue_514efbbfa5479ade5f0322c1",
-      "slug": "magic-13-brewing-co",
-      "slug_aliases": "magic-13-brewing-co-miami",
-      "name": "Magic 13 Brewing Co.",
-      "address_line_1": "340 Northeast 61st Street",
-      "address_line_2": "",
-      "city": "Miami",
-      "region": "FL",
-      "postal_code": "33137",
-      "country_code": "US",
-      "latitude": 25.8323546,
-      "longitude": -80.1893334,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "Home to the annual Berkeley Florida Big Game watch party.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-07-26T00:00:00Z",
-      "venue_tags": [
-        "all_ages",
-        "food"
-      ]
-    },
-    {
       "venue_id": "venue_5977e35a58d8b18f22a51f1e",
       "slug": "molly-os",
       "slug_aliases": "molly-o-s-san-carlos",
@@ -576,34 +520,6 @@
       ]
     },
     {
-      "venue_id": "venue_645bc862a1eb13a5be98c1c6",
-      "slug": "oc-local-taproom",
-      "slug_aliases": "oc-local-taproom-laguna-niguel",
-      "name": "OC Local Taproom",
-      "address_line_1": "30100 Town Center Drive",
-      "address_line_2": "",
-      "city": "Laguna Niguel",
-      "region": "CA",
-      "postal_code": "92677",
-      "country_code": "US",
-      "latitude": 33.5261494,
-      "longitude": -117.7128699,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "Classic craft beer and sports bar that has held OC Alumni Association watch parties.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-07-26T00:00:00Z",
-      "venue_tags": [
-        "all_ages",
-        "food"
-      ]
-    },
-    {
       "venue_id": "venue_1f6ab9c4462c7a9100e4fb3b",
       "slug": "philosophers-club",
       "slug_aliases": "philosopher-s-club-san-francisco",
@@ -627,61 +543,6 @@
       "photo_credit_url": "",
       "updated_at": "2026-07-26T00:00:00Z",
       "venue_tags": []
-    },
-    {
-      "venue_id": "venue_b6a116897e09b29e98205256",
-      "slug": "society-sports-and-spirits",
-      "slug_aliases": "society-sports-and-spirits-denver",
-      "name": "Society Sports and Spirits",
-      "address_line_1": "1434 Blake Street",
-      "address_line_2": "",
-      "city": "Denver",
-      "region": "CO",
-      "postal_code": "80202",
-      "country_code": "US",
-      "latitude": 39.7490863,
-      "longitude": -105.0008233,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "Occasional home to the Rocky Mountain Golden Bears.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-07-26T00:00:00Z",
-      "venue_tags": [
-        "food"
-      ]
-    },
-    {
-      "venue_id": "venue_83f4ea160f0ad092e0a89148",
-      "slug": "stoneys-bar-and-grill",
-      "slug_aliases": "stoney-s-bar-and-grill-denver",
-      "name": "Stoney’s Bar & Grill",
-      "address_line_1": "1111 Lincoln Street",
-      "address_line_2": "",
-      "city": "Denver",
-      "region": "CO",
-      "postal_code": "80203",
-      "country_code": "US",
-      "latitude": 39.7342655,
-      "longitude": -104.9864462,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "A very large sports bar with active NFL communities that often airs Cal games—and sometimes hosts watch parties for the Rocky Mountain Bears.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-07-26T00:00:00Z",
-      "venue_tags": [
-        "all_ages",
-        "food"
-      ]
     },
     {
       "venue_id": "venue_38eb170c008b19559da2a0ce",
@@ -735,34 +596,6 @@
       "photo_credit": "",
       "photo_credit_url": "",
       "updated_at": "2026-08-31T01:07:26.888Z",
-      "venue_tags": [
-        "all_ages",
-        "food"
-      ]
-    },
-    {
-      "venue_id": "venue_9c12ea33329afde3c9f9101e",
-      "slug": "the-fourth-bore-taproom-and-grill",
-      "slug_aliases": "the-fourth-bore-taproom-and-grill-orinda",
-      "name": "The Fourth Bore Taproom & Grill",
-      "address_line_1": "2 Orinda Theatre Square",
-      "address_line_2": "Suite 134",
-      "city": "Orinda",
-      "region": "CA",
-      "postal_code": "94563",
-      "country_code": "US",
-      "latitude": 37.8786127,
-      "longitude": -122.1821723,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "Just through the Caldecott Tunnel from campus is a small sports bar that proudly supports Cal Athletics.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-07-26T00:00:00Z",
       "venue_tags": [
         "all_ages",
         "food"
@@ -901,33 +734,6 @@
       "updated_at": "2026-07-26T00:00:00Z",
       "venue_tags": [
         "all_ages",
-        "food"
-      ]
-    },
-    {
-      "venue_id": "venue_ffaea0f297e017858f86eaa5",
-      "slug": "wintergarden-tavern",
-      "slug_aliases": "wintergarden-tavern-livonia",
-      "name": "Wintergarden Tavern",
-      "address_line_1": "33320 7 Mile",
-      "address_line_2": "",
-      "city": "Livonia",
-      "region": "MI",
-      "postal_code": "48152",
-      "country_code": "US",
-      "latitude": 42.4263889,
-      "longitude": -83.3744444,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "An old standby for Detroit-area Bears. No formal watch party these days.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-07-26T00:00:00Z",
-      "venue_tags": [
         "food"
       ]
     },
@@ -1181,36 +987,6 @@
       "updated_at": "2026-10-01T20:08:00.000Z",
       "venue_tags": [
         "food"
-      ]
-    },
-    {
-      "venue_id": "venue_8f157626b1344bd4a0492bed",
-      "slug": "jma-wireless-dome",
-      "slug_aliases": "jma-wireless-dome-syracuse",
-      "name": "JMA Wireless Dome",
-      "address_line_1": "901 Irving Avenue",
-      "address_line_2": "",
-      "city": "Syracuse",
-      "region": "NY",
-      "postal_code": "13244",
-      "country_code": "US",
-      "latitude": 43.0362837779292,
-      "longitude": -76.13636047577728,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "user_added",
-      "alumni_owned": "unknown",
-      "short_description": "While it's not traditionally a ‘Cal Bar,’ on Saturday, Sept. 12 the JMA Dome was officially Bear Territory.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-10-01T20:08:00.000Z",
-      "venue_tags": [
-        "all_ages",
-        "audio_on",
-        "food",
-        "large_crowd"
       ]
     },
     {
@@ -3059,24 +2835,6 @@
       "rsvp_enabled": false
     },
     {
-      "watch_party_id": "wp_b24e2fed3a9148b8a972c976",
-      "venue_id": "venue_8f157626b1344bd4a0492bed",
-      "game_id": "game_64902a48440e55522742d631",
-      "organizer_name": "CAL ATHLETICS / SYRACUSE UNIVERSITY",
-      "organizer_type": "other_organization",
-      "official_event_url": "https://calbears.com/news/2026/9/8/football-cal-travels-east-for-acc-opener-against-syracuse",
-      "source_type": "fan_submitted",
-      "event_start_at": "",
-      "age_policy": "all_ages",
-      "sound_status": "unknown",
-      "restrictions_note": "",
-      "game_day_note": "Cal Football heads east to take on the Orange.",
-      "event_status": "active",
-      "updated_at": "2026-09-09T02:18:36.031Z",
-      "feature_tags": [],
-      "rsvp_enabled": false
-    },
-    {
       "watch_party_id": "wp_e8f679478c3a459396c2bd37",
       "venue_id": "venue_e8cba48a2591e4f520c89cf9",
       "game_id": "game_64902a48440e55522742d631",
@@ -3629,10 +3387,6 @@
       "past_game_count": 1
     },
     {
-      "venue_id": "venue_514efbbfa5479ade5f0322c1",
-      "past_game_count": 0
-    },
-    {
       "venue_id": "venue_52f00a5005b3e7ff881f6e81",
       "past_game_count": 1
     },
@@ -3647,10 +3401,6 @@
     {
       "venue_id": "venue_645adcead25c43ca9a44a361",
       "past_game_count": 2
-    },
-    {
-      "venue_id": "venue_645bc862a1eb13a5be98c1c6",
-      "past_game_count": 0
     },
     {
       "venue_id": "venue_65f873a24edd46c740994438",
@@ -3673,28 +3423,12 @@
       "past_game_count": 3
     },
     {
-      "venue_id": "venue_83f4ea160f0ad092e0a89148",
-      "past_game_count": 0
-    },
-    {
       "venue_id": "venue_84faaa0644ac41a6b4f2fdeb",
-      "past_game_count": 0
-    },
-    {
-      "venue_id": "venue_8f157626b1344bd4a0492bed",
-      "past_game_count": 1
-    },
-    {
-      "venue_id": "venue_9c12ea33329afde3c9f9101e",
       "past_game_count": 0
     },
     {
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
       "past_game_count": 3
-    },
-    {
-      "venue_id": "venue_ac285cb589b266b3acb5d3db",
-      "past_game_count": 0
     },
     {
       "venue_id": "venue_ad3029d141474d4282cc49a8",
@@ -3703,10 +3437,6 @@
     {
       "venue_id": "venue_af33e035626a357bc52f2e8b",
       "past_game_count": 1
-    },
-    {
-      "venue_id": "venue_b6a116897e09b29e98205256",
-      "past_game_count": 0
     },
     {
       "venue_id": "venue_b8dd2180d6b24e209a164755",
@@ -3738,10 +3468,6 @@
     },
     {
       "venue_id": "venue_f5a8919095a06962e9d267ae",
-      "past_game_count": 0
-    },
-    {
-      "venue_id": "venue_ffaea0f297e017858f86eaa5",
       "past_game_count": 0
     }
   ],
@@ -3823,11 +3549,6 @@
     },
     {
       "season": 2026,
-      "venue_id": "venue_8f157626b1344bd4a0492bed",
-      "count": 2
-    },
-    {
-      "season": 2026,
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
       "count": 15
     },
@@ -3878,12 +3599,6 @@
       "year": 2025
     },
     {
-      "venue_id": "venue_83f4ea160f0ad092e0a89148",
-      "text": "It’s a very large place with easily 60+ TVs. They’ll gladly put on Cal games if asked but there are often many games on at once.",
-      "display_name": "",
-      "year": 2025
-    },
-    {
       "venue_id": "venue_41beac9fb48a44eb60650cbc",
       "text": "We’ve been watching every game here for the last four years. No specials necessarily, but they hold the lower area for us for almost every game.",
       "display_name": "",
@@ -3920,5 +3635,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-13T06:51:03.561Z"
+  "generatedAt": "2026-10-13T21:40:54.091Z"
 }
