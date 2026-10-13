@@ -121,7 +121,8 @@
     box-shadow: none !important;
   }
 
-  /* My CGB is a mobile destination surface like Add, not a partial-height map tray. */
+  /* My CGB keeps one full destination geometry through the promo-to-native handoff. */
+  body[data-command-surface="my-cgb"] #map-view > #venue-tray.venue-tray[data-my-cgb-promo-open="true"],
   body[data-command-surface="my-cgb"] #map-view > #venue-tray.venue-tray[data-my-cgb-open="true"] {
     position: fixed !important;
     z-index: 47 !important;
