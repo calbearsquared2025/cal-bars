@@ -265,9 +265,8 @@ body[data-view="detail"] .venue-detail > .party-module {
   margin: 14px 16px 0 !important;
   padding: 13px 14px !important;
   color: var(--cgb-navy-950) !important;
-  background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 82%) !important;
-  border: 1px solid var(--cgb-gold-200) !important;
-  border-left: 4px solid var(--cgb-gold-400) !important;
+  background: var(--cgb-gold-300, #ffd15a) !important;
+  border: 1px solid var(--cgb-gold-500) !important;
   border-radius: 14px !important;
   clip-path: none !important;
   box-shadow: none !important;
@@ -278,11 +277,20 @@ body[data-view="detail"] .venue-detail > .party-module .party-meta {
   color: var(--cgb-navy-950) !important;
 }
 
-body[data-view="detail"] .venue-detail > .party-module p {
+body[data-view="detail"] .venue-detail > .party-module p:not(.party-game-context) {
   margin: 0 !important;
   color: var(--cgb-ink-700) !important;
   font-size: var(--text-sm) !important;
   line-height: 1.35 !important;
+}
+
+body[data-view="detail"] .venue-detail > .party-module .party-game-context {
+  color: var(--cgb-navy-950) !important;
+  font-family: var(--font-condensed, var(--font-display)) !important;
+  font-size: clamp(1.62rem, 4.42vw, 2.55rem) !important;
+  font-weight: 900 !important;
+  line-height: 1.04 !important;
+  overflow-wrap: anywhere;
 }
 
 body[data-view="detail"] .venue-detail > .party-module .party-module__eyebrow {
@@ -672,15 +680,25 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
     display: grid !important;
     gap: 5px !important;
     color: var(--cgb-navy-950) !important;
-    background: linear-gradient(135deg, var(--cgb-gold-50), var(--cgb-white) 82%) !important;
-    border-left: 4px solid var(--cgb-gold-400) !important;
+    background: var(--cgb-gold-300, #ffd15a) !important;
+    border: 1px solid var(--cgb-gold-500) !important;
+    border-radius: 12px !important;
   }
 
-  #tray-selected > #venue-detail > .party-module p,
+  #tray-selected > #venue-detail > .party-module p:not(.party-game-context),
   #tray-selected > #venue-detail > .party-module a {
     margin: 0 !important;
     font-size: .74rem !important;
     line-height: 1.35 !important;
+  }
+
+  #tray-selected > #venue-detail > .party-module .party-game-context {
+    color: var(--cgb-navy-950) !important;
+    font-family: var(--font-condensed, var(--font-display)) !important;
+    font-size: clamp(1.4rem, 5.95vw, 1.87rem) !important;
+    font-weight: 900 !important;
+    line-height: 1.04 !important;
+    overflow-wrap: anywhere;
   }
 
   #tray-selected > #venue-detail .detail-editorial {

@@ -550,6 +550,15 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     color: var(--cgb-navy-950) !important;
   }
 
+  html #tray-selected > #venue-detail.venue-detail > .party-module .party-game-context {
+    font-family: var(--font-condensed, var(--font-display)) !important;
+    font-size: clamp(1.7rem, 2.72vw, 2.55rem) !important;
+    font-weight: 900 !important;
+    line-height: 1.04 !important;
+    letter-spacing: 0 !important;
+    overflow-wrap: anywhere;
+  }
+
   html #tray-selected > #venue-detail.venue-detail > .party-module .party-module__date,
   html #tray-selected > #venue-detail.venue-detail > .party-module p,
   html #tray-selected > #venue-detail.venue-detail > .party-module a {

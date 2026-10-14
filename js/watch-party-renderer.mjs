@@ -207,7 +207,6 @@ export function createWatchPartyModule({
 
   const gameSection = documentObject.createElement('div');
   gameSection.className = 'party-module__fact party-module__fact--game';
-  appendSectionEyebrow(gameSection, 'Game', documentObject);
   if (game) {
     appendText(
       gameSection,
@@ -234,7 +233,6 @@ export function createWatchPartyModule({
 
   const details = documentObject.createElement('section');
   details.className = 'party-module__section party-module__details';
-  appendSectionEyebrow(details, 'Details', documentObject);
   appendTags(details, watchPartyTagLabels(party, venue), documentObject);
   appendText(details, party.restrictions_note, 'party-module__note', documentObject);
   appendText(details, party.game_day_note, 'party-module__note', documentObject);
@@ -251,6 +249,7 @@ export function createWatchPartyModule({
   }
 
   const issueUrl = buildWatchPartyIssueUrl(issueConfig(documentObject), resolveWatchPartyIssueContext(snapshot, party));
+  let reportLink = null;
   if (issueUrl) {
     const report = documentObject.createElement('a');
     report.className = 'party-module__report';
@@ -267,12 +266,18 @@ export function createWatchPartyModule({
     action.textContent = 'Tell us →';
     report.append(prompt, documentObject.createTextNode(' '), action);
     refreshWatchPartyProfileOnReturn(report);
-    details.append(report);
+    reportLink = report;
   }
 
-  if (details.children.length > 1) module.append(details);
+  if (details.childElementCount) module.append(details);
 
   appendExternalRsvp(module, party, documentObject);
   appendNativeRsvp(module, party, documentObject);
+  if (reportLink) {
+    const contribution = documentObject.createElement('div');
+    contribution.className = 'party-module__contribution';
+    contribution.append(reportLink);
+    module.append(contribution);
+  }
   return module;
 }

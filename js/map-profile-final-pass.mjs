@@ -136,6 +136,16 @@ function installStyles() {
         line-height: 1.27 !important;
       }
 
+      /* Protect the ticket's primary matchup from the compact body-copy override. */
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-game-context {
+        font-family: var(--font-condensed, var(--font-display)) !important;
+        font-size: clamp(1.4rem, 5.95vw, 1.87rem) !important;
+        font-weight: 900 !important;
+        line-height: 1.04 !important;
+        letter-spacing: 0 !important;
+        overflow-wrap: anywhere;
+      }
+
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__host strong {
         font-weight: 700 !important;
       }
