@@ -288,7 +288,7 @@
     margin: 0 !important;
   }
 
-  /* Large numerals and small supporting labels match the board. */
+  /* Keep the large numerals and readable single-line category labels. */
   .opening-stat__item {
     padding: 4px 9px;
   }
@@ -312,22 +312,15 @@
   }
 
   .opening-stat__copy {
-    display: grid;
-    gap: 1px;
+    display: block;
     color: var(--cgb-navy-900);
     font-family: var(--font-condensed);
-    font-size: var(--text-2xs);
+    font-size: clamp(.875rem, 3.9vw, 1rem);
     font-weight: 900;
-    letter-spacing: .055em;
-    line-height: 1.05;
-    text-transform: uppercase;
-  }
-
-  .opening-stat__copy small {
-    color: var(--cgb-ink-500);
-    font-size: var(--text-2xs);
-    font-weight: 700;
     letter-spacing: .035em;
+    line-height: 1.1;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   body[data-command-surface="search"] .command-surface:not([hidden]),

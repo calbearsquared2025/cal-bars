@@ -780,18 +780,13 @@ body[data-view="detail"] #app {
   }
 
   .opening-stat__copy {
-    display: grid;
+    display: block;
     color: var(--cgb-navy-900, #002676);
-    font-size: var(--text-2xs);
+    font-size: clamp(.875rem, 1.15vw, 1rem);
     letter-spacing: .035em;
-    line-height: 1.05;
+    line-height: 1.1;
     text-transform: uppercase;
-  }
-
-  .opening-stat__copy small {
-    color: var(--cgb-ink-500, #657083);
-    font-size: var(--text-2xs);
-    font-weight: 700;
+    white-space: nowrap;
   }
 
   .map-legend {

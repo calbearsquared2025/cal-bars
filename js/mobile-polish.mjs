@@ -27,7 +27,6 @@ function syncStatLayout(element, number, copy) {
   number.style.minWidth = '2ch';
   number.style.textAlign = 'right';
   number.style.fontVariantNumeric = 'tabular-nums';
-  copy.style.justifyItems = 'start';
   copy.style.textAlign = 'left';
 }
 
@@ -41,9 +40,7 @@ function renderStat(element, label, detail) {
   copy.className = 'opening-stat__copy';
   const main = document.createElement('span');
   main.textContent = label;
-  const supporting = document.createElement('small');
-  supporting.textContent = detail;
-  copy.append(main, supporting);
+  copy.append(main);
   syncStatLayout(element, number, copy);
   element.replaceChildren(number, copy);
   element.setAttribute('aria-label', `${value} ${label.toLowerCase()} ${detail.toLowerCase()}`);
