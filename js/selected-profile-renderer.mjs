@@ -58,6 +58,22 @@ export function selectedAttendanceViewModel({ state, game, venue } = {}) {
   };
 }
 
+export function renderEmptyAttendancePrompt(count, { hero = false, documentObject = count?.ownerDocument || document } = {}) {
+  const prompt = documentObject.createElement(hero ? 'span' : 'strong');
+  prompt.className = 'bear-count__prompt';
+  prompt.textContent = hero ? 'BE THE FIRST.' : 'Be the first.';
+  if (hero) {
+    const guidance = documentObject.createElement('span');
+    guidance.className = 'bear-count__guidance';
+    guidance.textContent = 'Say you’ll be here for this game.';
+    count.replaceChildren(prompt, guidance);
+  } else {
+    const icon = createIcon('users', { className: 'ui-icon bear-count__icon', documentObject });
+    count.replaceChildren(icon, prompt);
+  }
+  return count;
+}
+
 export function renderSelectedAttendanceCount(count, view, {
   hero = false,
   pending = false,
@@ -73,15 +89,7 @@ export function renderSelectedAttendanceCount(count, view, {
   if (view.kind === 'completed') {
     count.textContent = view.primary;
   } else if (view.kind === 'empty') {
-    const prompt = documentObject.createElement('strong');
-    prompt.className = 'bear-count__prompt';
-    prompt.textContent = hero ? 'BE THE FIRST.' : 'Be the first.';
-    if (hero) {
-      count.append(prompt);
-    } else {
-      const icon = createIcon('users', { className: 'ui-icon bear-count__icon', documentObject });
-      count.append(icon, prompt);
-    }
+    renderEmptyAttendancePrompt(count, { hero, documentObject });
   } else {
     const numeral = documentObject.createElement('span');
     numeral.className = 'bear-count__number';

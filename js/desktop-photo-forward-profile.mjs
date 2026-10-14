@@ -3,7 +3,7 @@ import {
   resolveCalBarNominationVenue
 } from './cal-bar-nomination-core.mjs';
 import { venueTagsForVenue } from './fan-experiences.mjs';
-import { selectedAttendanceViewModel } from './selected-profile-renderer.mjs';
+import { renderEmptyAttendancePrompt, selectedAttendanceViewModel } from './selected-profile-renderer.mjs';
 import { readRuntimeConfig } from './config.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 
@@ -104,10 +104,7 @@ function syncAttendance({ detail, state, venue, documentObject }) {
   }
 
   if (view.kind === 'empty') {
-    const prompt = documentObject.createElement('span');
-    prompt.className = 'bear-count__prompt';
-    prompt.textContent = 'BE THE FIRST.';
-    current.replaceChildren(prompt);
+    renderEmptyAttendancePrompt(current, { hero: true, documentObject });
     return;
   }
 
@@ -149,8 +146,12 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   const activity = detail.querySelector(':scope > .activity-card') ||
     hero?.querySelector(':scope > .activity-card');
   const community = detail.querySelector(':scope > .detail-fan-experiences');
-  const cgbActivity = detail.querySelector(':scope > .detail-cgb-activity');
-  const photo = detail.querySelector(':scope > .detail-photo');
+  const cgbActivity = detail.querySelector(':scope > .detail-cgb-activity') ||
+    hero?.querySelector(':scope > .activity-card > .detail-cgb-activity');
+  // Photo enrichment initially inserts media into the hero. Preserve it when
+  // normalizing the canonical desktop sibling order.
+  const photo = hero?.querySelector(':scope > .detail-photo') ||
+    detail.querySelector(':scope > .detail-photo');
   const contribution = detail.querySelector(':scope > .detail-contribution');
   if (!hero) return;
 
@@ -158,16 +159,18 @@ function arrangeHierarchy({ detail, whatToKnow }) {
   delete detail.dataset.desktopPhotoForward;
   delete detail.dataset.desktopBalancedOpening;
   delete detail.dataset.desktopFallbackMap;
-  detail.dataset.desktopProfileArrangement = 'identity-attendance-party-what-to-know-editorial-community-activity-photo-contribution';
+  detail.dataset.desktopProfileArrangement = 'identity-attendance-season-party-what-to-know-editorial-community-photo-contribution';
 
   if (activity && activity.parentElement !== hero) hero.append(activity);
+  if (activity && cgbActivity && cgbActivity.parentElement !== activity) activity.append(cgbActivity);
 
   let cursor = hero;
   parties.forEach((party) => { cursor = placeAfter(cursor, party); });
   cursor = placeAfter(cursor, whatToKnow);
   cursor = placeAfter(cursor, editorial);
   cursor = placeAfter(cursor, community);
-  cursor = placeAfter(cursor, cgbActivity);
+  // A missing attendance node must not make the historical section disappear.
+  if (!activity) cursor = placeAfter(cursor, cgbActivity);
   if (photo) {
     photo.classList.remove('detail-photo--desktop-opening');
     photo.classList.add('detail-profile-media--desktop', 'detail-photo--supporting');

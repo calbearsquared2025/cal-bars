@@ -394,7 +394,9 @@ function renderDetailActivity(game) {
     renderSelectedAttendanceCount(
       current,
       selectedAttendanceViewModel({ state: appState, game, venue }),
-      { pending: Boolean(isPending), documentObject: document }
+      // This card is already in the desktop hero: keep its zero-attendance
+      // invitation consistent when fan-intent refreshes after enrichment.
+      { hero: true, pending: Boolean(isPending), documentObject: document }
     );
   } else {
     current.setAttribute('aria-label', presentation.primary);

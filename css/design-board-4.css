@@ -598,6 +598,17 @@ body[data-view="detail"] #app {
     text-transform: uppercase;
   }
 
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header .bear-count--hero.bear-count--empty .bear-count__guidance {
+    display: block;
+    max-width: 100%;
+    margin-top: 5px;
+    color: rgba(255, 255, 255, .82);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
   body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header .venue-activity-history {
     grid-column: 2;
     grid-row: 4;

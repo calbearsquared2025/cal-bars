@@ -54,18 +54,18 @@ function installStyles(documentObject) {
   documentObject.head.append(style);
 }
 
-export function selectedProfileHistoricalActivity({ state, venue } = {}) {
+export function selectedProfileHistoricalActivity({ state, venue, includeEmptyHistory = false } = {}) {
   const game = state?.snapshot?.games?.find((item) => clean(item?.game_id) === clean(state?.gameId));
   if (!game || !venue) return null;
   const view = selectedAttendanceViewModel({ state, game, venue });
-  if (view.kind !== 'positive' || view.number <= 0 || !view.secondary?.length) return null;
+  if (!view.secondary?.length || (view.kind !== 'positive' && !(includeEmptyHistory && view.kind === 'empty'))) return null;
   return Object.freeze({
     lines: Object.freeze(view.secondary.slice())
   });
 }
 
-export function createSelectedProfileActivitySection({ state, venue, documentObject = document } = {}) {
-  const presentation = selectedProfileHistoricalActivity({ state, venue });
+export function createSelectedProfileActivitySection({ state, venue, includeEmptyHistory = false, documentObject = document } = {}) {
+  const presentation = selectedProfileHistoricalActivity({ state, venue, includeEmptyHistory });
   if (!presentation) return null;
   installStyles(documentObject);
 
@@ -85,10 +85,23 @@ export function createSelectedProfileActivitySection({ state, venue, documentObj
 }
 
 export function syncSelectedProfileActivitySection({ detail, state, venue, documentObject = document } = {}) {
-  detail?.querySelector?.(':scope > [data-cgb-activity]')?.remove();
+  // Desktop owns this section inside the hero; mobile keeps it as a direct section.
+  detail?.querySelector?.('[data-cgb-activity]')?.remove();
   if (documentObject?.body?.dataset?.view !== 'map') return null;
-  const section = createSelectedProfileActivitySection({ state, venue, documentObject });
+  // On mobile, the selected-card header already owns zero-attendance season history.
+  const includeEmptyHistory = detail?.dataset?.profilePresentation === 'desktop';
+  const section = createSelectedProfileActivitySection({ state, venue, includeEmptyHistory, documentObject });
   if (!detail || !section) return null;
+  if (includeEmptyHistory) {
+    // Place history with the desktop game count immediately, including after
+    // asynchronous activity refreshes that run after hierarchy normalization.
+    const attendance = detail.querySelector(':scope > .detail-hero > .activity-card') ||
+      detail.querySelector(':scope > .activity-card');
+    if (attendance) {
+      attendance.append(section);
+      return section;
+    }
+  }
   const community = detail.querySelector(':scope > .detail-fan-experiences');
   const editorial = detail.querySelector(':scope > .detail-editorial');
   const hero = detail.querySelector(':scope > .detail-hero');

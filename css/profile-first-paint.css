@@ -265,20 +265,31 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card {
     grid-column: 2 !important;
-    grid-row: 1 / 5 !important;
-    align-self: center !important;
+    grid-row: 1 / 6 !important;
+    align-self: stretch !important;
     justify-self: stretch !important;
     min-width: 0 !important;
     min-height: 0 !important;
-    display: flex !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr) !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-items: center !important;
+    gap: 0 !important;
     margin: 0 !important;
     padding: 2px 0 2px 22px !important;
     color: var(--cgb-white) !important;
     background: transparent !important;
     border: 0 !important;
     border-left: 1px solid rgba(255, 255, 255, .18) !important;
+  }
+
+  /* Preserve the game count at the center of the hero, regardless of season history. */
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    align-self: center !important;
+    justify-self: center !important;
   }
 
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count:not(.bear-count--empty) {
@@ -378,6 +389,54 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     text-transform: uppercase !important;
   }
 
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > strong.bear-count.bear-count--empty .bear-count__guidance {
+    display: block !important;
+    margin-top: 5px !important;
+    color: rgba(255, 255, 255, .82) !important;
+    font-family: var(--font-ui) !important;
+    font-size: var(--text-2xs) !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+  }
+
+  /* Anchor season history at the bottom of the existing right column, not next
+     to the prominent current-game count. The 1fr tracks do not enlarge the hero. */
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > .detail-cgb-activity {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+    align-self: end !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 8px 0 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, .14) !important;
+    text-align: left !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > .detail-cgb-activity > h2 {
+    margin: 0 0 4px !important;
+    color: rgba(255, 255, 255, .63) !important;
+    font-family: var(--font-ui) !important;
+    font-size: var(--text-2xs) !important;
+    font-weight: 700 !important;
+    letter-spacing: .045em !important;
+    line-height: 1.1 !important;
+  }
+
+  html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > .detail-cgb-activity > p {
+    margin: 0 !important;
+    color: rgba(255, 255, 255, .74) !important;
+    font-size: .72rem !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Hide only the base-renderer's redundant hero history paragraph. */
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-hero > .activity-card > p {
     display: none !important;
   }
