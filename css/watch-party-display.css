@@ -330,10 +330,29 @@
 }
 
 @media (max-width: 899px) {
-  /* Both iPhone and larger mobile trays need the entire width for the matchup. */
+  /* Compress ticket whitespace on phones without shrinking text or RSVP targets. */
   .party-module__summary {
     grid-template-columns: 1fr;
-    gap: 9px;
+    gap: 5px;
+    margin-top: 0;
+    padding: 1px 0 10px;
+  }
+  .party-module__fact,
+  .party-module__section {
+    gap: 4px;
+  }
+  .party-module__details {
+    padding-top: 7px;
+  }
+  .party-module__section:not(.party-module__details) {
+    margin-top: 3px;
+    padding-top: 7px;
+  }
+  .party-module__contribution > .party-module__report {
+    margin-top: 2px;
+  }
+  #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__report {
+    margin-top: 2px;
   }
   .party-module__fact--host {
     align-content: start;

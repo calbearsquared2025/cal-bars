@@ -715,12 +715,12 @@ body[data-view="detail"] #app {
   }
 
   .brand-mark {
-    width: 42px;
-    height: 42px;
+    width: clamp(46px, 3.65vw, 54px);
+    height: clamp(46px, 3.65vw, 54px);
   }
 
   .brand-name {
-    font-size: 1.08rem;
+    font-size: clamp(1.17rem, calc(1.17rem + 1.5vw - 13.92px), 1.7rem);
     letter-spacing: .03em;
   }
 
@@ -751,8 +751,8 @@ body[data-view="detail"] #app {
     grid-row: 1;
     position: static;
     width: 100%;
-    height: 78px;
-    grid-template-rows: 48px 28px;
+    height: 72px;
+    grid-template-rows: 44px 26px;
     background: rgba(255, 255, 255, .98);
     border-color: rgba(1, 1, 51, .1);
     border-radius: var(--radius-md);
@@ -1136,6 +1136,32 @@ body[data-view="detail"] #app {
   top: calc(env(safe-area-inset-top, 0px) + 44px);
 }
 
+
+/* Let the desktop wordmark grow further once the header has room. */
+@media (min-width: 1025px) {
+  .brand-name {
+    font-size: clamp(1.26rem, calc(1.26rem + 2.125vw - 21.76px), 1.875rem);
+  }
+}
+
+/* Keep the original desktop layout; only compact the stats on spacious widths. */
+@media (min-width: 1200px) {
+  .opening-stat {
+    width: min(92%, 580px);
+    justify-self: center;
+  }
+}
+
+/* At the desktop breakpoint, allow the original columns to contract without overflow. */
+@media (min-width: 900px) and (max-width: 1023px) {
+  .site-header {
+    grid-template-columns: minmax(200px, .94fr) minmax(320px, 1.04fr) minmax(240px, 1fr);
+  }
+
+  .game-button {
+    min-width: min(280px, 27vw);
+  }
+}
 
 /* Desktop selected profile: the navy identity/attendance hero is fixed chrome.
    Only the white continuation below it owns vertical scrolling. */

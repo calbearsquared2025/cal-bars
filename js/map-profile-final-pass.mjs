@@ -107,9 +107,9 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module {
         display: grid !important;
-        gap: 4px !important;
+        gap: 3px !important;
         margin: 0 !important;
-        padding: 14px 13px 12px !important;
+        padding: 11px 13px 10px !important;
         color: var(--cgb-navy-950) !important;
         background: var(--cgb-gold-300, #ffd15a) !important;
         border: 1px solid var(--cgb-gold-500) !important;
@@ -177,7 +177,7 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__report {
         justify-self: start !important;
-        margin-top: 5px !important;
+        margin-top: 2px !important;
         padding-top: 0 !important;
         color: var(--cgb-navy-900) !important;
         border: 0 !important;

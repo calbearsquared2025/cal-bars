@@ -761,6 +761,11 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
 }
 
 @media (max-width: 899px) and (orientation: portrait) {
+  body[data-view="detail"] .venue-detail > .party-module {
+    gap: 3px !important;
+    padding: 11px 14px !important;
+  }
+
   body[data-view="detail"] .detail-contribution {
     margin-bottom: 0;
   }
