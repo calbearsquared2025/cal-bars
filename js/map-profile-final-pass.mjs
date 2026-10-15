@@ -146,10 +146,6 @@ function installStyles() {
         overflow-wrap: anywhere;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__host strong {
-        font-weight: 700 !important;
-      }
-
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-meta {
         margin: 3px 0 2px -6px !important;
       }

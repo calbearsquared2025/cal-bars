@@ -109,6 +109,31 @@
   overflow-wrap: anywhere;
 }
 
+/* Let the organizer read as a distinct identity, not another athletic headline. */
+.party-module .party-module__fact--host > .party-module__eyebrow {
+  color: var(--cgb-ink-700);
+  font-weight: 650;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+
+.party-module .party-module__fact--host .party-module__host strong {
+  color: var(--cgb-navy-950);
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 1.3vw, 1.125rem);
+  font-weight: 750;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+/* Full-page venue detail has stronger general eyebrow overrides. */
+body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host > .party-module__eyebrow {
+  color: var(--cgb-ink-700) !important;
+  font-weight: 650 !important;
+  letter-spacing: .02em !important;
+  text-transform: none;
+}
+
 /* The shallow white half-circles hint at a ticket tear without affecting the hit targets. */
 .party-module__summary::before,
 .party-module__summary::after {
