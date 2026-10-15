@@ -37,10 +37,34 @@ function installStyles(documentObject) {
     }
 
     @media (max-width: 899px) {
-      body[data-view="map"][data-command-surface="map"] #tray-selected > #venue-detail.venue-detail--selected-continuation > .detail-cgb-activity {
-        grid-column: 1 / -1 !important;
-        grid-row: 3 !important;
-        padding: 12px 16px 13px !important;
+      /* Reuse the desktop CGB Activity block beneath current attendance in the navy column. */
+      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card .selected-card__attendance-hero > .detail-cgb-activity {
+        min-width: 0;
+        width: 100%;
+        margin: 3px 0 0;
+        padding: 7px 0 0;
+        color: var(--cgb-white);
+        background: transparent;
+        border: 0;
+        border-top: 1px solid rgba(255, 255, 255, .18);
+        text-align: left;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card .selected-card__attendance-hero > .detail-cgb-activity > h2 {
+        margin: 0 0 4px;
+        color: rgba(255, 255, 255, .7);
+        font-size: var(--text-2xs);
+        font-weight: 700;
+        letter-spacing: .035em;
+        line-height: 1.15;
+      }
+
+      body[data-view="map"][data-command-surface="map"] #tray-selected > .selected-card .selected-card__attendance-hero > .detail-cgb-activity > p {
+        margin: 0;
+        color: rgba(255, 255, 255, .82);
+        font-size: .72rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
       }
     }
 
@@ -85,13 +109,24 @@ export function createSelectedProfileActivitySection({ state, venue, includeEmpt
 }
 
 export function syncSelectedProfileActivitySection({ detail, state, venue, documentObject = document } = {}) {
-  // Desktop owns this section inside the hero; mobile keeps it as a direct section.
+  // One history owner at a time: desktop hero, mobile attendance column, or no section.
   detail?.querySelector?.('[data-cgb-activity]')?.remove();
+  const selectedCard = documentObject?.querySelector?.('#tray-selected > .selected-card[data-venue-id]');
+  const mobileColumn = selectedCard?.dataset?.venueId === venue?.venue_id
+    ? selectedCard.querySelector('.selected-card__attendance-hero')
+    : null;
+  mobileColumn?.querySelector?.(':scope > [data-cgb-activity]')?.remove();
   if (documentObject?.body?.dataset?.view !== 'map') return null;
-  // On mobile, the selected-card header already owns zero-attendance season history.
+  // Preserve the existing zero-attendance mobile history prompt; completed games are unchanged.
   const includeEmptyHistory = detail?.dataset?.profilePresentation === 'desktop';
   const section = createSelectedProfileActivitySection({ state, venue, includeEmptyHistory, documentObject });
   if (!detail || !section) return null;
+  if (detail.dataset.profilePresentation === 'mobile-continuation' && mobileColumn) {
+    const count = mobileColumn.querySelector(':scope > .bear-count--hero');
+    if (count) count.after(section);
+    else mobileColumn.prepend(section);
+    return section;
+  }
   if (includeEmptyHistory) {
     // Place history with the desktop game count immediately, including after
     // asynchronous activity refreshes that run after hierarchy normalization.

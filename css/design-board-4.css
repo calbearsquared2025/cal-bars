@@ -513,6 +513,31 @@ body[data-view="detail"] #app {
     grid-row: 3;
   }
 
+  /* Always-loaded mobile attendance column. Account-only styles extend this
+     component when public attendee avatars are available. */
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header .selected-card__attendance-hero {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    align-self: center;
+    justify-self: center;
+    width: min(100%, 150px);
+    max-width: 100%;
+    display: grid;
+    gap: 9px;
+  }
+
+  /* Keep the pre-existing zero-attendance prompt centered with the venue heading. */
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__attendance-hero:has(> .bear-count--empty) {
+    grid-row: 1 / 4;
+  }
+
+  body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__attendance-hero > .bear-count--hero:not(.bear-count--empty) {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: auto;
+    justify-self: center;
+  }
+
   body[data-view="map"][data-command-surface="map"] .tray--selected .selected-card__header .bear-count--hero {
     grid-column: 2;
     grid-row: 1 / 4;

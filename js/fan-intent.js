@@ -19,6 +19,7 @@ import {
   selectedAttendanceViewModel
 } from './selected-profile-renderer.mjs';
 import { createIcon } from './icons.mjs';
+import { syncSelectedProfileActivitySection } from './selected-profile-activity.mjs';
 import {
   getVenueSeasonCount,
   legacyActivitySeason,
@@ -437,6 +438,12 @@ function renderSelectedCardActivity(game) {
       documentObject: document
     }
   );
+  // Keep the existing mobile history section current through optimistic, settled,
+  // and withdrawn attendance updates without rerendering the entire venue card.
+  const detail = document.querySelector('#tray-selected > #venue-detail.venue-detail--selected-continuation');
+  if (detail?.dataset.venueId === venue.venue_id) {
+    syncSelectedProfileActivitySection({ detail, state: appState, venue, documentObject: document });
+  }
 }
 
 function renderVenueActivity() {

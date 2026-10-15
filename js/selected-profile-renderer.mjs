@@ -288,7 +288,16 @@ export function createSelectedVenueCard({
   heading.append(location);
 
   if (mobile) {
-    heading.append(attendance.count);
+    if (game?.game_status === 'completed') {
+      heading.append(attendance.count);
+    } else {
+      // The existing account-attendance wrapper also houses CGB season activity.
+      // Keeping the count as its direct child preserves attendance updates.
+      const attendanceColumn = documentObject.createElement('div');
+      attendanceColumn.className = 'selected-card__attendance-hero';
+      attendanceColumn.append(attendance.count);
+      heading.append(attendanceColumn);
+    }
     if (attendance.history) heading.append(attendance.history);
   }
 

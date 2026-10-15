@@ -56,6 +56,16 @@
   cursor: pointer;
 }
 
+/* The mobile header keeps this injected control beneath the venue address,
+   even when the right-hand attendance column contains season history. */
+@media (max-width: 899px) {
+  body[data-view="map"][data-command-surface="map"] .selected-card__header .account-venue-favorite {
+    grid-column: 1;
+    grid-row: 4;
+    justify-self: start;
+  }
+}
+
 .account-venue-favorite:hover,
 .account-venue-favorite:focus-visible {
   text-decoration: underline;
