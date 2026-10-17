@@ -16,12 +16,6 @@ import {
   resolveWatchPartyIssueContext
 } from './watch-party-issue-core.mjs';
 import { subscribeAppEvent } from './app-state.mjs';
-import {
-  WATCH_PARTY_ATTENDANCE_CHOICES,
-  closeWaitingFormWindow,
-  navigateWaitingFormWindow,
-  requestWatchPartyAttendance
-} from './watch-party-attendance-handoff.mjs';
 import { readRuntimeConfig } from './config.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import {
@@ -80,36 +74,17 @@ function openExternalUrl(href) {
   return true;
 }
 
-function openWatchPartyUrlWithAttendanceChoice(href, venueId, gameId) {
-  if (!href || !venueId || !gameId) return false;
-
-  void (async () => {
-    const handoff = await requestWatchPartyAttendance({
-      documentObject: document,
-      windowObject: window
-    });
-    if (!handoff) return;
-
-    if (handoff.choice === WATCH_PARTY_ATTENDANCE_CHOICES.attend) {
-      const ensureAttendance = window.CGBFanIntent?.ensureAttendance;
-      if (typeof ensureAttendance !== 'function') {
-        closeWaitingFormWindow(handoff.windowRef);
-        showStatus('Attendance is temporarily unavailable. Try again or continue without checking in.', 5000);
-        return;
-      }
-      const saved = await ensureAttendance(venueId, gameId);
-      if (!saved) {
-        closeWaitingFormWindow(handoff.windowRef);
-        showStatus('Attendance was not saved. Try again or continue without checking in.', 5000);
-        return;
-      }
-    }
-
-    if (!navigateWaitingFormWindow(handoff.windowRef, href, window)) {
+function openNativeWatchPartyForVenue(venueId) {
+  if (!venueId) return false;
+  void import('./watch-party-form.js')
+    .then(({ openWatchPartyFormForVenue }) => openWatchPartyFormForVenue(venueId))
+    .then((opened) => {
+      if (!opened) showStatus('Could not open the Watch Party form. Try again.', 5000);
+    })
+    .catch((error) => {
+      console.error('Could not load the Watch Party form.', error);
       showStatus('Could not open the Watch Party form. Try again.', 5000);
-    }
-  })();
-
+    });
   return true;
 }
 
@@ -477,7 +452,7 @@ function beginContribution(intent, {
 
   if (href) {
     const opened = intent === CONTRIBUTION_INTENTS.watchParty
-      ? openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame(state)?.game_id)
+      ? openNativeWatchPartyForVenue(venueId)
       : openExternalUrl(href);
     setSurface('map');
     return opened;
@@ -536,7 +511,7 @@ function handleSearchResultClick(event) {
       const href = contributionUrl(intent, venueId);
       if (href) {
         if (intent === CONTRIBUTION_INTENTS.watchParty) {
-          openWatchPartyUrlWithAttendanceChoice(href, venueId, selectedGame()?.game_id);
+          openNativeWatchPartyForVenue(venueId);
         } else {
           openExternalUrl(href);
         }

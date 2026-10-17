@@ -17,12 +17,12 @@ export function readWatchPartyFormConfig(documentObject = document) {
   return readRuntimeConfig({ documentObject }).forms.watchParty;
 }
 
-function nativeWatchPartyContext(app, documentObject = document, { allowSelectedTray = false } = {}) {
+function nativeWatchPartyContext(app, documentObject = document, { allowSelectedTray = false, venueId = '' } = {}) {
   const state = app?.getState?.();
   const context = resolveWatchPartyFormContext({
     snapshot: state?.snapshot,
     gameId: state?.gameId,
-    selectedVenueId: state?.selectedVenueId,
+    selectedVenueId: venueId || state?.selectedVenueId,
     detailMode: allowSelectedTray ? true : state?.detailMode
   });
   if (!context) return { context: null, href: '' };
@@ -51,6 +51,19 @@ function nativeWatchPartyContext(app, documentObject = document, { allowSelected
     context
   );
   return { context: nativeContext, href };
+}
+
+export async function openWatchPartyFormForVenue(venueId, {
+  app = window.CGBApp,
+  documentObject = document,
+  windowObject = window
+} = {}) {
+  const { context, href } = nativeWatchPartyContext(app, documentObject, {
+    allowSelectedTray: true,
+    venueId
+  });
+  if (!context) return false;
+  return launchWatchPartyForm({ app, context, href, windowObject });
 }
 
 export async function openSelectedWatchPartyForm({
