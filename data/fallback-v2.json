@@ -1191,8 +1191,8 @@
       "game_date": "2026-10-17",
       "kickoff_at": "2026-10-18T02:30:00Z",
       "kickoff_status": "confirmed",
-      "game_status": "upcoming",
-      "updated_at": "2026-10-05T17:59:00Z"
+      "game_status": "completed",
+      "updated_at": "2026-10-18T08:34:03.670Z"
     },
     {
       "game_id": "game_5f8281482583c43917f6f2a5",
@@ -3314,11 +3314,6 @@
       "count": 1
     },
     {
-      "game_id": "game_2d86d2a1538503a070d1ee68",
-      "venue_id": "venue_aa357331ebc3484392ea9f6b",
-      "count": 3
-    },
-    {
       "game_id": "game_5f8281482583c43917f6f2a5",
       "venue_id": "venue_5977e35a58d8b18f22a51f1e",
       "count": 2
@@ -3454,7 +3449,7 @@
     },
     {
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
-      "past_game_count": 4
+      "past_game_count": 5
     },
     {
       "venue_id": "venue_ad3029d141474d4282cc49a8",
@@ -3576,7 +3571,7 @@
     {
       "season": 2026,
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
-      "count": 16
+      "count": 19
     },
     {
       "season": 2026,
@@ -3661,5 +3656,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-18T04:39:55.187Z"
+  "generatedAt": "2026-10-18T15:55:17.184Z"
 }
