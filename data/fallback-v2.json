@@ -3269,6 +3269,42 @@
         "cal_specials"
       ],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_hawaii_wake_20261017",
+      "venue_id": "venue_14e39fdcd134476599503f51",
+      "game_id": "game_2d86d2a1538503a070d1ee68",
+      "organizer_name": "Kulapea (Cal Alumni Hawaii)",
+      "organizer_type": "alumni_group",
+      "official_event_url": "",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-10-18T02:30:00Z",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Cal alumni and fans gathering at Pint + Jigger in the Ala Moana Hotel at 4:30 PM Hawaii time. Wear Cal colors; Grateful Dead-themed uniforms encouraged. Announcement by Alan Carpenter in Kulapea (Cal Alumni Hawaii).",
+      "event_status": "active",
+      "updated_at": "2026-10-17T15:56:00Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_83409deb1eed470592cd6cda",
+      "venue_id": "venue_13cca91604a0819ea14c8fea",
+      "game_id": "game_2d86d2a1538503a070d1ee68",
+      "organizer_name": "Cal Alumni Club New York",
+      "organizer_type": "alumni_group",
+      "official_event_url": "",
+      "source_type": "fan_submitted",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "",
+      "event_status": "active",
+      "updated_at": "2026-10-17T19:53:43.321Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -3625,5 +3661,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-15T17:05:38.457Z"
+  "generatedAt": "2026-10-18T04:39:55.187Z"
 }
