@@ -1215,10 +1215,10 @@
       "game_title": "",
       "home_away": "away",
       "game_date": "2026-10-31",
-      "kickoff_at": "",
-      "kickoff_status": "tbd",
+      "kickoff_at": "2026-10-31T16:00:00Z",
+      "kickoff_status": "confirmed",
       "game_status": "upcoming",
-      "updated_at": "2026-07-31T17:43:00Z"
+      "updated_at": "2026-10-19T17:02:29Z"
     },
     {
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
@@ -3656,5 +3656,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-18T15:55:17.184Z"
+  "generatedAt": "2026-10-19T18:45:00.216Z"
 }
