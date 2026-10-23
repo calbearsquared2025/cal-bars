@@ -233,8 +233,10 @@ function ensureViewStructure(shell) {
   const signedOut = shell.querySelector('.accounts-signed-out');
   const signedIn = shell.querySelector('.accounts-signed-in');
   const authenticatedError = shell.querySelector('.accounts-authenticated-error');
+  const authenticatedLoading = shell.querySelector('.accounts-authenticated-loading');
+  const feedback = shell.querySelector('.accounts-status');
   const header = shell.querySelector('.accounts-header');
-  if (!signedOut || !signedIn || !authenticatedError || !header) return null;
+  if (!signedOut || !signedIn || !authenticatedError || !authenticatedLoading || !feedback || !header) return null;
 
   let tabs = shell.querySelector('.my-cgb-view-tabs');
   if (!tabs) {
@@ -269,7 +271,7 @@ function ensureViewStructure(shell) {
     profileView.setAttribute('role', 'tabpanel');
     profileView.setAttribute('aria-labelledby', 'my-cgb-profile-tab');
     signedOut.insertAdjacentElement('beforebegin', profileView);
-    profileView.append(signedOut, authenticatedError, signedIn);
+    profileView.append(feedback, signedOut, authenticatedLoading, authenticatedError, signedIn);
   }
 
   let leaderboardView = shell.querySelector('#my-cgb-leaderboard-view');

@@ -1,3 +1,14 @@
+/* Shared selected-profile material tones for mobile and desktop.
+   Keep the existing brand colors as solid fallback layers beneath barely visible light. */
+:root {
+  --cgb-venue-header-material:
+    linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, 0) 95%),
+    var(--cgb-navy-950, #010133);
+  --cgb-watch-party-material:
+    linear-gradient(155deg, rgba(255, 255, 255, .15), rgba(255, 255, 255, .02) 48%, rgba(115, 76, 0, .045)),
+    var(--cgb-gold-300, #ffd15a);
+}
+
 /* Shared selected-profile Watch Party treatment. Mobile is the visual baseline on every viewport. */
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module {
   display: grid;
@@ -6,11 +17,51 @@
   position: relative;
   padding: 13px 15px 14px;
   color: var(--cgb-navy-950);
-  background: var(--cgb-gold-300, #ffd15a);
+  background: var(--cgb-watch-party-material);
   border: 1px solid var(--cgb-gold-500);
   border-radius: 12px;
   clip-path: none;
   box-shadow: none;
+}
+
+/* Ticket masthead: event type and fixture share the first row.
+   The organizer takes full width beneath it, even for longer association names. */
+.party-module__masthead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .95fr);
+  align-items: start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.party-module__masthead:not(:has(.party-module__fact--game)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.party-module__masthead .party-module__title {
+  min-width: 0;
+  align-self: center;
+  gap: 4px;
+}
+
+.party-module__masthead .party-module__title strong {
+  min-width: 0;
+}
+
+.party-module__masthead .party-module__title > span {
+  flex-shrink: 0;
+}
+
+.party-module__masthead .party-module__fact--game {
+  justify-items: end;
+  text-align: right;
+  gap: 3px;
+}
+
+.party-module__masthead .party-module__fact--game > .party-module__eyebrow {
+  color: var(--cgb-ink-700);
+  font-size: var(--text-2xs);
+  line-height: 1.05;
 }
 
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__title {
@@ -20,7 +71,7 @@
   width: 100%;
   color: var(--cgb-navy-950);
   font-family: var(--font-condensed, var(--font-display));
-  font-size: 1.15rem;
+  font-size: 1.24rem;
   font-weight: 900;
   line-height: 1.1;
 }
@@ -92,20 +143,21 @@
 .party-module__summary {
   display: grid;
   position: relative;
-  grid-template-columns: minmax(0, 1.8fr) minmax(0, .85fr);
-  align-items: stretch;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 4px;
   min-width: 0;
-  margin-top: 2px;
-  padding: 4px 0 15px;
+  margin-top: 0;
+  padding: 3px 0 11px;
   border-bottom: 1px dashed rgba(0, 21, 65, .48);
 }
 
-/* A restrained ticket stub: the host is distinct from the matchup. */
+/* Host is the ticket identity and gets the full line, without a dividing column. */
 .party-module__fact--host {
-  padding-left: 14px;
-  border-left: 1px dashed rgba(0, 21, 65, .48);
-  align-content: center;
+  padding: 0;
+  border-left: 0;
+  align-content: start;
+  gap: 3px;
   overflow-wrap: anywhere;
 }
 
@@ -120,7 +172,7 @@
 .party-module .party-module__fact--host .party-module__host strong {
   color: var(--cgb-navy-950);
   font-family: var(--font-display);
-  font-size: clamp(1.0625rem, 1.3vw, 1.125rem);
+  font-size: clamp(1.1875rem, 1.5vw, 1.375rem);
   font-weight: 750;
   line-height: 1.18;
   overflow-wrap: anywhere;
@@ -358,9 +410,9 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
   /* Compress ticket whitespace on phones without shrinking text or RSVP targets. */
   .party-module__summary {
     grid-template-columns: 1fr;
-    gap: 5px;
+    gap: 4px;
     margin-top: 0;
-    padding: 1px 0 10px;
+    padding: 2px 0 10px;
   }
   .party-module__fact,
   .party-module__section {
@@ -429,7 +481,7 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
     margin: 0 -14px !important;
     padding: 12px 14px 13px !important;
     color: var(--cgb-white) !important;
-    background: var(--cgb-navy-950) !important;
+    background: var(--cgb-venue-header-material) !important;
     border: 0 !important;
     border-bottom: 3px solid var(--cgb-gold-400) !important;
   }

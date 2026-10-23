@@ -166,6 +166,63 @@
 }
 .accounts-status[data-state="error"] { background: #fff0f0; color: var(--cgb-danger); }
 
+
+/* Profile hydration belongs to the Profile tab, not the global status banner. */
+.accounts-authenticated-loading {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  max-width: 34rem;
+  padding: 18px 0 28px;
+}
+
+.accounts-authenticated-loading[hidden] {
+  display: none !important;
+}
+
+.accounts-authenticated-loading__label {
+  margin: 0;
+  color: var(--brand-text-muted);
+  font-size: .82rem;
+  font-weight: 650;
+}
+
+.accounts-authenticated-loading__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.accounts-authenticated-loading__lines {
+  display: grid;
+  gap: 10px;
+  width: min(64%, 230px);
+}
+
+.accounts-authenticated-loading__block {
+  display: block;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--cgb-neutral-200, #dfe3e8);
+}
+
+.accounts-authenticated-loading__block--avatar {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: 50%;
+}
+
+.accounts-authenticated-loading__block--short { width: 60%; }
+.accounts-authenticated-loading__block--medium { width: 78%; }
+
+.accounts-authenticated-loading__section {
+  display: grid;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--cgb-neutral-200, #dfe3e8);
+}
+
 .accounts-signed-out,
 .accounts-signed-in,
 .accounts-section,

@@ -111,7 +111,7 @@ function installStyles() {
         margin: 0 !important;
         padding: 11px 13px 10px !important;
         color: var(--cgb-navy-950) !important;
-        background: var(--cgb-gold-300, #ffd15a) !important;
+        background: var(--cgb-watch-party-material) !important;
         border: 1px solid var(--cgb-gold-500) !important;
         border-radius: 12px !important;
         clip-path: none !important;
@@ -124,7 +124,7 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title strong {
         font-family: var(--font-condensed, var(--font-display)) !important;
-        font-size: 1.15rem !important;
+        font-size: 1.24rem !important;
         font-weight: 900 !important;
         letter-spacing: .02em !important;
       }

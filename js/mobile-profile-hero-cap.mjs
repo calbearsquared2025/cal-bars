@@ -54,10 +54,13 @@ function installStyles(documentObject = document) {
     @media (max-width: 899px) {
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek {
         height: 126px !important;
-        background: var(--cgb-navy-950) !important;
+        background: linear-gradient(180deg, #09093b, var(--cgb-navy-950) 88%) !important;
       }
 
-      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle,
+      body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-handle {
+        background: transparent !important;
+      }
+
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .tray-handle {
         background: var(--cgb-navy-950) !important;
         transition: background-color 140ms ease;
@@ -72,7 +75,7 @@ function installStyles(documentObject = document) {
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek .tray-peek,
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button {
         color: var(--cgb-white) !important;
-        background: var(--cgb-navy-950) !important;
+        background: transparent !important;
       }
 
       body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--peek #browse-locations-button {

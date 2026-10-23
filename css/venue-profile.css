@@ -540,7 +540,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
 
   html #tray-selected > #venue-detail.venue-detail > .party-module .party-module__title {
     font-family: var(--font-condensed, var(--font-display)) !important;
-    font-size: 1.35rem !important;
+    font-size: 1.44rem !important;
     font-weight: 900 !important;
     letter-spacing: .015em !important;
     line-height: 1 !important;
@@ -774,7 +774,7 @@ body[data-view="detail"] #venue-detail .detail-contribution__action:focus-visibl
     padding: 12px 14px !important;
   }
 
-  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__title {
+  html #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .party-module > .party-module__masthead > .party-module__title {
     grid-column: 1 !important;
     grid-row: 1 !important;
     margin-bottom: 0 !important;

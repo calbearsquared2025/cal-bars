@@ -1,4 +1,4 @@
-import { formatGameDate, gameTitle } from './core.mjs';
+import { formatGameDate } from './core.mjs';
 import { createIcon } from './icons.mjs';
 import { ACTIVE_INSTANCE_CONFIG } from './instance-config.mjs';
 import {
@@ -90,6 +90,14 @@ function formatLocalTime(value) {
   return new Intl.DateTimeFormat(undefined, {
     hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
   }).format(date);
+}
+
+/** Keep ticket fixture notation derived from the published home/away schedule. */
+export function watchPartyTicketMatchup(game) {
+  if (!game) return '';
+  const school = ACTIVE_INSTANCE_CONFIG.identity.schoolShortName.toUpperCase();
+  const opponent = String(game.opponent_name || 'Opponent').trim().toUpperCase();
+  return `${school} ${game.home_away === 'away' ? '@' : 'VS.'} ${opponent}`;
 }
 
 function kickoffLabel(game) {
@@ -200,24 +208,23 @@ export function createWatchPartyModule({
     date.textContent = formatGameDate(game).toUpperCase();
     title.append(date);
   }
-  module.append(title);
-
-  const summary = documentObject.createElement('div');
-  summary.className = 'party-module__summary';
+  const masthead = documentObject.createElement('div');
+  masthead.className = 'party-module__masthead';
+  masthead.append(title);
 
   const gameSection = documentObject.createElement('div');
   gameSection.className = 'party-module__fact party-module__fact--game';
   if (game) {
-    appendText(
-      gameSection,
-      `${ACTIVE_INSTANCE_CONFIG.identity.schoolShortName.toUpperCase()} ${gameTitle(game).toUpperCase()}`,
-      'party-game-context',
-      documentObject
-    );
+    appendSectionEyebrow(gameSection, 'Game', documentObject);
+    appendText(gameSection, watchPartyTicketMatchup(game), 'party-game-context', documentObject);
   }
   const timing = [kickoffLabel(game), arrivalLabel(party)].filter(Boolean).join(' · ');
   appendText(gameSection, timing, 'party-module__time', documentObject);
+  if (game || timing) masthead.append(gameSection);
+  module.append(masthead);
 
+  const summary = documentObject.createElement('div');
+  summary.className = 'party-module__summary';
   const hostSection = documentObject.createElement('div');
   hostSection.className = 'party-module__fact party-module__fact--host';
   appendSectionEyebrow(hostSection, 'Hosted by', documentObject);
@@ -228,7 +235,7 @@ export function createWatchPartyModule({
   hosted.append(host);
   hostSection.append(hosted);
 
-  summary.append(gameSection, hostSection);
+  summary.append(hostSection);
   module.append(summary);
 
   const details = documentObject.createElement('section');

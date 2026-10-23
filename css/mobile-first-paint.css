@@ -92,6 +92,29 @@
     display: none !important;
   }
 
+  /* Map sheets are elevated above the map; full-page destinations remain flat.
+     Use one restrained light source across the navy Explore and white Venue states. */
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray:is(.tray--peek, .tray--selected) {
+    box-shadow:
+      0 -12px 32px rgba(1, 1, 51, .17),
+      0 -3px 9px rgba(1, 1, 51, .09) !important;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray:is(.tray--peek, .tray--selected)::after {
+    content: "";
+    position: absolute;
+    z-index: 5;
+    inset: 0 0 auto;
+    height: 3px;
+    border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .23), transparent);
+    pointer-events: none;
+  }
+
+  body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected::after {
+    background: linear-gradient(180deg, rgba(1, 1, 51, .065), transparent);
+  }
+
   body[data-command-surface="search"] #venue-tray,
   body[data-command-surface="add"] #venue-tray,
   body[data-command-surface="about"] #venue-tray {

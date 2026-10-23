@@ -136,6 +136,22 @@ function buildDialog() {
         </div>
       </section>
 
+      <section class="accounts-authenticated-loading" role="status" aria-live="polite" hidden>
+        <p class="accounts-authenticated-loading__label">Loading your profile…</p>
+        <div class="accounts-authenticated-loading__identity" aria-hidden="true">
+          <span class="accounts-authenticated-loading__block accounts-authenticated-loading__block--avatar"></span>
+          <span class="accounts-authenticated-loading__lines">
+            <span class="accounts-authenticated-loading__block"></span>
+            <span class="accounts-authenticated-loading__block accounts-authenticated-loading__block--short"></span>
+          </span>
+        </div>
+        <div class="accounts-authenticated-loading__section" aria-hidden="true">
+          <span class="accounts-authenticated-loading__block accounts-authenticated-loading__block--medium"></span>
+          <span class="accounts-authenticated-loading__block"></span>
+          <span class="accounts-authenticated-loading__block accounts-authenticated-loading__block--short"></span>
+        </div>
+      </section>
+
       <section class="accounts-signed-in" hidden>
         <div class="accounts-identity">
           <img class="accounts-avatar" alt="" hidden>
@@ -218,6 +234,7 @@ function collectDom() {
     status: dialog.querySelector('.accounts-status'),
     signedOut: dialog.querySelector('.accounts-signed-out'),
     authenticatedError: dialog.querySelector('.accounts-authenticated-error'),
+    authenticatedLoading: dialog.querySelector('.accounts-authenticated-loading'),
     authenticatedErrorTitle: dialog.querySelector('.accounts-authenticated-error-title'),
     authenticatedErrorDetail: dialog.querySelector('.accounts-authenticated-error-detail'),
     coreRetry: dialog.querySelector('.accounts-core-retry'),
@@ -520,6 +537,7 @@ function renderSignedOut() {
   resetFavoritesState();
   dom.signedOut.hidden = false;
   dom.authenticatedError.hidden = true;
+  dom.authenticatedLoading.hidden = true;
   dom.signedIn.hidden = true;
   if (pendingSignedOutStatus) {
     setStatus(pendingSignedOutStatus.message, { error: pendingSignedOutStatus.error });
@@ -536,8 +554,9 @@ function renderAuthenticatedLoading() {
   pendingSignedOutStatus = null;
   dom.signedOut.hidden = true;
   dom.authenticatedError.hidden = true;
+  dom.authenticatedLoading.hidden = false;
   dom.signedIn.hidden = true;
-  setStatus('Loading My CGB…');
+  setStatus('');
 }
 
 function renderSignedIn() {
@@ -545,6 +564,7 @@ function renderSignedIn() {
   pendingSignedOutStatus = null;
   dom.signedOut.hidden = true;
   dom.authenticatedError.hidden = true;
+  dom.authenticatedLoading.hidden = true;
   dom.signedIn.hidden = false;
   dom.displayName.textContent = account.displayName;
   dom.email.textContent = String(currentUser.email || 'No email · this device only');
@@ -592,6 +612,7 @@ function renderAuthenticatedError(error) {
   pendingSignedOutStatus = null;
   dom.signedOut.hidden = true;
   dom.signedIn.hidden = true;
+  dom.authenticatedLoading.hidden = true;
   dom.authenticatedError.hidden = false;
   dom.authenticatedErrorTitle.textContent = code === 'fan_account_deleted'
     ? `${firebaseAuthenticatedLead(currentUser)} This CGB account was deleted.`
