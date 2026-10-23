@@ -3,7 +3,9 @@ export const DESKTOP_REVIEW_PREVIEW_VALUE = 'desktop';
 export const DESKTOP_REVIEW_VIEWPORT_CONTENT = `width=${DESKTOP_REVIEW_PREVIEW_WIDTH}, viewport-fit=cover`;
 
 export function desktopReviewPreviewRequested(search = '') {
-  return new URLSearchParams(String(search || '')).get('preview') === DESKTOP_REVIEW_PREVIEW_VALUE;
+  const params = new URLSearchParams(String(search || ''));
+  return params.has('preview') &&
+    (params.get('preview') === '' || params.get('preview') === DESKTOP_REVIEW_PREVIEW_VALUE);
 }
 
 export function applyDesktopReviewPreview({
@@ -24,6 +26,9 @@ export function applyDesktopReviewPreview({
 
 export function desktopReviewPreviewUrl(href = '') {
   const url = new URL(href);
-  url.searchParams.set('preview', DESKTOP_REVIEW_PREVIEW_VALUE);
-  return `${url.pathname}${url.search}${url.hash}`;
+  // Keep the short flag bare (not ?preview=) when retaining it across navigation.
+  // The old ?preview=desktop URL remains accepted for existing bookmarks.
+  url.searchParams.delete('preview');
+  const existingQuery = url.searchParams.toString();
+  return `${url.pathname}?${existingQuery ? `${existingQuery}&` : ''}preview${url.hash}`;
 }
