@@ -1100,6 +1100,34 @@
         "all_ages",
         "food"
       ]
+    },
+    {
+      "venue_id": "venue_429562735861465da3aa2eeb",
+      "slug": "la-victoria-cocina-mexicana-santa-ana",
+      "slug_aliases": "",
+      "name": "La Victoria Cocina Mexicana",
+      "address_line_1": "1620 E 1st St",
+      "address_line_2": "Suite A",
+      "city": "Santa Ana",
+      "region": "CA",
+      "postal_code": "92701",
+      "country_code": "US",
+      "latitude": 33.74474618187231,
+      "longitude": -117.8453675,
+      "website_url": "",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Mexican restaurant hosting the Orange County Cal Alumni Club for a Cal vs. SMU breakfast watch party.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-10-20T05:16:43Z",
+      "venue_tags": [
+        "all_ages",
+        "food"
+      ]
     }
   ],
   "games": [
@@ -3020,19 +3048,19 @@
     },
     {
       "watch_party_id": "wp_18dd884dd8f62dd7116ada8a",
-      "venue_id": "venue_82dc2de39db3eda8dbc417c8",
+      "venue_id": "venue_429562735861465da3aa2eeb",
       "game_id": "game_5f8281482583c43917f6f2a5",
       "organizer_name": "Orange County Cal Alumni Club",
       "organizer_type": "alumni_group",
       "official_event_url": "https://www.eventbrite.com/e/cal-vs-smu-watch-party-tickets-1994688297393",
       "source_type": "cgb_added",
-      "event_start_at": "",
-      "age_policy": "unknown",
+      "event_start_at": "2026-10-24T16:00:00Z",
+      "age_policy": "all_ages",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "Free OC Cal Alumni Club watch party at Lone Wolf Brewing in Yorba Linda. RSVP appreciated; kickoff time TBD.",
+      "game_day_note": "Breakfast watch party at La Victoria Cocina Mexicana in Santa Ana. Arrive around 8:45 AM for the 9:00 AM PDT Cal at SMU kickoff. Free to attend; all ages welcome. Order from the menu. The game will be shown. Please RSVP on Eventbrite so the restaurant can plan for the group.",
       "event_status": "active",
-      "updated_at": "2026-10-01T21:35:00.000Z",
+      "updated_at": "2026-10-20T05:16:43Z",
       "feature_tags": [
         "rsvp_requested"
       ],
@@ -3400,6 +3428,10 @@
       "past_game_count": 1
     },
     {
+      "venue_id": "venue_429562735861465da3aa2eeb",
+      "past_game_count": 0
+    },
+    {
       "venue_id": "venue_45c4aae3288ec7f39e3912e3",
       "past_game_count": 0
     },
@@ -3656,5 +3688,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-19T18:45:00.216Z"
+  "generatedAt": "2026-10-23T04:57:54.052Z"
 }
