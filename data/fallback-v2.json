@@ -14,7 +14,7 @@
       "country_code": "US",
       "latitude": 34.0371116,
       "longitude": -118.469102,
-      "website_url": "",
+      "website_url": "https://www.busbyswest.com/",
       "venue_type": "cal_bar",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
@@ -23,7 +23,7 @@
       "photo_caption": "Cal football watch party setup at Busby's West",
       "photo_credit": "Cal Alumni of Los Angeles (@calalumnila)",
       "photo_credit_url": "https://www.instagram.com/calalumnila/?hl=en",
-      "updated_at": "2026-08-31T01:07:26.888Z",
+      "updated_at": "2026-10-30T20:32:04.473Z",
       "venue_tags": [
         "audio_on",
         "food"
@@ -216,7 +216,7 @@
       "country_code": "US",
       "latitude": 34.0951711080311,
       "longitude": -118.28372843563557,
-      "website_url": "",
+      "website_url": "https://drugstorecowboyla.com/",
       "venue_type": "cal_bar",
       "verification_status": "cgb_reviewed",
       "alumni_owned": "unknown",
@@ -225,7 +225,7 @@
       "photo_caption": "",
       "photo_credit": "",
       "photo_credit_url": "",
-      "updated_at": "2026-08-31T01:07:26.888Z",
+      "updated_at": "2026-10-30T20:32:04.473Z",
       "venue_tags": [
         "21_plus",
         "audio_on",
@@ -1232,8 +1232,8 @@
       "game_date": "2026-10-24",
       "kickoff_at": "2026-10-24T16:00:00Z",
       "kickoff_status": "confirmed",
-      "game_status": "upcoming",
-      "updated_at": "2026-10-12T19:22:08Z"
+      "game_status": "completed",
+      "updated_at": "2026-10-30T21:01:04.472Z"
     },
     {
       "game_id": "game_6bc7b90491088cca24f8ca52",
@@ -1439,7 +1439,7 @@
       "game_id": "game_6bc7b90491088cca24f8ca52",
       "organizer_name": "Cal Alumni Club LA",
       "organizer_type": "alumni_group",
-      "official_event_url": "",
+      "official_event_url": "https://www.zeffy.com/en-US/ticketing/cal-football-viewing-party-vs-nc-state-at-drugstore-cowboy",
       "source_type": "fan_submitted",
       "event_start_at": "",
       "age_policy": "unknown",
@@ -1447,7 +1447,7 @@
       "restrictions_note": "",
       "game_day_note": "The Cal Alumni of LA's second official watch party location!",
       "event_status": "active",
-      "updated_at": "2026-08-17T06:00:58.787Z",
+      "updated_at": "2026-10-30T20:44:52.426Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -1655,7 +1655,7 @@
       "game_id": "game_6bc7b90491088cca24f8ca52",
       "organizer_name": "Cal Alumni Club LA",
       "organizer_type": "alumni_group",
-      "official_event_url": "",
+      "official_event_url": "https://www.zeffy.com/en-US/ticketing/cal-football-viewing-party-vs-nc-state-at-busbys",
       "source_type": "fan_submitted",
       "event_start_at": "",
       "age_policy": "unknown",
@@ -1663,7 +1663,7 @@
       "restrictions_note": "",
       "game_day_note": "The Cal Alumni of LA's first official watch party location!",
       "event_status": "active",
-      "updated_at": "2026-08-17T06:02:39.482Z",
+      "updated_at": "2026-10-30T20:44:52.426Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -2533,24 +2533,6 @@
       "rsvp_enabled": false
     },
     {
-      "watch_party_id": "wp_afe0efb7080b73ca9d32d928",
-      "venue_id": "venue_05b2ba9b6b3bbb304549705c",
-      "game_id": "game_6bc7b90491088cca24f8ca52",
-      "organizer_name": "Tightwad Hill",
-      "organizer_type": "other_organization",
-      "official_event_url": "https://www.facebook.com/events/1636541250849686",
-      "source_type": "cgb_added",
-      "event_start_at": "",
-      "age_policy": "unknown",
-      "sound_status": "unknown",
-      "restrictions_note": "",
-      "game_day_note": "Tightwad Hill watch party at Kingfish Pub; kickoff time is TBA.",
-      "event_status": "active",
-      "updated_at": "2026-08-28T15:23:41Z",
-      "feature_tags": [],
-      "rsvp_enabled": false
-    },
-    {
       "watch_party_id": "wp_4d517436a18b3d2bb730f8bc",
       "venue_id": "venue_05b2ba9b6b3bbb304549705c",
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
@@ -2753,24 +2735,6 @@
       "rsvp_enabled": false
     },
     {
-      "watch_party_id": "wp_6fe6cef80356470b91efd9bb",
-      "venue_id": "venue_70579c495f644742914416e5",
-      "game_id": "game_6bc7b90491088cca24f8ca52",
-      "organizer_name": "Isaac Castro",
-      "organizer_type": "individual",
-      "official_event_url": "",
-      "source_type": "fan_submitted",
-      "event_start_at": "",
-      "age_policy": "21_plus",
-      "sound_status": "unknown",
-      "restrictions_note": "",
-      "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
-      "event_status": "active",
-      "updated_at": "2026-09-02T04:30:38.044Z",
-      "feature_tags": [],
-      "rsvp_enabled": false
-    },
-    {
       "watch_party_id": "wp_7d319d85cb014019ace3f2fc",
       "venue_id": "venue_70579c495f644742914416e5",
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
@@ -2935,24 +2899,6 @@
       "rsvp_enabled": false
     },
     {
-      "watch_party_id": "wp_9a886fae46262a766055babc",
-      "venue_id": "venue_d6e66f8dac776cb8821785cf",
-      "game_id": "game_6bc7b90491088cca24f8ca52",
-      "organizer_name": "Write For California",
-      "organizer_type": "other_organization",
-      "official_event_url": "https://writeforcalifornia.com/p/write-for-californias-cal-football",
-      "source_type": "cgb_added",
-      "event_start_at": "",
-      "age_policy": "unknown",
-      "sound_status": "confirmed_on",
-      "restrictions_note": "",
-      "game_day_note": "Write For California plans to have a presence at Headlands on Campus for all Cal road games in 2026.",
-      "event_status": "active",
-      "updated_at": "2026-09-10T01:45:00.000Z",
-      "feature_tags": [],
-      "rsvp_enabled": false
-    },
-    {
       "watch_party_id": "wp_61785d473c923323cd64756f",
       "venue_id": "venue_d6e66f8dac776cb8821785cf",
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
@@ -3078,9 +3024,9 @@
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "Free OC Cal Alumni Club watch party at Lone Wolf Brewing in Yorba Linda. RSVP appreciated; kickoff time TBD.",
+      "game_day_note": "Eventbrite currently lists 12:30 PM, after the confirmed 9:00 AM PT kickoff. Early opening has not been verified; check with the organizer before attending.",
       "event_status": "active",
-      "updated_at": "2026-10-01T21:35:00.000Z",
+      "updated_at": "2026-10-30T21:01:04.472Z",
       "feature_tags": [
         "rsvp_requested"
       ],
@@ -3331,6 +3277,80 @@
       "game_day_note": "",
       "event_status": "active",
       "updated_at": "2026-10-17T19:53:43.321Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_4c49016f98a54eb3847d0fbe",
+      "venue_id": "venue_429562735861465da3aa2eeb",
+      "game_id": "game_6bc7b90491088cca24f8ca52",
+      "organizer_name": "Orange County Cal Alumni Club",
+      "organizer_type": "alumni_group",
+      "official_event_url": "",
+      "source_type": "fan_submitted",
+      "event_start_at": "",
+      "age_policy": "all_ages",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Breakfast watch party at La Victoria Cocina Mexicana in Santa Ana. Arrive around 8:45 AM for the 9:00 AM PDT Cal at NC State kickoff. Free to attend; all ages welcome. Order from the menu. The game will be shown.",
+      "event_status": "active",
+      "updated_at": "2026-10-30T21:01:04.472Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_61d85708d6804ebabcc1221d",
+      "venue_id": "venue_5977e35a58d8b18f22a51f1e",
+      "game_id": "game_6bc7b90491088cca24f8ca52",
+      "organizer_name": "Cal Alumni of Silicon Valley",
+      "organizer_type": "alumni_group",
+      "official_event_url": "",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-10-31T16:00:00Z",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Cal Alumni of Silicon Valley watch party at Molly O's. Saturday, October 31, 9:00 AM PT; event listed on Eventbrite. Direct RSVP link not yet confirmed.",
+      "event_status": "active",
+      "updated_at": "2026-10-30T21:03:43.323Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_f9833ac7a6c04213a682ee45",
+      "venue_id": "venue_38eb170c008b19559da2a0ce",
+      "game_id": "game_6bc7b90491088cca24f8ca52",
+      "organizer_name": "Cal Alumni Club of Chicago",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.caachicago.org/",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-10-31T16:00:00Z",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Official Chicago Cal Alumni Club watch party for Cal at NC State, Saturday October 31 at 11:00 AM CT.",
+      "event_status": "active",
+      "updated_at": "2026-10-30T21:01:04.472Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_ee7fa5e64423445aaf125d90",
+      "venue_id": "venue_bbe9884c5c2fd318173117d3",
+      "game_id": "game_6bc7b90491088cca24f8ca52",
+      "organizer_name": "DC Cal Alumni Club",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://dccalalumni.nationbuilder.com/events",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-10-31T16:00:00Z",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "DC Cal Alumni Club confirms the NC State watch at Town Tavern for the noon ET kickoff on October 31.",
+      "event_status": "active",
+      "updated_at": "2026-10-30T21:01:04.472Z",
       "feature_tags": [],
       "rsvp_enabled": false
     }
@@ -3688,5 +3708,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-23T04:57:54.052Z"
+  "generatedAt": "2026-10-31T05:51:36.236Z"
 }
