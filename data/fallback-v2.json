@@ -3013,26 +3013,6 @@
       "rsvp_enabled": false
     },
     {
-      "watch_party_id": "wp_404a0a7a6f58b52ed590a641",
-      "venue_id": "venue_82dc2de39db3eda8dbc417c8",
-      "game_id": "game_6bc7b90491088cca24f8ca52",
-      "organizer_name": "Orange County Cal Alumni Club",
-      "organizer_type": "alumni_group",
-      "official_event_url": "https://www.eventbrite.com/e/cal-vs-nc-state-watch-party-tickets-1994688520059",
-      "source_type": "cgb_added",
-      "event_start_at": "",
-      "age_policy": "unknown",
-      "sound_status": "unknown",
-      "restrictions_note": "",
-      "game_day_note": "Eventbrite currently lists 12:30 PM, after the confirmed 9:00 AM PT kickoff. Early opening has not been verified; check with the organizer before attending.",
-      "event_status": "active",
-      "updated_at": "2026-10-30T21:01:04.472Z",
-      "feature_tags": [
-        "rsvp_requested"
-      ],
-      "rsvp_enabled": false
-    },
-    {
       "watch_party_id": "wp_49f9ffbba2f4e204dfc46594",
       "venue_id": "venue_82dc2de39db3eda8dbc417c8",
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
@@ -3708,5 +3688,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-10-31T05:51:36.236Z"
+  "generatedAt": "2026-10-31T17:15:57.899Z"
 }
