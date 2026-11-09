@@ -39,6 +39,7 @@ import {
 } from './app-state.mjs';
 import { getVenueSeasonCount, legacyActivitySeason, venueActivityPresentation } from './venue-activity-core.mjs';
 import { createIcon } from './icons.mjs';
+import { scrollGameListToCurrent } from './game-dialog-scroll.mjs';
 import { firstUsMapTilerResult } from './map-geocoding-core.mjs';
 import { nearbyLocationControlPresentation, normalizedUserLocation } from './nearby-location-core.mjs';
 import { clampTrayHeight, trayReleaseState } from './mobile-tray-geometry.mjs';
@@ -368,6 +369,7 @@ function selectGame(gameId) {
 
 function renderGameDialog() {
   dom.gameList.replaceChildren();
+  const currentGameId = selectDefaultGame(state.snapshot.games)?.game_id;
   const games = [...state.snapshot.games].sort((a, b) =>
     Number(a.season) - Number(b.season) || Number(a.schedule_order) - Number(b.schedule_order));
   games.forEach((game) => {
@@ -376,6 +378,7 @@ function renderGameDialog() {
     button.className = 'game-option';
     button.dataset.gameId = game.game_id;
     button.dataset.selected = String(game.game_id === state.gameId);
+    button.dataset.current = String(game.game_id === currentGameId);
     const gameInfo = document.createElement('span');
     const gameName = document.createElement('strong');
     gameName.textContent = gameTitle(game);
@@ -1887,7 +1890,10 @@ function wireEvents() {
   });
   dom.manualCopyDialog?.addEventListener('close', restoreManualCopyFocus);
   dom.manualCopyDialog?.querySelector('form')?.addEventListener('submit', restoreManualCopyFocusAfterClose);
-  dom.gameButton.addEventListener('click', () => dom.gameDialog.showModal());
+  dom.gameButton.addEventListener('click', () => {
+    dom.gameDialog.showModal();
+    scrollGameListToCurrent();
+  });
   dom.detailBack.addEventListener('click', returnToMapFromDetail);
   dom.browseButton.addEventListener('click', showLocations);
   dom.closeList.addEventListener('click', showSelectedVenue);

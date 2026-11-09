@@ -1,3 +1,5 @@
+import { scrollGameListToCurrent } from './game-dialog-scroll.mjs';
+
 const DESKTOP_QUERY = '(min-width: 900px)';
 const STYLE_ID = 'cgb-desktop-visual-cohesion';
 let gameDropdownWired = false;
@@ -259,6 +261,7 @@ function openDesktopGameDropdown({
   dialog.show();
   button.setAttribute('aria-expanded', 'true');
   positionDesktopGameDropdown({ documentObject, windowObject });
+  scrollGameListToCurrent({ documentObject });
   return true;
 }
 

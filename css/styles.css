@@ -267,6 +267,8 @@ a { color: inherit; }
 .game-dialog, .about-dialog { width: min(94vw, 560px); max-height: 82dvh; padding: 0; border: 0; border-radius: 20px; box-shadow: var(--shadow); }
 .game-dialog::backdrop, .about-dialog::backdrop { background: rgba(0,25,79,.58); backdrop-filter: blur(3px); }
 .dialog-shell { padding: 18px; }
+.game-dialog .dialog-shell { display: flex; flex-direction: column; max-height: 82dvh; box-sizing: border-box; }
+.game-dialog .game-list { min-height: 0; }
 .dialog-header { display: flex; justify-content: space-between; align-items: start; gap: 16px; }
 .dialog-header h2 { margin: 3px 0 14px; color: var(--cal-blue); }
 .game-list { display: grid; gap: 8px; overflow-y: auto; }
