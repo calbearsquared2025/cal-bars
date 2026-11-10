@@ -796,36 +796,6 @@
       ]
     },
     {
-      "venue_id": "venue_08f129d8df064e3a828f013b",
-      "slug": "dutch-goose",
-      "slug_aliases": "dutch-goose-west-menlo-park",
-      "name": "Dutch Goose",
-      "address_line_1": "3567 Alameda de las Pulgas",
-      "address_line_2": "",
-      "city": "West Menlo Park",
-      "region": "CA",
-      "postal_code": "94025",
-      "country_code": "US",
-      "latitude": 37.43202125436908,
-      "longitude": -122.20157481729984,
-      "website_url": "",
-      "venue_type": "community_location",
-      "verification_status": "cgb_reviewed",
-      "alumni_owned": "unknown",
-      "short_description": "Menlo Park pub serving burgers, brews, and pizza since 1966, with arcade games and sports screens.",
-      "photo_url": "",
-      "photo_caption": "",
-      "photo_credit": "",
-      "photo_credit_url": "",
-      "updated_at": "2026-10-01T20:08:00.000Z",
-      "venue_tags": [
-        "all_ages",
-        "audio_on",
-        "food",
-        "large_crowd"
-      ]
-    },
-    {
       "venue_id": "venue_d505124d462d445e9385f57a",
       "slug": "mcgees-bar-and-grill",
       "slug_aliases": "mcgee-s-bar-and-grill-alameda",
@@ -1126,6 +1096,60 @@
       "updated_at": "2026-10-20T05:16:43Z",
       "venue_tags": [
         "all_ages",
+        "food"
+      ]
+    },
+    {
+      "venue_id": "venue_ee4b2f57a15e41c89402c1b3",
+      "slug": "tap-151-bar-and-grill",
+      "slug_aliases": "",
+      "name": "Tap 151 Bar + Grill",
+      "address_line_1": "151 North First Street",
+      "address_line_2": "",
+      "city": "Cambridge",
+      "region": "MA",
+      "postal_code": "02141",
+      "country_code": "US",
+      "latitude": 42.372877,
+      "longitude": -71.074241,
+      "website_url": "https://tap151.com/",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Cambridge Crossing bar and grill hosting a joint Cal and Stanford alumni watch party for the 2026 Big Game.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "venue_tags": [
+        "food"
+      ]
+    },
+    {
+      "venue_id": "venue_a8d7b143c0f97e25dfaa68eb",
+      "slug": "little-woodrows-domain-northside",
+      "slug_aliases": "",
+      "name": "Little Woodrow's Domain Northside",
+      "address_line_1": "11420 Rock Rose Avenue",
+      "address_line_2": "Suite 130",
+      "city": "Austin",
+      "region": "TX",
+      "postal_code": "78758",
+      "country_code": "US",
+      "latitude": 30.400791,
+      "longitude": -97.723172,
+      "website_url": "https://littlewoodrows.com/locations/domain-northside/",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Domain Northside sports bar hosting the Cal Alumni Club of Austin's 2026 Big Game watch party.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "venue_tags": [
         "food"
       ]
     }
@@ -2587,26 +2611,6 @@
       "rsvp_enabled": false
     },
     {
-      "watch_party_id": "wp_b0b2ea1ec92b47e92147ccc7",
-      "venue_id": "venue_08f129d8df064e3a828f013b",
-      "game_id": "game_ca62dd014907c6fdcc7520bd",
-      "organizer_name": "Cal Alumni of Silicon Valley",
-      "organizer_type": "alumni_group",
-      "official_event_url": "https://www.eventbrite.com/e/cal-alumni-of-silicon-valley-cal-vs-stanford-129th-big-game-watch-party-tickets-1997480341472",
-      "source_type": "fan_submitted",
-      "event_start_at": "2026-11-21T20:00:00.000Z",
-      "age_policy": "unknown",
-      "sound_status": "confirmed_on",
-      "restrictions_note": "",
-      "game_day_note": "Cal Alumni of Silicon Valley announces its annual Big Game Watch Party at Dutch Goose! Bring friends, family and other fans--enjoy the no host bar and be sure everyone wears their Blue and Gold to outnumber the Stanfurd alumni! RSVP requested. Go Bears!",
-      "event_status": "active",
-      "updated_at": "2026-09-01T17:14:08.000Z",
-      "feature_tags": [
-        "rsvp_requested"
-      ],
-      "rsvp_enabled": false
-    },
-    {
       "watch_party_id": "wp_2baa5661f1373d69d41c8fde",
       "venue_id": "venue_84faaa0644ac41a6b4f2fdeb",
       "game_id": "game_98623ba154f59012256c39ac",
@@ -3333,6 +3337,196 @@
       "updated_at": "2026-10-30T21:01:04.472Z",
       "feature_tags": [],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_3d8f9c0a7b2145e8a93d5b6e",
+      "venue_id": "venue_84faaa0644ac41a6b4f2fdeb",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal Alumni Club of Long Beach",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.eventbrite.com/e/the-big-game-california-golden-bears-vs-stanfurd-football-watch-party-tickets-2003514621165",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "all_ages",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Free all-ages Big Game watch party at District 4 Pizza in Long Beach. Event listing advertises food and drinks provided; RSVP via Eventbrite.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_84a7d93e0c1f52b6e9a438d0",
+      "venue_id": "venue_38eb170c008b19559da2a0ce",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal Alumni Club of Chicago",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.eventbrite.com/e/cal-stanford-big-game-watch-party-in-chicago-tickets-2003900803246",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Joint Cal and Stanford Chicago alumni Big Game watch party at The Bad Apple, Belden Avenue location. $20 admission includes halftime appetizers; registration required by November 16.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_6e3d1b82f4c90a57d8e2b6a4",
+      "venue_id": "venue_ee4b2f57a15e41c89402c1b3",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal Alumni Club of New England and Stanford in Boston",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://groups.stanford.edu/events/308173",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Joint Cal New England and Stanford Boston Big Game watch party at Tap 151, Cambridge. $25 per person includes food; drinks sold separately. Advance ticket purchase required.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_9ad17e6b2c0f438e5b64d91a",
+      "venue_id": "venue_157167f0422e3482e7e9d93f",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal Alumni Club of Houston and Stanford alumni clubs",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://groups.stanford.edu/events/309095",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Joint Houston alumni Big Game watch party at Velvet Oak Tavern with Cal Alumni Club of Houston and Stanford alumni chapters. Order food and drinks at venue.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_702df38b9a1c54e6f0d21b47",
+      "venue_id": "venue_bbe9884c5c2fd318173117d3",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "DC Cal Alumni Club and Stanford Alumni Club of Washington DC",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://dccalalumni.nationbuilder.com/2026_big_game_watch",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Joint Cal and Stanford Big Game watch party at Town Tavern in Washington DC. Free entry; optional donations toward the DC Cal scholarship fund.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_dc3a57e9b18f0264a7d95c2e",
+      "venue_id": "venue_645adcead25c43ca9a44a361",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal and Stanford alumni clubs in Pasadena",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://groups.stanford.edu/events/308402",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Joint Cal and Stanford alumni Big Game watch party at Buffalo Wild Wings in Pasadena. No-host gathering with some appetizers provided. Free event registration.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_25af8e1b6c0d47f9a3e52b84",
+      "venue_id": "venue_a8d7b143c0f97e25dfaa68eb",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal Alumni Club of Austin",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://calalumniclubofaustin.com/events",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "2026 Big Game watch party with the Cal Alumni Club of Austin at Little Woodrow's Domain Northside. Club requests RSVPs; organizer to communicate final gathering time.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_4c7d0e2a9b6f51d83a20e9c7",
+      "venue_id": "venue_3142ab1861fc367b55bda045",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "San Diego Cal Alumni Club",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://sdcalalumni.org/sdcalalumni/2026-cal-football-view-parties/",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "San Diego Cal Alumni Club season-long football watch party schedule includes the 2026 Big Game at Chief's Burgers, Brew & Spirits in Solana Beach.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_e51a3c8d7b49f026a6d92e1c",
+      "venue_id": "venue_38eb170c008b19559da2a0ce",
+      "game_id": "game_f4ebc4f05457bb40f3bc66ab",
+      "organizer_name": "Cal Alumni Club of Chicago",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.caachicago.org/",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Official Chicago Cal Alumni Club watch party for Cal at Virginia at The Bad Apple, 658 W Belden Avenue, on November 14.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_c6f4d02a9e1b5378d4a20fce",
+      "venue_id": "venue_3142ab1861fc367b55bda045",
+      "game_id": "game_f4ebc4f05457bb40f3bc66ab",
+      "organizer_name": "San Diego Cal Alumni Club",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://sdcalalumni.org/sdcalalumni/2026-cal-football-view-parties/",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "San Diego Cal Alumni Club season-long watch party schedule includes Cal at Virginia on November 14 at Chief's Burgers, Brew & Spirits in Solana Beach.",
+      "event_status": "active",
+      "updated_at": "2026-11-10T05:15:00Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -3366,10 +3560,6 @@
     {
       "venue_id": "venue_05b2ba9b6b3bbb304549705c",
       "past_game_count": 2
-    },
-    {
-      "venue_id": "venue_08f129d8df064e3a828f013b",
-      "past_game_count": 0
     },
     {
       "venue_id": "venue_1088f1337d074675c52d324f",
@@ -3480,6 +3670,10 @@
       "past_game_count": 0
     },
     {
+      "venue_id": "venue_a8d7b143c0f97e25dfaa68eb",
+      "past_game_count": 0
+    },
+    {
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
       "past_game_count": 5
     },
@@ -3517,6 +3711,10 @@
     },
     {
       "venue_id": "venue_e8cba48a2591e4f520c89cf9",
+      "past_game_count": 0
+    },
+    {
+      "venue_id": "venue_ee4b2f57a15e41c89402c1b3",
       "past_game_count": 0
     },
     {
@@ -3688,5 +3886,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-11-09T22:25:49.404Z"
+  "generatedAt": "2026-11-10T07:25:13.719Z"
 }
