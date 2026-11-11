@@ -1313,6 +1313,63 @@
       "venue_tags": [
         "food"
       ]
+    },
+    {
+      "venue_id": "venue_b6a019c5d7d54307a13a373b",
+      "slug": "10th-puka-moanalua-golf-cour",
+      "slug_aliases": "",
+      "name": "10th Puka @ MOANALUA Golf COUR",
+      "address_line_1": "1450 Ala Aolani St",
+      "address_line_2": "",
+      "city": "Honolulu",
+      "region": "HI",
+      "postal_code": "96819",
+      "country_code": "US",
+      "latitude": 21.36808870738671,
+      "longitude": -157.8901970386505,
+      "website_url": "",
+      "venue_type": "community_location",
+      "verification_status": "user_added",
+      "alumni_owned": "unknown",
+      "short_description": "",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-11T00:23:11.213Z",
+      "venue_tags": [
+        "all_ages",
+        "audio_on",
+        "food",
+        "large_crowd"
+      ]
+    },
+    {
+      "venue_id": "venue_0bc1fffda4430c81c5a0a538",
+      "slug": "mchales-bar-and-grill-new-york",
+      "slug_aliases": "",
+      "name": "McHale's Bar & Grill",
+      "address_line_1": "251 W 51st St",
+      "address_line_2": "",
+      "city": "New York",
+      "region": "NY",
+      "postal_code": "10019",
+      "country_code": "US",
+      "latitude": 40.7628,
+      "longitude": -73.98505,
+      "website_url": "https://www.mchalespub.com/",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Midtown Theater District Irish pub and sports bar with multiple TVs, food, and drinks.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-11T00:32:17.262Z",
+      "venue_tags": [
+        "food"
+      ]
     }
   ],
   "games": [
@@ -4284,6 +4341,44 @@
       "updated_at": "2026-11-10T16:05:33.021Z",
       "feature_tags": [],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_43a0ef415de9482498b56c6e",
+      "venue_id": "venue_b6a019c5d7d54307a13a373b",
+      "game_id": "game_1535f732d3d1061b8e8cf07e",
+      "organizer_name": "Andrew Pak",
+      "organizer_type": "individual",
+      "official_event_url": "",
+      "source_type": "fan_submitted",
+      "event_start_at": "",
+      "age_policy": "all_ages",
+      "sound_status": "confirmed_on",
+      "restrictions_note": "",
+      "game_day_note": "",
+      "event_status": "active",
+      "updated_at": "2026-11-11T00:23:09.824Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_411a8e27abb99198dee77229",
+      "venue_id": "venue_0bc1fffda4430c81c5a0a538",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal Alumni Club of New York (CACNY) and Stanford New York Alumni",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://partiful.com/e/DnlC1MLSEqjfV79AZRl9",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Joint CACNY and Stanford New York Alumni Big Game watch party at McHale's in Midtown Manhattan. November 21 kickoff at 7:30 PM ET. Food and drink specials advertised; see Partiful for event details and RSVP.",
+      "event_status": "active",
+      "updated_at": "2026-11-11T00:32:17.262Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -4293,13 +4388,8 @@
       "count": 1
     },
     {
-      "game_id": "game_5f8281482583c43917f6f2a5",
-      "venue_id": "venue_5977e35a58d8b18f22a51f1e",
-      "count": 2
-    },
-    {
-      "game_id": "game_6bc7b90491088cca24f8ca52",
-      "venue_id": "venue_5977e35a58d8b18f22a51f1e",
+      "game_id": "game_1535f732d3d1061b8e8cf07e",
+      "venue_id": "venue_b6a019c5d7d54307a13a373b",
       "count": 1
     },
     {
@@ -4317,6 +4407,10 @@
     {
       "venue_id": "venue_05b2ba9b6b3bbb304549705c",
       "past_game_count": 2
+    },
+    {
+      "venue_id": "venue_0bc1fffda4430c81c5a0a538",
+      "past_game_count": 0
     },
     {
       "venue_id": "venue_1088f1337d074675c52d324f",
@@ -4400,7 +4494,7 @@
     },
     {
       "venue_id": "venue_5977e35a58d8b18f22a51f1e",
-      "past_game_count": 2
+      "past_game_count": 4
     },
     {
       "venue_id": "venue_5ddf1bf5420b230d39c6dccd",
@@ -4457,6 +4551,10 @@
     {
       "venue_id": "venue_af33e035626a357bc52f2e8b",
       "past_game_count": 2
+    },
+    {
+      "venue_id": "venue_b6a019c5d7d54307a13a373b",
+      "past_game_count": 0
     },
     {
       "venue_id": "venue_b8dd2180d6b24e209a164755",
@@ -4557,7 +4655,7 @@
     {
       "season": 2026,
       "venue_id": "venue_5977e35a58d8b18f22a51f1e",
-      "count": 8
+      "count": 11
     },
     {
       "season": 2026,
@@ -4667,5 +4765,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-11-10T19:47:54.353Z"
+  "generatedAt": "2026-11-11T06:33:27.581Z"
 }
