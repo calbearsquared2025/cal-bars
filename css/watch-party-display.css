@@ -1,11 +1,16 @@
-/* Shared selected-profile material tones for mobile and desktop.
-   Keep the existing brand colors as solid fallback layers beneath barely visible light. */
+/* Shared venue and ticket materials for mobile and desktop.
+   The schematic street art is original and purely decorative; no location pins. */
 :root {
   --cgb-venue-header-material:
-    linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, 0) 95%),
+    linear-gradient(180deg, rgba(255, 255, 255, .07), transparent 82%),
+    linear-gradient(90deg, rgba(1, 1, 51, .52), rgba(1, 1, 51, .04) 78%),
+    url("../assets/venue-cartography.svg"),
+    radial-gradient(ellipse at 93% 18%, rgba(52, 110, 176, .45), transparent 68%),
     var(--cgb-navy-950, #010133);
   --cgb-watch-party-material:
-    linear-gradient(155deg, rgba(255, 255, 255, .15), rgba(255, 255, 255, .02) 48%, rgba(115, 76, 0, .045)),
+    linear-gradient(155deg, rgba(255, 255, 255, .46), rgba(255, 255, 255, .13) 52%, rgba(138, 80, 0, .085)),
+    radial-gradient(ellipse at 12% 5%, rgba(255, 255, 255, .20), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(119, 79, 10, .026) 0 1px, transparent 1px 4px),
     var(--cgb-gold-300, #ffd15a);
 }
 
@@ -19,9 +24,9 @@
   color: var(--cgb-navy-950);
   background: var(--cgb-watch-party-material);
   border: 1px solid var(--cgb-gold-500);
-  border-radius: 12px;
+  border-radius: 10px;
   clip-path: none;
-  box-shadow: none;
+  box-shadow: 0 5px 12px rgba(1, 1, 51, .14), inset 0 1px 0 rgba(255, 255, 255, .45);
 }
 
 /* Ticket masthead: event type and fixture share the first row.
@@ -174,7 +179,7 @@
   font-family: var(--font-display);
   font-size: clamp(1.1875rem, 1.5vw, 1.375rem);
   font-weight: 750;
-  line-height: 1.18;
+  line-height: 1.22;
   overflow-wrap: anywhere;
 }
 
@@ -481,9 +486,9 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
     margin: 0 -14px !important;
     padding: 12px 14px 13px !important;
     color: var(--cgb-white) !important;
-    background: var(--cgb-venue-header-material) !important;
+    background: var(--cgb-venue-header-material) center / 100% 100% no-repeat !important;
     border: 0 !important;
-    border-bottom: 3px solid var(--cgb-gold-400) !important;
+    border-bottom: 2px solid var(--cgb-gold-400) !important;
   }
 
   html body[data-view="map"][data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected #tray-selected > .selected-card > .selected-card__header .venue-badges {

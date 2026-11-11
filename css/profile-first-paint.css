@@ -74,9 +74,9 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     margin: 0 !important;
     padding: 18px 20px 17px !important;
     color: var(--cgb-white) !important;
-    background: var(--cgb-venue-header-material) !important;
+    background: var(--cgb-venue-header-material) center / 100% 100% no-repeat !important;
     border: 0 !important;
-    border-bottom: 3px solid var(--cgb-gold-400) !important;
+    border-bottom: 2px solid var(--cgb-gold-400) !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     overflow: visible !important;
@@ -193,7 +193,7 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     grid-row: auto !important;
     align-self: stretch !important;
     margin: 0 !important;
-    padding: 12px 18px 10px !important;
+    padding: 14px 18px 13px !important;
     background: var(--cgb-white) !important;
     border: 0 !important;
     border-top: 1px solid var(--cgb-neutral-200) !important;
@@ -244,7 +244,8 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     align-items: center;
     padding: 2px 7px;
     color: var(--cgb-navy-900);
-    background: var(--cgb-gold-50);
+    background: var(--cgb-neutral-50);
+    border: 1px solid var(--cgb-neutral-200);
     border-radius: var(--radius-pill);
     font-family: var(--font-ui);
     font-size: var(--text-2xs);
@@ -458,7 +459,7 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
     display: block !important;
     width: auto !important;
     margin: 0 !important;
-    padding: 16px 18px 16px 40px !important;
+    padding: 18px 18px 18px 40px !important;
     border-top: 1px solid var(--cgb-neutral-200) !important;
   }
 
@@ -494,6 +495,6 @@ body[data-view="detail"] #venue-detail.venue-detail .venue-badge.badge--party {
   html body[data-view="map"] #map-view #tray-selected > #venue-detail[data-profile-presentation="desktop"] > .detail-photo.detail-photo--supporting {
     width: calc(100% - 36px) !important;
     max-width: none !important;
-    margin: 14px 18px 4px !important;
+    margin: 16px 18px 10px !important;
   }
 }

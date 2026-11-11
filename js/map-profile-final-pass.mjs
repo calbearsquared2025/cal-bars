@@ -113,9 +113,9 @@ function installStyles() {
         color: var(--cgb-navy-950) !important;
         background: var(--cgb-watch-party-material) !important;
         border: 1px solid var(--cgb-gold-500) !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         clip-path: none !important;
-        box-shadow: none !important;
+        box-shadow: 0 3px 9px rgba(1, 1, 51, .12), inset 0 1px 0 rgba(255, 255, 255, .45) !important;
       }
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title {

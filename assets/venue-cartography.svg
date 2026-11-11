@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 290">
+  <!-- Original schematic streets; intentionally no real-world street or campus depiction. -->
+  <g fill="none" stroke="#8cbbeb" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M244 -28 C277 40 286 84 321 123 S396 201 437 321" opacity=".16" stroke-width="2"/>
+    <path d="M190 75 C284 104 348 88 412 119 S534 182 660 156" opacity=".21" stroke-width="2.4"/>
+    <path d="M170 230 C240 210 285 236 341 200 S481 94 645 103" opacity=".18" stroke-width="2"/>
+    <path d="M348 -22 C359 47 419 68 453 111 S511 208 539 302" opacity=".16" stroke-width="1.4"/>
+    <path d="M513 -36 C514 19 473 50 480 89 S590 180 624 301" opacity=".13" stroke-width="1.4"/>
+    <path d="M215 160 L300 148 L384 159 L458 143 L568 165" opacity=".16" stroke-width="1.1"/>
+    <path d="M265 18 L284 94 L271 172 L303 262" opacity=".14" stroke-width="1.1"/>
+    <path d="M400 20 L399 85 L373 153 L413 240 L418 311" opacity=".14" stroke-width="1.1"/>
+    <path d="M558 20 L530 78 L574 141 L567 233 L601 314" opacity=".14" stroke-width="1.1"/>
+    <path d="M299 265 L366 231 L452 251 L544 241 L638 270" opacity=".14" stroke-width="1.1"/>
+    <path d="M321 123 L399 85 M341 200 L373 153 M453 111 L480 89 M458 143 L530 78" opacity=".14" stroke-width="1"/>
+  </g>
+</svg>
