@@ -20,6 +20,22 @@ const ACCOUNT_STYLE_RESOURCES = Object.freeze([
     selector: 'link[data-cgb-public-community-style]',
     href: '/css/account-public-community.css',
     attribute: 'data-cgb-public-community-style'
+  }),
+  // Profile modules also inject CSS, but cold sign-in must wait for it.
+  Object.freeze({
+    selector: 'link[data-cgb-account-profile-polish-style]',
+    href: '/css/account-profile-polish.css',
+    attribute: 'data-cgb-account-profile-polish-style'
+  }),
+  Object.freeze({
+    selector: 'link[data-cgb-account-history-style]',
+    href: '/css/account-history.css',
+    attribute: 'data-cgb-account-history-style'
+  }),
+  Object.freeze({
+    selector: 'link[data-cgb-my-cgb-render-controller-style]',
+    href: '/css/my-cgb-render-controller.css',
+    attribute: 'data-cgb-my-cgb-render-controller-style'
   })
 ]);
 
