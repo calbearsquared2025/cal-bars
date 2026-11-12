@@ -11,10 +11,11 @@ const BADGE_ASSETS = Object.freeze({
   home_field: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Home_Field.webp',
   road_game: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150177/Road_Game.webp',
   bowl_eligible: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150177/Bowl_Eligible.webp',
+  the_axe: 'https://res.cloudinary.com/noouxqko/image/upload/v1794518988/Give_Em_The_Axe_Red_Ale.webp',
   play_caller: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Play_Caller.webp',
   postgame_report: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Postgame_Report.webp'
 });
-const VISIBLE_BADGE_IDS = new Set(Object.keys(BADGE_ASSETS).filter((id) => id !== 'bowl_eligible'));
+const VISIBLE_BADGE_IDS = new Set(Object.keys(BADGE_ASSETS));
 
 let currentSummary = null;
 let currentSummaryAt = 0;

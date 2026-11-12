@@ -15,11 +15,12 @@ const BADGE_ASSETS = Object.freeze({
   chain_mover: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Chain_Mover.webp',
   home_field: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Home_Field.webp',
   road_game: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150177/Road_Game.webp',
+  bowl_eligible: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150177/Bowl_Eligible.webp',
+  the_axe: 'https://res.cloudinary.com/noouxqko/image/upload/v1794518988/Give_Em_The_Axe_Red_Ale.webp',
   play_caller: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Play_Caller.webp',
   postgame_report: 'https://res.cloudinary.com/noouxqko/image/upload/v1789150178/Postgame_Report.webp'
 });
 const VISIBLE_BADGE_IDS = new Set(Object.keys(BADGE_ASSETS));
-const KNOWN_BADGE_IDS = new Set([...VISIBLE_BADGE_IDS, 'bowl_eligible']);
 
 let leaderboard = null;
 let leaderboardAt = 0;
@@ -74,7 +75,7 @@ function validateBadge(value) {
   const id = clean(value.id);
   const label = clean(value.label);
   const description = clean(value.description);
-  if (!KNOWN_BADGE_IDS.has(id) || !label || label.length > 40 || !description || description.length > 140) return null;
+  if (!VISIBLE_BADGE_IDS.has(id) || !label || label.length > 40 || !description || description.length > 140) return null;
   return Object.freeze({ id, label, description });
 }
 
@@ -103,7 +104,6 @@ function validateEntry(value) {
       !Array.isArray(value.earned_badges) || value.earned_badges.length > 12) return null;
   const badges = value.earned_badges.map(validateBadge);
   if (badges.some((badge) => !badge)) return null;
-  const visibleBadges = badges.filter((badge) => VISIBLE_BADGE_IDS.has(badge.id));
 
   return Object.freeze({
     profileId,
@@ -115,7 +115,7 @@ function validateEntry(value) {
     currentStreak,
     bestStreak,
     rank,
-    badges: Object.freeze(visibleBadges)
+    badges: Object.freeze(badges)
   });
 }
 
