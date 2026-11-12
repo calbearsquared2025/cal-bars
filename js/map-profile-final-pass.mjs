@@ -124,19 +124,19 @@ function installStyles() {
 
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-module__title strong {
         font-family: var(--font-condensed, var(--font-display)) !important;
-        font-size: 1.24rem !important;
+        font-size: clamp(1.3rem, 5.6vw, 1.5rem) !important;
         font-weight: 900 !important;
         letter-spacing: .02em !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module p:not(.party-game-context, .party-module__eyebrow) {
         margin: 0 !important;
         color: var(--cgb-navy-950) !important;
-        font-size: .74rem !important;
-        line-height: 1.27 !important;
+        font-size: .875rem !important;
+        line-height: 1.4 !important;
       }
 
-      /* Protect the ticket's primary matchup from the compact body-copy override. */
+      /* Keep the primary matchup in the established athletic display tier. */
       body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module .party-game-context {
         font-family: var(--font-condensed, var(--font-display)) !important;
         font-size: clamp(1.4rem, 5.95vw, 1.87rem) !important;
@@ -157,12 +157,12 @@ function installStyles() {
         font-weight: 700 !important;
       }
 
-      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module a:not(.party-module__report) {
+      body[data-command-surface="map"] #map-view > #venue-tray.venue-tray.tray--selected .selected-card > .party-module a:not(.party-module__report, .party-module__rsvp-action) {
         width: fit-content !important;
         color: var(--cgb-navy-900) !important;
-        font-size: .74rem !important;
+        font-size: .875rem !important;
         font-weight: 800 !important;
-        line-height: 1.25 !important;
+        line-height: 1.35 !important;
         text-decoration-thickness: 1px !important;
         text-underline-offset: 3px !important;
       }
@@ -177,9 +177,9 @@ function installStyles() {
         padding-top: 0 !important;
         color: var(--cgb-navy-900) !important;
         border: 0 !important;
-        font-size: var(--text-2xs) !important;
+        font-size: .75rem !important;
         font-weight: 650 !important;
-        line-height: 1.25 !important;
+        line-height: 1.35 !important;
         text-align: left !important;
         text-decoration-thickness: 1px !important;
         text-underline-offset: 3px !important;

@@ -10,7 +10,6 @@
   --cgb-watch-party-material:
     linear-gradient(155deg, rgba(255, 255, 255, .46), rgba(255, 255, 255, .13) 52%, rgba(138, 80, 0, .085)),
     radial-gradient(ellipse at 12% 5%, rgba(255, 255, 255, .20), transparent 70%),
-    repeating-linear-gradient(0deg, rgba(119, 79, 10, .026) 0 1px, transparent 1px 4px),
     var(--cgb-gold-300, #ffd15a);
 }
 
@@ -64,9 +63,9 @@
 }
 
 .party-module__masthead .party-module__fact--game > .party-module__eyebrow {
-  color: var(--cgb-ink-700);
-  font-size: var(--text-2xs);
-  line-height: 1.05;
+  color: var(--cgb-navy-950);
+  font-size: .6875rem;
+  line-height: 1.15;
 }
 
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__title {
@@ -76,7 +75,7 @@
   width: 100%;
   color: var(--cgb-navy-950);
   font-family: var(--font-condensed, var(--font-display));
-  font-size: 1.24rem;
+  font-size: clamp(1.3rem, 5.6vw, 1.5rem);
   font-weight: 900;
   line-height: 1.1;
 }
@@ -100,8 +99,8 @@
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module p {
   margin: 0;
   color: var(--cgb-ink-700);
-  font-size: .71rem;
-  line-height: 1.24;
+  font-size: .875rem;
+  line-height: 1.4;
 }
 
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-game-context {
@@ -127,15 +126,15 @@
 
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module a:not(.party-module__report) {
   color: var(--cgb-navy-900);
-  font-size: .71rem;
+  font-size: .875rem;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.35;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
 }
 
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__event {
-  margin-top: 1px;
+  margin-top: 3px;
   letter-spacing: 0;
 }
 
@@ -153,8 +152,8 @@
   gap: 4px;
   min-width: 0;
   margin-top: 0;
-  padding: 3px 0 11px;
-  border-bottom: 1px dashed rgba(0, 21, 65, .48);
+  padding: 3px 0 12px;
+  border-bottom: 2px dashed rgba(0, 21, 65, .39);
 }
 
 /* Host is the ticket identity and gets the full line, without a dividing column. */
@@ -166,14 +165,7 @@
   overflow-wrap: anywhere;
 }
 
-/* Let the organizer read as a distinct identity, not another athletic headline. */
-.party-module .party-module__fact--host > .party-module__eyebrow {
-  color: var(--cgb-ink-700);
-  font-weight: 650;
-  letter-spacing: .02em;
-  text-transform: none;
-}
-
+/* The organizer retains a distinct serif identity beneath the shared eyebrow. */
 .party-module .party-module__fact--host .party-module__host strong {
   color: var(--cgb-navy-950);
   font-family: var(--font-display);
@@ -183,28 +175,20 @@
   overflow-wrap: anywhere;
 }
 
-/* Full-page venue detail has stronger general eyebrow overrides. */
-body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host > .party-module__eyebrow {
-  color: var(--cgb-ink-700) !important;
-  font-weight: 650 !important;
-  letter-spacing: .02em !important;
-  text-transform: none;
-}
-
-/* The shallow white half-circles hint at a ticket tear without affecting the hit targets. */
+/* Small ticket notches centered on the perforation, with no hit targets. */
 .party-module__summary::before,
 .party-module__summary::after {
   position: absolute;
-  bottom: -12px;
-  width: 24px;
-  height: 24px;
+  bottom: -10px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: var(--cgb-white, #fff);
   content: '';
   pointer-events: none;
 }
-.party-module__summary::before { left: -27px; }
-.party-module__summary::after { right: -27px; }
+.party-module__summary::before { left: -24px; }
+.party-module__summary::after { right: -24px; }
 
 .party-module__fact,
 .party-module__section {
@@ -215,7 +199,7 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
 
 .party-module .party-module__eyebrow {
   margin: 0;
-  color: var(--cgb-ink-500);
+  color: var(--cgb-navy-950);
   font-size: .6875rem;
   font-weight: 800;
   line-height: 1.15;
@@ -224,7 +208,7 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
 }
 
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__eyebrow {
-  color: var(--cgb-ink-500);
+  color: var(--cgb-navy-950);
   font-size: .6875rem;
   line-height: 1.15;
 }
@@ -238,8 +222,9 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
 /* The ticket header already separates metadata from descriptive copy. */
 .party-module__details {
   margin-top: 0;
-  padding-top: 11px;
+  padding-top: 12px;
   border-top: 0;
+  gap: 7px;
 }
 
 /* Keep correction requests last, after registration when offered. */
@@ -268,10 +253,10 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
 
 #venue-tray :is(.selected-card, .selected-card__scroll-region) > .party-module .party-module__report {
   justify-self: start;
-  margin-top: 5px;
+  margin-top: 6px;
   padding-top: 0;
-  font-size: var(--text-2xs);
-  line-height: 1.25;
+  font-size: .75rem;
+  line-height: 1.35;
   text-align: left;
 }
 
@@ -378,23 +363,22 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
   position: sticky;
   top: 0;
   z-index: 1;
-  background: var(--cgb-gold-300, #ffd15a);
 }
 
 .party-module__report {
   justify-self: start;
   display: block;
   margin: .55rem 0 0;
-  color: var(--cgb-ink-500);
+  color: var(--cgb-ink-700);
   font-size: .75rem;
   font-weight: 400;
-  line-height: 1.25;
+  line-height: 1.35;
   text-align: left;
   text-decoration: none;
 }
 
 .party-module__report-prompt {
-  color: var(--cgb-ink-500);
+  color: var(--cgb-ink-700);
   font-weight: 400;
 }
 
@@ -424,7 +408,8 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
     gap: 4px;
   }
   .party-module__details {
-    padding-top: 7px;
+    padding-top: 9px;
+    gap: 6px;
   }
   .party-module__section:not(.party-module__details) {
     margin-top: 3px;
@@ -565,7 +550,7 @@ body[data-view="detail"] .venue-detail > .party-module .party-module__fact--host
   }
 
   #tray-selected > #venue-detail > .party-module .party-module__report {
-    font-size: var(--text-2xs);
+    font-size: .75rem;
   }
 
   /* Desktop Locations list: keep the event signal warm and give host metadata room to breathe. */

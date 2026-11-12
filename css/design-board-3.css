@@ -448,7 +448,7 @@
   color: var(--cgb-navy-950);
 }
 
-.venue-detail > .party-module p {
+.venue-detail > .party-module p:where(:not(.party-module__eyebrow)) {
   color: var(--cgb-ink-700);
   font-size: var(--text-sm);
 }
