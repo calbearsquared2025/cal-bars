@@ -1370,6 +1370,88 @@
       "venue_tags": [
         "food"
       ]
+    },
+    {
+      "venue_id": "venue_5e4a621ac4b24eb9afbc077d",
+      "slug": "queen-anne-beerhall-seattle",
+      "slug_aliases": "",
+      "name": "Queen Anne Beerhall",
+      "address_line_1": "203 W Thomas St",
+      "address_line_2": "",
+      "city": "Seattle",
+      "region": "WA",
+      "postal_code": "98119",
+      "country_code": "US",
+      "latitude": 47.620777,
+      "longitude": -122.359726,
+      "website_url": "https://thehall.group/queen-anne-beerhall",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "European-style beer hall near Climate Pledge Arena, with long communal tables, craft beers and hearty pub fare.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-12T22:16:22.694Z",
+      "venue_tags": [
+        "food"
+      ]
+    },
+    {
+      "venue_id": "venue_1cb486eecb314d73b0fd1a09",
+      "slug": "big-rock-pub-indio",
+      "slug_aliases": "",
+      "name": "Big Rock Pub",
+      "address_line_1": "79940 Westward Ho Drive",
+      "address_line_2": "",
+      "city": "Indio",
+      "region": "CA",
+      "postal_code": "92201",
+      "country_code": "US",
+      "latitude": 33.71519,
+      "longitude": -116.26991,
+      "website_url": "https://www.bigrockpub.com/",
+      "venue_type": "community_location",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "Rock-and-roll-themed sports bar with more than 20 TVs, pub fare and a patio overlooking the golf course.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-12T22:54:36.224Z",
+      "venue_tags": [
+        "food"
+      ]
+    },
+    {
+      "venue_id": "venue_4f0b6af8e9314da3a46a7b19",
+      "slug": "gino-and-carlo-san-francisco",
+      "slug_aliases": "",
+      "name": "Gino & Carlo",
+      "address_line_1": "548 Green St",
+      "address_line_2": "",
+      "city": "San Francisco",
+      "region": "CA",
+      "postal_code": "94133",
+      "country_code": "US",
+      "latitude": 37.7998,
+      "longitude": -122.4081,
+      "website_url": "https://ginoandcarlo.com/",
+      "venue_type": "cal_bar",
+      "verification_status": "cgb_reviewed",
+      "alumni_owned": "unknown",
+      "short_description": "North Beach's classic neighborhood sports bar, established in 1942. Cal fans won its Claim Gino's campaign, making it a home away from campus for Bears on game day. Look for Cal flags and pennants during games.",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-12T22:58:39.274Z",
+      "venue_tags": [
+        "21_plus",
+        "cal_memorabilia"
+      ]
     }
   ],
   "games": [
@@ -1705,9 +1787,9 @@
       "age_policy": "unknown",
       "sound_status": "confirmed_on",
       "restrictions_note": "",
-      "game_day_note": "The Cal Alumni of LA's second official watch party location!",
+      "game_day_note": "Join LA Bears in Silver Lake at the chapter's newer gathering for Eastside and Valley fans. Earlier this season, Cal fight songs followed touchdowns and the Bears had center screen.",
       "event_status": "active",
-      "updated_at": "2026-08-17T06:00:58.787Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -1723,9 +1805,9 @@
       "age_policy": "unknown",
       "sound_status": "confirmed_on",
       "restrictions_note": "",
-      "game_day_note": "The Cal Alumni of LA's second official watch party location!",
+      "game_day_note": "Bring Big Game spirit to Silver Lake, home to LA's newer gathering for Eastside and Valley Bears. Earlier this season, fans celebrated touchdowns with Cal fight songs and watched the Bears on center screen.",
       "event_status": "active",
-      "updated_at": "2026-08-17T06:00:58.787Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -1921,9 +2003,9 @@
       "age_policy": "unknown",
       "sound_status": "confirmed_on",
       "restrictions_note": "",
-      "game_day_note": "The Cal Alumni of LA's first official watch party location!",
+      "game_day_note": "Join Westside Bears at the LA chapter's established football watch-party home in Santa Monica. A familiar gathering spot for alumni catching Cal games away from Berkeley.",
       "event_status": "active",
-      "updated_at": "2026-08-17T06:02:39.482Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -1939,9 +2021,9 @@
       "age_policy": "unknown",
       "sound_status": "confirmed_on",
       "restrictions_note": "",
-      "game_day_note": "The Cal Alumni of LA's first official watch party location!",
+      "game_day_note": "Catch Big Game with Westside Bears at the LA chapter's longtime football gathering in Santa Monica. Reconnect with fellow alumni at one of the chapter's two official watch-party locations.",
       "event_status": "active",
-      "updated_at": "2026-08-17T06:02:39.482Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -2968,9 +3050,9 @@
       "age_policy": "21_plus",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
+      "game_day_note": "Help build a Cal football tradition on the Central Coast. This fan-led gathering brings local Bears together at a neighborhood sports bar in Goleta.",
       "event_status": "active",
-      "updated_at": "2026-09-02T04:30:39.217Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -2986,9 +3068,9 @@
       "age_policy": "21_plus",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "Come join us at the (un)Official Cal Bar of Santa Barbara County!",
+      "game_day_note": "Bring your blue and gold to Goleta for Big Game. This fan-led gathering is helping build a regular home for Cal football fans on the Central Coast.",
       "event_status": "active",
-      "updated_at": "2026-09-02T04:30:40.073Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -3680,15 +3762,15 @@
       "game_id": "game_ca62dd014907c6fdcc7520bd",
       "organizer_name": "Cal Alumni Club of Austin",
       "organizer_type": "alumni_group",
-      "official_event_url": "https://calalumniclubofaustin.com/events",
+      "official_event_url": "https://calalumniclubofaustin.com/events/cal-versus-stanford-annual-football-game-2026",
       "source_type": "cgb_added",
-      "event_start_at": "",
+      "event_start_at": "2026-11-22T00:30:00Z",
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "2026 Big Game watch party with the Cal Alumni Club of Austin at Little Woodrow's Domain Northside. Club requests RSVPs; organizer to communicate final gathering time.",
+      "game_day_note": "Join Austin Bears for the chapter's annual Big Game gathering at Little Woodrow's in Domain Northside. The club will show the game live and asks attendees to RSVP.",
       "event_status": "active",
-      "updated_at": "2026-11-10T05:15:00Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [
         "rsvp_requested"
       ],
@@ -3706,9 +3788,9 @@
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "San Diego Cal Alumni Club season-long football watch party schedule includes the 2026 Big Game at Chief's Burgers, Brew & Spirits in Solana Beach.",
+      "game_day_note": "Join San Diego Bears for Big Game at their regular season-long gathering in Solana Beach. Chief's is just east of the train station, a convenient option for fans along the coastal rail corridor.",
       "event_status": "active",
-      "updated_at": "2026-11-10T05:15:00Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -3742,9 +3824,9 @@
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "San Diego Cal Alumni Club season-long watch party schedule includes Cal at Virginia on November 14 at Chief's Burgers, Brew & Spirits in Solana Beach.",
+      "game_day_note": "Catch Cal's road game with San Diego Bears at their regular season-long gathering in Solana Beach. Chief's is just east of the train station, a convenient option for fans along the coastal rail corridor.",
       "event_status": "active",
-      "updated_at": "2026-11-10T05:15:00Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -4066,9 +4148,9 @@
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "",
+      "game_day_note": "Join Portland's Soggy Bears at their regular football gathering on Northeast Broadway. Meet fellow Cal alumni and fans in the Pacific Northwest.",
       "event_status": "active",
-      "updated_at": "2026-11-10T16:05:33.021Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -4102,9 +4184,9 @@
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "",
+      "game_day_note": "Watch Big Game with the Pilipinx American Alumni Chapter, which also gathered at Cali's during this year's Homecoming. Reconnect with the Cal Pilipinx community near campus.",
       "event_status": "active",
-      "updated_at": "2026-11-10T16:05:33.021Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -4194,9 +4276,9 @@
       "age_policy": "unknown",
       "sound_status": "unknown",
       "restrictions_note": "",
-      "game_day_note": "",
+      "game_day_note": "Join Portland's Soggy Bears at their regular Northeast Broadway gathering. The chapter has a history of bringing Cal and Stanford alumni together for Big Game.",
       "event_status": "active",
-      "updated_at": "2026-11-10T16:05:33.021Z",
+      "updated_at": "2026-11-12T22:15:23.336Z",
       "feature_tags": [],
       "rsvp_enabled": false
     },
@@ -4363,6 +4445,46 @@
         "rsvp_requested"
       ],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_66e87b4a1aa145f0aa3bed42",
+      "venue_id": "venue_5e4a621ac4b24eb9afbc077d",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Berkeley Haas Alumni Network (BHAN) Seattle Chapter",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://tixfox.co/e/2Xii1UNVGu",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Reconnect with fellow Haasies and local Bears at Queen Anne Beerhall. The Seattle Haas chapter has reserved group seating with big screens for the game. Enjoy craft beers, pretzels, bratwurst and pub fare available for purchase. Friends, partners and family are welcome. Space is limited, so reserve your spot early!",
+      "event_status": "active",
+      "updated_at": "2026-11-12T22:16:22.694Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_58b1be3f193e4d71a70d4b26",
+      "venue_id": "venue_1cb486eecb314d73b0fd1a09",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal Bears in the Desert",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.eventbrite.com/e/big-game-watch-party-tickets-2003901247575",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-11-22T00:30:00Z",
+      "age_policy": "all_ages",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Help start a new Big Game tradition in the Coachella Valley! Join local Cal and Stanford alumni for their first joint Big Game watch party at Big Rock Pub, a rock-and-roll-themed sports bar overlooking the golf course. All ages are welcome, and RSVPs are highly encouraged.",
+      "event_status": "active",
+      "updated_at": "2026-11-12T22:54:52.162Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -4379,7 +4501,7 @@
     {
       "game_id": "game_ca62dd014907c6fdcc7520bd",
       "venue_id": "venue_aa357331ebc3484392ea9f6b",
-      "count": 1
+      "count": 2
     },
     {
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
@@ -4433,6 +4555,10 @@
       "past_game_count": 0
     },
     {
+      "venue_id": "venue_1cb486eecb314d73b0fd1a09",
+      "past_game_count": 0
+    },
+    {
       "venue_id": "venue_1f6ab9c4462c7a9100e4fb3b",
       "past_game_count": 0
     },
@@ -4473,6 +4599,10 @@
       "past_game_count": 1
     },
     {
+      "venue_id": "venue_4f0b6af8e9314da3a46a7b19",
+      "past_game_count": 0
+    },
+    {
       "venue_id": "venue_52f00a5005b3e7ff881f6e81",
       "past_game_count": 1
     },
@@ -4483,6 +4613,10 @@
     {
       "venue_id": "venue_5ddf1bf5420b230d39c6dccd",
       "past_game_count": 2
+    },
+    {
+      "venue_id": "venue_5e4a621ac4b24eb9afbc077d",
+      "past_game_count": 0
     },
     {
       "venue_id": "venue_645adcead25c43ca9a44a361",
@@ -4749,5 +4883,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-11-12T19:59:16.601Z"
+  "generatedAt": "2026-11-13T06:51:31.357Z"
 }
