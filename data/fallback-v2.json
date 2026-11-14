@@ -4485,6 +4485,26 @@
         "rsvp_requested"
       ],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_9e4b7c21a6d843f0b52e189c",
+      "venue_id": "venue_1088f1337d074675c52d324f",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Rocky Mountain Golden Bears",
+      "organizer_type": "alumni_group",
+      "official_event_url": "https://www.eventbrite.com/e/rmgb-football-watch-party-big-game-tickets-2004636675259",
+      "source_type": "cgb_added",
+      "event_start_at": "2026-11-22T00:30:00Z",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "Join the Rocky Mountain Golden Bears at their annual Big Game gathering in downtown Denver. Cheer on Cal alongside alumni, friends and family, with opportunities to win or receive Cal swag. RSVP encouraged but not required.",
+      "event_status": "active",
+      "updated_at": "2026-11-14T17:28:00Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -4888,5 +4908,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-11-14T06:32:47.495Z"
+  "generatedAt": "2026-11-14T18:11:16.685Z"
 }
