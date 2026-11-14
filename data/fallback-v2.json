@@ -4507,6 +4507,11 @@
       "game_id": "game_f4ebc4f05457bb40f3bc66ab",
       "venue_id": "venue_5977e35a58d8b18f22a51f1e",
       "count": 1
+    },
+    {
+      "game_id": "game_f4ebc4f05457bb40f3bc66ab",
+      "venue_id": "venue_d6e66f8dac776cb8821785cf",
+      "count": 2
     }
   ],
   "venueHistoryCounts": [
@@ -4883,5 +4888,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-11-13T06:51:31.357Z"
+  "generatedAt": "2026-11-14T06:32:47.495Z"
 }
