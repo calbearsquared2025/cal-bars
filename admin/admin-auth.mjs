@@ -21,12 +21,13 @@ import {
   buildMarkReviewedRequest,
   filterAdminActivity,
   firebaseConfigIsComplete,
-  validateAdminActivityResponse,
+  requestAdminActivity,
   validateMarkReviewedResponse
 } from './admin-auth-core.mjs';
 import { ADMIN_AUTH_CONFIG } from './config.mjs';
 
 const REQUEST_TIMEOUT_MS = 12000;
+const ACTIVITY_REQUEST_TIMEOUT_MS = 30000;
 const firebaseConfig = ADMIN_AUTH_CONFIG.firebase || {};
 const adminEndpoint = String(ADMIN_AUTH_CONFIG.endpoint || '').trim();
 
@@ -34,6 +35,7 @@ const authShell = document.querySelector('#auth-shell');
 const dashboard = document.querySelector('#dashboard');
 const statusNode = document.querySelector('#admin-status');
 const signInButton = document.querySelector('#admin-sign-in');
+const retryButton = document.querySelector('#admin-retry');
 const signOutButtons = [...document.querySelectorAll('.admin-sign-out')];
 const accountNode = document.querySelector('#admin-account');
 const dashboardAccountNode = document.querySelector('#dashboard-account');
@@ -52,6 +54,7 @@ let currentUser = null;
 let activityItems = [];
 let toastTimer = 0;
 let activityLoading = false;
+let activityRequestId = 0;
 let redirectSignInErrorCode = '';
 
 function setStatus(message, { error = false } = {}) {
@@ -69,6 +72,8 @@ function setAccount(user) {
 
 function setSignedOutUi() {
   currentUser = null;
+  activityRequestId += 1;
+  retryButton.hidden = true;
   activityItems = [];
   activityLoading = false;
   setAccount(null);
@@ -81,6 +86,7 @@ function setSignedOutUi() {
 }
 
 function setSignedInPendingUi(user) {
+  retryButton.hidden = true;
   setAccount(user);
   authShell.hidden = false;
   dashboard.hidden = true;
@@ -89,6 +95,7 @@ function setSignedInPendingUi(user) {
 }
 
 function showDashboard(user) {
+  retryButton.hidden = true;
   setAccount(user);
   authShell.hidden = true;
   dashboard.hidden = false;
@@ -106,19 +113,36 @@ function showToast(message, { error = false } = {}) {
   }, 3200);
 }
 
-async function postAdmin(payload) {
+async function postAdmin(payload, { timeoutMs = REQUEST_TIMEOUT_MS } = {}) {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(adminEndpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-      body: JSON.stringify(payload),
-      cache: 'no-store',
-      signal: controller.signal
+    let response;
+    try {
+      response = await fetch(adminEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+        body: JSON.stringify(payload),
+        cache: 'no-store',
+        signal: controller.signal
+      });
+    } catch (error) {
+      if (error?.name !== 'TypeError') throw error;
+      const networkError = new Error('admin_backend_unavailable');
+      networkError.retryable = true;
+      throw networkError;
+    }
+    if (!response.ok) {
+      const error = new Error(response.status === 401 || response.status === 403
+        ? 'admin_unauthorized' : 'admin_backend_unavailable');
+      error.retryable = response.status === 408 || response.status === 429 || response.status >= 500;
+      throw error;
+    }
+    const responsePayload = await response.json().catch((error) => {
+      if (controller.signal.aborted || error?.name === 'AbortError') throw error;
+      return null;
     });
-    const responsePayload = await response.json().catch(() => null);
-    if (!response.ok || !responsePayload) throw new Error('admin_backend_unavailable');
+    if (!responsePayload) throw new Error('admin_backend_unavailable');
     return responsePayload;
   } finally {
     window.clearTimeout(timeout);
@@ -312,8 +336,10 @@ function populateTypeFilters() {
 }
 
 async function loadAdminActivity(user, { refresh = false } = {}) {
-  if (activityLoading) return;
+  if (activityLoading || currentUser !== user) return;
   activityLoading = true;
+  const requestId = ++activityRequestId;
+  const isCurrent = () => currentUser === user && activityRequestId === requestId;
   if (!refresh) {
     setSignedInPendingUi(user);
     setStatus('Loading CGB Admin…');
@@ -321,11 +347,16 @@ async function loadAdminActivity(user, { refresh = false } = {}) {
     renderDashboard();
   }
   try {
-    const idToken = await user.getIdToken(!refresh);
-    const payload = await postAdmin(buildAdminActivityRequest(idToken));
-    if (payload.ok !== true) throw new Error(payload.error || 'admin_backend_unavailable');
-    const result = validateAdminActivityResponse(payload);
-    if (!result) throw new Error('admin_backend_unavailable');
+    const result = await requestAdminActivity(async () => {
+      const idToken = await user.getIdToken(!refresh);
+      if (!isCurrent()) throw new Error('stale_admin_session');
+      return postAdmin(buildAdminActivityRequest(idToken), { timeoutMs: ACTIVITY_REQUEST_TIMEOUT_MS });
+    }, {
+      retry: !refresh,
+      isCurrent,
+      onRetry: () => setStatus('Still connecting to CGB Admin… Retrying once.')
+    });
+    if (!isCurrent()) return;
     activityItems = [...result.items];
     if (refresh) {
       renderDashboard();
@@ -334,6 +365,7 @@ async function loadAdminActivity(user, { refresh = false } = {}) {
       showDashboard(user);
     }
   } catch (error) {
+    if (!isCurrent()) return;
     const code = error?.name === 'AbortError'
       ? 'admin_backend_unavailable'
       : String(error?.message || 'admin_backend_unavailable');
@@ -341,10 +373,13 @@ async function loadAdminActivity(user, { refresh = false } = {}) {
       showToast(adminErrorCopy(code), { error: true });
     } else {
       setStatus(adminErrorCopy(code), { error: true });
+      retryButton.hidden = ['admin_unauthorized', 'admin_not_configured', 'admin_invalid_request'].includes(code);
     }
   } finally {
-    activityLoading = false;
-    if (refresh && !dashboard.hidden) renderDashboard();
+    if (isCurrent()) {
+      activityLoading = false;
+      if (refresh && !dashboard.hidden) renderDashboard();
+    }
   }
 }
 
@@ -463,6 +498,10 @@ function bindDashboardEvents() {
     markReviewed(currentBulkReviewKeys());
   });
 
+  retryButton.addEventListener('click', () => {
+    if (currentUser && !retryButton.hidden) loadAdminActivity(currentUser);
+  });
+
   activityRefreshButton?.addEventListener('click', () => {
     if (currentUser) loadAdminActivity(currentUser, { refresh: true });
   });
@@ -572,6 +611,11 @@ async function initializeAdminAuth() {
       return;
     }
     redirectSignInErrorCode = '';
+    if (currentUser !== user) {
+      activityRequestId += 1;
+      activityLoading = false;
+      activityItems = [];
+    }
     currentUser = user;
     loadAdminActivity(user);
   });

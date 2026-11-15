@@ -109,6 +109,32 @@ export function validateAdminHealthResponse(payload) {
   });
 }
 
+// Only the read-only Activity request uses automatic retry. Validation,
+// authorization and configuration errors are never retried.
+export async function requestAdminActivity(request, {
+  retry = false, isCurrent = () => true, onRetry = () => {}
+} = {}) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let payload;
+    try {
+      payload = await request();
+      if (payload?.ok === false && payload.error) {
+        const error = new Error(payload.error);
+        error.retryable = payload.error === 'admin_backend_unavailable';
+        throw error;
+      }
+    } catch (error) {
+      const transient = error?.name === 'AbortError' || error?.retryable === true;
+      if (!retry || attempt !== 0 || !transient || !isCurrent()) throw error;
+      onRetry();
+      continue;
+    }
+    const result = validateAdminActivityResponse(payload);
+    if (!result) throw new Error('admin_backend_unavailable');
+    return result;
+  }
+}
+
 function normalizeActivityItem(item) {
   if (!item || typeof item !== 'object') return null;
   const key = clean(item.key);
