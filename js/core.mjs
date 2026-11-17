@@ -61,10 +61,14 @@ export function formatKickoff(game, locale) {
   }
   const kickoff = new Date(game.kickoff_at);
   if (Number.isNaN(kickoff.getTime())) return dateLabel;
+  // For confirmed kickoffs, the displayed date and time must share the viewer's timezone.
+  const kickoffDateLabel = new Intl.DateTimeFormat(locale, {
+    weekday: 'short', month: 'short', day: 'numeric'
+  }).format(kickoff);
   const timeLabel = new Intl.DateTimeFormat(locale, {
     hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
   }).format(kickoff);
-  return [dateLabel, timeLabel].filter(Boolean).join(' · ');
+  return [kickoffDateLabel, timeLabel].filter(Boolean).join(' · ');
 }
 
 export function gameEventTitle(game) {
