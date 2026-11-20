@@ -334,14 +334,6 @@ body[data-view="detail"] .detail-contribution {
   border-radius: 14px;
 }
 
-body[data-view="detail"] .detail-contribution h2 {
-  margin: 0 0 10px;
-  color: var(--cgb-navy-950);
-  font-family: var(--font-display);
-  font-size: 1rem;
-  line-height: 1.15;
-}
-
 #tray-selected > #venue-detail .detail-contribution__actions,
 body[data-view="detail"] .detail-contribution__actions {
   display: grid;
@@ -715,14 +707,6 @@ body[data-view="detail"] .venue-detail > .action-row.detail-primary-actions > .d
 
   #tray-selected > #venue-detail .detail-contribution {
     background: var(--cgb-white) !important;
-  }
-
-  #tray-selected > #venue-detail .detail-contribution h2 {
-    margin: 0 0 10px !important;
-    color: var(--cgb-navy-950) !important;
-    font-family: var(--font-display) !important;
-    font-size: .9rem !important;
-    line-height: 1.15 !important;
   }
 
   #tray-selected > #venue-detail > .action-row.detail-primary-actions {

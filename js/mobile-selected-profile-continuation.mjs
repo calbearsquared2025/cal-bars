@@ -200,15 +200,17 @@ function createEditorial(documentObject, venue) {
 }
 
 function createContribution(documentObject) {
-  const section = documentObject.createElement('section');
-  section.className = 'detail-contribution';
-  section.hidden = true;
-  const heading = documentObject.createElement('h2');
-  heading.textContent = 'Help improve this listing';
+  // Mirror the desktop disclosure, preserving the existing contribution targets.
+  const disclosure = documentObject.createElement('details');
+  disclosure.className = 'detail-contribution';
+  disclosure.hidden = true;
+  const summary = documentObject.createElement('summary');
+  summary.className = 'detail-contribution__summary';
+  summary.textContent = 'Help improve this listing';
   const actions = documentObject.createElement('div');
   actions.className = 'detail-contribution__actions';
-  section.append(heading, actions);
-  return section;
+  disclosure.append(summary, actions);
+  return disclosure;
 }
 
 function proxyApp(app, state) {
@@ -304,6 +306,8 @@ export function renderMobileSelectedProfileContinuation({
   removeGateway(documentObject);
   clearLegacyOpeningMedia(selectedCard);
   const changedVenue = lastContinuationVenueId !== venue.venue_id;
+  const contributionWasOpen = !changedVenue &&
+    cachedVenueDetail.querySelector(':scope > .detail-contribution')?.open === true;
   lastContinuationVenueId = venue.venue_id;
 
   cachedVenueDetail.replaceChildren();
@@ -317,7 +321,9 @@ export function renderMobileSelectedProfileContinuation({
 
   const editorial = createEditorial(documentObject, venue);
   if (editorial) cachedVenueDetail.append(editorial);
-  cachedVenueDetail.append(createContribution(documentObject));
+  const contribution = createContribution(documentObject);
+  contribution.open = contributionWasOpen;
+  cachedVenueDetail.append(contribution);
   traySelected.append(cachedVenueDetail);
 
   const continuationApp = proxyApp(app, state);

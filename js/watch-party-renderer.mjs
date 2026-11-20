@@ -100,7 +100,7 @@ export function watchPartyTicketMatchup(game) {
   return `${school} ${game.home_away === 'away' ? '@' : 'VS.'} ${opponent}`;
 }
 
-function kickoffLabel(game) {
+export function kickoffLabel(game) {
   if (!game) return '';
   if (game.kickoff_status === 'tbd' || !game.kickoff_at) return 'Kickoff Time TBD';
   const time = formatLocalTime(game.kickoff_at);

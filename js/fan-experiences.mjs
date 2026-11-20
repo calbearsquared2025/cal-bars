@@ -240,7 +240,7 @@ function syncMobileWhatToKnow({ detail, state, venue, documentObject }) {
   } else {
     const empty = documentObject.createElement('p');
     empty.className = 'selected-card__what-to-know-empty';
-    empty.textContent = 'Nothing shared yet.';
+    empty.textContent = 'Game-day venue details have not been shared yet.';
     section.append(empty);
   }
 

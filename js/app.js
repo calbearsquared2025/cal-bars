@@ -862,15 +862,18 @@ function createDetailActionRow(venue) {
 }
 
 function createDetailContribution() {
-  const section = document.createElement('section');
-  section.className = 'detail-contribution';
-  section.hidden = true;
-  const heading = document.createElement('h2');
-  heading.textContent = 'Help improve this listing';
+  // Secondary maintenance actions use a native disclosure; the individual
+  // existing contribution destinations remain available without new routing.
+  const disclosure = document.createElement('details');
+  disclosure.className = 'detail-contribution';
+  disclosure.hidden = true;
+  const summary = document.createElement('summary');
+  summary.className = 'detail-contribution__summary';
+  summary.textContent = 'Help improve this listing';
   const actions = document.createElement('div');
   actions.className = 'detail-contribution__actions';
-  section.append(heading, actions);
-  return section;
+  disclosure.append(summary, actions);
+  return disclosure;
 }
 
 function legacyCopyText(text) {
