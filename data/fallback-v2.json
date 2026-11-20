@@ -4505,6 +4505,24 @@
         "rsvp_requested"
       ],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_e9fb4f8145de41b0a917c03a",
+      "venue_id": "venue_13cca91604a0819ea14c8fea",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Cal fans in NYC",
+      "organizer_type": "individual",
+      "official_event_url": "https://www.reddit.com/r/calfootball/comments/1y17te5/big_game_watch_party_nyc/",
+      "source_type": "cgb_added",
+      "event_start_at": "",
+      "age_policy": "unknown",
+      "sound_status": "unknown",
+      "restrictions_note": "Table reservation recommended.",
+      "game_day_note": "District Tap House will show the Big Game at 7:30 PM ET. This is a casual Cal-fan viewing option found on Reddit.",
+      "event_status": "active",
+      "updated_at": "2026-11-20T18:04:33.130Z",
+      "feature_tags": [],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -4516,6 +4534,11 @@
     {
       "game_id": "game_1535f732d3d1061b8e8cf07e",
       "venue_id": "venue_b6a019c5d7d54307a13a373b",
+      "count": 1
+    },
+    {
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "venue_id": "venue_2bb764588e357170dd6ae69a",
       "count": 1
     },
     {
@@ -4903,5 +4926,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-11-16T22:11:35.059Z"
+  "generatedAt": "2026-11-20T20:27:08.133Z"
 }
