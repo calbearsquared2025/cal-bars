@@ -1452,6 +1452,33 @@
         "21_plus",
         "cal_memorabilia"
       ]
+    },
+    {
+      "venue_id": "venue_88c3a8b4af144f1baa144649",
+      "slug": "407-south-a-street",
+      "slug_aliases": "",
+      "name": "407 South A Street",
+      "address_line_1": "South A Street",
+      "address_line_2": "",
+      "city": "Pensacola",
+      "region": "FL",
+      "postal_code": "32502",
+      "country_code": "US",
+      "latitude": 30.41119006740696,
+      "longitude": -87.22610201686621,
+      "website_url": "",
+      "venue_type": "community_location",
+      "verification_status": "user_added",
+      "alumni_owned": "unknown",
+      "short_description": "",
+      "photo_url": "",
+      "photo_caption": "",
+      "photo_credit": "",
+      "photo_credit_url": "",
+      "updated_at": "2026-11-20T21:03:29.030Z",
+      "venue_tags": [
+        "all_ages"
+      ]
     }
   ],
   "games": [
@@ -4523,6 +4550,26 @@
       "updated_at": "2026-11-20T18:04:33.130Z",
       "feature_tags": [],
       "rsvp_enabled": false
+    },
+    {
+      "watch_party_id": "wp_54e19e17c5c14d4cb6f730cb",
+      "venue_id": "venue_88c3a8b4af144f1baa144649",
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "organizer_name": "Yoav Shames",
+      "organizer_type": "individual",
+      "official_event_url": "",
+      "source_type": "fan_submitted",
+      "event_start_at": "",
+      "age_policy": "all_ages",
+      "sound_status": "unknown",
+      "restrictions_note": "",
+      "game_day_note": "",
+      "event_status": "active",
+      "updated_at": "2026-11-20T21:03:28.502Z",
+      "feature_tags": [
+        "rsvp_requested"
+      ],
+      "rsvp_enabled": false
     }
   ],
   "fanCounts": [
@@ -4539,6 +4586,11 @@
     {
       "game_id": "game_ca62dd014907c6fdcc7520bd",
       "venue_id": "venue_2bb764588e357170dd6ae69a",
+      "count": 1
+    },
+    {
+      "game_id": "game_ca62dd014907c6fdcc7520bd",
+      "venue_id": "venue_88c3a8b4af144f1baa144649",
       "count": 1
     },
     {
@@ -4690,6 +4742,10 @@
     },
     {
       "venue_id": "venue_84faaa0644ac41a6b4f2fdeb",
+      "past_game_count": 0
+    },
+    {
+      "venue_id": "venue_88c3a8b4af144f1baa144649",
       "past_game_count": 0
     },
     {
@@ -4926,5 +4982,5 @@
       "year": 2025
     }
   ],
-  "generatedAt": "2026-11-20T20:27:08.133Z"
+  "generatedAt": "2026-11-21T07:17:01.379Z"
 }
